@@ -1,193 +1,189 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>班表</title>
 
 <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
 <style>
-body { margin:0; font-family:sans-serif; background:#f5f5f5; }
+body{
+  margin:0;
+  padding:10px;
+  font-family:sans-serif;
+  background:#f5f5f5;
+}
 
 /* 工具列 */
-.toolbar { display:flex; gap:6px; padding:6px; }
-.tool-btn { flex:1; background:#fff; border:none; border-radius:12px; font-size:18px; padding:10px; }
+.topbar{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  margin-bottom:10px;
+}
+.topbar button{
+  height:50px;
+  font-size:22px;
+  border:none;
+  border-radius:12px;
+  background:#fff;
+}
 
-/* 月曆區 */
-#captureArea { position:relative; }
-#bg { position:absolute; width:100%; height:100%; object-fit:cover; z-index:0; }
-.blur { filter: blur(6px); }
+/* 月曆 */
+.calendar{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:8px;
+}
 
-.calendar { position:relative; z-index:1; padding:10px; }
-.title { text-align:center; font-size:22px; margin:10px 0; }
+.day{
+  aspect-ratio:1;
+  border-radius:12px;
+  background:#fff;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding-top:4px;
+}
 
-.grid { display:grid; grid-template-columns:repeat(7,1fr); gap:8px; }
-.day { background:rgba(255,255,255,0.85); border-radius:12px; aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-.sunday { background:#FBE7EF; color:red; }
+.saturday{ background:#f3f3f3; }
+.sunday{ background:#FBE7EF; color:red; }
 
-.shift { font-size:12px; }
+/* 班別顏色 */
+.shift{
+  width:80%;
+  text-align:center;
+  border-radius:6px;
+  font-size:12px;
+  margin-top:2px;
+}
 
-/* 貼圖 */
-.sticker { position:absolute; width:60px; z-index:2; }
+.morning{ background:#fff3a3; }
+.noon{ background:#ffc9a9; }
+.night{ background:#d6c4a3; }
+.full{ background:#d6c4f0; color:#fff; }
 
-/* 下方 */
-.shift-bar { display:flex; justify-content:space-around; padding:10px; }
-.shift-btn { background:#fff; border-radius:20px; padding:6px 12px; }
+/* 班別按鈕 */
+.bottom{
+  display:flex;
+  justify-content:space-between;
+  margin-top:10px;
+}
+.bottom button{
+  flex:1;
+  margin:4px;
+  border-radius:20px;
+  border:none;
+  padding:10px;
+  background:#fff;
+}
 
-input { display:none; }
-#menu { display:none; padding:10px; }
+/* 預覽 */
+#preview{
+  margin-top:15px;
+  text-align:center;
+}
+#preview canvas{
+  width:100%;
+  border-radius:10px;
+}
 </style>
 </head>
 
 <body>
 
-<div class="toolbar">
-<button class="tool-btn" onclick="capture()">📸</button>
-<label class="tool-btn">🖼<input type="file" onchange="addSticker(event)"></label>
-<label class="tool-btn">🎨<input type="file" onchange="setBg(event)"></label>
-<button class="tool-btn" onclick="toggleMenu()">⚙️</button>
+<!-- 工具列 -->
+<div class="topbar">
+  <button onclick="exportImage()">📸</button>
+  <button>🖼️</button>
+  <button>🎨</button>
+  <button>⚙️</button>
 </div>
 
-<div id="menu">
-<button onclick="clearBg()">清除背景</button>
-<button onclick="toggleBlur()">背景模糊</button>
-<button onclick="clearAll()">清空班表</button>
-<button onclick="capture()">匯出圖片</button>
-<button onclick="exportICS()">匯出行事曆</button>
+<h3 style="text-align:center;">2026年4月</h3>
 
-<select onchange="loadSlot(this.value)">
-<option value="0">班表1</option>
-<option value="1">班表2</option>
-<option value="2">班表3</option>
-<option value="3">班表4</option>
-<option value="4">班表5</option>
-<option value="5">班表6</option>
-<option value="6">班表7</option>
-<option value="7">班表8</option>
-<option value="8">班表9</option>
-<option value="9">班表10</option>
-</select>
+<div class="calendar" id="calendar"></div>
+
+<!-- 班別 -->
+<div class="bottom">
+  <button onclick="setType('morning')">早</button>
+  <button onclick="setType('noon')">午</button>
+  <button onclick="setType('night')">晚</button>
+  <button onclick="setType('full')">全</button>
 </div>
 
-<div id="captureArea">
-<img id="bg">
-<div class="calendar">
-<div class="title">2026年4月</div>
-<div class="grid" id="grid"></div>
-</div>
-</div>
-
-<div class="shift-bar">
-<div class="shift-btn" onclick="setShift('早')">早</div>
-<div class="shift-btn" onclick="setShift('午')">午</div>
-<div class="shift-btn" onclick="setShift('晚')">晚</div>
-<div class="shift-btn" onclick="setShift('全')">全</div>
-<div class="shift-btn" onclick="setShift('休')">休</div>
-</div>
+<!-- 預覽 -->
+<div id="preview"></div>
 
 <script>
-let selectedShift='', shifts={}, slots=[{}, {}, {}, {}, {}, {}, {}, {}, {}, {}], currentSlot=0;
+let selected="";
+let data={};
+const order=["morning","noon","night","full"];
 
-const order=["早","午","晚","全"];
+function setType(t){ selected=t; }
 
-const grid=document.getElementById("grid");
-for(let i=1;i<=30;i++){
- let d=document.createElement("div");
- d.className="day";
- if([5,12,19,26].includes(i)) d.classList.add("sunday");
- d.innerHTML=`<div>${i}</div><div class="box"></div>`;
- d.onclick=()=>apply(i,d);
- grid.appendChild(d);
+function render(){
+  const cal=document.getElementById("calendar");
+  cal.innerHTML="";
+
+  for(let i=1;i<=30;i++){
+    const d=document.createElement("div");
+    d.className="day";
+
+    if(i%7==6) d.classList.add("saturday");
+    if(i%7==0) d.classList.add("sunday");
+
+    let box=data[i]||[];
+
+    d.innerHTML=`<div>${i}</div>`;
+
+    box.forEach(t=>{
+      const div=document.createElement("div");
+      div.className="shift "+t;
+      div.innerText={
+        morning:"早",
+        noon:"午",
+        night:"晚",
+        full:"全"
+      }[t];
+      d.appendChild(div);
+    });
+
+    d.onclick=()=>{
+      if(!selected) return;
+      if(!data[i]) data[i]=[];
+
+      if(!data[i].includes(selected)){
+        data[i].push(selected);
+      }
+
+      data[i].sort((a,b)=>order.indexOf(a)-order.indexOf(b));
+      render();
+    };
+
+    cal.appendChild(d);
+  }
 }
 
-function apply(day,el){
- if(!selectedShift) return;
- if(!shifts[day]) shifts[day]=[];
- if(!shifts[day].includes(selectedShift)) shifts[day].push(selectedShift);
- shifts[day].sort((a,b)=>order.indexOf(a)-order.indexOf(b));
- render(el,shifts[day]);
- saveSlot();
+function exportImage(){
+  html2canvas(document.body).then(canvas=>{
+    const p=document.getElementById("preview");
+    p.innerHTML="";
+    p.appendChild(canvas);
+
+    const btn=document.createElement("button");
+    btn.innerText="下載圖片";
+    btn.onclick=()=>{
+      const a=document.createElement("a");
+      a.href=canvas.toDataURL();
+      a.download="schedule.png";
+      a.click();
+    };
+    p.appendChild(btn);
+  });
 }
 
-function render(el,list){
- el.querySelector(".box").innerHTML=list.map(s=>`<div class="shift">${s}</div>`).join("");
-}
-
-function setShift(s){ selectedShift=s; }
-
-function setBg(e){
- let url=URL.createObjectURL(e.target.files[0]);
- document.getElementById("bg").src=url;
-}
-
-function clearBg(){ document.getElementById("bg").src=''; }
-
-function toggleBlur(){ document.getElementById("bg").classList.toggle("blur"); }
-
-function addSticker(e){
- let img=document.createElement("img");
- img.src=URL.createObjectURL(e.target.files[0]);
- img.className="sticker";
- img.style.top="50px"; img.style.left="50px";
-
- img.ondblclick=()=>img.remove();
-
- img.onmousedown=(e)=>{
-  let x=e.clientX,y=e.clientY;
-  document.onmousemove=(ev)=>{
-    img.style.left=img.offsetLeft+(ev.clientX-x)+"px";
-    img.style.top=img.offsetTop+(ev.clientY-y)+"px";
-    x=ev.clientX;y=ev.clientY;
-  };
-  document.onmouseup=()=>document.onmousemove=null;
- };
-
- document.getElementById("captureArea").appendChild(img);
-}
-
-function clearAll(){
- shifts={};
- document.querySelectorAll(".box").forEach(b=>b.innerHTML='');
- saveSlot();
-}
-
-function capture(){
- html2canvas(document.querySelector("#captureArea")).then(c=>{
-  let a=document.createElement("a");
-  a.download="schedule.png";
-  a.href=c.toDataURL();
-  a.click();
- });
-}
-
-function toggleMenu(){
- let m=document.getElementById("menu");
- m.style.display=m.style.display==="none"?"block":"none";
-}
-
-function saveSlot(){ slots[currentSlot]=JSON.parse(JSON.stringify(shifts)); }
-
-function loadSlot(i){
- currentSlot=i;
- shifts=JSON.parse(JSON.stringify(slots[i]||{}));
- document.querySelectorAll(".day").forEach((d,idx)=>{
-  render(d,shifts[idx+1]||[]);
- });
-}
-
-function exportICS(){
- let text="BEGIN:VCALENDAR\nVERSION:2.0\n";
- for(let d in shifts){
-  text+=`BEGIN:VEVENT\nSUMMARY:${shifts[d].join(",")}\nDTSTART:202604${String(d).padStart(2,'0')}T090000\nEND:VEVENT\n`;
- }
- text+="END:VCALENDAR";
- let blob=new Blob([text],{type:'text/calendar'});
- let a=document.createElement("a");
- a.href=URL.createObjectURL(blob);
- a.download="schedule.ics";
- a.click();
-}
+render();
 </script>
 
 </body>
