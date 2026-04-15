@@ -7,47 +7,50 @@
 <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
 <style>
-body{
-  margin:0;
-  padding:10px;
-  font-family:sans-serif;
-  background:#f5f5f5;
-}
+body{margin:0;padding:10px;font-family:sans-serif;background:#f5f5f5;}
 
 /* 工具列 */
 .topbar{
   display:grid;
   grid-template-columns:repeat(4,1fr);
   gap:10px;
-  margin-bottom:10px;
 }
-.topbar button{
+.topbar label,.topbar button{
   height:50px;
-  font-size:22px;
   border:none;
   border-radius:12px;
   background:#fff;
+  font-size:22px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 
 /* 月曆 */
+#wrap{position:relative;}
+#bg{position:absolute;width:100%;height:100%;object-fit:cover;z-index:0;}
+
 .calendar{
+  position:relative;
+  z-index:1;
   display:grid;
   grid-template-columns:repeat(7,1fr);
   gap:8px;
+  margin-top:10px;
 }
 
 .day{
   aspect-ratio:1;
   border-radius:12px;
-  background:#fff;
+  background:rgba(255,255,255,0.85);
   display:flex;
   flex-direction:column;
   align-items:center;
   padding-top:4px;
 }
 
-.saturday{ background:#f3f3f3; }
-.sunday{ background:#FBE7EF; color:red; }
+.saturday{background:#f3f3f3;}
+.sunday{background:#FBE7EF;color:red;}
 
 /* 班別顏色 */
 .shift{
@@ -58,35 +61,32 @@ body{
   margin-top:2px;
 }
 
-.morning{ background:#fff3a3; }
-.noon{ background:#ffc9a9; }
-.night{ background:#d6c4a3; }
-.full{ background:#d6c4f0; color:#fff; }
+.morning{background:#fff3a3;}
+.noon{background:#ffc9a9;}
+.night{background:#d6c4a3;}
+.full{background:#d6c4f0;color:#fff;}
+.off{background:#c7f0d8;}
 
-/* 班別按鈕 */
+/* 底部 */
 .bottom{
   display:flex;
-  justify-content:space-between;
+  gap:6px;
   margin-top:10px;
 }
 .bottom button{
   flex:1;
-  margin:4px;
-  border-radius:20px;
-  border:none;
   padding:10px;
+  border:none;
+  border-radius:20px;
   background:#fff;
 }
 
 /* 預覽 */
-#preview{
-  margin-top:15px;
-  text-align:center;
-}
-#preview canvas{
-  width:100%;
-  border-radius:10px;
-}
+#preview{text-align:center;margin-top:15px;}
+#preview canvas{width:100%;border-radius:10px;}
+
+input{display:none;}
+#menu{display:none;margin-top:10px;}
 </style>
 </head>
 
@@ -95,24 +95,32 @@ body{
 <!-- 工具列 -->
 <div class="topbar">
   <button onclick="exportImage()">📸</button>
-  <button>🖼️</button>
-  <button>🎨</button>
-  <button>⚙️</button>
+  <label>🖼️<input type="file" onchange="addSticker(event)"></label>
+  <label>🎨<input type="file" onchange="setBg(event)"></label>
+  <button onclick="toggleMenu()">⚙️</button>
+</div>
+
+<div id="menu">
+  <button onclick="clearBg()">清除背景</button>
+  <button onclick="clearAll()">清空班表</button>
 </div>
 
 <h3 style="text-align:center;">2026年4月</h3>
 
-<div class="calendar" id="calendar"></div>
+<div id="wrap">
+  <img id="bg">
+  <div class="calendar" id="calendar"></div>
+</div>
 
-<!-- 班別 -->
+<!-- 底部班別 -->
 <div class="bottom">
   <button onclick="setType('morning')">早</button>
   <button onclick="setType('noon')">午</button>
   <button onclick="setType('night')">晚</button>
   <button onclick="setType('full')">全</button>
+  <button onclick="setType('off')">休</button>
 </div>
 
-<!-- 預覽 -->
 <div id="preview"></div>
 
 <script>
@@ -120,7 +128,7 @@ let selected="";
 let data={};
 const order=["morning","noon","night","full"];
 
-function setType(t){ selected=t; }
+function setType(t){selected=t;}
 
 function render(){
   const cal=document.getElementById("calendar");
@@ -130,8 +138,8 @@ function render(){
     const d=document.createElement("div");
     d.className="day";
 
-    if(i%7==6) d.classList.add("saturday");
-    if(i%7==0) d.classList.add("sunday");
+    if(i%7==6)d.classList.add("saturday");
+    if(i%7==0)d.classList.add("sunday");
 
     let box=data[i]||[];
 
@@ -141,19 +149,18 @@ function render(){
       const div=document.createElement("div");
       div.className="shift "+t;
       div.innerText={
-        morning:"早",
-        noon:"午",
-        night:"晚",
-        full:"全"
+        morning:"早",noon:"午",night:"晚",full:"全",off:"休"
       }[t];
       d.appendChild(div);
     });
 
     d.onclick=()=>{
-      if(!selected) return;
-      if(!data[i]) data[i]=[];
+      if(!selected)return;
+      if(!data[i])data[i]=[];
 
-      if(!data[i].includes(selected)){
+      if(data[i].includes(selected)){
+        data[i]=data[i].filter(x=>x!==selected);
+      }else{
         data[i].push(selected);
       }
 
@@ -165,8 +172,27 @@ function render(){
   }
 }
 
+function setBg(e){
+  document.getElementById("bg").src=URL.createObjectURL(e.target.files[0]);
+}
+
+function clearBg(){document.getElementById("bg").src="";}
+
+function addSticker(e){
+  const img=document.createElement("img");
+  img.src=URL.createObjectURL(e.target.files[0]);
+  img.style.position="absolute";
+  img.style.width="60px";
+  img.style.top="50px";
+  img.style.left="50px";
+  img.ondblclick=()=>img.remove();
+  document.getElementById("wrap").appendChild(img);
+}
+
+function clearAll(){data={};render();}
+
 function exportImage(){
-  html2canvas(document.body).then(canvas=>{
+  html2canvas(document.querySelector("#wrap")).then(canvas=>{
     const p=document.getElementById("preview");
     p.innerHTML="";
     p.appendChild(canvas);
@@ -181,6 +207,11 @@ function exportImage(){
     };
     p.appendChild(btn);
   });
+}
+
+function toggleMenu(){
+  const m=document.getElementById("menu");
+  m.style.display=m.style.display==="none"?"block":"none";
 }
 
 render();
