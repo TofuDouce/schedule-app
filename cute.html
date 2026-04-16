@@ -37,6 +37,22 @@ button:active{transform:scale(0.94)}
   backdrop-filter:blur(20px);
 }
 
+/* 🔥 背景遮罩 */
+#overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.25);
+  backdrop-filter:blur(4px);
+  z-index:999;
+  opacity:0;
+  pointer-events:none;
+  transition:0.25s;
+}
+#overlay.active{
+  opacity:1;
+  pointer-events:auto;
+}
+
 /* 浮動按鈕 */
 .fab{
   position:fixed;
@@ -49,10 +65,10 @@ button:active{transform:scale(0.94)}
   font-size:22px;
   background:rgba(255,255,255,0.85);
   backdrop-filter:blur(20px);
-  box-shadow:0 6px 20px rgba(0,0,0,0.15);
-  z-index:9999;
+  z-index:1001;
 }
 
+/* 選單 */
 .fabMenu{
   position:fixed;
   right:20px;
@@ -60,7 +76,8 @@ button:active{transform:scale(0.94)}
   display:flex;
   flex-direction:column;
   gap:10px;
-  z-index:9999;
+  z-index:1001;
+
   opacity:0;
   transform:translateY(20px);
   pointer-events:none;
@@ -80,7 +97,6 @@ button:active{transform:scale(0.94)}
   display:flex;
   flex-wrap:wrap;
   gap:8px;
-  box-shadow:0 8px 30px rgba(0,0,0,0.08);
 }
 
 .group button{
@@ -88,7 +104,6 @@ button:active{transform:scale(0.94)}
   border:none;
   background:rgba(255,255,255,0.6);
   border-radius:12px;
-  font-size:14px;
 }
 
 /* 日曆 */
@@ -121,19 +136,6 @@ button:active{transform:scale(0.94)}
   z-index:2;
 }
 
-.header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:12px;
-}
-
-.weekRow{
-  display:grid;
-  grid-template-columns:repeat(7,1fr);
-  padding:0 10px;
-}
-
 .calendar{
   display:grid;
   grid-template-columns:repeat(7,1fr);
@@ -144,28 +146,8 @@ button:active{transform:scale(0.94)}
 .day{
   min-height:72px;
   border-radius:16px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  padding-top:4px;
   background:rgba(255,255,255,var(--alpha,1));
 }
-
-.shift{
-  width:80%;
-  border-radius:10px;
-  margin-top:3px;
-  font-size:11px;
-  text-align:center;
-}
-
-.morning{background:#f7e7a9}
-.noon{background:#f5c6aa}
-.night{background:#B7E1FF}
-.full{background:#d6c2f0}
-.off{background:#bfe3d0}
-
-.sunday{color:red}
 
 .sticker{
   position:absolute;
@@ -173,46 +155,39 @@ button:active{transform:scale(0.94)}
   z-index:9999;
   touch-action:none;
 }
-
-.bottom{display:flex;gap:8px;margin-top:12px}
-.bottom button{
-  flex:1;
-  padding:10px;
-  border:none;
-  border-radius:20px;
-}
-.bottom button:nth-child(1){background:#f7e7a9}
-.bottom button:nth-child(2){background:#f5c6aa}
-.bottom button:nth-child(3){background:#B7E1FF}
-.bottom button:nth-child(4){background:#d6c2f0}
-.bottom button:nth-child(5){background:#bfe3d0}
-
-.bottom button.active{
-  box-shadow: inset 0 2px 6px rgba(0,0,0,0.2);
-}
-
-#preview img{
-  width:100%;
-  margin-top:10px;
-  border-radius:16px;
-}
 </style>
 </head>
 
 <body>
 
+<!-- 🔥 遮罩 -->
+<div id="overlay" onclick="closeMenu()"></div>
+
 <div class="topbar">
   <button onclick="exportImage()">📸</button>
-  <button onclick="addDefaultSticker()">⭐</button>
-  <button onclick="applyDefaultBg()">🌄</button>
+  <button onclick="stickerInput.click()">🖼️</button>
+  <button onclick="bgInput.click()">🎨</button>
   <button onclick="goToday()">📅</button>
 </div>
 
 <div class="fabMenu" id="fabMenu">
 
   <div class="group">
-    <button onclick="applyDefaultBg()">預設背景</button>
-    <button onclick="addDefaultSticker()">預設貼圖</button>
+    <button onclick="clearBg()">清除背景</button>
+    <button onclick="clearStickers()">清除貼圖</button>
+    <button onclick="clearAll()">清空班表</button>
+  </div>
+
+  <div class="group">
+    <button onclick="setOpacity(1)">表格不透明</button>
+    <button onclick="setOpacity(0.6)">60%透明</button>
+    <button onclick="setOpacity(0.9)">90%透明</button>
+  </div>
+
+  <div class="group">
+    <button onclick="setBgFade(0)">背景不淡化</button>
+    <button onclick="setBgFade(0.3)">背景淡化30%</button>
+    <button onclick="setBgFade(0.6)">背景淡化60%</button>
   </div>
 
 </div>
@@ -224,87 +199,68 @@ button:active{transform:scale(0.94)}
 
 <div id="captureArea">
   <div id="bgOverlay"></div>
-
-  <div class="header">
-    <button onclick="changeMonth(-1)">←</button>
-    <h2 id="title"></h2>
-    <button onclick="changeMonth(1)">→</button>
-  </div>
-
-  <div class="weekRow">
-    <div>一</div><div>二</div><div>三</div>
-    <div>四</div><div>五</div><div>六</div><div>日</div>
-  </div>
-
   <div class="calendar" id="calendar"></div>
 </div>
 
-<div class="bottom">
-  <button onclick="setType(event,'morning')">早</button>
-  <button onclick="setType(event,'noon')">午</button>
-  <button onclick="setType(event,'night')">晚</button>
-  <button onclick="setType(event,'full')">全</button>
-  <button onclick="setType(event,'off')">休</button>
-</div>
-
-<div id="preview"></div>
-
 <script>
-let selected="";
-let currentDate=new Date();
-let data={};
+function toggleFab(){
+  fabMenu.classList.toggle("active");
+  overlay.classList.toggle("active");
+}
 
-/* ⭐ 預設背景 */
-function applyDefaultBg(){
+function closeMenu(){
+  fabMenu.classList.remove("active");
+  overlay.classList.remove("active");
+}
+
+function goToday(){}
+
+/* 背景淡化 */
+function setBgFade(v){
+  document.getElementById("bgOverlay").style.background=`rgba(255,255,255,${v})`;
+}
+
+/* 上傳背景 */
+bgInput.onchange=e=>{
+  let file=e.target.files[0];
+  if(!file)return;
   let bg=document.getElementById("bg");
   if(!bg){
     bg=document.createElement("img");
     bg.id="bg";
     captureArea.prepend(bg);
   }
-  bg.src="bg-default.jpg";
-}
+  bg.src=URL.createObjectURL(file);
+};
 
-/* ⭐ 預設貼圖 */
-function addDefaultSticker(){
+/* 貼圖 */
+stickerInput.onchange=e=>{
+  let file=e.target.files[0];
+  if(!file)return;
+
   let img=document.createElement("img");
-  img.src="sticker1.png";
+  img.src=URL.createObjectURL(file);
   img.className="sticker";
-  img.style.left="50%";
-  img.style.top="50%";
+
   captureArea.appendChild(img);
+};
+
+/* 其他 */
+function clearBg(){document.getElementById("bg")?.remove()}
+function clearStickers(){document.querySelectorAll(".sticker").forEach(s=>s.remove())}
+function clearAll(){}
+
+function setOpacity(v){
+  document.documentElement.style.setProperty('--alpha',v);
 }
 
-function toggleFab(){fabMenu.classList.toggle("active")}
-
-function goToday(){currentDate=new Date();render();}
-
-function setType(e,t){
-  selected=t;
+function exportImage(){
+  html2canvas(captureArea).then(canvas=>{
+    let img=new Image();
+    img.src=canvas.toDataURL();
+    document.body.appendChild(img);
+  });
 }
-
-function changeMonth(n){currentDate.setMonth(currentDate.getMonth()+n);render()}
-
-function render(){
-  calendar.innerHTML="";
-  const y=currentDate.getFullYear();
-  const m=currentDate.getMonth();
-  title.innerText=y+"年"+(m+1)+"月";
-
-  let first=(new Date(y,m,1).getDay()+6)%7;
-  let days=new Date(y,m+1,0).getDate();
-
-  for(let i=0;i<first;i++) calendar.appendChild(document.createElement("div"));
-
-  for(let i=1;i<=days;i++){
-    let d=document.createElement("div");
-    d.className="day";
-    d.innerHTML=`<div>${i}</div>`;
-    calendar.appendChild(d);
-  }
-}
-
-render();
 </script>
 
 </body>
