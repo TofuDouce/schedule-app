@@ -37,7 +37,7 @@ button:active{transform:scale(0.94)}
   backdrop-filter:blur(20px);
 }
 
-/* 背景遮罩 */
+/* 遮罩 */
 #overlay{
   position:fixed;
   inset:0;
@@ -175,10 +175,11 @@ button:active{transform:scale(0.94)}
   text-align:center;
 }
 
-.morning{background:#f7e7a9}
-.noon{background:#f5c6aa}
+/* ✅ 顏色已更新 */
+.morning{background:#fef3e0}
+.noon{background:#fdccba}
 .night{background:#B7E1FF}
-.full{background:#d6c2f0}
+.full{background:#ece7f6}
 .off{background:#bfe3d0}
 
 .sunday{color:red}
@@ -197,10 +198,11 @@ button:active{transform:scale(0.94)}
   border:none;
   border-radius:20px;
 }
-.bottom button:nth-child(1){background:#f7e7a9}
-.bottom button:nth-child(2){background:#f5c6aa}
+
+.bottom button:nth-child(1){background:#fef3e0}
+.bottom button:nth-child(2){background:#fdccba}
 .bottom button:nth-child(3){background:#B7E1FF}
-.bottom button:nth-child(4){background:#d6c2f0}
+.bottom button:nth-child(4){background:#ece7f6}
 .bottom button:nth-child(5){background:#bfe3d0}
 
 .bottom button.active{
@@ -217,7 +219,7 @@ button:active{transform:scale(0.94)}
 
 <body>
 
-<div id="overlay" onclick="closeMenu()"></div>
+<div id="overlay" onclick="toggleFab()"></div>
 
 <div class="topbar">
   <button onclick="exportImage()">📸</button>
@@ -303,11 +305,6 @@ let lastKey="";
 function toggleFab(){
   fabMenu.classList.toggle("active");
   overlay.classList.toggle("active");
-}
-
-function closeMenu(){
-  fabMenu.classList.remove("active");
-  overlay.classList.remove("active");
 }
 
 function save(){localStorage.setItem("sheet"+currentSheet,JSON.stringify(data))}
@@ -468,24 +465,19 @@ function exportImage(){
   });
 }
 
-/* 🔥 一鍵匯入版 */
 function exportICS(){
   let text="BEGIN:VCALENDAR\nVERSION:2.0\n";
-
   for(let key in data){
     data[key].forEach(type=>{
       if(type==="off") return;
-
       let [y,m,d]=key.split("-");
       let date=`${y}${String(+m+1).padStart(2,'0')}${String(d).padStart(2,'0')}`;
-
       text+=`BEGIN:VEVENT
 DTSTART;VALUE=DATE:${date}
 SUMMARY:${{morning:"早",noon:"午",night:"晚",full:"全"}[type]}
 END:VEVENT\n`;
     });
   }
-
   text+="END:VCALENDAR";
 
   let blob=new Blob([text], {type:"text/calendar"});
@@ -494,13 +486,9 @@ END:VEVENT\n`;
   let a=document.createElement("a");
   a.href=url;
   a.download="schedule.ics";
-  document.body.appendChild(a);
   a.click();
-  a.remove();
 
-  setTimeout(()=>{
-    window.open(url);
-  },300);
+  setTimeout(()=>window.open(url),300);
 }
 
 load();
