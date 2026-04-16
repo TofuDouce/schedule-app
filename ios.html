@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<!-- ⭐ App 圖示（關鍵） -->
+<link rel="apple-touch-icon" sizes="180x180" href="icon.png">
+
 <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
 <style>
@@ -279,16 +282,12 @@ let alpha=1;
 let currentSheet=1;
 let data={};
 
-let lastClickTime=0;
-let lastKey="";
-
 function toggleFab(){fabMenu.classList.toggle("active")}
 
 function save(){localStorage.setItem("sheet"+currentSheet,JSON.stringify(data))}
 function load(){let s=localStorage.getItem("sheet"+currentSheet);data=s?JSON.parse(s):{}}
 
 function switchSheet(n){currentSheet=n;load();render()}
-
 function goToday(){currentDate=new Date();render();}
 
 function setType(e,t){
@@ -338,39 +337,29 @@ function render(){
 
     d.onclick=()=>{
       let idx=(first+i-1)%7;
-      if(idx===6) return; // ⭐ 星期日不可排班
+      if(idx===6) return;
 
-      let now=Date.now();
+      if(!selected)return;
 
-      if(lastKey===key && now-lastClickTime<300){
-        data[key]=[];
-      }else{
-        if(!selected)return;
+      let arr=data[key]||[];
 
-        let arr=data[key]||[];
+      if(selected==="off"){
+        arr=["off"];
+      }
+      else if(selected==="full"){
+        if(!arr.includes("off")) arr=["full"];
+      }
+      else{
+        arr=arr.filter(x=>x!=="full" && x!=="off");
 
-        if(selected==="off"){
-          arr=["off"];
+        if(arr.includes(selected)){
+          arr=arr.filter(x=>x!==selected);
+        }else{
+          arr.push(selected);
         }
-        else if(selected==="full"){
-          if(!arr.includes("off")) arr=["full"];
-        }
-        else{
-          arr=arr.filter(x=>x!=="full" && x!=="off");
-
-          if(arr.includes(selected)){
-            arr=arr.filter(x=>x!==selected);
-          }else{
-            arr.push(selected);
-          }
-        }
-
-        data[key]=arr;
       }
 
-      lastClickTime=now;
-      lastKey=key;
-
+      data[key]=arr;
       save();
       render();
     };
