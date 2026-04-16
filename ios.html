@@ -23,7 +23,6 @@ button{
 }
 button:active{transform:scale(0.94)}
 
-/* 工具列 */
 .topbar{
   display:grid;
   grid-template-columns:repeat(4,1fr);
@@ -54,7 +53,6 @@ button:active{transform:scale(0.94)}
   z-index:9999;
 }
 
-/* 浮動選單 */
 .fabMenu{
   position:fixed;
   right:20px;
@@ -63,7 +61,6 @@ button:active{transform:scale(0.94)}
   flex-direction:column;
   gap:10px;
   z-index:9999;
-
   opacity:0;
   transform:translateY(20px);
   pointer-events:none;
@@ -75,7 +72,6 @@ button:active{transform:scale(0.94)}
   pointer-events:auto;
 }
 
-/* 分組 */
 .group{
   background:rgba(255,255,255,0.8);
   backdrop-filter:blur(20px);
@@ -85,7 +81,6 @@ button:active{transform:scale(0.94)}
   flex-wrap:wrap;
   gap:8px;
 }
-
 .group button{
   padding:10px 14px;
   border:none;
@@ -177,7 +172,6 @@ button:active{transform:scale(0.94)}
   touch-action:none;
 }
 
-/* 底部 */
 .bottom{display:flex;gap:8px;margin-top:12px}
 .bottom button{
   flex:1;
@@ -339,13 +333,27 @@ function render(){
 
     d.onclick=()=>{
       if(!selected)return;
+
       let arr=data[key]||[];
-      if(selected==="full") arr=["full"];
-      else{
-        arr=arr.filter(x=>x!=="full");
-        if(arr.includes(selected)) arr=arr.filter(x=>x!==selected);
-        else arr.push(selected);
+
+      if(selected==="off"){
+        arr=["off"];
       }
+      else if(selected==="full"){
+        if(!arr.includes("off")){
+          arr=["full"];
+        }
+      }
+      else{
+        arr=arr.filter(x=>x!=="full" && x!=="off");
+
+        if(arr.includes(selected)){
+          arr=arr.filter(x=>x!==selected);
+        }else{
+          arr.push(selected);
+        }
+      }
+
       data[key]=arr;
       save();
       render();
