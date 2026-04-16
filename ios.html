@@ -8,23 +8,23 @@
 
 <style>
 body{
-  margin:0;
-  padding:10px;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  margin:0;padding:10px;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",sans-serif;
+  letter-spacing:0.3px;
   background:#f2f2f7;
   overscroll-behavior:none;
 }
 input{display:none}
 
-/* 🍎 iOS 按鈕 */
 button{
   transition:all 0.15s ease;
+  -webkit-tap-highlight-color:transparent;
 }
 button:active{
   transform:scale(0.94);
 }
 
-/* 🍎 工具列（毛玻璃） */
+/* 工具列 */
 .topbar{
   display:grid;
   grid-template-columns:repeat(4,1fr);
@@ -35,49 +35,57 @@ button:active{
   border:none;
   border-radius:16px;
   font-size:20px;
-
   background:rgba(255,255,255,0.6);
   backdrop-filter:blur(20px);
-  box-shadow:0 4px 12px rgba(0,0,0,0.08);
 }
 
-/* 🍎 選單（毛玻璃） */
-#menu{
-  display:none;
-  margin-top:8px;
-  padding:10px;
-  border-radius:16px;
-
-  background:rgba(255,255,255,0.7);
-  backdrop-filter:blur(20px);
-
-  flex-wrap:wrap;
-  gap:6px;
-}
-#menu.active{display:flex}
-
-#menu button{
-  padding:10px 16px;
+/* 浮動工具球 */
+.fab{
+  position:fixed;
+  right:20px;
+  bottom:20px;
+  width:56px;
+  height:56px;
+  border-radius:50%;
   border:none;
-  border-radius:12px;
+  font-size:22px;
+  background:rgba(255,255,255,0.8);
+  backdrop-filter:blur(20px);
+  box-shadow:0 6px 20px rgba(0,0,0,0.15);
+  z-index:9999;
+}
+
+/* 浮動選單 */
+.fabMenu{
+  position:fixed;
+  right:20px;
+  bottom:90px;
+  display:none;
+  flex-direction:column;
+  gap:8px;
+  z-index:9999;
+}
+.fabMenu.active{display:flex}
+
+.fabMenu button{
+  border:none;
+  border-radius:14px;
+  padding:10px 14px;
   background:rgba(255,255,255,0.9);
-  color:#000;
-  font-size:15px;
-  font-weight:500;
+  backdrop-filter:blur(20px);
+  font-size:14px;
 }
 
 /* 班表切換 */
 .sheetBtn{background:#e5e5ea !important}
 .sheetBtn.active{background:#d1d1d6 !important}
 
-/* 🍎 截圖區 */
+/* 截圖區 */
 #captureArea{
   position:relative;
   border-radius:24px;
   overflow:hidden;
   margin-top:10px;
-
-  box-shadow:0 10px 30px rgba(0,0,0,0.08);
 }
 
 /* 背景 */
@@ -136,9 +144,7 @@ button:active{
   flex-direction:column;
   align-items:center;
   padding-top:4px;
-
   background:rgba(255,255,255,var(--alpha,1));
-  backdrop-filter:blur(10px);
 }
 
 /* 班別 */
@@ -166,19 +172,14 @@ button:active{
   touch-action:none;
 }
 
-/* 🍎 底部班別（升級） */
-.bottom{
-  display:flex;
-  gap:8px;
-  margin-top:12px;
-}
+/* 底部 */
+.bottom{display:flex;gap:8px;margin-top:12px}
 .bottom button{
   flex:1;
   padding:10px;
   border:none;
   border-radius:20px;
   font-weight:500;
-  box-shadow:0 2px 8px rgba(0,0,0,0.05);
 }
 
 .bottom button:nth-child(1){background:#f7e7a9}
@@ -187,8 +188,10 @@ button:active{
 .bottom button:nth-child(4){background:#d6c2f0}
 .bottom button:nth-child(5){background:#bfe3d0}
 
+/* ⭐ iOS選中效果（重點） */
 .bottom button.active{
-  outline:2px solid #000;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.2);
+  filter: brightness(0.95);
 }
 
 #preview img{
@@ -205,14 +208,14 @@ button:active{
   <button onclick="exportImage()">📸</button>
   <button onclick="stickerInput.click()">🖼️</button>
   <button onclick="bgInput.click()">🎨</button>
-  <button onclick="toggleMenu()">⚙️</button>
+  <button onclick="toggleFab()">⚙️</button>
 </div>
 
-<div id="menu">
-
-  <button class="sheetBtn" onclick="switchSheet(1)">班表❶</button>
-  <button class="sheetBtn" onclick="switchSheet(2)">班表❷</button>
-  <button class="sheetBtn" onclick="switchSheet(3)">班表❸</button>
+<!-- 浮動選單 -->
+<div class="fabMenu" id="fabMenu">
+  <button onclick="switchSheet(1)">班表❶</button>
+  <button onclick="switchSheet(2)">班表❷</button>
+  <button onclick="switchSheet(3)">班表❸</button>
 
   <button onclick="clearBg()">清除背景</button>
   <button onclick="clearStickers()">清除貼圖</button>
@@ -223,14 +226,14 @@ button:active{
 
   <button onclick="clearAll()">清空班表</button>
   <button onclick="exportICS()">輸出行事曆</button>
-
 </div>
+
+<button class="fab" onclick="toggleFab()">⚙️</button>
 
 <input id="stickerInput" type="file">
 <input id="bgInput" type="file">
 
 <div id="captureArea">
-
   <div class="header">
     <button onclick="changeMonth(-1)">←</button>
     <h2 id="title"></h2>
@@ -243,7 +246,6 @@ button:active{
   </div>
 
   <div class="calendar" id="calendar"></div>
-
 </div>
 
 <div class="bottom">
@@ -266,13 +268,9 @@ let data={};
 function save(){localStorage.setItem("sheet"+currentSheet,JSON.stringify(data))}
 function load(){let s=localStorage.getItem("sheet"+currentSheet);data=s?JSON.parse(s):{}}
 
-function switchSheet(n){
-  currentSheet=n;
-  load();
-  document.querySelectorAll(".sheetBtn").forEach(b=>b.classList.remove("active"));
-  event.target.classList.add("active");
-  render();
-}
+function switchSheet(n){currentSheet=n;load();render()}
+
+function toggleFab(){fabMenu.classList.toggle("active")}
 
 function setType(e,t){
   selected=t;
@@ -280,10 +278,7 @@ function setType(e,t){
   e.target.classList.add("active");
 }
 
-function changeMonth(n){
-  currentDate.setMonth(currentDate.getMonth()+n);
-  render();
-}
+function changeMonth(n){currentDate.setMonth(currentDate.getMonth()+n);render()}
 
 function render(){
   calendar.innerHTML="";
@@ -299,7 +294,6 @@ function render(){
   for(let i=1;i<=days;i++){
     let d=document.createElement("div");
     d.className="day";
-
     let idx=(first+i-1)%7;
 
     if(idx==5) d.style.background=`rgba(214,238,236,${alpha})`;
@@ -321,14 +315,12 @@ function render(){
     d.onclick=()=>{
       if(!selected)return;
       let arr=data[key]||[];
-
       if(selected==="full") arr=["full"];
       else{
         arr=arr.filter(x=>x!=="full");
         if(arr.includes(selected)) arr=arr.filter(x=>x!==selected);
         else arr.push(selected);
       }
-
       data[key]=arr;
       save();
       render();
@@ -385,7 +377,7 @@ stickerInput.onchange=e=>{
   captureArea.appendChild(img);
 };
 
-function toggleMenu(){menu.classList.toggle("active")}
+function toggleMenu(){}
 function clearAll(){data={};save();render()}
 
 function setOpacity(v){
