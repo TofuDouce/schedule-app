@@ -6,95 +6,54 @@
 <title>LINE 大頭照產生器</title>
 
 <style>
-body{
-  margin:0;
-  font-family:-apple-system,BlinkMacSystemFont;
-  background:#f3f4f6;
-}
+body{margin:0;font-family:-apple-system;background:#f3f4f6;}
+.header{background:#06C755;color:#fff;padding:20px;text-align:center;font-weight:bold;}
+.container{max-width:520px;margin:auto;padding:15px;}
+.card{background:#fff;border-radius:16px;padding:15px;margin-bottom:15px;}
+canvas{width:100%;border-radius:20px;background:#eee;touch-action:none;}
 
-.header{
-  background:#06C755;
-  color:#fff;
-  padding:20px;
-  text-align:center;
-  font-size:20px;
-  font-weight:bold;
-}
-
-.container{
-  max-width:520px;
-  margin:auto;
-  padding:15px;
-}
-
-.card{
-  background:#fff;
-  border-radius:16px;
-  padding:15px;
-  margin-bottom:15px;
-}
-
-canvas{
-  width:100%;
-  border-radius:20px;
-  background:#eee;
-}
-
-.tabs{
-  display:flex;
-  background:#eee;
-  border-radius:12px;
-  overflow:hidden;
-  margin-bottom:10px;
-}
-
-.tabs button{
-  flex:1;
-  padding:10px;
-  border:none;
-  background:transparent;
-  font-weight:bold;
-}
-
-.active{
-  background:#fff;
-  color:#06C755;
-}
-
-.row{
-  display:flex;
-  gap:10px;
-}
-
+.row{display:flex;gap:10px;}
 .row button{flex:1;}
 
-button{
-  padding:12px;
-  border-radius:10px;
-  border:none;
-  font-weight:bold;
-}
-
+button{padding:10px;border:none;border-radius:10px;font-weight:bold;}
 .green{background:#06C755;color:#fff;}
 .gray{background:#ddd;}
 
-.colors{
-  display:flex;
-  gap:8px;
-  margin-top:10px;
-}
+.tabs{display:flex;background:#eee;border-radius:10px;margin-bottom:10px;}
+.tabs button{flex:1;background:none;}
+.active{background:#fff;color:#06C755;}
 
-.color{
-  width:32px;height:32px;border-radius:50%;
-  cursor:pointer;
-}
-
-input{
+input,select{
   width:100%;
   padding:10px;
   margin-top:6px;
   border-radius:10px;
   border:1px solid #ddd;
+}
+
+.colors{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.color{
+  width:28px;height:28px;border-radius:50%;
+  cursor:pointer;
+}
+
+/* emoji 面板 */
+.emoji-panel{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:10px;
+}
+
+.emoji{
+  font-size:22px;
+  cursor:pointer;
+  padding:6px;
+  border-radius:8px;
+}
+
+.emoji:hover{
+  background:#eee;
 }
 </style>
 </head>
@@ -107,8 +66,8 @@ input{
 
 <div class="card">
 <div class="tabs">
-<button id="squareBtn" class="active" onclick="setShape('square')">方形原圖</button>
-<button id="circleBtn" onclick="setShape('circle')">圓形顯示</button>
+<button id="sq" class="active" onclick="setShape('square')">方形</button>
+<button id="ci" onclick="setShape('circle')">圓形</button>
 </div>
 
 <canvas id="canvas" width="512" height="512"></canvas>
@@ -116,30 +75,28 @@ input{
 
 <div class="card">
 
-尺寸比例
-<div class="row">
-<button onclick="setSize(480)">480</button>
-<button onclick="setSize(640)">640</button>
-<button class="green" onclick="setSize(1080)">1080</button>
-</div>
+<input type="file" id="upload">
 
-<br>
+縮放
+<input type="range" id="scale" min="0.5" max="3" step="0.01" value="1">
 
-底色
+背景色
 <input type="color" id="bg" value="#06C755">
 
-<div class="colors">
-<div class="color" style="background:#06C755" onclick="pick('#06C755')"></div>
-<div class="color" style="background:#FF6B6B" onclick="pick('#FF6B6B')"></div>
-<div class="color" style="background:#FFD93D" onclick="pick('#FFD93D')"></div>
-<div class="color" style="background:#4D96FF" onclick="pick('#4D96FF')"></div>
-<div class="color" style="background:#222" onclick="pick('#222')"></div>
-</div>
-
-<br>
+<div class="colors" id="colorPalette"></div>
 
 文字 / emoji
-<input id="text" placeholder="輸入文字或 emoji">
+<input id="text">
+
+<!-- emoji 面板 -->
+<div class="emoji-panel" id="emojiPanel"></div>
+
+字體
+<select id="font">
+<option value="sans-serif">預設</option>
+<option value="Arial Black">粗體</option>
+<option value="Comic Sans MS">可愛</option>
+</select>
 
 文字顏色
 <input type="color" id="textColor" value="#ffffff">
@@ -148,7 +105,7 @@ input{
 
 <div class="card row">
 <button class="gray" onclick="resetAll()">重設</button>
-<button class="green" onclick="download()">下載 PNG</button>
+<button class="green" onclick="download()">下載</button>
 </div>
 
 </div>
@@ -157,86 +114,141 @@ input{
 const canvas=document.getElementById("canvas");
 const ctx=canvas.getContext("2d");
 
-let size=512;
+let img=new Image();
+let loaded=false;
+let offsetX=0,offsetY=0;
+let isDragging=false;
 let shape="square";
 
+// 🎨 莫蘭迪色系（10色）
+const morandiColors=[
+"#D6A6A6","#D9B08C","#E6D3A3","#A8C3A0",
+"#9EC1CF","#8EA6C9","#B5A6D6","#D6A6C1",
+"#C4C4C4","#6E6E6E"
+];
+
+// 😊 emoji 清單
+const emojis=["😀","😎","🥺","😂","🔥","❤️","✨","🎉","🐶","🍀","🌈","🍩"];
+
+function init(){
+  // 顏色
+  const palette=document.getElementById("colorPalette");
+  morandiColors.forEach(c=>{
+    const div=document.createElement("div");
+    div.className="color";
+    div.style.background=c;
+    div.onclick=()=>{document.getElementById("bg").value=c;draw();}
+    palette.appendChild(div);
+  });
+
+  // emoji
+  const panel=document.getElementById("emojiPanel");
+  emojis.forEach(e=>{
+    const span=document.createElement("span");
+    span.className="emoji";
+    span.innerText=e;
+    span.onclick=()=>{
+      document.getElementById("text").value+=e;
+      draw();
+    };
+    panel.appendChild(span);
+  });
+}
+
 function setShape(s){
-  shape=s;
-  document.getElementById("squareBtn").classList.remove("active");
-  document.getElementById("circleBtn").classList.remove("active");
-
-  if(s==="square") document.getElementById("squareBtn").classList.add("active");
-  else document.getElementById("circleBtn").classList.add("active");
-
-  draw();
+shape=s;
+document.getElementById("sq").classList.toggle("active",s==="square");
+document.getElementById("ci").classList.toggle("active",s==="circle");
+draw();
 }
 
-function setSize(s){
-  size=s;
-  canvas.width=s;
-  canvas.height=s;
-  draw();
-}
+document.getElementById("upload").onchange=e=>{
+const file=e.target.files[0];
+const reader=new FileReader();
+reader.onload=ev=>{
+img.onload=()=>{loaded=true;draw();}
+img.src=ev.target.result;
+};
+reader.readAsDataURL(file);
+};
 
-function pick(c){
-  document.getElementById("bg").value=c;
-  draw();
-}
-
-["bg","text","textColor"].forEach(id=>{
-  document.getElementById(id).addEventListener("input",draw);
+["bg","text","scale","textColor","font"].forEach(id=>{
+document.getElementById(id).addEventListener("input",draw);
 });
 
+// 拖曳
+canvas.onmousedown=()=>isDragging=true;
+canvas.onmouseup=()=>isDragging=false;
+canvas.onmousemove=e=>{
+if(!isDragging)return;
+offsetX+=e.movementX;
+offsetY+=e.movementY;
+draw();
+};
+
 function draw(){
-  const bg=document.getElementById("bg").value;
-  const text=document.getElementById("text").value;
-  const color=document.getElementById("textColor").value;
+const bg=document.getElementById("bg").value;
+const text=document.getElementById("text").value;
+const scale=parseFloat(document.getElementById("scale").value);
+const color=document.getElementById("textColor").value;
+const font=document.getElementById("font").value;
 
-  ctx.clearRect(0,0,size,size);
+ctx.clearRect(0,0,512,512);
 
-  if(shape==="circle"){
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(size/2,size/2,size/2,0,Math.PI*2);
-    ctx.clip();
-  }
+if(shape==="circle"){
+ctx.save();
+ctx.beginPath();
+ctx.arc(256,256,256,0,Math.PI*2);
+ctx.clip();
+}
 
-  ctx.fillStyle=bg;
-  ctx.fillRect(0,0,size,size);
+ctx.fillStyle=bg;
+ctx.fillRect(0,0,512,512);
 
-  if(text){
-    let fontSize=size/3;
-    ctx.fillStyle=color;
-    ctx.font=`bold ${fontSize}px sans-serif`;
+if(loaded){
+const size=Math.min(img.width,img.height);
+ctx.drawImage(
+img,
+0,0,size,size,
+offsetX+256-256*scale,
+offsetY+256-256*scale,
+512*scale,
+512*scale
+);
+}
 
-    while(ctx.measureText(text).width>size*0.8){
-      fontSize-=5;
-      ctx.font=`bold ${fontSize}px sans-serif`;
-    }
+if(text){
+let fontSize=120;
+ctx.fillStyle=color;
+ctx.font=`bold ${fontSize}px ${font}`;
 
-    ctx.textAlign="center";
-    ctx.textBaseline="middle";
-    ctx.fillText(text,size/2,size/2);
-  }
+while(ctx.measureText(text).width>400){
+fontSize-=5;
+ctx.font=`bold ${fontSize}px ${font}`;
+}
 
-  if(shape==="circle") ctx.restore();
+ctx.textAlign="center";
+ctx.textBaseline="middle";
+ctx.fillText(text,256,256);
+}
+
+if(shape==="circle") ctx.restore();
 }
 
 function download(){
-  const link=document.createElement("a");
-  link.download="line-avatar.png";
-  link.href=canvas.toDataURL("image/png");
-  link.click();
+const a=document.createElement("a");
+a.href=canvas.toDataURL("image/png");
+a.download="avatar.png";
+a.click();
 }
 
 function resetAll(){
-  document.getElementById("text").value="";
-  document.getElementById("bg").value="#06C755";
-  document.getElementById("textColor").value="#ffffff";
-  shape="square";
-  setShape("square");
+offsetX=0;offsetY=0;
+document.getElementById("text").value="";
+draw();
 }
 
+init();
 draw();
 </script>
 
