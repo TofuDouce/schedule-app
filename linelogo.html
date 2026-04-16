@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>LINE 大頭照產生器</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #f5f6fa;
+    text-align: center;
+    margin: 0;
+    padding: 20px;
+  }
+
+  .card {
+    background: white;
+    max-width: 420px;
+    margin: auto;
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  }
+
+  h2 {
+    margin-bottom: 10px;
+  }
+
+  input, button {
+    margin: 8px 0;
+    padding: 10px;
+    width: 100%;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+  }
+
+  button {
+    background: #06c755;
+    color: white;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background: #05b44c;
+  }
+
+  canvas {
+    margin-top: 15px;
+    width: 100%;
+    border-radius: 12px;
+    background: #eee;
+  }
+
+  .row {
+    display: flex;
+    gap: 10px;
+  }
+
+  .row input {
+    flex: 1;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h2>LINE 大頭照產生器</h2>
+
+  <input type="file" id="upload">
+
+  <div class="row">
+    <input type="color" id="bgColor" value="#ffffff">
+    <input type="text" id="text" placeholder="輸入文字或 emoji">
+  </div>
+
+  <button onclick="generate()">產生圖片</button>
+  <button onclick="download()">下載 PNG</button>
+
+  <canvas id="canvas" width="512" height="512"></canvas>
+</div>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+let img = new Image();
+let loaded = false;
+
+document.getElementById("upload").addEventListener("change", e => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    img.onload = () => {
+      loaded = true;
+      generate();
+    };
+    img.src = evt.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+function generate() {
+  const bgColor = document.getElementById("bgColor").value;
+  const text = document.getElementById("text").value;
+
+  // 背景
+  ctx.fillStyle = bgColor;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  if (loaded) {
+    // 裁切成正方形
+    const size = Math.min(img.width, img.height);
+    const sx = (img.width - size) / 2;
+    const sy = (img.height - size) / 2;
+
+    ctx.drawImage(img, sx, sy, size, size, 0, 0, 512, 512);
+  }
+
+  // 文字 / emoji
+  if (text) {
+    ctx.font = "bold 42px sans-serif";
+    ctx.fillStyle = "#000";
+    ctx.textAlign = "center";
+    ctx.fillText(text, 256, 480);
+  }
+}
+
+function download() {
+  const link = document.createElement("a");
+  link.download = "line-avatar.png";
+  link.href = canvas.toDataURL("image/png");
+  link.click();
+}
+</script>
+
+</body>
+</html>
