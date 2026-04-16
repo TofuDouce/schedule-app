@@ -203,39 +203,16 @@ button:active{transform:scale(0.94)}
 
 <div class="topbar">
   <button onclick="exportImage()">📸</button>
-  <button onclick="stickerInput.click()">🖼️</button>
-  <button onclick="bgInput.click()">🎨</button>
+  <button onclick="addDefaultSticker()">⭐</button>
+  <button onclick="applyDefaultBg()">🌄</button>
   <button onclick="goToday()">📅</button>
 </div>
 
 <div class="fabMenu" id="fabMenu">
 
   <div class="group">
-    <button onclick="switchSheet(1)">班表❶</button>
-    <button onclick="switchSheet(2)">班表❷</button>
-    <button onclick="switchSheet(3)">班表❸</button>
-  </div>
-
-  <div class="group">
-    <button onclick="clearBg()">清除背景</button>
-    <button onclick="clearStickers()">清除貼圖</button>
-    <button onclick="clearAll()">清空班表</button>
-  </div>
-
-  <div class="group">
-    <button onclick="setOpacity(1)">表格不透明</button>
-    <button onclick="setOpacity(0.6)">60%透明</button>
-    <button onclick="setOpacity(0.9)">90%透明</button>
-  </div>
-
-  <div class="group">
-    <button onclick="setBgFade(0)">背景不淡化</button>
-    <button onclick="setBgFade(0.3)">背景淡化30%</button>
-    <button onclick="setBgFade(0.6)">背景淡化60%</button>
-  </div>
-
-  <div class="group">
-    <button onclick="exportICS()">輸出行事曆</button>
+    <button onclick="applyDefaultBg()">預設背景</button>
+    <button onclick="addDefaultSticker()">預設貼圖</button>
   </div>
 
 </div>
@@ -275,33 +252,38 @@ button:active{transform:scale(0.94)}
 <script>
 let selected="";
 let currentDate=new Date();
-let alpha=1;
-let currentSheet=1;
 let data={};
 
-let lastClickTime=0;
-let lastKey="";
+/* ⭐ 預設背景 */
+function applyDefaultBg(){
+  let bg=document.getElementById("bg");
+  if(!bg){
+    bg=document.createElement("img");
+    bg.id="bg";
+    captureArea.prepend(bg);
+  }
+  bg.src="bg-default.jpg";
+}
+
+/* ⭐ 預設貼圖 */
+function addDefaultSticker(){
+  let img=document.createElement("img");
+  img.src="sticker1.png";
+  img.className="sticker";
+  img.style.left="50%";
+  img.style.top="50%";
+  captureArea.appendChild(img);
+}
 
 function toggleFab(){fabMenu.classList.toggle("active")}
-
-function save(){localStorage.setItem("sheet"+currentSheet,JSON.stringify(data))}
-function load(){let s=localStorage.getItem("sheet"+currentSheet);data=s?JSON.parse(s):{}}
-
-function switchSheet(n){currentSheet=n;load();render()}
 
 function goToday(){currentDate=new Date();render();}
 
 function setType(e,t){
   selected=t;
-  document.querySelectorAll(".bottom button").forEach(b=>b.classList.remove("active"));
-  e.target.classList.add("active");
 }
 
 function changeMonth(n){currentDate.setMonth(currentDate.getMonth()+n);render()}
-
-function setBgFade(v){
-  document.getElementById("bgOverlay").style.background=`rgba(255,255,255,${v})`;
-}
 
 function render(){
   calendar.innerHTML="";
@@ -317,155 +299,11 @@ function render(){
   for(let i=1;i<=days;i++){
     let d=document.createElement("div");
     d.className="day";
-
-    let idx=(first+i-1)%7;
-
-    if(idx==5) d.style.background=`rgba(214,238,236,${alpha})`;
-    if(idx==6){
-      d.style.background=`rgba(249,221,229,${alpha})`;
-      d.classList.add("sunday");
-    }
-
     d.innerHTML=`<div>${i}</div>`;
-    let key=y+"-"+m+"-"+i;
-
-    (data[key]||[]).forEach(t=>{
-      let s=document.createElement("div");
-      s.className="shift "+t;
-      s.innerText={morning:"早",noon:"午",night:"晚",full:"全",off:"休"}[t];
-      d.appendChild(s);
-    });
-
-    d.onclick=()=>{
-      let idx=(first+i-1)%7;
-      if(idx===6) return; // ⭐ 星期日不可排班
-
-      let now=Date.now();
-
-      if(lastKey===key && now-lastClickTime<300){
-        data[key]=[];
-      }else{
-        if(!selected)return;
-
-        let arr=data[key]||[];
-
-        if(selected==="off"){
-          arr=["off"];
-        }
-        else if(selected==="full"){
-          if(!arr.includes("off")) arr=["full"];
-        }
-        else{
-          arr=arr.filter(x=>x!=="full" && x!=="off");
-
-          if(arr.includes(selected)){
-            arr=arr.filter(x=>x!==selected);
-          }else{
-            arr.push(selected);
-          }
-        }
-
-        data[key]=arr;
-      }
-
-      lastClickTime=now;
-      lastKey=key;
-
-      save();
-      render();
-    };
-
     calendar.appendChild(d);
   }
 }
 
-bgInput.onchange=e=>{
-  let file=e.target.files[0];
-  if(!file)return;
-  let bg=document.getElementById("bg");
-  if(!bg){
-    bg=document.createElement("img");
-    bg.id="bg";
-    captureArea.prepend(bg);
-  }
-  bg.src=URL.createObjectURL(file);
-};
-
-function clearBg(){document.getElementById("bg")?.remove()}
-function clearStickers(){document.querySelectorAll(".sticker").forEach(s=>s.remove())}
-
-stickerInput.onchange=e=>{
-  let file=e.target.files[0];
-  if(!file)return;
-
-  let img=document.createElement("img");
-  img.src=URL.createObjectURL(file);
-  img.className="sticker";
-
-  img.style.left="50%";
-  img.style.top="50%";
-
-  let drag=false,ox,oy;
-
-  img.ontouchstart=e=>{
-    e.preventDefault();
-    drag=true;
-    ox=e.touches[0].clientX-img.offsetLeft;
-    oy=e.touches[0].clientY-img.offsetTop;
-  };
-
-  img.ontouchmove=e=>{
-    e.preventDefault();
-    if(!drag)return;
-    img.style.left=(e.touches[0].clientX-ox)+"px";
-    img.style.top=(e.touches[0].clientY-oy)+"px";
-  };
-
-  img.ontouchend=()=>drag=false;
-
-  captureArea.appendChild(img);
-};
-
-function clearAll(){data={};save();render()}
-
-function setOpacity(v){
-  alpha=v;
-  document.documentElement.style.setProperty('--alpha',v);
-  render();
-}
-
-function exportImage(){
-  html2canvas(captureArea).then(canvas=>{
-    let img=new Image();
-    img.src=canvas.toDataURL();
-    preview.innerHTML="";
-    preview.appendChild(img);
-  });
-}
-
-function exportICS(){
-  let text="BEGIN:VCALENDAR\nVERSION:2.0\n";
-  for(let key in data){
-    data[key].forEach(type=>{
-      if(type==="off") return;
-      let [y,m,d]=key.split("-");
-      let date=`${y}${String(+m+1).padStart(2,'0')}${String(d).padStart(2,'0')}`;
-      text+=`BEGIN:VEVENT
-DTSTART;VALUE=DATE:${date}
-SUMMARY:${{morning:"早",noon:"午",night:"晚",full:"全"}[type]}
-END:VEVENT\n`;
-    });
-  }
-  text+="END:VCALENDAR";
-
-  let blob=new Blob([text]);
-  let a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="schedule.ics";
-  a.click();
-}
-
-load();
 render();
 </script>
 
