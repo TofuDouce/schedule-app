@@ -14,6 +14,7 @@ body{
   margin:0;padding:10px;
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",sans-serif;
   background:#f2f2f7;
+  overscroll-behavior:none;
 }
 input{display:none}
 
@@ -22,7 +23,7 @@ button{
   font-weight:500;
   -webkit-tap-highlight-color:transparent;
 }
-button:active{transform:scale(0.94)}
+button:active{transform:scale(0.95)}
 
 .topbar{
   display:grid;
@@ -38,25 +39,18 @@ button:active{transform:scale(0.94)}
   backdrop-filter:blur(20px);
 }
 
-.fab{
+/* 素材面板 */
+#assetPanel{
   position:fixed;
-  right:20px;
-  bottom:80px;
-  width:56px;
-  height:56px;
-  border-radius:50%;
-  border:none;
-  background:rgba(255,255,255,0.85);
-}
-
-.group{
-  background:rgba(255,255,255,0.55);
-  backdrop-filter:blur(25px);
-  border-radius:18px;
+  bottom:0;
+  left:0;
+  width:100%;
+  background:rgba(255,255,255,0.9);
+  backdrop-filter:blur(20px);
+  border-radius:20px 20px 0 0;
   padding:10px;
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
+  display:none;
+  z-index:9999;
 }
 
 /* 日曆 */
@@ -75,43 +69,45 @@ button:active{transform:scale(0.94)}
   z-index:0;
 }
 
-.header,.weekRow,.calendar{
+.header,.calendar{
   position:relative;
   z-index:2;
+}
+
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:10px;
 }
 
 .calendar{
   display:grid;
   grid-template-columns:repeat(7,1fr);
   gap:8px;
+  padding:10px;
 }
 
 .day{
   min-height:70px;
-  border-radius:16px;
+  border-radius:14px;
   background:white;
   text-align:center;
   padding-top:4px;
 }
 
+/* 貼圖 */
 .sticker{
   position:absolute;
   width:80px;
   z-index:999;
+  touch-action:none;
 }
 
-/* 素材面板 */
-#assetPanel{
-  position:fixed;
-  bottom:0;
-  left:0;
+#preview img{
   width:100%;
-  background:rgba(255,255,255,0.9);
-  backdrop-filter:blur(20px);
-  border-radius:20px 20px 0 0;
-  padding:10px;
-  display:none;
-  z-index:9999;
+  margin-top:10px;
+  border-radius:12px;
 }
 </style>
 </head>
@@ -130,6 +126,7 @@ button:active{transform:scale(0.94)}
 <input id="bgInput" type="file">
 
 <div id="captureArea">
+
   <div class="header">
     <button onclick="changeMonth(-1)">←</button>
     <h2 id="title"></h2>
@@ -137,23 +134,26 @@ button:active{transform:scale(0.94)}
   </div>
 
   <div class="calendar" id="calendar"></div>
+
 </div>
+
+<div id="preview"></div>
 
 <!-- 素材面板 -->
 <div id="assetPanel">
 
-<div>🎨 背景</div>
+<div style="font-weight:bold;margin-bottom:6px;">🎨 背景</div>
 <div style="display:flex;gap:8px;overflow:auto;">
-<img src="https://picsum.photos/300/500?1" onclick="setPresetBg(this.src)" width="80">
-<img src="https://picsum.photos/300/500?2" onclick="setPresetBg(this.src)" width="80">
-<img src="https://picsum.photos/300/500?3" onclick="setPresetBg(this.src)" width="80">
+  <img src="https://picsum.photos/300/500?1" onclick="setPresetBg(this.src)" width="80">
+  <img src="https://picsum.photos/300/500?2" onclick="setPresetBg(this.src)" width="80">
+  <img src="https://picsum.photos/300/500?3" onclick="setPresetBg(this.src)" width="80">
 </div>
 
-<div>✨ 貼圖</div>
+<div style="font-weight:bold;margin:10px 0 6px;">✨ 貼圖</div>
 <div style="display:flex;gap:8px;overflow:auto;">
-<img src="https://cdn-icons-png.flaticon.com/512/742/742751.png" onclick="addSticker(this.src)" width="60">
-<img src="https://cdn-icons-png.flaticon.com/512/616/616408.png" onclick="addSticker(this.src)" width="60">
-<img src="https://cdn-icons-png.flaticon.com/512/833/833472.png" onclick="addSticker(this.src)" width="60">
+  <img src="https://cdn-icons-png.flaticon.com/512/742/742751.png" onclick="addSticker(this.src)" width="60">
+  <img src="https://cdn-icons-png.flaticon.com/512/616/616408.png" onclick="addSticker(this.src)" width="60">
+  <img src="https://cdn-icons-png.flaticon.com/512/833/833472.png" onclick="addSticker(this.src)" width="60">
 </div>
 
 </div>
@@ -161,18 +161,22 @@ button:active{transform:scale(0.94)}
 <script>
 let currentDate=new Date();
 
+/* 月曆 */
 function render(){
-  calendar.innerHTML="";
+  const cal=document.getElementById("calendar");
+  cal.innerHTML="";
+
   const y=currentDate.getFullYear();
   const m=currentDate.getMonth();
-  title.innerText=y+"年"+(m+1)+"月";
+  document.getElementById("title").innerText=y+"年"+(m+1)+"月";
 
   let days=new Date(y,m+1,0).getDate();
+
   for(let i=1;i<=days;i++){
     let d=document.createElement("div");
     d.className="day";
     d.innerText=i;
-    calendar.appendChild(d);
+    cal.appendChild(d);
   }
 }
 
@@ -186,53 +190,86 @@ function goToday(){
   render();
 }
 
+/* 素材面板 */
 function toggleAssets(){
   let p=document.getElementById("assetPanel");
-  p.style.display=p.style.display==="block"?"none":"block";
+  p.style.display=(p.style.display==="block")?"none":"block";
 }
 
+/* 內建背景 */
 function setPresetBg(src){
   let bg=document.getElementById("bg");
   if(!bg){
     bg=document.createElement("img");
     bg.id="bg";
-    captureArea.prepend(bg);
+    document.getElementById("captureArea").prepend(bg);
   }
   bg.src=src;
 }
 
+/* 上傳背景 */
+document.getElementById("bgInput").onchange=e=>{
+  let file=e.target.files[0];
+  if(!file)return;
+
+  let bg=document.getElementById("bg");
+  if(!bg){
+    bg=document.createElement("img");
+    bg.id="bg";
+    document.getElementById("captureArea").prepend(bg);
+  }
+  bg.src=URL.createObjectURL(file);
+};
+
+/* 內建貼圖 */
 function addSticker(src){
+  createSticker(src);
+}
+
+/* 上傳貼圖 */
+document.getElementById("stickerInput").onchange=e=>{
+  let file=e.target.files[0];
+  if(!file)return;
+  createSticker(URL.createObjectURL(file));
+};
+
+/* 建立貼圖 */
+function createSticker(src){
   let img=document.createElement("img");
   img.src=src;
   img.className="sticker";
+
   img.style.left="50%";
   img.style.top="50%";
-  captureArea.appendChild(img);
+
+  let drag=false,ox,oy;
+
+  img.ontouchstart=e=>{
+    e.preventDefault();
+    drag=true;
+    ox=e.touches[0].clientX-img.offsetLeft;
+    oy=e.touches[0].clientY-img.offsetTop;
+  };
+
+  img.ontouchmove=e=>{
+    e.preventDefault();
+    if(!drag)return;
+    img.style.left=(e.touches[0].clientX-ox)+"px";
+    img.style.top=(e.touches[0].clientY-oy)+"px";
+  };
+
+  img.ontouchend=()=>drag=false;
+
+  document.getElementById("captureArea").appendChild(img);
 }
 
-bgInput.onchange=e=>{
-  let file=e.target.files[0];
-  if(!file)return;
-  let bg=document.createElement("img");
-  bg.id="bg";
-  bg.src=URL.createObjectURL(file);
-  captureArea.prepend(bg);
-};
-
-stickerInput.onchange=e=>{
-  let file=e.target.files[0];
-  if(!file)return;
-  let img=document.createElement("img");
-  img.src=URL.createObjectURL(file);
-  img.className="sticker";
-  captureArea.appendChild(img);
-};
-
+/* 截圖 */
 function exportImage(){
-  html2canvas(captureArea).then(c=>{
+  html2canvas(document.getElementById("captureArea")).then(canvas=>{
     let img=new Image();
-    img.src=c.toDataURL();
-    document.body.appendChild(img);
+    img.src=canvas.toDataURL();
+    document.getElementById("preview").innerHTML="";
+    document.getElementById("preview").appendChild(img);
   });
 }
 
