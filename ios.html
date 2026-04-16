@@ -18,7 +18,6 @@ input{display:none}
 button{
   color:#000 !important;
   font-weight:500;
-  -webkit-tap-highlight-color:transparent;
   transition:all 0.2s ease;
 }
 button:active{transform:scale(0.94)}
@@ -37,11 +36,11 @@ button:active{transform:scale(0.94)}
   backdrop-filter:blur(20px);
 }
 
-/* 浮動按鈕 */
+/* ⭐ 齒輪已上移 */
 .fab{
   position:fixed;
   right:20px;
-  bottom:20px;
+  bottom:80px;
   width:56px;
   height:56px;
   border-radius:50%;
@@ -56,11 +55,10 @@ button:active{transform:scale(0.94)}
 .fabMenu{
   position:fixed;
   right:20px;
-  bottom:90px;
+  bottom:150px;
   display:flex;
   flex-direction:column;
   gap:10px;
-  z-index:9999;
   opacity:0;
   transform:translateY(20px);
   pointer-events:none;
@@ -86,7 +84,6 @@ button:active{transform:scale(0.94)}
   border:none;
   background:rgba(255,255,255,0.6);
   border-radius:12px;
-  font-size:14px;
 }
 
 /* 日曆 */
@@ -97,32 +94,14 @@ button:active{transform:scale(0.94)}
   margin-top:10px;
 }
 
-#bg{
-  position:absolute;
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  z-index:0;
-}
+#bg{position:absolute;width:100%;height:100%;object-fit:cover;z-index:0}
+#bgOverlay{position:absolute;width:100%;height:100%;z-index:1}
 
-#bgOverlay{
-  position:absolute;
-  width:100%;
-  height:100%;
-  background:rgba(255,255,255,0);
-  z-index:1;
-  pointer-events:none;
-}
-
-.header,.weekRow,.calendar{
-  position:relative;
-  z-index:2;
-}
+.header,.weekRow,.calendar{position:relative;z-index:2}
 
 .header{
   display:flex;
   justify-content:space-between;
-  align-items:center;
   padding:12px;
 }
 
@@ -147,6 +126,12 @@ button:active{transform:scale(0.94)}
   align-items:center;
   padding-top:4px;
   background:rgba(255,255,255,var(--alpha,1));
+  transition:0.2s;
+}
+
+.day.flash{
+  transform:scale(0.95);
+  background:#fff0f0 !important;
 }
 
 .shift{
@@ -189,11 +174,7 @@ button:active{transform:scale(0.94)}
   box-shadow: inset 0 2px 6px rgba(0,0,0,0.2);
 }
 
-#preview img{
-  width:100%;
-  margin-top:10px;
-  border-radius:16px;
-}
+#preview img{width:100%;margin-top:10px;border-radius:16px}
 </style>
 </head>
 
@@ -207,7 +188,6 @@ button:active{transform:scale(0.94)}
 </div>
 
 <div class="fabMenu" id="fabMenu">
-
   <div class="group">
     <button onclick="switchSheet(1)">班表❶</button>
     <button onclick="switchSheet(2)">班表❷</button>
@@ -235,7 +215,6 @@ button:active{transform:scale(0.94)}
   <div class="group">
     <button onclick="exportICS()">輸出行事曆</button>
   </div>
-
 </div>
 
 <button class="fab" onclick="toggleFab()">⚙️</button>
@@ -273,18 +252,11 @@ button:active{transform:scale(0.94)}
 <script>
 let selected="";
 let currentDate=new Date();
-let alpha=1;
-let currentSheet=1;
 let data={};
+let lastClickTime=0;
+let lastKey="";
 
 function toggleFab(){fabMenu.classList.toggle("active")}
-
-function save(){localStorage.setItem("sheet"+currentSheet,JSON.stringify(data))}
-function load(){let s=localStorage.getItem("sheet"+currentSheet);data=s?JSON.parse(s):{}}
-
-function switchSheet(n){currentSheet=n;load();render()}
-
-function goToday(){currentDate=new Date();render();}
 
 function setType(e,t){
   selected=t;
@@ -292,7 +264,8 @@ function setType(e,t){
   e.target.classList.add("active");
 }
 
-function changeMonth(n){currentDate.setMonth(currentDate.getMonth()+n);render()}
+function goToday(){currentDate=new Date();render();}
+function changeMonth(n){currentDate.setMonth(currentDate.getMonth()+n);render();}
 
 function setBgFade(v){
   document.getElementById("bgOverlay").style.background=`rgba(255,255,255,${v})`;
@@ -300,8 +273,8 @@ function setBgFade(v){
 
 function render(){
   calendar.innerHTML="";
-  const y=currentDate.getFullYear();
-  const m=currentDate.getMonth();
+  let y=currentDate.getFullYear();
+  let m=currentDate.getMonth();
   title.innerText=y+"年"+(m+1)+"月";
 
   let first=(new Date(y,m,1).getDay()+6)%7;
@@ -313,15 +286,6 @@ function render(){
     let d=document.createElement("div");
     d.className="day";
 
-    let idx=(first+i-1)%7;
-
-    if(idx==5) d.style.background=`rgba(214,238,236,${alpha})`;
-    if(idx==6){
-      d.style.background=`rgba(249,221,229,${alpha})`;
-      d.classList.add("sunday");
-    }
-
-    d.innerHTML=`<div>${i}</div>`;
     let key=y+"-"+m+"-"+i;
 
     (data[key]||[]).forEach(t=>{
@@ -332,30 +296,37 @@ function render(){
     });
 
     d.onclick=()=>{
-      if(!selected)return;
+      let now=Date.now();
 
-      let arr=data[key]||[];
+      if(lastKey===key && now-lastClickTime<300){
+        data[key]=[];
+        d.classList.add("flash");
+        setTimeout(()=>d.classList.remove("flash"),200);
+      }else{
+        if(!selected)return;
 
-      if(selected==="off"){
-        arr=["off"];
-      }
-      else if(selected==="full"){
-        if(!arr.includes("off")){
-          arr=["full"];
+        let arr=data[key]||[];
+
+        if(selected==="off"){
+          arr=["off"];
         }
-      }
-      else{
-        arr=arr.filter(x=>x!=="full" && x!=="off");
-
-        if(arr.includes(selected)){
-          arr=arr.filter(x=>x!==selected);
-        }else{
-          arr.push(selected);
+        else if(selected==="full"){
+          if(!arr.includes("off")) arr=["full"];
         }
+        else{
+          arr=arr.filter(x=>x!=="full"&&x!=="off");
+          if(arr.includes(selected)){
+            arr=arr.filter(x=>x!==selected);
+          }else{
+            arr.push(selected);
+          }
+        }
+
+        data[key]=arr;
       }
 
-      data[key]=arr;
-      save();
+      lastClickTime=now;
+      lastKey=key;
       render();
     };
 
@@ -363,93 +334,6 @@ function render(){
   }
 }
 
-bgInput.onchange=e=>{
-  let file=e.target.files[0];
-  if(!file)return;
-  let bg=document.getElementById("bg");
-  if(!bg){
-    bg=document.createElement("img");
-    bg.id="bg";
-    captureArea.prepend(bg);
-  }
-  bg.src=URL.createObjectURL(file);
-};
-
-function clearBg(){document.getElementById("bg")?.remove()}
-function clearStickers(){document.querySelectorAll(".sticker").forEach(s=>s.remove())}
-
-stickerInput.onchange=e=>{
-  let file=e.target.files[0];
-  if(!file)return;
-
-  let img=document.createElement("img");
-  img.src=URL.createObjectURL(file);
-  img.className="sticker";
-
-  img.style.left="50%";
-  img.style.top="50%";
-
-  let drag=false,ox,oy;
-
-  img.ontouchstart=e=>{
-    e.preventDefault();
-    drag=true;
-    ox=e.touches[0].clientX-img.offsetLeft;
-    oy=e.touches[0].clientY-img.offsetTop;
-  };
-
-  img.ontouchmove=e=>{
-    e.preventDefault();
-    if(!drag)return;
-    img.style.left=(e.touches[0].clientX-ox)+"px";
-    img.style.top=(e.touches[0].clientY-oy)+"px";
-  };
-
-  img.ontouchend=()=>drag=false;
-
-  captureArea.appendChild(img);
-};
-
-function clearAll(){data={};save();render()}
-
-function setOpacity(v){
-  alpha=v;
-  document.documentElement.style.setProperty('--alpha',v);
-  render();
-}
-
-function exportImage(){
-  html2canvas(captureArea).then(canvas=>{
-    let img=new Image();
-    img.src=canvas.toDataURL();
-    preview.innerHTML="";
-    preview.appendChild(img);
-  });
-}
-
-function exportICS(){
-  let text="BEGIN:VCALENDAR\nVERSION:2.0\n";
-  for(let key in data){
-    data[key].forEach(type=>{
-      if(type==="off") return;
-      let [y,m,d]=key.split("-");
-      let date=`${y}${String(+m+1).padStart(2,'0')}${String(d).padStart(2,'0')}`;
-      text+=`BEGIN:VEVENT
-DTSTART;VALUE=DATE:${date}
-SUMMARY:${{morning:"早",noon:"午",night:"晚",full:"全"}[type]}
-END:VEVENT\n`;
-    });
-  }
-  text+="END:VCALENDAR";
-
-  let blob=new Blob([text]);
-  let a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="schedule.ics";
-  a.click();
-}
-
-load();
 render();
 </script>
 
