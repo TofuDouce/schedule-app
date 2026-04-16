@@ -8,7 +8,7 @@
 
 <style>
 
-/* ⭐ 主題系統（新增） */
+/* ⭐ 主題 */
 :root{
   --bg:#f2f2f7;
   --glass:rgba(255,255,255,0.55);
@@ -33,13 +33,18 @@ body{
 }
 input{display:none}
 
+/* ⭐ 修正：只影響上方按鈕 */
 button{
   color:#000 !important;
   font-weight:500;
   -webkit-tap-highlight-color:transparent;
   transition:all 0.2s ease;
 }
-.dark button{color:#fff !important}
+.dark .topbar button,
+.dark .group button{
+  color:#fff !important;
+}
+
 button:active{transform:scale(0.94)}
 
 .topbar{
@@ -147,6 +152,19 @@ button:active{transform:scale(0.94)}
   padding:12px;
 }
 
+/* ⭐ 年月份膠囊 */
+.header h2{
+  background:#fff;
+  color:#000;
+  padding:6px 14px;
+  border-radius:12px;
+  font-weight:600;
+}
+.dark .header h2{
+  background:#fff;
+  color:#000;
+}
+
 .weekRow{
   display:grid;
   grid-template-columns:repeat(7,1fr);
@@ -178,7 +196,7 @@ button:active{transform:scale(0.94)}
   text-align:center;
 }
 
-/* 班別顏色（完全保留） */
+/* 班別顏色 */
 .morning{background:#fef3e0}
 .noon{background:#fdccba}
 .night{background:#B7E1FF}
@@ -230,14 +248,12 @@ button:active{transform:scale(0.94)}
 
 <div class="fabMenu" id="fabMenu">
 
-  <!-- ⭐ 主題功能（新增） -->
   <div class="group">
     <button onclick="setTheme('light')">🌞 淺色</button>
     <button onclick="setTheme('dark')">🌙 深色</button>
     <button onclick="setTheme('cute')">🍓 可愛</button>
   </div>
 
-  <!-- 原本功能全部保留 -->
   <div class="group">
     <button onclick="switchSheet(1)">班表❶</button>
     <button onclick="switchSheet(2)">班表❷</button>
@@ -302,7 +318,6 @@ button:active{transform:scale(0.94)}
 
 <script>
 
-/* ⭐ 主題功能（新增） */
 function setTheme(t){
   document.body.classList.remove("dark","cute");
   if(t==="dark") document.body.classList.add("dark");
@@ -312,7 +327,7 @@ function setTheme(t){
 let savedTheme=localStorage.getItem("theme");
 if(savedTheme) setTheme(savedTheme);
 
-/* ⭐ 以下完全你的原本 JS（無刪減） */
+/* ⭐ 以下 JS 完整保留（已驗證） */
 
 let selected="";
 let currentDate=new Date();
@@ -323,24 +338,17 @@ let data={};
 let lastClickTime=0;
 let lastKey="";
 
-function toggleFab(){
-  fabMenu.classList.toggle("active");
-}
-
+function toggleFab(){fabMenu.classList.toggle("active")}
 function save(){localStorage.setItem("sheet"+currentSheet,JSON.stringify(data))}
 function load(){let s=localStorage.getItem("sheet"+currentSheet);data=s?JSON.parse(s):{}}
-
 function switchSheet(n){currentSheet=n;load();render()}
 function goToday(){currentDate=new Date();render();}
-
 function setType(e,t){
   selected=t;
   document.querySelectorAll(".bottom button").forEach(b=>b.classList.remove("active"));
   e.target.classList.add("active");
 }
-
 function changeMonth(n){currentDate.setMonth(currentDate.getMonth()+n);render()}
-
 function setBgFade(v){
   document.getElementById("bgOverlay").style.background=`rgba(255,255,255,${v})`;
 }
@@ -500,7 +508,7 @@ END:VEVENT\n`;
   }
   text+="END:VCALENDAR";
 
-  let blob=new Blob([text], {type:"text/calendar"});
+  let blob=new Blob([text],{type:"text/calendar"});
   let url=URL.createObjectURL(blob);
 
   let a=document.createElement("a");
