@@ -7,36 +7,40 @@
 <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
 <style>
-body{
-  margin:0;
-  padding:10px;
-  font-family:sans-serif;
-  background:#f5f5f5;
-}
+body{margin:0;padding:10px;font-family:sans-serif;background:#f5f5f5;color:#000}
 
-/* 工具列 */
+/* 🔝 工具列 */
 .topbar{
   display:grid;
   grid-template-columns:repeat(4,1fr);
-  gap:10px;
-  position:relative;
-  z-index:1000;
+  gap:8px;
 }
 .topbar button{
-  height:50px;
-  font-size:22px;
-  border:none;
-  border-radius:12px;
-  background:#fff;
+  height:48px;border:none;border-radius:12px;background:#fff;font-size:20px;color:#000;
 }
 
-/* 包裹 */
-#wrap{
+/* ⚙️ 選單 */
+#menu{
+  display:none;
+  background:#fff;
+  border-radius:12px;
+  padding:10px;
+  margin-top:8px;
+}
+#menu button, #menu select{
+  width:100%;
+  margin:4px 0;
+  padding:8px;
+  border:none;
+  border-radius:8px;
+  background:#eee;
+}
+
+/* 📅 班表區 */
+#scheduleArea{
   position:relative;
   margin-top:10px;
 }
-
-/* 背景 */
 #bg{
   position:absolute;
   width:100%;
@@ -44,26 +48,24 @@ body{
   object-fit:cover;
   z-index:0;
 }
+.blur{filter:blur(8px);}
 
-/* 月曆 */
 .calendar{
   position:relative;
   z-index:1;
   display:grid;
   grid-template-columns:repeat(7,1fr);
-  gap:8px;
+  gap:6px;
 }
-
 .day{
   aspect-ratio:1;
   background:rgba(255,255,255,0.9);
-  border-radius:12px;
+  border-radius:10px;
   display:flex;
   flex-direction:column;
   align-items:center;
-  padding-top:4px;
+  font-size:12px;
 }
-
 .saturday{background:#f3f3f3;}
 .sunday{background:#FBE7EF;color:red;}
 
@@ -72,17 +74,22 @@ body{
   width:80%;
   text-align:center;
   border-radius:6px;
-  font-size:12px;
   margin-top:2px;
 }
-
 .morning{background:#f7e7a9;}
 .noon{background:#f5c6aa;}
 .night{background:#d8c3a5;}
 .full{background:#d6c2f0;}
 .off{background:#bfe3d0;}
 
-/* 底部 */
+/* 🖼 貼圖 */
+.sticker{
+  position:absolute;
+  width:70px;
+  z-index:999;
+}
+
+/* 🔽 底部 */
 .bottom{
   display:flex;
   gap:6px;
@@ -93,22 +100,21 @@ body{
   padding:10px;
   border:none;
   border-radius:20px;
+  color:#000;
 }
-
-/* 對應顏色 */
 .bottom button:nth-child(1){background:#f7e7a9;}
 .bottom button:nth-child(2){background:#f5c6aa;}
 .bottom button:nth-child(3){background:#d8c3a5;}
 .bottom button:nth-child(4){background:#d6c2f0;}
 .bottom button:nth-child(5){background:#bfe3d0;}
 
-.bottom button.active{
-  outline:2px solid #333;
-}
+.bottom button.active{outline:2px solid #333;}
 
-/* 預覽 */
-#preview{text-align:center;margin-top:15px;}
+/* 📸 預覽 */
+#preview{margin-top:15px;text-align:center;}
 #preview canvas{width:100%;border-radius:10px;}
+
+input{display:none;}
 </style>
 </head>
 
@@ -117,17 +123,32 @@ body{
 <!-- 工具列 -->
 <div class="topbar">
   <button onclick="exportImage()">📸</button>
-  <button onclick="document.getElementById('stickerInput').click()">🖼️</button>
-  <button onclick="document.getElementById('bgInput').click()">🎨</button>
-  <button onclick="clearAll()">🧹</button>
+  <button onclick="stickerInput.click()">🖼️</button>
+  <button onclick="bgInput.click()">🎨</button>
+  <button onclick="toggleMenu()">⚙️</button>
 </div>
 
-<input id="stickerInput" type="file" style="display:none" onchange="addSticker(event)">
-<input id="bgInput" type="file" style="display:none" onchange="setBg(event)">
+<!-- 選單 -->
+<div id="menu">
+  <button onclick="clearBg()">清除背景</button>
+  <button onclick="toggleBlur()">模糊背景</button>
+  <button onclick="clearAll()">清空班表</button>
+  <button onclick="saveData()">儲存班表</button>
+  <select onchange="loadSlot(this.value)">
+    <option value="0">班表1</option>
+    <option value="1">班表2</option>
+    <option value="2">班表3</option>
+  </select>
+  <button onclick="exportICS()">下載行事曆(.ics)</button>
+</div>
+
+<input id="stickerInput" type="file" onchange="addSticker(event)">
+<input id="bgInput" type="file" onchange="setBg(event)">
 
 <h3 style="text-align:center;">2026年4月</h3>
 
-<div id="wrap">
+<!-- 班表 -->
+<div id="scheduleArea">
   <img id="bg">
   <div class="calendar" id="calendar"></div>
 </div>
@@ -141,12 +162,14 @@ body{
   <button onclick="setType(event,'off')">休</button>
 </div>
 
+<!-- 預覽 -->
 <div id="preview"></div>
 
 <script>
 let selected="";
-let data={};
-const order=["morning","noon","night","full"];
+let data=[{},{},{}];
+let current=0;
+const order=["morning","noon","night"];
 
 function setType(e,t){
   selected=t;
@@ -157,36 +180,38 @@ function setType(e,t){
 function render(){
   const cal=document.getElementById("calendar");
   cal.innerHTML="";
-
   for(let i=1;i<=30;i++){
     const d=document.createElement("div");
     d.className="day";
-
     if(i%7==6)d.classList.add("saturday");
     if(i%7==0)d.classList.add("sunday");
 
     d.innerHTML=`<div>${i}</div>`;
 
-    (data[i]||[]).forEach(t=>{
+    (data[current][i]||[]).forEach(t=>{
       const div=document.createElement("div");
       div.className="shift "+t;
-      div.innerText={
-        morning:"早",noon:"午",night:"晚",full:"全",off:"休"
-      }[t];
+      div.innerText={morning:"早",noon:"午",night:"晚",full:"全",off:"休"}[t];
       d.appendChild(div);
     });
 
     d.onclick=()=>{
       if(!selected)return;
-      if(!data[i])data[i]=[];
+      let arr=data[current][i]||[];
 
-      if(data[i].includes(selected)){
-        data[i]=data[i].filter(x=>x!==selected);
+      if(selected==="full"){
+        arr=["full"]; // ⭐覆蓋
       }else{
-        data[i].push(selected);
+        arr=arr.filter(x=>x!=="full");
+        if(arr.includes(selected)){
+          arr=arr.filter(x=>x!==selected);
+        }else{
+          arr.push(selected);
+        }
+        arr.sort((a,b)=>order.indexOf(a)-order.indexOf(b));
       }
 
-      data[i].sort((a,b)=>order.indexOf(a)-order.indexOf(b));
+      data[current][i]=arr;
       render();
     };
 
@@ -194,66 +219,85 @@ function render(){
   }
 }
 
+/* 背景 */
 function setBg(e){
-  document.getElementById("bg").src=URL.createObjectURL(e.target.files[0]);
+  bg.src=URL.createObjectURL(e.target.files[0]);
 }
+function clearBg(){bg.src=""}
+function toggleBlur(){bg.classList.toggle("blur")}
 
-function clearAll(){
-  data={};
-  document.getElementById("bg").src="";
-  document.querySelectorAll(".sticker").forEach(s=>s.remove());
-  render();
-}
-
-/* 🔥 貼圖（可拖曳） */
+/* 貼圖（拖曳） */
 function addSticker(e){
   const img=document.createElement("img");
   img.src=URL.createObjectURL(e.target.files[0]);
   img.className="sticker";
-  img.style.position="absolute";
-  img.style.width="80px";
-  img.style.top="50px";
-  img.style.left="50px";
-  img.style.zIndex="999";
+  img.style.top="50px";img.style.left="50px";
 
-  let isDragging=false,offsetX=0,offsetY=0;
-
-  img.addEventListener("touchstart",(ev)=>{
-    isDragging=true;
-    offsetX=ev.touches[0].clientX-img.offsetLeft;
-    offsetY=ev.touches[0].clientY-img.offsetTop;
+  let ox,oy,drag=false;
+  img.addEventListener("touchstart",ev=>{
+    drag=true;
+    ox=ev.touches[0].clientX-img.offsetLeft;
+    oy=ev.touches[0].clientY-img.offsetTop;
   });
-
-  img.addEventListener("touchmove",(ev)=>{
-    if(!isDragging)return;
-    img.style.left=(ev.touches[0].clientX-offsetX)+"px";
-    img.style.top=(ev.touches[0].clientY-offsetY)+"px";
+  img.addEventListener("touchmove",ev=>{
+    if(!drag)return;
+    img.style.left=(ev.touches[0].clientX-ox)+"px";
+    img.style.top=(ev.touches[0].clientY-oy)+"px";
   });
-
-  img.addEventListener("touchend",()=>isDragging=false);
+  img.addEventListener("touchend",()=>drag=false);
 
   img.ondblclick=()=>img.remove();
 
-  document.getElementById("wrap").appendChild(img);
+  scheduleArea.appendChild(img);
 }
 
-/* 匯出（預覽） */
-function exportImage(){
-  html2canvas(document.querySelector("#wrap")).then(canvas=>{
-    const p=document.getElementById("preview");
-    p.innerHTML="";
-    p.appendChild(canvas);
+/* 清空 */
+function clearAll(){data[current]={};render()}
 
-    const btn=document.createElement("button");
-    btn.innerText="下載圖片";
-    btn.onclick=()=>{
-      const a=document.createElement("a");
-      a.href=canvas.toDataURL();
+/* 儲存 */
+function saveData(){
+  localStorage.setItem("scheduleData",JSON.stringify(data));
+}
+
+/* 載入 */
+function loadSlot(i){
+  current=i;
+  let saved=JSON.parse(localStorage.getItem("scheduleData")||"[{},{},{}]");
+  data=saved;
+  render();
+}
+
+/* 匯出圖片 */
+function exportImage(){
+  html2canvas(scheduleArea).then(c=>{
+    preview.innerHTML="";
+    preview.appendChild(c);
+
+    c.onclick=()=>{
+      let a=document.createElement("a");
+      a.href=c.toDataURL();
       a.download="schedule.png";
       a.click();
     };
-    p.appendChild(btn);
   });
+}
+
+/* 行事曆 */
+function exportICS(){
+  let text="BEGIN:VCALENDAR\nVERSION:2.0\n";
+  for(let d in data[current]){
+    text+=`BEGIN:VEVENT\nSUMMARY:${data[current][d].join(",")}\nDTSTART:202604${String(d).padStart(2,'0')}T090000\nEND:VEVENT\n`;
+  }
+  text+="END:VCALENDAR";
+  let blob=new Blob([text],{type:'text/calendar'});
+  let a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="schedule.ics";
+  a.click();
+}
+
+function toggleMenu(){
+  menu.style.display=menu.style.display==="block"?"none":"block";
 }
 
 render();
