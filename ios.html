@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+<style>
+body{
+  margin:0;
+  padding:10px;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:#f2f2f7;
+  overscroll-behavior:none;
+}
+input{display:none}
+
+/* 🍎 iOS 按鈕 */
+button{
+  transition:all 0.15s ease;
+}
+button:active{
+  transform:scale(0.94);
+}
+
+/* 🍎 工具列（毛玻璃） */
+.topbar{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+}
+.topbar button{
+  height:48px;
+  border:none;
+  border-radius:16px;
+  font-size:20px;
+
+  background:rgba(255,255,255,0.6);
+  backdrop-filter:blur(20px);
+  box-shadow:0 4px 12px rgba(0,0,0,0.08);
+}
+
+/* 🍎 選單（毛玻璃） */
+#menu{
+  display:none;
+  margin-top:8px;
+  padding:10px;
+  border-radius:16px;
+
+  background:rgba(255,255,255,0.7);
+  backdrop-filter:blur(20px);
+
+  flex-wrap:wrap;
+  gap:6px;
+}
+#menu.active{display:flex}
+
+#menu button{
+  padding:10px 16px;
+  border:none;
+  border-radius:12px;
+  background:rgba(255,255,255,0.9);
+  color:#000;
+  font-size:15px;
+  font-weight:500;
+}
+
+/* 班表切換 */
+.sheetBtn{background:#e5e5ea !important}
+.sheetBtn.active{background:#d1d1d6 !important}
+
+/* 🍎 截圖區 */
+#captureArea{
+  position:relative;
+  border-radius:24px;
+  overflow:hidden;
+  margin-top:10px;
+
+  box-shadow:0 10px 30px rgba(0,0,0,0.08);
+}
+
+/* 背景 */
+#bg{
+  position:absolute;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  z-index:0;
+}
+
+/* 內容 */
+.header,.weekRow,.calendar{
+  position:relative;
+  z-index:2;
+}
+
+/* header */
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px;
+}
+.header h2{
+  margin:0;
+  font-size:18px;
+  font-weight:600;
+}
+
+/* 星期 */
+.weekRow{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  padding:0 10px;
+}
+.weekRow div{
+  text-align:center;
+  font-size:13px;
+  font-weight:500;
+}
+
+/* 日曆 */
+.calendar{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:8px;
+  padding:10px;
+}
+
+/* 日期 */
+.day{
+  min-height:72px;
+  border-radius:16px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding-top:4px;
+
+  background:rgba(255,255,255,var(--alpha,1));
+  backdrop-filter:blur(10px);
+}
+
+/* 班別 */
+.shift{
+  width:80%;
+  border-radius:10px;
+  margin-top:3px;
+  font-size:11px;
+  text-align:center;
+}
+
+.morning{background:#f7e7a9}
+.noon{background:#f5c6aa}
+.night{background:#B7E1FF}
+.full{background:#d6c2f0}
+.off{background:#bfe3d0}
+
+.sunday{color:red}
+
+/* 貼圖 */
+.sticker{
+  position:absolute;
+  width:80px;
+  z-index:9999;
+  touch-action:none;
+}
+
+/* 🍎 底部班別（升級） */
+.bottom{
+  display:flex;
+  gap:8px;
+  margin-top:12px;
+}
+.bottom button{
+  flex:1;
+  padding:10px;
+  border:none;
+  border-radius:20px;
+  font-weight:500;
+  box-shadow:0 2px 8px rgba(0,0,0,0.05);
+}
+
+.bottom button:nth-child(1){background:#f7e7a9}
+.bottom button:nth-child(2){background:#f5c6aa}
+.bottom button:nth-child(3){background:#B7E1FF}
+.bottom button:nth-child(4){background:#d6c2f0}
+.bottom button:nth-child(5){background:#bfe3d0}
+
+.bottom button.active{
+  outline:2px solid #000;
+}
+
+#preview img{
+  width:100%;
+  margin-top:10px;
+  border-radius:16px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="topbar">
+  <button onclick="exportImage()">📸</button>
+  <button onclick="stickerInput.click()">🖼️</button>
+  <button onclick="bgInput.click()">🎨</button>
+  <button onclick="toggleMenu()">⚙️</button>
+</div>
+
+<div id="menu">
+
+  <button class="sheetBtn" onclick="switchSheet(1)">班表❶</button>
+  <button class="sheetBtn" onclick="switchSheet(2)">班表❷</button>
+  <button class="sheetBtn" onclick="switchSheet(3)">班表❸</button>
+
+  <button onclick="clearBg()">清除背景</button>
+  <button onclick="clearStickers()">清除貼圖</button>
+
+  <button onclick="setOpacity(1)">不透明</button>
+  <button onclick="setOpacity(0.6)">60%透明</button>
+  <button onclick="setOpacity(0.9)">90%透明</button>
+
+  <button onclick="clearAll()">清空班表</button>
+  <button onclick="exportICS()">輸出行事曆</button>
+
+</div>
+
+<input id="stickerInput" type="file">
+<input id="bgInput" type="file">
+
+<div id="captureArea">
+
+  <div class="header">
+    <button onclick="changeMonth(-1)">←</button>
+    <h2 id="title"></h2>
+    <button onclick="changeMonth(1)">→</button>
+  </div>
+
+  <div class="weekRow">
+    <div>一</div><div>二</div><div>三</div>
+    <div>四</div><div>五</div><div>六</div><div>日</div>
+  </div>
+
+  <div class="calendar" id="calendar"></div>
+
+</div>
+
+<div class="bottom">
+  <button onclick="setType(event,'morning')">早</button>
+  <button onclick="setType(event,'noon')">午</button>
+  <button onclick="setType(event,'night')">晚</button>
+  <button onclick="setType(event,'full')">全</button>
+  <button onclick="setType(event,'off')">休</button>
+</div>
+
+<div id="preview"></div>
+
+<script>
+let selected="";
+let currentDate=new Date(2026,1);
+let alpha=1;
+let currentSheet=1;
+let data={};
+
+function save(){localStorage.setItem("sheet"+currentSheet,JSON.stringify(data))}
+function load(){let s=localStorage.getItem("sheet"+currentSheet);data=s?JSON.parse(s):{}}
+
+function switchSheet(n){
+  currentSheet=n;
+  load();
+  document.querySelectorAll(".sheetBtn").forEach(b=>b.classList.remove("active"));
+  event.target.classList.add("active");
+  render();
+}
+
+function setType(e,t){
+  selected=t;
+  document.querySelectorAll(".bottom button").forEach(b=>b.classList.remove("active"));
+  e.target.classList.add("active");
+}
+
+function changeMonth(n){
+  currentDate.setMonth(currentDate.getMonth()+n);
+  render();
+}
+
+function render(){
+  calendar.innerHTML="";
+  const y=currentDate.getFullYear();
+  const m=currentDate.getMonth();
+  title.innerText=y+"年"+(m+1)+"月";
+
+  let first=(new Date(y,m,1).getDay()+6)%7;
+  let days=new Date(y,m+1,0).getDate();
+
+  for(let i=0;i<first;i++) calendar.appendChild(document.createElement("div"));
+
+  for(let i=1;i<=days;i++){
+    let d=document.createElement("div");
+    d.className="day";
+
+    let idx=(first+i-1)%7;
+
+    if(idx==5) d.style.background=`rgba(214,238,236,${alpha})`;
+    if(idx==6){
+      d.style.background=`rgba(249,221,229,${alpha})`;
+      d.classList.add("sunday");
+    }
+
+    d.innerHTML=`<div>${i}</div>`;
+    let key=y+"-"+m+"-"+i;
+
+    (data[key]||[]).forEach(t=>{
+      let s=document.createElement("div");
+      s.className="shift "+t;
+      s.innerText={morning:"早",noon:"午",night:"晚",full:"全",off:"休"}[t];
+      d.appendChild(s);
+    });
+
+    d.onclick=()=>{
+      if(!selected)return;
+      let arr=data[key]||[];
+
+      if(selected==="full") arr=["full"];
+      else{
+        arr=arr.filter(x=>x!=="full");
+        if(arr.includes(selected)) arr=arr.filter(x=>x!==selected);
+        else arr.push(selected);
+      }
+
+      data[key]=arr;
+      save();
+      render();
+    };
+
+    calendar.appendChild(d);
+  }
+}
+
+bgInput.onchange=e=>{
+  let file=e.target.files[0];
+  if(!file)return;
+  let bg=document.getElementById("bg");
+  if(!bg){
+    bg=document.createElement("img");
+    bg.id="bg";
+    captureArea.prepend(bg);
+  }
+  bg.src=URL.createObjectURL(file);
+};
+
+function clearBg(){document.getElementById("bg")?.remove()}
+function clearStickers(){document.querySelectorAll(".sticker").forEach(s=>s.remove())}
+
+stickerInput.onchange=e=>{
+  let file=e.target.files[0];
+  if(!file)return;
+
+  let img=document.createElement("img");
+  img.src=URL.createObjectURL(file);
+  img.className="sticker";
+
+  img.style.left="50%";
+  img.style.top="50%";
+
+  let drag=false,ox,oy;
+
+  img.ontouchstart=e=>{
+    e.preventDefault();
+    drag=true;
+    ox=e.touches[0].clientX-img.offsetLeft;
+    oy=e.touches[0].clientY-img.offsetTop;
+  };
+
+  img.ontouchmove=e=>{
+    e.preventDefault();
+    if(!drag)return;
+    img.style.left=(e.touches[0].clientX-ox)+"px";
+    img.style.top=(e.touches[0].clientY-oy)+"px";
+  };
+
+  img.ontouchend=()=>drag=false;
+
+  captureArea.appendChild(img);
+};
+
+function toggleMenu(){menu.classList.toggle("active")}
+function clearAll(){data={};save();render()}
+
+function setOpacity(v){
+  alpha=v;
+  document.documentElement.style.setProperty('--alpha',v);
+  render();
+}
+
+function exportImage(){
+  html2canvas(captureArea).then(canvas=>{
+    let img=new Image();
+    img.src=canvas.toDataURL();
+    preview.innerHTML="";
+    preview.appendChild(img);
+  });
+}
+
+function exportICS(){
+  let text="BEGIN:VCALENDAR\nVERSION:2.0\n";
+  for(let key in data){
+    data[key].forEach(type=>{
+      if(type==="off") return;
+      let [y,m,d]=key.split("-");
+      let date=`${y}${String(+m+1).padStart(2,'0')}${String(d).padStart(2,'0')}`;
+      text+=`BEGIN:VEVENT
+DTSTART;VALUE=DATE:${date}
+SUMMARY:${{morning:"早",noon:"午",night:"晚",full:"全"}[type]}
+END:VEVENT\n`;
+    });
+  }
+  text+="END:VCALENDAR";
+
+  let blob=new Blob([text]);
+  let a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="schedule.ics";
+  a.click();
+}
+
+load();
+render();
+</script>
+
+</body>
+</html>
