@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Schedule App</title>
 
 <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
@@ -12,13 +11,12 @@ body{
 margin:0;
 font-family:sans-serif;
 background:#f5f5f5;
-text-align:center;
 }
 
 /* ===== 工具列 ===== */
 .toolbar{
 display:grid;
-grid-template-columns:1fr 1fr;
+grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
 gap:10px;
 padding:10px;
 }
@@ -35,14 +33,13 @@ font-size:14px;
 color:#888;
 }
 
-.group button, .group select{
+.group button,.group select,.group input{
 width:100%;
 margin:5px 0;
 padding:10px;
 border:none;
 border-radius:12px;
 background:#eee;
-font-size:14px;
 }
 
 /* ===== 標題 ===== */
@@ -61,6 +58,7 @@ margin:10px;
 border-radius:30px;
 overflow:hidden;
 position:relative;
+background:#fff;
 }
 
 #bg{
@@ -82,10 +80,15 @@ padding:10px;
 .week{
 display:grid;
 grid-template-columns:repeat(7,1fr);
+font-weight:bold;
 margin-bottom:5px;
 }
 
-/* ===== 日期格 ===== */
+.week div{
+text-align:center;
+}
+
+/* ===== 格子 ===== */
 .grid{
 display:grid;
 grid-template-columns:repeat(7,1fr);
@@ -95,11 +98,15 @@ gap:8px;
 .day{
 background:rgba(255,255,255,0.9);
 border-radius:16px;
+height:90px;
 padding:5px;
-height:80px;
 display:flex;
 flex-direction:column;
-justify-content:flex-start;
+}
+
+/* 週六 */
+.sat{
+background:rgba(184,222,220,0.6);
 }
 
 /* 週日 */
@@ -108,18 +115,13 @@ background:rgba(255,200,200,0.5);
 color:red;
 }
 
-/* 週六 */
-.sat{
-background:rgba(184,222,220,0.6);
-}
-
 /* ===== 班別 ===== */
 .shift{
 border-radius:10px;
-margin-top:2px;
+margin-top:3px;
 font-size:12px;
 padding:2px;
-color:#000;
+text-align:center;
 }
 
 .early{background:#E8D8A3;}
@@ -128,7 +130,7 @@ color:#000;
 .all{background:#C8B6E2;}
 .off{background:#A8CBB7;}
 
-/* ===== 工具列按鈕 ===== */
+/* ===== 按鈕 ===== */
 .shiftBar{
 display:flex;
 justify-content:space-around;
@@ -139,18 +141,14 @@ margin:10px;
 padding:10px;
 border-radius:20px;
 min-width:60px;
-color:#000;
-}
-
-.preview{
-margin:10px;
+text-align:center;
 }
 </style>
 </head>
 
 <body>
 
-<!-- ===== 工具列 ===== -->
+<!-- 工具列 -->
 <div class="toolbar">
 
 <div class="group">
@@ -182,23 +180,35 @@ margin:10px;
 
 </div>
 
-<!-- ===== 標題 ===== -->
+<!-- 標題 -->
 <div class="header">
 <button onclick="prevMonth()">←</button>
 <div id="title"></div>
 <button onclick="nextMonth()">→</button>
 </div>
 
-<!-- ===== 截圖區 ===== -->
+<!-- 截圖區 -->
 <div id="capture">
 <div id="bg"></div>
+
 <div id="calendar">
-<div class="week">一 二 三 四 五 六 日</div>
+
+<div class="week">
+<div>一</div>
+<div>二</div>
+<div>三</div>
+<div>四</div>
+<div>五</div>
+<div>六</div>
+<div>日</div>
+</div>
+
 <div class="grid" id="grid"></div>
+
 </div>
 </div>
 
-<!-- ===== 班別按鈕 ===== -->
+<!-- 班別 -->
 <div class="shiftBar">
 <div class="shiftBtn early" onclick="setShift('early')">早</div>
 <div class="shiftBtn noon" onclick="setShift('noon')">午</div>
@@ -207,34 +217,32 @@ margin:10px;
 <div class="shiftBtn off" onclick="setShift('off')">休</div>
 </div>
 
-<img id="preview" class="preview"/>
-
 <script>
 
 let year=2026,month=4;
 let data={};
-let currentShift=null;
 let sheets={sheet1:{}};
 let currentSheet="sheet1";
+let currentShift=null;
 
-/* ===== 初始化 ===== */
+/* 初始化 */
 function init(){
-updateSheetList();
+updateSheet();
 render();
 }
 init();
 
 /* ===== 班表 ===== */
-function updateSheetList(){
-let select=document.getElementById("sheetSelect");
-select.innerHTML="";
-Object.keys(sheets).forEach(k=>{
+function updateSheet(){
+let s=document.getElementById("sheetSelect");
+s.innerHTML="";
+for(let k in sheets){
 let op=document.createElement("option");
 op.value=k;
 op.text=k;
-select.appendChild(op);
-});
-select.value=currentSheet;
+s.appendChild(op);
+}
+s.value=currentSheet;
 }
 
 function switchSheet(){
@@ -250,15 +258,16 @@ alert("已儲存");
 
 /* ===== 背景 ===== */
 function loadBg(e){
-let reader=new FileReader();
-reader.onload=()=>{
-document.getElementById("bg").style.backgroundImage=`url(${reader.result})`;
-}
-reader.readAsDataURL(e.target.files[0]);
+let r=new FileReader();
+r.onload=()=>{
+document.getElementById("bg").style.backgroundImage=`url(${r.result})`;
+};
+r.readAsDataURL(e.target.files[0]);
 }
 
 function clearBg(){
 document.getElementById("bg").style.backgroundImage="";
+document.getElementById("bg").style.filter="";
 }
 
 function blurBg(){
@@ -291,18 +300,18 @@ for(let d=1;d<=days;d++){
 let div=document.createElement("div");
 div.className="day";
 
-let dayOfWeek=(first+d-1)%7;
-if(dayOfWeek===5) div.classList.add("sat");
-if(dayOfWeek===6) div.classList.add("sun");
+let w=(first+d-1)%7;
+if(w===5) div.classList.add("sat");
+if(w===6) div.classList.add("sun");
 
 div.innerHTML=`<b>${d}</b>`;
 
 if(data[d]){
 data[d].forEach(s=>{
-let sdiv=document.createElement("div");
-sdiv.className="shift "+s;
-sdiv.innerText=getName(s);
-div.appendChild(sdiv);
+let el=document.createElement("div");
+el.className="shift "+s;
+el.innerText=name(s);
+div.appendChild(el);
 });
 }
 
@@ -321,20 +330,21 @@ grid.appendChild(div);
 }
 }
 
-function getName(s){
+function name(s){
 return {early:"早",noon:"午",night:"晚",all:"全",off:"休"}[s];
 }
 
-/* ===== 班別 ===== */
-function setShift(s){
-currentShift=s;
+/* ===== 控制 ===== */
+function setShift(s){currentShift=s;}
+
+function prevMonth(){
+month--;if(month<1){month=12;year--;}render();
 }
 
-/* ===== 月份 ===== */
-function prevMonth(){month--;if(month<1){month=12;year--;}render();}
-function nextMonth(){month++;if(month>12){month=1;year++;}render();}
+function nextMonth(){
+month++;if(month>12){month=1;year++;}render();
+}
 
-/* ===== 清空 ===== */
 function clearSchedule(){
 data={};
 render();
@@ -342,27 +352,23 @@ render();
 
 /* ===== 截圖 ===== */
 function capture(){
-html2canvas(document.getElementById("capture")).then(canvas=>{
-let img=canvas.toDataURL();
-let preview=document.getElementById("preview");
-preview.src=img;
-
-let a=document.createElement("a");
-a.href=img;
-a.download="schedule.png";
-a.click();
+html2canvas(document.getElementById("capture")).then(c=>{
+let link=document.createElement("a");
+link.href=c.toDataURL();
+link.download="schedule.png";
+link.click();
 });
 }
 
 /* ===== 行事曆 ===== */
 function exportICS(){
-let text="BEGIN:VCALENDAR\n";
-Object.keys(data).forEach(d=>{
-text+=`BEGIN:VEVENT\nSUMMARY:班表\nDTSTART:${year}${month}${d}\nEND:VEVENT\n`;
-});
-text+="END:VCALENDAR";
+let txt="BEGIN:VCALENDAR\n";
+for(let d in data){
+txt+=`BEGIN:VEVENT\nSUMMARY:班表\nDTSTART:${year}${month}${d}\nEND:VEVENT\n`;
+}
+txt+="END:VCALENDAR";
 
-let blob=new Blob([text]);
+let blob=new Blob([txt]);
 let a=document.createElement("a");
 a.href=URL.createObjectURL(blob);
 a.download="schedule.ics";
