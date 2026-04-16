@@ -1,352 +1,374 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Schedule App</title>
 
 <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
 <style>
-body{margin:0;padding:10px;font-family:sans-serif;background:#f5f5f5}
-input{display:none}
-
-/* 工具列 */
-.topbar{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.topbar button{height:48px;border:none;border-radius:12px;background:#fff;font-size:20px}
-
-/* 選單 */
-#menu{display:none;background:#fff;border-radius:12px;padding:10px;margin-top:8px}
-#menu button{width:100%;margin:5px 0;padding:10px;border:none;border-radius:8px;background:#eee}
-
-/* 截圖區 */
-#captureArea{
-  position:relative;
-  border-radius:24px;
-  overflow:hidden;
+body{
+margin:0;
+font-family:sans-serif;
+background:#f5f5f5;
+text-align:center;
 }
 
-/* 背景 */
-#bg{
-  position:absolute;
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  z-index:0;
+/* ===== 工具列 ===== */
+.toolbar{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+padding:10px;
 }
-.blur{filter:blur(12px)}
 
-/* header */
+.group{
+background:#fff;
+border-radius:16px;
+padding:10px;
+}
+
+.group h3{
+margin:5px 0;
+font-size:14px;
+color:#888;
+}
+
+.group button, .group select{
+width:100%;
+margin:5px 0;
+padding:10px;
+border:none;
+border-radius:12px;
+background:#eee;
+font-size:14px;
+}
+
+/* ===== 標題 ===== */
 .header{
-  position:relative;
-  z-index:1;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:10px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:10px;
+font-size:26px;
+font-weight:bold;
 }
 
-/* 星期 */
-.weekRow{
-  display:grid;
-  grid-template-columns:repeat(7,1fr);
-  padding:0 10px;
-  position:relative;
-  z-index:1;
-}
-.weekRow div{text-align:center;font-weight:bold}
-
-/* 日曆 */
-.calendar{
-  display:grid;
-  grid-template-columns:repeat(7,1fr);
-  gap:8px;
-  padding:10px;
-  position:relative;
-  z-index:1;
+/* ===== 截圖區 ===== */
+#capture{
+margin:10px;
+border-radius:30px;
+overflow:hidden;
+position:relative;
 }
 
-/* 日期格 */
+#bg{
+position:absolute;
+width:100%;
+height:100%;
+background-size:cover;
+background-position:center;
+z-index:0;
+}
+
+#calendar{
+position:relative;
+z-index:1;
+padding:10px;
+}
+
+/* ===== 星期 ===== */
+.week{
+display:grid;
+grid-template-columns:repeat(7,1fr);
+margin-bottom:5px;
+}
+
+/* ===== 日期格 ===== */
+.grid{
+display:grid;
+grid-template-columns:repeat(7,1fr);
+gap:8px;
+}
+
 .day{
-  width:100%;
-  min-height:70px;
-  border-radius:14px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  padding-top:4px;
-  background:rgba(255,255,255,var(--alpha,1));
+background:rgba(255,255,255,0.9);
+border-radius:16px;
+padding:5px;
+height:80px;
+display:flex;
+flex-direction:column;
+justify-content:flex-start;
 }
 
-/* 班別 */
+/* 週日 */
+.sun{
+background:rgba(255,200,200,0.5);
+color:red;
+}
+
+/* 週六 */
+.sat{
+background:rgba(184,222,220,0.6);
+}
+
+/* ===== 班別 ===== */
 .shift{
-  width:80%;
-  border-radius:8px;
-  margin-top:2px;
-  text-align:center;
-  font-size:11px;
+border-radius:10px;
+margin-top:2px;
+font-size:12px;
+padding:2px;
+color:#000;
 }
 
-.morning{background:#f7e7a9}
-.noon{background:#f5c6aa}
-.night{background:#B7E1FF} /* ✅ 新晚班藍 */
-.full{background:#d6c2f0}
-.off{background:#bfe3d0}
+.early{background:#E8D8A3;}
+.noon{background:#E6B89C;}
+.night{background:#B7E1FF;}
+.all{background:#C8B6E2;}
+.off{background:#A8CBB7;}
 
-/* 星期日（顏色交由 JS 控制透明） */
-.sunday{color:red}
-
-/* 貼圖 */
-.sticker{
-  position:absolute;
-  width:80px;
-  z-index:9999;
+/* ===== 工具列按鈕 ===== */
+.shiftBar{
+display:flex;
+justify-content:space-around;
+margin:10px;
 }
 
-/* 底部 */
-.bottom{display:flex;gap:6px;margin-top:10px}
-.bottom button{flex:1;padding:10px;border:none;border-radius:20px;color:#000}
-.bottom button:nth-child(1){background:#f7e7a9}
-.bottom button:nth-child(2){background:#f5c6aa}
-.bottom button:nth-child(3){background:#B7E1FF}
-.bottom button:nth-child(4){background:#d6c2f0}
-.bottom button:nth-child(5){background:#bfe3d0}
-.bottom button.active{outline:2px solid #333}
+.shiftBtn{
+padding:10px;
+border-radius:20px;
+min-width:60px;
+color:#000;
+}
 
-#preview img{width:100%;margin-top:10px;border-radius:12px}
+.preview{
+margin:10px;
+}
 </style>
 </head>
 
 <body>
 
-<div class="topbar">
-  <button onclick="exportImage()">📸</button>
-  <button onclick="stickerInput.click()">🖼️</button>
-  <button onclick="bgInput.click()">🎨</button>
-  <button onclick="toggleMenu()">⚙️</button>
+<!-- ===== 工具列 ===== -->
+<div class="toolbar">
+
+<div class="group">
+<h3>背景</h3>
+<button onclick="clearBg()">清除背景</button>
+<button onclick="blurBg()">模糊背景</button>
+<input type="file" onchange="loadBg(event)">
 </div>
 
-<div id="menu">
-  <button onclick="clearBg()">清除背景</button>
-  <button onclick="toggleBlur()">模糊背景</button>
-  <button onclick="setOpacity(0.9)">90%</button>
-  <button onclick="setOpacity(0.6)">60%</button>
-  <button onclick="setOpacity(0.3)">30%</button>
-  <button onclick="clearAll()">清空班表</button>
-  <button onclick="exportICS()">輸出行事曆</button>
+<div class="group">
+<h3>透明度</h3>
+<button onclick="setOpacity(0.3)">30%</button>
+<button onclick="setOpacity(0.6)">60%</button>
+<button onclick="setOpacity(0.9)">90%</button>
 </div>
 
-<input id="stickerInput" type="file">
-<input id="bgInput" type="file">
+<div class="group">
+<h3>班表</h3>
+<select id="sheetSelect" onchange="switchSheet()"></select>
+<button onclick="saveSheet()">💾 儲存</button>
+<button onclick="clearSchedule()">清空</button>
+<button onclick="exportICS()">輸出行事曆</button>
+</div>
 
-<div id="captureArea">
-
-  <div class="header">
-    <button onclick="changeMonth(-1)">←</button>
-    <h2 id="title"></h2>
-    <button onclick="changeMonth(1)">→</button>
-  </div>
-
-  <div class="weekRow">
-    <div>一</div><div>二</div><div>三</div>
-    <div>四</div><div>五</div><div>六</div><div>日</div>
-  </div>
-
-  <div class="calendar" id="calendar"></div>
+<div class="group">
+<h3>輸出</h3>
+<button onclick="capture()">下載圖片</button>
+</div>
 
 </div>
 
-<div class="bottom">
-  <button onclick="setType(event,'morning')">早</button>
-  <button onclick="setType(event,'noon')">午</button>
-  <button onclick="setType(event,'night')">晚</button>
-  <button onclick="setType(event,'full')">全</button>
-  <button onclick="setType(event,'off')">休</button>
+<!-- ===== 標題 ===== -->
+<div class="header">
+<button onclick="prevMonth()">←</button>
+<div id="title"></div>
+<button onclick="nextMonth()">→</button>
 </div>
 
-<div id="preview"></div>
+<!-- ===== 截圖區 ===== -->
+<div id="capture">
+<div id="bg"></div>
+<div id="calendar">
+<div class="week">一 二 三 四 五 六 日</div>
+<div class="grid" id="grid"></div>
+</div>
+</div>
+
+<!-- ===== 班別按鈕 ===== -->
+<div class="shiftBar">
+<div class="shiftBtn early" onclick="setShift('early')">早</div>
+<div class="shiftBtn noon" onclick="setShift('noon')">午</div>
+<div class="shiftBtn night" onclick="setShift('night')">晚</div>
+<div class="shiftBtn all" onclick="setShift('all')">全</div>
+<div class="shiftBtn off" onclick="setShift('off')">休</div>
+</div>
+
+<img id="preview" class="preview"/>
 
 <script>
-let selected="";
+
+let year=2026,month=4;
 let data={};
-let currentDate=new Date(2026,3);
-let alpha=1;
+let currentShift=null;
+let sheets={sheet1:{}};
+let currentSheet="sheet1";
 
-/* 班別 */
-function setType(e,t){
-  selected=t;
-  document.querySelectorAll(".bottom button").forEach(b=>b.classList.remove("active"));
-  e.target.classList.add("active");
-}
-
-/* 月份 */
-function changeMonth(n){
-  currentDate.setMonth(currentDate.getMonth()+n);
-  render();
-}
-
-/* 渲染 */
-function render(){
-  calendar.innerHTML="";
-  const y=currentDate.getFullYear();
-  const m=currentDate.getMonth();
-
-  title.innerText=y+"年"+(m+1)+"月";
-
-  let first=(new Date(y,m,1).getDay()+6)%7;
-  let days=new Date(y,m+1,0).getDate();
-
-  for(let i=0;i<first;i++) calendar.appendChild(document.createElement("div"));
-
-  for(let i=1;i<=days;i++){
-    let d=document.createElement("div");
-    d.className="day";
-
-    let idx=(first+i-1)%7;
-
-    /* 星期六 */
-    if(idx==5){
-      d.style.background=`rgba(214,238,236,${alpha})`;
-    }
-
-    /* 星期日 */
-    if(idx==6){
-      d.style.background=`rgba(249,221,229,${alpha})`;
-      d.classList.add("sunday");
-    }
-
-    d.innerHTML=`<div>${i}</div>`;
-
-    let key=y+"-"+m+"-"+i;
-
-    (data[key]||[]).forEach(t=>{
-      let s=document.createElement("div");
-      s.className="shift "+t;
-      s.innerText={morning:"早",noon:"午",night:"晚",full:"全",off:"休"}[t];
-      d.appendChild(s);
-    });
-
-    d.onclick=()=>{
-      if(!selected)return;
-      let arr=data[key]||[];
-
-      if(selected==="full") arr=["full"];
-      else{
-        arr=arr.filter(x=>x!=="full");
-        if(arr.includes(selected)) arr=arr.filter(x=>x!==selected);
-        else arr.push(selected);
-      }
-
-      data[key]=arr;
-      render();
-    };
-
-    calendar.appendChild(d);
-  }
-}
-
-/* 透明度 */
-function setOpacity(v){
-  alpha=v;
-  document.documentElement.style.setProperty('--alpha',v);
-  render();
-}
-
-/* 截圖 */
-function exportImage(){
-  html2canvas(captureArea).then(canvas=>{
-    let img=new Image();
-    img.src=canvas.toDataURL();
-    preview.innerHTML="";
-    preview.appendChild(img);
-  });
-}
-
-/* 背景 */
-bgInput.onchange=e=>{
-  let file=e.target.files[0];
-  if(!file)return;
-
-  let bg=document.getElementById("bg");
-  if(!bg){
-    bg=document.createElement("img");
-    bg.id="bg";
-    captureArea.prepend(bg);
-  }
-  bg.src=URL.createObjectURL(file);
-};
-
-function toggleBlur(){
-  document.getElementById("bg")?.classList.toggle("blur");
-}
-
-/* 貼圖 */
-stickerInput.onchange=e=>{
-  let file=e.target.files[0];
-  if(!file)return;
-
-  let img=document.createElement("img");
-  img.src=URL.createObjectURL(file);
-  img.className="sticker";
-
-  img.style.left="50%";
-  img.style.top="50%";
-  img.style.transform="translate(-50%,-50%)";
-
-  let drag=false,ox,oy;
-
-  img.ontouchstart=e=>{
-    drag=true;
-    img.style.transform="";
-    ox=e.touches[0].clientX-img.offsetLeft;
-    oy=e.touches[0].clientY-img.offsetTop;
-  };
-
-  img.ontouchmove=e=>{
-    if(!drag)return;
-    img.style.left=(e.touches[0].clientX-ox)+"px";
-    img.style.top=(e.touches[0].clientY-oy)+"px";
-  };
-
-  img.ontouchend=()=>drag=false;
-
-  captureArea.appendChild(img);
-};
-
-function toggleMenu(){
-  menu.style.display=menu.style.display==="block"?"none":"block";
-}
-
-function clearBg(){document.getElementById("bg")?.remove();}
-function clearAll(){data={};render();}
-
-/* 行事曆 */
-function exportICS(){
-  let text="BEGIN:VCALENDAR\nVERSION:2.0\n";
-
-  for(let key in data){
-    data[key].forEach(type=>{
-      if(type==="off") return;
-
-      let [y,m,d]=key.split("-");
-      let date=`${y}${String(+m+1).padStart(2,'0')}${String(d).padStart(2,'0')}`;
-
-      text+=`BEGIN:VEVENT
-DTSTART;VALUE=DATE:${date}
-SUMMARY:${{morning:"早",noon:"午",night:"晚",full:"全"}[type]}
-END:VEVENT\n`;
-    });
-  }
-
-  text+="END:VCALENDAR";
-
-  let blob=new Blob([text]);
-  let a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="schedule.ics";
-  a.click();
-}
-
+/* ===== 初始化 ===== */
+function init(){
+updateSheetList();
 render();
+}
+init();
+
+/* ===== 班表 ===== */
+function updateSheetList(){
+let select=document.getElementById("sheetSelect");
+select.innerHTML="";
+Object.keys(sheets).forEach(k=>{
+let op=document.createElement("option");
+op.value=k;
+op.text=k;
+select.appendChild(op);
+});
+select.value=currentSheet;
+}
+
+function switchSheet(){
+currentSheet=document.getElementById("sheetSelect").value;
+data=sheets[currentSheet];
+render();
+}
+
+function saveSheet(){
+sheets[currentSheet]=JSON.parse(JSON.stringify(data));
+alert("已儲存");
+}
+
+/* ===== 背景 ===== */
+function loadBg(e){
+let reader=new FileReader();
+reader.onload=()=>{
+document.getElementById("bg").style.backgroundImage=`url(${reader.result})`;
+}
+reader.readAsDataURL(e.target.files[0]);
+}
+
+function clearBg(){
+document.getElementById("bg").style.backgroundImage="";
+}
+
+function blurBg(){
+document.getElementById("bg").style.filter="blur(10px)";
+}
+
+/* ===== 透明 ===== */
+function setOpacity(o){
+document.querySelectorAll(".day").forEach(d=>{
+d.style.background=`rgba(255,255,255,${o})`;
+});
+}
+
+/* ===== 日曆 ===== */
+function render(){
+document.getElementById("title").innerText=`${year}年${month}月`;
+let grid=document.getElementById("grid");
+grid.innerHTML="";
+
+let first=new Date(year,month-1,1).getDay();
+first=(first===0?6:first-1);
+
+for(let i=0;i<first;i++){
+grid.appendChild(document.createElement("div"));
+}
+
+let days=new Date(year,month,0).getDate();
+
+for(let d=1;d<=days;d++){
+let div=document.createElement("div");
+div.className="day";
+
+let dayOfWeek=(first+d-1)%7;
+if(dayOfWeek===5) div.classList.add("sat");
+if(dayOfWeek===6) div.classList.add("sun");
+
+div.innerHTML=`<b>${d}</b>`;
+
+if(data[d]){
+data[d].forEach(s=>{
+let sdiv=document.createElement("div");
+sdiv.className="shift "+s;
+sdiv.innerText=getName(s);
+div.appendChild(sdiv);
+});
+}
+
+div.onclick=()=>{
+if(!currentShift)return;
+if(currentShift==="all"){
+data[d]=["all"];
+}else{
+data[d]=data[d]||[];
+data[d].push(currentShift);
+}
+render();
+};
+
+grid.appendChild(div);
+}
+}
+
+function getName(s){
+return {early:"早",noon:"午",night:"晚",all:"全",off:"休"}[s];
+}
+
+/* ===== 班別 ===== */
+function setShift(s){
+currentShift=s;
+}
+
+/* ===== 月份 ===== */
+function prevMonth(){month--;if(month<1){month=12;year--;}render();}
+function nextMonth(){month++;if(month>12){month=1;year++;}render();}
+
+/* ===== 清空 ===== */
+function clearSchedule(){
+data={};
+render();
+}
+
+/* ===== 截圖 ===== */
+function capture(){
+html2canvas(document.getElementById("capture")).then(canvas=>{
+let img=canvas.toDataURL();
+let preview=document.getElementById("preview");
+preview.src=img;
+
+let a=document.createElement("a");
+a.href=img;
+a.download="schedule.png";
+a.click();
+});
+}
+
+/* ===== 行事曆 ===== */
+function exportICS(){
+let text="BEGIN:VCALENDAR\n";
+Object.keys(data).forEach(d=>{
+text+=`BEGIN:VEVENT\nSUMMARY:班表\nDTSTART:${year}${month}${d}\nEND:VEVENT\n`;
+});
+text+="END:VCALENDAR";
+
+let blob=new Blob([text]);
+let a=document.createElement("a");
+a.href=URL.createObjectURL(blob);
+a.download="schedule.ics";
+a.click();
+}
+
 </script>
 
 </body>
