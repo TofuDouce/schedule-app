@@ -7,7 +7,10 @@
 <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
 <style>
-body{margin:0;padding:10px;font-family:sans-serif;background:#f5f5f5}
+body{
+  margin:0;padding:10px;font-family:sans-serif;background:#f5f5f5;
+  overscroll-behavior:none; /* ⭐ 防刷新 */
+}
 input{display:none}
 
 /* 工具列 */
@@ -26,16 +29,17 @@ input{display:none}
 }
 #menu.active{display:flex}
 
-/* ⭐ 黑字 */
 #menu button{
-  width:auto;
   padding:8px 14px;
   border:none;
   border-radius:8px;
   background:#eee;
-  font-size:14px;
   color:#000;
 }
+
+/* 班表切換 */
+.sheetBtn{background:#ddd !important}
+.sheetBtn.active{background:#bbb !important}
 
 /* 截圖區 */
 #captureArea{
@@ -69,8 +73,8 @@ input{display:none}
   display:grid;
   grid-template-columns:repeat(7,1fr);
   padding:0 10px;
-  position:relative;
   z-index:1;
+  position:relative;
 }
 .weekRow div{text-align:center;font-weight:bold}
 
@@ -80,13 +84,12 @@ input{display:none}
   grid-template-columns:repeat(7,1fr);
   gap:8px;
   padding:10px;
-  position:relative;
   z-index:1;
+  position:relative;
 }
 
-/* 日期格 */
+/* 日期 */
 .day{
-  width:100%;
   min-height:70px;
   border-radius:14px;
   display:flex;
@@ -111,14 +114,14 @@ input{display:none}
 .full{background:#d6c2f0}
 .off{background:#bfe3d0}
 
-/* 星期 */
 .sunday{color:red}
 
-/* 貼圖 */
+/* ⭐ 貼圖 */
 .sticker{
   position:absolute;
   width:80px;
   z-index:9999;
+  touch-action:none; /* ⭐ 關鍵 */
 }
 
 /* 底部 */
@@ -145,16 +148,22 @@ input{display:none}
 </div>
 
 <div id="menu">
+
+  <!-- ⭐ 班表切換 -->
+  <button class="sheetBtn" onclick="switchSheet(1)">班表❶</button>
+  <button class="sheetBtn" onclick="switchSheet(2)">班表❷</button>
+  <button class="sheetBtn" onclick="switchSheet(3)">班表❸</button>
+
   <button onclick="clearBg()">清除背景</button>
   <button onclick="toggleBlur()">模糊背景</button>
 
-  <!-- ⭐ 修正透明度 -->
   <button onclick="setOpacity(1)">不透明</button>
   <button onclick="setOpacity(0.6)">60%透明</button>
   <button onclick="setOpacity(0.9)">90%透明</button>
 
   <button onclick="clearAll()">清空班表</button>
   <button onclick="exportICS()">輸出行事曆</button>
+
 </div>
 
 <input id="stickerInput" type="file">
@@ -189,9 +198,31 @@ input{display:none}
 
 <script>
 let selected="";
-let data={};
 let currentDate=new Date(2026,3);
 let alpha=1;
+
+let currentSheet=1;
+let data={};
+
+/* ⭐ 載入 */
+function load(){
+  let saved=localStorage.getItem("sheet"+currentSheet);
+  data=saved?JSON.parse(saved):{};
+}
+
+/* ⭐ 存檔 */
+function save(){
+  localStorage.setItem("sheet"+currentSheet,JSON.stringify(data));
+}
+
+/* 切換班表 */
+function switchSheet(n){
+  currentSheet=n;
+  load();
+  document.querySelectorAll(".sheetBtn").forEach(b=>b.classList.remove("active"));
+  event.target.classList.add("active");
+  render();
+}
 
 function setType(e,t){
   selected=t;
@@ -222,10 +253,7 @@ function render(){
 
     let idx=(first+i-1)%7;
 
-    if(idx==5){
-      d.style.background=`rgba(214,238,236,${alpha})`;
-    }
-
+    if(idx==5) d.style.background=`rgba(214,238,236,${alpha})`;
     if(idx==6){
       d.style.background=`rgba(249,221,229,${alpha})`;
       d.classList.add("sunday");
@@ -244,6 +272,7 @@ function render(){
 
     d.onclick=()=>{
       if(!selected)return;
+
       let arr=data[key]||[];
 
       if(selected==="full") arr=["full"];
@@ -254,12 +283,51 @@ function render(){
       }
 
       data[key]=arr;
+      save(); /* ⭐ 自動存 */
       render();
     };
 
     calendar.appendChild(d);
   }
 }
+
+/* 貼圖拖曳 */
+stickerInput.onchange=e=>{
+  let file=e.target.files[0];
+  if(!file)return;
+
+  let img=document.createElement("img");
+  img.src=URL.createObjectURL(file);
+  img.className="sticker";
+
+  img.style.left="50%";
+  img.style.top="50%";
+
+  let drag=false,ox,oy;
+
+  img.ontouchstart=e=>{
+    e.preventDefault();
+    drag=true;
+    ox=e.touches[0].clientX-img.offsetLeft;
+    oy=e.touches[0].clientY-img.offsetTop;
+  };
+
+  img.ontouchmove=e=>{
+    e.preventDefault();
+    if(!drag)return;
+    img.style.left=(e.touches[0].clientX-ox)+"px";
+    img.style.top=(e.touches[0].clientY-oy)+"px";
+  };
+
+  img.ontouchend=()=>drag=false;
+
+  captureArea.appendChild(img);
+};
+
+/* 其他 */
+function toggleMenu(){menu.classList.toggle("active")}
+function clearBg(){document.getElementById("bg")?.remove()}
+function clearAll(){data={};save();render()}
 
 function setOpacity(v){
   alpha=v;
@@ -275,62 +343,6 @@ function exportImage(){
     preview.appendChild(img);
   });
 }
-
-bgInput.onchange=e=>{
-  let file=e.target.files[0];
-  if(!file)return;
-
-  let bg=document.getElementById("bg");
-  if(!bg){
-    bg=document.createElement("img");
-    bg.id="bg";
-    captureArea.prepend(bg);
-  }
-  bg.src=URL.createObjectURL(file);
-};
-
-function toggleBlur(){
-  document.getElementById("bg")?.classList.toggle("blur");
-}
-
-stickerInput.onchange=e=>{
-  let file=e.target.files[0];
-  if(!file)return;
-
-  let img=document.createElement("img");
-  img.src=URL.createObjectURL(file);
-  img.className="sticker";
-
-  img.style.left="50%";
-  img.style.top="50%";
-  img.style.transform="translate(-50%,-50%)";
-
-  let drag=false,ox,oy;
-
-  img.ontouchstart=e=>{
-    drag=true;
-    img.style.transform="";
-    ox=e.touches[0].clientX-img.offsetLeft;
-    oy=e.touches[0].clientY-img.offsetTop;
-  };
-
-  img.ontouchmove=e=>{
-    if(!drag)return;
-    img.style.left=(e.touches[0].clientX-ox)+"px";
-    img.style.top=(e.touches[0].clientY-oy)+"px";
-  };
-
-  img.ontouchend=()=>drag=false;
-
-  captureArea.appendChild(img);
-};
-
-function toggleMenu(){
-  menu.classList.toggle("active");
-}
-
-function clearBg(){document.getElementById("bg")?.remove();}
-function clearAll(){data={};render();}
 
 function exportICS(){
   let text="BEGIN:VCALENDAR\nVERSION:2.0\n";
@@ -358,6 +370,8 @@ END:VEVENT\n`;
   a.click();
 }
 
+/* 初始化 */
+load();
 render();
 </script>
 
