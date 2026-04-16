@@ -15,7 +15,7 @@ body{
 }
 input{display:none}
 
-/* ✅ 全部黑字 */
+/* 黑字 */
 button{
   color:#000 !important;
   font-weight:500;
@@ -39,7 +39,7 @@ button:active{transform:scale(0.94)}
   backdrop-filter:blur(20px);
 }
 
-/* 🔥 浮動工具球 */
+/* 浮動工具 */
 .fab{
   position:fixed;
   right:20px;
@@ -55,7 +55,6 @@ button:active{transform:scale(0.94)}
   z-index:9999;
 }
 
-/* 🔥 浮動選單動畫 */
 .fabMenu{
   position:fixed;
   right:20px;
@@ -64,7 +63,6 @@ button:active{transform:scale(0.94)}
   flex-direction:column;
   gap:10px;
   z-index:9999;
-
   opacity:0;
   transform:translateY(20px);
   pointer-events:none;
@@ -76,16 +74,15 @@ button:active{transform:scale(0.94)}
   pointer-events:auto;
 }
 
-/* 🧩 分組卡片 */
+/* ⭐ 半透明選單 */
 .group{
-  background:rgba(255,255,255,0.9);
+  background:rgba(255,255,255,0.6);
   backdrop-filter:blur(20px);
   border-radius:18px;
   padding:8px;
   box-shadow:0 4px 16px rgba(0,0,0,0.08);
 }
 
-/* 按鈕 */
 .group button{
   width:100%;
   padding:10px;
@@ -95,7 +92,6 @@ button:active{transform:scale(0.94)}
   font-size:14px;
 }
 
-/* 分隔線 */
 .group button:not(:last-child){
   border-bottom:1px solid rgba(0,0,0,0.05);
 }
@@ -115,6 +111,18 @@ button:active{transform:scale(0.94)}
   height:100%;
   object-fit:cover;
   z-index:0;
+}
+
+/* ⭐ 背景淡化層 */
+#bgOverlay{
+  position:absolute;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(255,255,255,0);
+  z-index:1;
+  pointer-events:none;
 }
 
 /* 內容 */
@@ -197,7 +205,6 @@ button:active{transform:scale(0.94)}
 .bottom button:nth-child(4){background:#d6c2f0}
 .bottom button:nth-child(5){background:#bfe3d0}
 
-/* iOS按壓效果 */
 .bottom button.active{
   box-shadow: inset 0 2px 6px rgba(0,0,0,0.2);
   filter: brightness(0.95);
@@ -220,7 +227,6 @@ button:active{transform:scale(0.94)}
   <button onclick="toggleFab()">⚙️</button>
 </div>
 
-<!-- 🔥 浮動選單（分組） -->
 <div class="fabMenu" id="fabMenu">
 
   <div class="group">
@@ -232,6 +238,7 @@ button:active{transform:scale(0.94)}
   <div class="group">
     <button onclick="clearBg()">清除背景</button>
     <button onclick="clearStickers()">清除貼圖</button>
+    <button onclick="clearAll()">清空班表</button>
   </div>
 
   <div class="group">
@@ -241,7 +248,12 @@ button:active{transform:scale(0.94)}
   </div>
 
   <div class="group">
-    <button onclick="clearAll()">清空班表</button>
+    <button onclick="setBgFade(0.6)">背景淡化60%</button>
+    <button onclick="setBgFade(0.9)">背景淡化90%</button>
+    <button onclick="setBgFade(0)">取消背景淡化</button>
+  </div>
+
+  <div class="group">
     <button onclick="exportICS()">輸出行事曆</button>
   </div>
 
@@ -253,6 +265,8 @@ button:active{transform:scale(0.94)}
 <input id="bgInput" type="file">
 
 <div id="captureArea">
+  <div id="bgOverlay"></div>
+
   <div class="header">
     <button onclick="changeMonth(-1)">←</button>
     <h2 id="title"></h2>
@@ -297,6 +311,10 @@ function setType(e,t){
 }
 
 function changeMonth(n){currentDate.setMonth(currentDate.getMonth()+n);render()}
+
+function setBgFade(v){
+  document.getElementById("bgOverlay").style.background=`rgba(255,255,255,${v})`;
+}
 
 function render(){
   calendar.innerHTML="";
