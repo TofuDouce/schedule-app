@@ -35,33 +35,40 @@ input{display:none}
   border-radius:8px;
   background:#eee;
   color:#000;
-  font-size:14px;
 }
 
 /* 班表切換 */
 .sheetBtn{background:#ddd !important}
 .sheetBtn.active{background:#bbb !important}
 
-/* 截圖區 */
+/* ⭐ 截圖區（關鍵） */
 #captureArea{
   position:relative;
   border-radius:24px;
   overflow:hidden;
 }
 
-/* 背景 */
+/* ⭐ 背景（固定最底層） */
 #bg{
   position:absolute;
+  top:0;
+  left:0;
   width:100%;
   height:100%;
   object-fit:cover;
   z-index:0;
 }
 
+/* ⭐ 所有內容強制在上層 */
+.header,
+.weekRow,
+.calendar{
+  position:relative;
+  z-index:2;
+}
+
 /* header */
 .header{
-  position:relative;
-  z-index:1;
   display:flex;
   justify-content:space-between;
   align-items:center;
@@ -193,23 +200,19 @@ input{display:none}
 
 <script>
 let selected="";
-let currentDate=new Date(2026,3);
+let currentDate=new Date(2026,1);
 let alpha=1;
 let currentSheet=1;
 let data={};
 
-/* 儲存 */
 function save(){
   localStorage.setItem("sheet"+currentSheet,JSON.stringify(data));
 }
-
-/* 載入 */
 function load(){
   let saved=localStorage.getItem("sheet"+currentSheet);
   data=saved?JSON.parse(saved):{};
 }
 
-/* 切換班表 */
 function switchSheet(n){
   currentSheet=n;
   load();
@@ -218,20 +221,17 @@ function switchSheet(n){
   render();
 }
 
-/* 班別 */
 function setType(e,t){
   selected=t;
   document.querySelectorAll(".bottom button").forEach(b=>b.classList.remove("active"));
   e.target.classList.add("active");
 }
 
-/* 月份 */
 function changeMonth(n){
   currentDate.setMonth(currentDate.getMonth()+n);
   render();
 }
 
-/* 渲染 */
 function render(){
   calendar.innerHTML="";
   const y=currentDate.getFullYear();
@@ -286,7 +286,7 @@ function render(){
   }
 }
 
-/* 背景 */
+/* ⭐ 背景正常 */
 bgInput.onchange=e=>{
   let file=e.target.files[0];
   if(!file)return;
@@ -300,12 +300,13 @@ bgInput.onchange=e=>{
   bg.src=URL.createObjectURL(file);
 };
 
-/* ⭐ 清除貼圖 */
+function clearBg(){document.getElementById("bg")?.remove()}
+
+/* 貼圖 */
 function clearStickers(){
   document.querySelectorAll(".sticker").forEach(s=>s.remove());
 }
 
-/* 貼圖 */
 stickerInput.onchange=e=>{
   let file=e.target.files[0];
   if(!file)return;
@@ -339,7 +340,6 @@ stickerInput.onchange=e=>{
 };
 
 function toggleMenu(){menu.classList.toggle("active")}
-function clearBg(){document.getElementById("bg")?.remove()}
 function clearAll(){data={};save();render()}
 
 function setOpacity(v){
