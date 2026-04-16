@@ -14,15 +14,26 @@ input[type=file]{display:none}
 .topbar{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .topbar button{height:48px;border:none;border-radius:12px;background:#fff;font-size:20px}
 
+/* 功能選單 */
+#menu{display:none;background:#fff;border-radius:12px;padding:10px;margin-top:8px}
+#menu button{width:100%;margin:5px 0;padding:10px;border:none;border-radius:8px;background:#eee}
+
 /* header */
 .header{display:flex;justify-content:space-between;align-items:center;margin:10px 0}
 .header button{border:none;background:#fff;border-radius:10px;padding:8px 12px}
 
-/* 班表區 */
+/* 截圖區 */
+#captureArea{
+  background:#fff;
+  border-radius:20px;
+  padding:12px;
+}
+
+/* 班表 */
 #scheduleArea{
   position:relative;
-  padding:10px; /* 🔥 截圖安全邊距 */
-  border-radius:20px;
+  padding:10px;
+  border-radius:16px;
   overflow:hidden;
 }
 
@@ -34,7 +45,17 @@ input[type=file]{display:none}
   object-fit:cover;
   z-index:0;
 }
-.blur{filter:blur(10px)}
+.blur{filter:blur(12px)}
+
+/* 星期 */
+.weekRow{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  margin-bottom:6px;
+  position:relative;
+  z-index:1;
+}
+.weekRow div{text-align:center;font-weight:bold}
 
 /* 日曆 */
 .calendar{
@@ -44,9 +65,6 @@ input[type=file]{display:none}
   grid-template-columns:repeat(7,1fr);
   gap:8px;
 }
-
-/* 星期 */
-.week{text-align:center;font-weight:bold}
 
 /* 日期格 */
 .day{
@@ -62,7 +80,7 @@ input[type=file]{display:none}
 .saturday{background:#f3f3f3}
 
 /* 班別 */
-.shift{width:80%;border-radius:8px;margin-top:2px;text-align:center}
+.shift{width:80%;border-radius:8px;margin-top:2px;text-align:center;color:#000}
 .morning{background:#f7e7a9}
 .noon{background:#f5c6aa}
 .night{background:#d8c3a5}
@@ -89,26 +107,46 @@ input[type=file]{display:none}
 
 <body>
 
+<!-- 工具列 -->
 <div class="topbar">
   <button onclick="exportImage()">📸</button>
   <button onclick="stickerInput.click()">🖼️</button>
   <button onclick="bgInput.click()">🎨</button>
-  <button onclick="toggleBlur()">🌫️</button>
+  <button onclick="toggleMenu()">⚙️</button>
+</div>
+
+<div id="menu">
+  <button onclick="clearBg()">清除背景</button>
+  <button onclick="toggleBlur()">模糊背景</button>
+  <button onclick="clearAll()">清空班表</button>
 </div>
 
 <input id="stickerInput" type="file">
 <input id="bgInput" type="file">
 
-<div class="header">
-  <button onclick="changeMonth(-1)">←</button>
-  <h2 id="title"></h2>
-  <button onclick="changeMonth(1)">→</button>
+<!-- 截圖區 -->
+<div id="captureArea">
+
+  <div class="header">
+    <button onclick="changeMonth(-1)">←</button>
+    <h2 id="title"></h2>
+    <button onclick="changeMonth(1)">→</button>
+  </div>
+
+  <div id="scheduleArea">
+
+    <div class="weekRow">
+      <div>一</div><div>二</div><div>三</div>
+      <div>四</div><div>五</div><div>六</div><div>日</div>
+    </div>
+
+    <div class="calendar" id="calendar"></div>
+
+  </div>
+
 </div>
 
-<div id="scheduleArea">
-  <div class="calendar" id="calendar"></div>
-</div>
-
+<!-- 班別 -->
 <div class="bottom">
   <button onclick="setType(event,'morning')">早</button>
   <button onclick="setType(event,'noon')">午</button>
@@ -125,30 +163,26 @@ let data={};
 let currentDate=new Date(2026,3);
 let isBlur=false;
 
+/* 班別 */
 function setType(e,t){
   selected=t;
   document.querySelectorAll(".bottom button").forEach(b=>b.classList.remove("active"));
   e.target.classList.add("active");
 }
 
+/* 月份 */
 function changeMonth(n){
   currentDate.setMonth(currentDate.getMonth()+n);
   render();
 }
 
+/* 渲染 */
 function render(){
   calendar.innerHTML="";
   const y=currentDate.getFullYear();
   const m=currentDate.getMonth();
 
   title.innerText=y+"年"+(m+1)+"月";
-
-  ["一","二","三","四","五","六","日"].forEach(w=>{
-    let d=document.createElement("div");
-    d.className="week";
-    d.innerText=w;
-    calendar.appendChild(d);
-  });
 
   let first=(new Date(y,m,1).getDay()+6)%7;
   let days=new Date(y,m+1,0).getDate();
@@ -178,9 +212,8 @@ function render(){
       if(!selected)return;
       let arr=data[key]||[];
 
-      if(selected==="full"){
-        arr=["full"];
-      }else{
+      if(selected==="full") arr=["full"];
+      else{
         arr=arr.filter(x=>x!=="full");
         if(arr.includes(selected)) arr=arr.filter(x=>x!==selected);
         else arr.push(selected);
@@ -194,12 +227,12 @@ function render(){
   }
 }
 
-/* 🔥 核心截圖（穩定版） */
+/* 截圖 */
 function exportImage(){
   const bg=document.getElementById("bg");
   if(bg && isBlur) bg.classList.add("blur");
 
-  html2canvas(document.getElementById("scheduleArea")).then(canvas=>{
+  html2canvas(document.getElementById("captureArea")).then(canvas=>{
     let img=new Image();
     img.src=canvas.toDataURL();
 
@@ -222,6 +255,7 @@ bgInput.onchange=e=>{
   bg.src=URL.createObjectURL(file);
 };
 
+/* 模糊 */
 function toggleBlur(){
   isBlur=!isBlur;
   document.getElementById("bg")?.classList.toggle("blur");
@@ -256,6 +290,15 @@ stickerInput.onchange=e=>{
 
   scheduleArea.appendChild(img);
 };
+
+/* 選單 */
+function toggleMenu(){
+  menu.style.display = menu.style.display==="block" ? "none" : "block";
+}
+
+/* 清除 */
+function clearBg(){document.getElementById("bg")?.remove();}
+function clearAll(){data={};render();}
 
 render();
 </script>
