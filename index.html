@@ -18,14 +18,14 @@ input{display:none}
 #menu{display:none;background:#fff;border-radius:12px;padding:10px;margin-top:8px}
 #menu button{width:100%;margin:5px 0;padding:10px;border:none;border-radius:8px;background:#eee}
 
-/* 🔥 截圖區（整體背景在這） */
+/* 截圖區 */
 #captureArea{
   position:relative;
   border-radius:24px;
   overflow:hidden;
 }
 
-/* 🔥 背景（整塊） */
+/* 背景 */
 #bg{
   position:absolute;
   width:100%;
@@ -43,7 +43,6 @@ input{display:none}
   justify-content:space-between;
   align-items:center;
   padding:10px;
-  color:#000;
 }
 
 /* 星期 */
@@ -51,8 +50,8 @@ input{display:none}
   display:grid;
   grid-template-columns:repeat(7,1fr);
   padding:0 10px;
-  z-index:1;
   position:relative;
+  z-index:1;
 }
 .weekRow div{text-align:center;font-weight:bold}
 
@@ -66,19 +65,18 @@ input{display:none}
   z-index:1;
 }
 
-/* 🔥 日期格（重寫） */
+/* 日期格（🔥透明控制） */
 .day{
   width:100%;
-  min-height:70px;   /* ✅ 高度可長 */
-  background:#fff;
+  min-height:70px;
   border-radius:14px;
   display:flex;
   flex-direction:column;
   align-items:center;
   padding-top:4px;
+  background:rgba(255,255,255,var(--alpha,1));
 }
 
-/* 班別 */
 .shift{
   width:80%;
   border-radius:8px;
@@ -93,10 +91,14 @@ input{display:none}
 .full{background:#d6c2f0}
 .off{background:#bfe3d0}
 
-.sunday{background:#FBE7EF;color:red}
+.sunday{background:rgba(255,220,230,var(--alpha,1));color:red}
 
-/* 貼圖 */
-.sticker{position:absolute;width:80px;z-index:999}
+/* 貼圖（🔥強制最上層） */
+.sticker{
+  position:absolute;
+  width:80px;
+  z-index:9999;
+}
 
 /* 底部 */
 .bottom{display:flex;gap:6px;margin-top:10px}
@@ -124,6 +126,10 @@ input{display:none}
 <div id="menu">
   <button onclick="clearBg()">清除背景</button>
   <button onclick="toggleBlur()">模糊背景</button>
+  <button onclick="setOpacity(1)">不透明</button>
+  <button onclick="setOpacity(0.75)">75%</button>
+  <button onclick="setOpacity(0.5)">50%</button>
+  <button onclick="setOpacity(0.25)">25%</button>
   <button onclick="clearAll()">清空班表</button>
   <button onclick="exportICS()">輸出行事曆</button>
 </div>
@@ -164,17 +170,20 @@ let data={};
 let currentDate=new Date(2026,3);
 let isBlur=false;
 
+/* 班別 */
 function setType(e,t){
   selected=t;
   document.querySelectorAll(".bottom button").forEach(b=>b.classList.remove("active"));
   e.target.classList.add("active");
 }
 
+/* 月份 */
 function changeMonth(n){
   currentDate.setMonth(currentDate.getMonth()+n);
   render();
 }
 
+/* 渲染 */
 function render(){
   calendar.innerHTML="";
   const y=currentDate.getFullYear();
@@ -224,6 +233,11 @@ function render(){
   }
 }
 
+/* 半透明 */
+function setOpacity(v){
+  document.documentElement.style.setProperty('--alpha',v);
+}
+
 /* 截圖 */
 function exportImage(){
   html2canvas(captureArea).then(canvas=>{
@@ -243,7 +257,7 @@ bgInput.onchange=e=>{
   if(!bg){
     bg=document.createElement("img");
     bg.id="bg";
-    captureArea.prepend(bg); /* 🔥 改這裡 */
+    captureArea.prepend(bg);
   }
   bg.src=URL.createObjectURL(file);
 };
@@ -252,6 +266,39 @@ function toggleBlur(){
   isBlur=!isBlur;
   document.getElementById("bg")?.classList.toggle("blur");
 }
+
+/* 🔥貼圖修正 */
+stickerInput.onchange=e=>{
+  let file=e.target.files[0];
+  if(!file)return;
+
+  let img=document.createElement("img");
+  img.src=URL.createObjectURL(file);
+  img.className="sticker";
+
+  img.style.left="50%";
+  img.style.top="50%";
+  img.style.transform="translate(-50%,-50%)";
+
+  let drag=false,ox,oy;
+
+  img.ontouchstart=e=>{
+    drag=true;
+    img.style.transform="";
+    ox=e.touches[0].clientX-img.offsetLeft;
+    oy=e.touches[0].clientY-img.offsetTop;
+  };
+
+  img.ontouchmove=e=>{
+    if(!drag)return;
+    img.style.left=(e.touches[0].clientX-ox)+"px";
+    img.style.top=(e.touches[0].clientY-oy)+"px";
+  };
+
+  img.ontouchend=()=>drag=false;
+
+  captureArea.appendChild(img); /* 🔥關鍵修正 */
+};
 
 function toggleMenu(){
   menu.style.display=menu.style.display==="block"?"none":"block";
