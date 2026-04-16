@@ -88,15 +88,12 @@ input{display:none}
 
 .morning{background:#f7e7a9}
 .noon{background:#f5c6aa}
-.night{background:#74A7FF} /* ✅ 晚班藍色 */
+.night{background:#B7E1FF} /* ✅ 新晚班藍 */
 .full{background:#d6c2f0}
 .off{background:#bfe3d0}
 
-/* 星期日（莫蘭迪粉） */
-.sunday{
-  background:#F9DDE5;
-  color:red;
-}
+/* 星期日（顏色交由 JS 控制透明） */
+.sunday{color:red}
 
 /* 貼圖 */
 .sticker{
@@ -110,7 +107,7 @@ input{display:none}
 .bottom button{flex:1;padding:10px;border:none;border-radius:20px;color:#000}
 .bottom button:nth-child(1){background:#f7e7a9}
 .bottom button:nth-child(2){background:#f5c6aa}
-.bottom button:nth-child(3){background:#74A7FF} /* 同步晚班 */
+.bottom button:nth-child(3){background:#B7E1FF}
 .bottom button:nth-child(4){background:#d6c2f0}
 .bottom button:nth-child(5){background:#bfe3d0}
 .bottom button.active{outline:2px solid #333}
@@ -131,10 +128,9 @@ input{display:none}
 <div id="menu">
   <button onclick="clearBg()">清除背景</button>
   <button onclick="toggleBlur()">模糊背景</button>
-  <button onclick="setOpacity(1)">不透明</button>
-  <button onclick="setOpacity(0.75)">75%</button>
-  <button onclick="setOpacity(0.5)">50%</button>
-  <button onclick="setOpacity(0.25)">25%</button>
+  <button onclick="setOpacity(0.9)">90%</button>
+  <button onclick="setOpacity(0.6)">60%</button>
+  <button onclick="setOpacity(0.3)">30%</button>
   <button onclick="clearAll()">清空班表</button>
   <button onclick="exportICS()">輸出行事曆</button>
 </div>
@@ -173,6 +169,7 @@ input{display:none}
 let selected="";
 let data={};
 let currentDate=new Date(2026,3);
+let alpha=1;
 
 /* 班別 */
 function setType(e,t){
@@ -206,13 +203,14 @@ function render(){
 
     let idx=(first+i-1)%7;
 
-    /* ✅ 星期六（莫蘭迪藍綠） */
+    /* 星期六 */
     if(idx==5){
-      d.style.background="#D6EEEC";
+      d.style.background=`rgba(214,238,236,${alpha})`;
     }
 
     /* 星期日 */
     if(idx==6){
+      d.style.background=`rgba(249,221,229,${alpha})`;
       d.classList.add("sunday");
     }
 
@@ -246,9 +244,11 @@ function render(){
   }
 }
 
-/* 半透明 */
+/* 透明度 */
 function setOpacity(v){
+  alpha=v;
   document.documentElement.style.setProperty('--alpha',v);
+  render();
 }
 
 /* 截圖 */
