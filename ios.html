@@ -1,8 +1,3 @@
-IOS ver2.2
-
-修正班別排序性
-休 ＞ 全 ＞ 早 / 午 / 晚
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -42,11 +37,11 @@ button:active{transform:scale(0.94)}
   backdrop-filter:blur(20px);
 }
 
-/* 浮動按鈕 */
+/* ⭐ 修正：齒輪上移 */
 .fab{
   position:fixed;
   right:20px;
-  bottom:20px;
+  bottom:80px;
   width:56px;
   height:56px;
   border-radius:50%;
@@ -61,7 +56,7 @@ button:active{transform:scale(0.94)}
 .fabMenu{
   position:fixed;
   right:20px;
-  bottom:90px;
+  bottom:150px;
   display:flex;
   flex-direction:column;
   gap:10px;
@@ -152,6 +147,13 @@ button:active{transform:scale(0.94)}
   align-items:center;
   padding-top:4px;
   background:rgba(255,255,255,var(--alpha,1));
+  transition:0.2s;
+}
+
+/* ⭐ 雙擊動畫 */
+.day.flash{
+  transform:scale(0.95);
+  background:#fff0f0 !important;
 }
 
 .shift{
@@ -212,7 +214,6 @@ button:active{transform:scale(0.94)}
 </div>
 
 <div class="fabMenu" id="fabMenu">
-
   <div class="group">
     <button onclick="switchSheet(1)">班表❶</button>
     <button onclick="switchSheet(2)">班表❷</button>
@@ -240,7 +241,6 @@ button:active{transform:scale(0.94)}
   <div class="group">
     <button onclick="exportICS()">輸出行事曆</button>
   </div>
-
 </div>
 
 <button class="fab" onclick="toggleFab()">⚙️</button>
@@ -281,6 +281,9 @@ let currentDate=new Date();
 let alpha=1;
 let currentSheet=1;
 let data={};
+
+let lastClickTime=0;
+let lastKey="";
 
 function toggleFab(){fabMenu.classList.toggle("active")}
 
@@ -337,29 +340,40 @@ function render(){
     });
 
     d.onclick=()=>{
-      if(!selected)return;
+      let now=Date.now();
 
-      let arr=data[key]||[];
+      /* ⭐ 雙擊刪除 */
+      if(lastKey===key && now-lastClickTime<300){
+        data[key]=[];
+        d.classList.add("flash");
+        setTimeout(()=>d.classList.remove("flash"),200);
+      }else{
+        if(!selected)return;
 
-      if(selected==="off"){
-        arr=["off"];
-      }
-      else if(selected==="full"){
-        if(!arr.includes("off")){
-          arr=["full"];
+        let arr=data[key]||[];
+
+        if(selected==="off"){
+          arr=["off"];
         }
-      }
-      else{
-        arr=arr.filter(x=>x!=="full" && x!=="off");
-
-        if(arr.includes(selected)){
-          arr=arr.filter(x=>x!==selected);
-        }else{
-          arr.push(selected);
+        else if(selected==="full"){
+          if(!arr.includes("off")) arr=["full"];
         }
+        else{
+          arr=arr.filter(x=>x!=="full" && x!=="off");
+
+          if(arr.includes(selected)){
+            arr=arr.filter(x=>x!==selected);
+          }else{
+            arr.push(selected);
+          }
+        }
+
+        data[key]=arr;
       }
 
-      data[key]=arr;
+      lastClickTime=now;
+      lastKey=key;
+
       save();
       render();
     };
