@@ -8,27 +8,23 @@
 
 <style>
 body{margin:0;padding:10px;font-family:sans-serif;background:#f5f5f5}
-
-/* 🔒 隱藏 input */
 input[type=file]{display:none}
 
-/* 🔝 工具列 */
+/* 工具列 */
 .topbar{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .topbar button{height:48px;border:none;border-radius:12px;background:#fff;font-size:20px}
 
-/* ⚙️ 選單 */
-#menu{display:none;background:#fff;border-radius:12px;padding:10px;margin-top:8px}
-#menu button{width:100%;margin:4px 0;padding:8px;border:none;border-radius:8px;background:#eee}
-
-/* 📅 截圖區 */
-#captureArea{position:relative}
-
-/* 📅 header */
+/* header */
 .header{display:flex;justify-content:space-between;align-items:center;margin:10px 0}
 .header button{border:none;background:#fff;border-radius:10px;padding:8px 12px}
 
-/* 📅 班表 */
-#scheduleArea{position:relative;overflow:hidden}
+/* 班表區 */
+#scheduleArea{
+  position:relative;
+  padding:10px; /* 🔥 截圖安全邊距 */
+  border-radius:20px;
+  overflow:hidden;
+}
 
 /* 背景 */
 #bg{
@@ -38,7 +34,7 @@ input[type=file]{display:none}
   object-fit:cover;
   z-index:0;
 }
-.blur{filter:blur(8px)}
+.blur{filter:blur(10px)}
 
 /* 日曆 */
 .calendar{
@@ -46,26 +42,27 @@ input[type=file]{display:none}
   z-index:1;
   display:grid;
   grid-template-columns:repeat(7,1fr);
-  gap:6px;
+  gap:8px;
 }
 
-.week{text-align:center;font-size:12px;font-weight:bold}
+/* 星期 */
+.week{text-align:center;font-weight:bold}
 
+/* 日期格 */
 .day{
   aspect-ratio:1;
   background:#fff;
-  border-radius:10px;
+  border-radius:14px;
   display:flex;
   flex-direction:column;
   align-items:center;
-  font-size:12px;
 }
 
 .sunday{background:#FBE7EF;color:red}
 .saturday{background:#f3f3f3}
 
 /* 班別 */
-.shift{width:80%;border-radius:6px;margin-top:2px;text-align:center}
+.shift{width:80%;border-radius:8px;margin-top:2px;text-align:center}
 .morning{background:#f7e7a9}
 .noon{background:#f5c6aa}
 .night{background:#d8c3a5}
@@ -73,9 +70,9 @@ input[type=file]{display:none}
 .off{background:#bfe3d0}
 
 /* 貼圖 */
-.sticker{position:absolute;width:70px;z-index:999}
+.sticker{position:absolute;width:80px;z-index:999}
 
-/* 🔽 底部 */
+/* 底部 */
 .bottom{display:flex;gap:6px;margin-top:10px}
 .bottom button{flex:1;padding:10px;border:none;border-radius:20px;color:#000}
 .bottom button:nth-child(1){background:#f7e7a9}
@@ -85,47 +82,33 @@ input[type=file]{display:none}
 .bottom button:nth-child(5){background:#bfe3d0}
 .bottom button.active{outline:2px solid #333}
 
-/* 📸 預覽 */
-#preview{margin-top:15px;text-align:center}
-#preview img{width:100%;border-radius:10px}
+/* 預覽 */
+#preview img{width:100%;margin-top:10px;border-radius:12px}
 </style>
 </head>
 
 <body>
 
-<!-- 工具列 -->
 <div class="topbar">
   <button onclick="exportImage()">📸</button>
   <button onclick="stickerInput.click()">🖼️</button>
   <button onclick="bgInput.click()">🎨</button>
-  <button onclick="toggleMenu()">⚙️</button>
+  <button onclick="toggleBlur()">🌫️</button>
 </div>
 
-<div id="menu">
-  <button onclick="clearBg()">清除背景</button>
-  <button onclick="toggleBlur()">模糊背景</button>
-  <button onclick="clearAll()">清空班表</button>
+<input id="stickerInput" type="file">
+<input id="bgInput" type="file">
+
+<div class="header">
+  <button onclick="changeMonth(-1)">←</button>
+  <h2 id="title"></h2>
+  <button onclick="changeMonth(1)">→</button>
 </div>
 
-<input id="stickerInput" type="file" accept="image/*">
-<input id="bgInput" type="file" accept="image/*">
-
-<!-- 🔥 截圖區 -->
-<div id="captureArea">
-
-  <div class="header">
-    <button onclick="changeMonth(-1)">←</button>
-    <h3 id="title"></h3>
-    <button onclick="changeMonth(1)">→</button>
-  </div>
-
-  <div id="scheduleArea">
-    <div class="calendar" id="calendar"></div>
-  </div>
-
+<div id="scheduleArea">
+  <div class="calendar" id="calendar"></div>
 </div>
 
-<!-- 班別 -->
 <div class="bottom">
   <button onclick="setType(event,'morning')">早</button>
   <button onclick="setType(event,'noon')">午</button>
@@ -142,43 +125,38 @@ let data={};
 let currentDate=new Date(2026,3);
 let isBlur=false;
 
-/* 班別 */
 function setType(e,t){
   selected=t;
   document.querySelectorAll(".bottom button").forEach(b=>b.classList.remove("active"));
   e.target.classList.add("active");
 }
 
-/* 月份 */
 function changeMonth(n){
   currentDate.setMonth(currentDate.getMonth()+n);
   render();
 }
 
-/* 渲染 */
 function render(){
-  const cal=calendar;
-  cal.innerHTML="";
-
+  calendar.innerHTML="";
   const y=currentDate.getFullYear();
   const m=currentDate.getMonth();
 
   title.innerText=y+"年"+(m+1)+"月";
 
   ["一","二","三","四","五","六","日"].forEach(w=>{
-    const d=document.createElement("div");
+    let d=document.createElement("div");
     d.className="week";
     d.innerText=w;
-    cal.appendChild(d);
+    calendar.appendChild(d);
   });
 
   let first=(new Date(y,m,1).getDay()+6)%7;
   let days=new Date(y,m+1,0).getDate();
 
-  for(let i=0;i<first;i++) cal.appendChild(document.createElement("div"));
+  for(let i=0;i<first;i++) calendar.appendChild(document.createElement("div"));
 
   for(let i=1;i<=days;i++){
-    const d=document.createElement("div");
+    let d=document.createElement("div");
     d.className="day";
 
     let idx=(first+i-1)%7;
@@ -190,7 +168,7 @@ function render(){
     let key=y+"-"+m+"-"+i;
 
     (data[key]||[]).forEach(t=>{
-      const s=document.createElement("div");
+      let s=document.createElement("div");
       s.className="shift "+t;
       s.innerText={morning:"早",noon:"午",night:"晚",full:"全",off:"休"}[t];
       d.appendChild(s);
@@ -212,35 +190,49 @@ function render(){
       render();
     };
 
-    cal.appendChild(d);
+    calendar.appendChild(d);
   }
 }
 
-/* 📸 截圖 */
+/* 🔥 核心截圖（穩定版） */
 function exportImage(){
   const bg=document.getElementById("bg");
   if(bg && isBlur) bg.classList.add("blur");
 
-  html2canvas(document.getElementById("captureArea")).then(canvas=>{
-    const img=new Image();
+  html2canvas(document.getElementById("scheduleArea")).then(canvas=>{
+    let img=new Image();
     img.src=canvas.toDataURL();
 
     preview.innerHTML="";
     preview.appendChild(img);
-
-    const tip=document.createElement("div");
-    tip.innerText="👉 長按圖片儲存";
-    tip.style.fontSize="12px";
-    preview.appendChild(tip);
   });
+}
+
+/* 背景 */
+bgInput.onchange=e=>{
+  let file=e.target.files[0];
+  if(!file)return;
+
+  let bg=document.getElementById("bg");
+  if(!bg){
+    bg=document.createElement("img");
+    bg.id="bg";
+    scheduleArea.prepend(bg);
+  }
+  bg.src=URL.createObjectURL(file);
+};
+
+function toggleBlur(){
+  isBlur=!isBlur;
+  document.getElementById("bg")?.classList.toggle("blur");
 }
 
 /* 貼圖 */
 stickerInput.onchange=e=>{
-  const file=e.target.files[0];
+  let file=e.target.files[0];
   if(!file)return;
 
-  const img=document.createElement("img");
+  let img=document.createElement("img");
   img.src=URL.createObjectURL(file);
   img.className="sticker";
   img.style.top="50px";
@@ -264,31 +256,6 @@ stickerInput.onchange=e=>{
 
   scheduleArea.appendChild(img);
 };
-
-/* 背景 */
-bgInput.onchange=e=>{
-  const file=e.target.files[0];
-  if(!file)return;
-
-  let bg=document.getElementById("bg");
-  if(!bg){
-    bg=document.createElement("img");
-    bg.id="bg";
-    scheduleArea.prepend(bg);
-  }
-  bg.src=URL.createObjectURL(file);
-};
-
-/* 控制 */
-function clearBg(){document.getElementById("bg")?.remove();}
-function toggleBlur(){
-  isBlur=!isBlur;
-  document.getElementById("bg")?.classList.toggle("blur");
-}
-function toggleMenu(){
-  menu.style.display=menu.style.display==="block"?"none":"block";
-}
-function clearAll(){data={};render();}
 
 render();
 </script>
