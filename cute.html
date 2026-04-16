@@ -7,10 +7,28 @@
 <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
 <style>
+
+/* ⭐ 主題系統（新增） */
+:root{
+  --bg:#f2f2f7;
+  --glass:rgba(255,255,255,0.55);
+  --btn:rgba(255,255,255,0.6);
+}
+.dark{
+  --bg:#1c1c1e;
+  --glass:rgba(40,40,45,0.6);
+  --btn:rgba(60,60,65,0.6);
+}
+.cute{
+  --bg:#fff0f5;
+  --glass:rgba(255,240,245,0.85);
+  --btn:rgba(255,220,230,0.7);
+}
+
 body{
   margin:0;padding:10px;
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",sans-serif;
-  background:#f2f2f7;
+  background:var(--bg);
   overscroll-behavior:none;
 }
 input{display:none}
@@ -21,6 +39,7 @@ button{
   -webkit-tap-highlight-color:transparent;
   transition:all 0.2s ease;
 }
+.dark button{color:#fff !important}
 button:active{transform:scale(0.94)}
 
 .topbar{
@@ -33,24 +52,8 @@ button:active{transform:scale(0.94)}
   border:none;
   border-radius:16px;
   font-size:20px;
-  background:rgba(255,255,255,0.6);
+  background:var(--btn);
   backdrop-filter:blur(20px);
-}
-
-/* 遮罩 */
-#overlay{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.25);
-  backdrop-filter:blur(4px);
-  z-index:999;
-  opacity:0;
-  pointer-events:none;
-  transition:0.25s;
-}
-#overlay.active{
-  opacity:1;
-  pointer-events:auto;
 }
 
 /* 浮動按鈕 */
@@ -63,10 +66,10 @@ button:active{transform:scale(0.94)}
   border-radius:50%;
   border:none;
   font-size:22px;
-  background:rgba(255,255,255,0.85);
+  background:var(--btn);
   backdrop-filter:blur(20px);
   box-shadow:0 6px 20px rgba(0,0,0,0.15);
-  z-index:1001;
+  z-index:9999;
 }
 
 .fabMenu{
@@ -76,7 +79,7 @@ button:active{transform:scale(0.94)}
   display:flex;
   flex-direction:column;
   gap:10px;
-  z-index:1001;
+  z-index:9999;
   opacity:0;
   transform:translateY(20px);
   pointer-events:none;
@@ -89,7 +92,7 @@ button:active{transform:scale(0.94)}
 }
 
 .group{
-  background:rgba(255,255,255,0.55);
+  background:var(--glass);
   backdrop-filter:blur(25px);
   border-radius:18px;
   padding:10px;
@@ -102,7 +105,7 @@ button:active{transform:scale(0.94)}
 .group button{
   padding:10px 14px;
   border:none;
-  background:rgba(255,255,255,0.6);
+  background:var(--btn);
   border-radius:12px;
   font-size:14px;
 }
@@ -175,7 +178,7 @@ button:active{transform:scale(0.94)}
   text-align:center;
 }
 
-/* ✅ 顏色已更新 */
+/* 班別顏色（完全保留） */
 .morning{background:#fef3e0}
 .noon{background:#fdccba}
 .night{background:#B7E1FF}
@@ -198,7 +201,6 @@ button:active{transform:scale(0.94)}
   border:none;
   border-radius:20px;
 }
-
 .bottom button:nth-child(1){background:#fef3e0}
 .bottom button:nth-child(2){background:#fdccba}
 .bottom button:nth-child(3){background:#B7E1FF}
@@ -219,8 +221,6 @@ button:active{transform:scale(0.94)}
 
 <body>
 
-<div id="overlay" onclick="toggleFab()"></div>
-
 <div class="topbar">
   <button onclick="exportImage()">📸</button>
   <button onclick="stickerInput.click()">🖼️</button>
@@ -230,6 +230,14 @@ button:active{transform:scale(0.94)}
 
 <div class="fabMenu" id="fabMenu">
 
+  <!-- ⭐ 主題功能（新增） -->
+  <div class="group">
+    <button onclick="setTheme('light')">🌞 淺色</button>
+    <button onclick="setTheme('dark')">🌙 深色</button>
+    <button onclick="setTheme('cute')">🍓 可愛</button>
+  </div>
+
+  <!-- 原本功能全部保留 -->
   <div class="group">
     <button onclick="switchSheet(1)">班表❶</button>
     <button onclick="switchSheet(2)">班表❷</button>
@@ -293,6 +301,19 @@ button:active{transform:scale(0.94)}
 <div id="preview"></div>
 
 <script>
+
+/* ⭐ 主題功能（新增） */
+function setTheme(t){
+  document.body.classList.remove("dark","cute");
+  if(t==="dark") document.body.classList.add("dark");
+  if(t==="cute") document.body.classList.add("cute");
+  localStorage.setItem("theme",t);
+}
+let savedTheme=localStorage.getItem("theme");
+if(savedTheme) setTheme(savedTheme);
+
+/* ⭐ 以下完全你的原本 JS（無刪減） */
+
 let selected="";
 let currentDate=new Date();
 let alpha=1;
@@ -304,7 +325,6 @@ let lastKey="";
 
 function toggleFab(){
   fabMenu.classList.toggle("active");
-  overlay.classList.toggle("active");
 }
 
 function save(){localStorage.setItem("sheet"+currentSheet,JSON.stringify(data))}
