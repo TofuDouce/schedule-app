@@ -2,140 +2,242 @@
 <html lang="zh">
 <head>
 <meta charset="UTF-8">
-<title>LINE 大頭照產生器</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LINE 大頭照產生器</title>
+
 <style>
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-    background: #f5f6fa;
-    text-align: center;
-    margin: 0;
-    padding: 20px;
-  }
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont;
+  background:#f3f4f6;
+}
 
-  .card {
-    background: white;
-    max-width: 420px;
-    margin: auto;
-    padding: 20px;
-    border-radius: 16px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-  }
+.header{
+  background:#06C755;
+  color:#fff;
+  padding:20px;
+  text-align:center;
+  font-size:20px;
+  font-weight:bold;
+}
 
-  h2 {
-    margin-bottom: 10px;
-  }
+.container{
+  max-width:520px;
+  margin:auto;
+  padding:15px;
+}
 
-  input, button {
-    margin: 8px 0;
-    padding: 10px;
-    width: 100%;
-    border-radius: 10px;
-    border: 1px solid #ddd;
-    font-size: 14px;
-  }
+.card{
+  background:#fff;
+  border-radius:16px;
+  padding:15px;
+  margin-bottom:15px;
+}
 
-  button {
-    background: #06c755;
-    color: white;
-    border: none;
-    font-weight: bold;
-    cursor: pointer;
-  }
+canvas{
+  width:100%;
+  border-radius:20px;
+  background:#eee;
+}
 
-  button:hover {
-    background: #05b44c;
-  }
+.tabs{
+  display:flex;
+  background:#eee;
+  border-radius:12px;
+  overflow:hidden;
+  margin-bottom:10px;
+}
 
-  canvas {
-    margin-top: 15px;
-    width: 100%;
-    border-radius: 12px;
-    background: #eee;
-  }
+.tabs button{
+  flex:1;
+  padding:10px;
+  border:none;
+  background:transparent;
+  font-weight:bold;
+}
 
-  .row {
-    display: flex;
-    gap: 10px;
-  }
+.active{
+  background:#fff;
+  color:#06C755;
+}
 
-  .row input {
-    flex: 1;
-  }
+.row{
+  display:flex;
+  gap:10px;
+}
+
+.row button{flex:1;}
+
+button{
+  padding:12px;
+  border-radius:10px;
+  border:none;
+  font-weight:bold;
+}
+
+.green{background:#06C755;color:#fff;}
+.gray{background:#ddd;}
+
+.colors{
+  display:flex;
+  gap:8px;
+  margin-top:10px;
+}
+
+.color{
+  width:32px;height:32px;border-radius:50%;
+  cursor:pointer;
+}
+
+input{
+  width:100%;
+  padding:10px;
+  margin-top:6px;
+  border-radius:10px;
+  border:1px solid #ddd;
+}
 </style>
 </head>
+
 <body>
 
+<div class="header">LINE 大頭照產生器</div>
+
+<div class="container">
+
 <div class="card">
-  <h2>LINE 大頭照產生器</h2>
+<div class="tabs">
+<button id="squareBtn" class="active" onclick="setShape('square')">方形原圖</button>
+<button id="circleBtn" onclick="setShape('circle')">圓形顯示</button>
+</div>
 
-  <input type="file" id="upload">
+<canvas id="canvas" width="512" height="512"></canvas>
+</div>
 
-  <div class="row">
-    <input type="color" id="bgColor" value="#ffffff">
-    <input type="text" id="text" placeholder="輸入文字或 emoji">
-  </div>
+<div class="card">
 
-  <button onclick="generate()">產生圖片</button>
-  <button onclick="download()">下載 PNG</button>
+尺寸比例
+<div class="row">
+<button onclick="setSize(480)">480</button>
+<button onclick="setSize(640)">640</button>
+<button class="green" onclick="setSize(1080)">1080</button>
+</div>
 
-  <canvas id="canvas" width="512" height="512"></canvas>
+<br>
+
+底色
+<input type="color" id="bg" value="#06C755">
+
+<div class="colors">
+<div class="color" style="background:#06C755" onclick="pick('#06C755')"></div>
+<div class="color" style="background:#FF6B6B" onclick="pick('#FF6B6B')"></div>
+<div class="color" style="background:#FFD93D" onclick="pick('#FFD93D')"></div>
+<div class="color" style="background:#4D96FF" onclick="pick('#4D96FF')"></div>
+<div class="color" style="background:#222" onclick="pick('#222')"></div>
+</div>
+
+<br>
+
+文字 / emoji
+<input id="text" placeholder="輸入文字或 emoji">
+
+文字顏色
+<input type="color" id="textColor" value="#ffffff">
+
+</div>
+
+<div class="card row">
+<button class="gray" onclick="resetAll()">重設</button>
+<button class="green" onclick="download()">下載 PNG</button>
+</div>
+
 </div>
 
 <script>
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
+const canvas=document.getElementById("canvas");
+const ctx=canvas.getContext("2d");
 
-let img = new Image();
-let loaded = false;
+let size=512;
+let shape="square";
 
-document.getElementById("upload").addEventListener("change", e => {
-  const file = e.target.files[0];
-  if (!file) return;
+function setShape(s){
+  shape=s;
+  document.getElementById("squareBtn").classList.remove("active");
+  document.getElementById("circleBtn").classList.remove("active");
 
-  const reader = new FileReader();
-  reader.onload = function(evt) {
-    img.onload = () => {
-      loaded = true;
-      generate();
-    };
-    img.src = evt.target.result;
-  };
-  reader.readAsDataURL(file);
+  if(s==="square") document.getElementById("squareBtn").classList.add("active");
+  else document.getElementById("circleBtn").classList.add("active");
+
+  draw();
+}
+
+function setSize(s){
+  size=s;
+  canvas.width=s;
+  canvas.height=s;
+  draw();
+}
+
+function pick(c){
+  document.getElementById("bg").value=c;
+  draw();
+}
+
+["bg","text","textColor"].forEach(id=>{
+  document.getElementById(id).addEventListener("input",draw);
 });
 
-function generate() {
-  const bgColor = document.getElementById("bgColor").value;
-  const text = document.getElementById("text").value;
+function draw(){
+  const bg=document.getElementById("bg").value;
+  const text=document.getElementById("text").value;
+  const color=document.getElementById("textColor").value;
 
-  // 背景
-  ctx.fillStyle = bgColor;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0,0,size,size);
 
-  if (loaded) {
-    // 裁切成正方形
-    const size = Math.min(img.width, img.height);
-    const sx = (img.width - size) / 2;
-    const sy = (img.height - size) / 2;
-
-    ctx.drawImage(img, sx, sy, size, size, 0, 0, 512, 512);
+  if(shape==="circle"){
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(size/2,size/2,size/2,0,Math.PI*2);
+    ctx.clip();
   }
 
-  // 文字 / emoji
-  if (text) {
-    ctx.font = "bold 42px sans-serif";
-    ctx.fillStyle = "#000";
-    ctx.textAlign = "center";
-    ctx.fillText(text, 256, 480);
+  ctx.fillStyle=bg;
+  ctx.fillRect(0,0,size,size);
+
+  if(text){
+    let fontSize=size/3;
+    ctx.fillStyle=color;
+    ctx.font=`bold ${fontSize}px sans-serif`;
+
+    while(ctx.measureText(text).width>size*0.8){
+      fontSize-=5;
+      ctx.font=`bold ${fontSize}px sans-serif`;
+    }
+
+    ctx.textAlign="center";
+    ctx.textBaseline="middle";
+    ctx.fillText(text,size/2,size/2);
   }
+
+  if(shape==="circle") ctx.restore();
 }
 
-function download() {
-  const link = document.createElement("a");
-  link.download = "line-avatar.png";
-  link.href = canvas.toDataURL("image/png");
+function download(){
+  const link=document.createElement("a");
+  link.download="line-avatar.png";
+  link.href=canvas.toDataURL("image/png");
   link.click();
 }
+
+function resetAll(){
+  document.getElementById("text").value="";
+  document.getElementById("bg").value="#06C755";
+  document.getElementById("textColor").value="#ffffff";
+  shape="square";
+  setShape("square");
+}
+
+draw();
 </script>
 
 </body>
