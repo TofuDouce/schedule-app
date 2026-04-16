@@ -25,21 +25,34 @@ padding:10px;
 background:#fff;
 border-radius:16px;
 padding:10px;
+
+/* ⭐ 關鍵：讓按鈕自動排列 */
+display:flex;
+flex-wrap:wrap;
+gap:6px;
 }
 
 .group h3{
+width:100%;
 margin:5px 0;
 font-size:14px;
 color:#888;
 }
 
-.group button,.group select,.group input{
-width:100%;
-margin:5px 0;
-padding:10px;
+/* ⭐ 修正重點：按鈕依內容大小 */
+.group button, .group select{
+width:auto;
+display:inline-block;
+padding:8px 14px;
+margin:2px;
 border:none;
 border-radius:12px;
 background:#eee;
+font-size:14px;
+}
+
+.group input{
+width:100%;
 }
 
 /* ===== 標題 ===== */
@@ -168,9 +181,9 @@ text-align:center;
 <div class="group">
 <h3>班表</h3>
 <select id="sheetSelect" onchange="switchSheet()"></select>
-<button onclick="saveSheet()">💾 儲存</button>
+<button onclick="saveSheet()">💾儲存</button>
 <button onclick="clearSchedule()">清空</button>
-<button onclick="exportICS()">輸出行事曆</button>
+<button onclick="exportICS()">行事曆</button>
 </div>
 
 <div class="group">
@@ -194,13 +207,8 @@ text-align:center;
 <div id="calendar">
 
 <div class="week">
-<div>一</div>
-<div>二</div>
-<div>三</div>
-<div>四</div>
-<div>五</div>
-<div>六</div>
-<div>日</div>
+<div>一</div><div>二</div><div>三</div>
+<div>四</div><div>五</div><div>六</div><div>日</div>
 </div>
 
 <div class="grid" id="grid"></div>
@@ -225,14 +233,12 @@ let sheets={sheet1:{}};
 let currentSheet="sheet1";
 let currentShift=null;
 
-/* 初始化 */
 function init(){
 updateSheet();
 render();
 }
 init();
 
-/* ===== 班表 ===== */
 function updateSheet(){
 let s=document.getElementById("sheetSelect");
 s.innerHTML="";
@@ -256,7 +262,6 @@ sheets[currentSheet]=JSON.parse(JSON.stringify(data));
 alert("已儲存");
 }
 
-/* ===== 背景 ===== */
 function loadBg(e){
 let r=new FileReader();
 r.onload=()=>{
@@ -274,14 +279,12 @@ function blurBg(){
 document.getElementById("bg").style.filter="blur(10px)";
 }
 
-/* ===== 透明 ===== */
 function setOpacity(o){
 document.querySelectorAll(".day").forEach(d=>{
 d.style.background=`rgba(255,255,255,${o})`;
 });
 }
 
-/* ===== 日曆 ===== */
 function render(){
 document.getElementById("title").innerText=`${year}年${month}月`;
 let grid=document.getElementById("grid");
@@ -334,23 +337,16 @@ function name(s){
 return {early:"早",noon:"午",night:"晚",all:"全",off:"休"}[s];
 }
 
-/* ===== 控制 ===== */
 function setShift(s){currentShift=s;}
 
-function prevMonth(){
-month--;if(month<1){month=12;year--;}render();
-}
-
-function nextMonth(){
-month++;if(month>12){month=1;year++;}render();
-}
+function prevMonth(){month--;if(month<1){month=12;year--;}render();}
+function nextMonth(){month++;if(month>12){month=1;year++;}render();}
 
 function clearSchedule(){
 data={};
 render();
 }
 
-/* ===== 截圖 ===== */
 function capture(){
 html2canvas(document.getElementById("capture")).then(c=>{
 let link=document.createElement("a");
@@ -360,7 +356,6 @@ link.click();
 });
 }
 
-/* ===== 行事曆 ===== */
 function exportICS(){
 let txt="BEGIN:VCALENDAR\n";
 for(let d in data){
