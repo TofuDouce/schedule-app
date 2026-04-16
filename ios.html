@@ -26,7 +26,7 @@ button:active{transform:scale(0.94)}
 /* 工具列 */
 .topbar{
   display:grid;
-  grid-template-columns:repeat(5,1fr);
+  grid-template-columns:repeat(4,1fr);
   gap:8px;
 }
 .topbar button{
@@ -38,12 +38,41 @@ button:active{transform:scale(0.94)}
   backdrop-filter:blur(20px);
 }
 
-/* 選單 */
+/* 浮動按鈕 */
+.fab{
+  position:fixed;
+  right:20px;
+  bottom:20px;
+  width:56px;
+  height:56px;
+  border-radius:50%;
+  border:none;
+  font-size:22px;
+  background:rgba(255,255,255,0.85);
+  backdrop-filter:blur(20px);
+  box-shadow:0 6px 20px rgba(0,0,0,0.15);
+  z-index:9999;
+}
+
+/* 浮動選單 */
 .fabMenu{
-  margin-top:10px;
+  position:fixed;
+  right:20px;
+  bottom:90px;
   display:flex;
   flex-direction:column;
   gap:10px;
+  z-index:9999;
+
+  opacity:0;
+  transform:translateY(20px);
+  pointer-events:none;
+  transition:all 0.25s ease;
+}
+.fabMenu.active{
+  opacity:1;
+  transform:translateY(0);
+  pointer-events:auto;
 }
 
 /* 分組 */
@@ -181,10 +210,9 @@ button:active{transform:scale(0.94)}
   <button onclick="stickerInput.click()">🖼️</button>
   <button onclick="bgInput.click()">🎨</button>
   <button onclick="goToday()">📅</button>
-  <button onclick="toggleMenu()">⚙️</button>
 </div>
 
-<div id="menu" class="fabMenu">
+<div class="fabMenu" id="fabMenu">
 
   <div class="group">
     <button onclick="switchSheet(1)">班表❶</button>
@@ -215,6 +243,8 @@ button:active{transform:scale(0.94)}
   </div>
 
 </div>
+
+<button class="fab" onclick="toggleFab()">⚙️</button>
 
 <input id="stickerInput" type="file">
 <input id="bgInput" type="file">
@@ -253,19 +283,14 @@ let alpha=1;
 let currentSheet=1;
 let data={};
 
-function toggleMenu(){
-  menu.style.display = menu.style.display==="flex"?"none":"flex";
-}
+function toggleFab(){fabMenu.classList.toggle("active")}
 
 function save(){localStorage.setItem("sheet"+currentSheet,JSON.stringify(data))}
 function load(){let s=localStorage.getItem("sheet"+currentSheet);data=s?JSON.parse(s):{}}
 
 function switchSheet(n){currentSheet=n;load();render()}
 
-function goToday(){
-  currentDate=new Date();
-  render();
-}
+function goToday(){currentDate=new Date();render();}
 
 function setType(e,t){
   selected=t;
