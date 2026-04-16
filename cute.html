@@ -37,7 +37,7 @@ button:active{transform:scale(0.94)}
   backdrop-filter:blur(20px);
 }
 
-/* 🔥 背景遮罩 */
+/* 背景遮罩 */
 #overlay{
   position:fixed;
   inset:0;
@@ -217,7 +217,6 @@ button:active{transform:scale(0.94)}
 
 <body>
 
-<!-- 🔥 遮罩 -->
 <div id="overlay" onclick="closeMenu()"></div>
 
 <div class="topbar">
@@ -301,15 +300,14 @@ let data={};
 let lastClickTime=0;
 let lastKey="";
 
-/* 🔥 修改這裡 */
 function toggleFab(){
   fabMenu.classList.toggle("active");
-  document.getElementById("overlay").classList.toggle("active");
+  overlay.classList.toggle("active");
 }
 
 function closeMenu(){
   fabMenu.classList.remove("active");
-  document.getElementById("overlay").classList.remove("active");
+  overlay.classList.remove("active");
 }
 
 function save(){localStorage.setItem("sheet"+currentSheet,JSON.stringify(data))}
@@ -470,26 +468,39 @@ function exportImage(){
   });
 }
 
+/* 🔥 一鍵匯入版 */
 function exportICS(){
   let text="BEGIN:VCALENDAR\nVERSION:2.0\n";
+
   for(let key in data){
     data[key].forEach(type=>{
       if(type==="off") return;
+
       let [y,m,d]=key.split("-");
       let date=`${y}${String(+m+1).padStart(2,'0')}${String(d).padStart(2,'0')}`;
+
       text+=`BEGIN:VEVENT
 DTSTART;VALUE=DATE:${date}
 SUMMARY:${{morning:"早",noon:"午",night:"晚",full:"全"}[type]}
 END:VEVENT\n`;
     });
   }
+
   text+="END:VCALENDAR";
 
-  let blob=new Blob([text]);
+  let blob=new Blob([text], {type:"text/calendar"});
+  let url=URL.createObjectURL(blob);
+
   let a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
+  a.href=url;
   a.download="schedule.ics";
+  document.body.appendChild(a);
   a.click();
+  a.remove();
+
+  setTimeout(()=>{
+    window.open(url);
+  },300);
 }
 
 load();
