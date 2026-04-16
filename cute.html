@@ -134,6 +134,14 @@ button:active{transform:scale(0.94)}
   font-size:14px;
 }
 
+/* ⭐ 預設貼圖樣式 */
+.group.preset img{
+  width:40px;
+  height:40px;
+  border-radius:10px;
+  object-fit:cover;
+}
+
 /* 日曆 */
 #captureArea{
   position:relative;
@@ -211,7 +219,7 @@ button:active{transform:scale(0.94)}
   text-align:center;
 }
 
-/* ⭐ 修正後顏色 */
+/* ⭐ 顏色 */
 .morning{background:#fde2b5}
 .noon{background:#fdccba}
 .night{background:#B7E1FF}
@@ -262,6 +270,15 @@ button:active{transform:scale(0.94)}
 </div>
 
 <div class="fabMenu" id="fabMenu">
+
+  <!-- ⭐ 預設貼圖 -->
+  <div class="group preset">
+    <img src="IMG_5434.png" onclick="addPresetSticker('IMG_5434.png')">
+    <img src="IMG_5438.png" onclick="addPresetSticker('IMG_5438.png')">
+    <img src="IMG_5439.png" onclick="addPresetSticker('IMG_5439.png')">
+    <img src="IMG_5446.png" onclick="addPresetSticker('IMG_5446.png')">
+    <img src="IMG_5449.png" onclick="addPresetSticker('IMG_5449.png')">
+  </div>
 
   <div class="group">
     <button onclick="setTheme('light')">🌞 淺色</button>
@@ -336,6 +353,39 @@ button:active{transform:scale(0.94)}
 <div id="preview"></div>
 
 <script>
+
+const captureArea = document.getElementById("captureArea");
+
+function addPresetSticker(url){
+  let img=document.createElement("img");
+  img.src=url;
+  img.className="sticker";
+
+  img.style.left="50%";
+  img.style.top="50%";
+
+  let drag=false,ox,oy;
+
+  img.ontouchstart=e=>{
+    e.preventDefault();
+    drag=true;
+    ox=e.touches[0].clientX-img.offsetLeft;
+    oy=e.touches[0].clientY-img.offsetTop;
+  };
+
+  img.ontouchmove=e=>{
+    e.preventDefault();
+    if(!drag)return;
+    img.style.left=(e.touches[0].clientX-ox)+"px";
+    img.style.top=(e.touches[0].clientY-oy)+"px";
+  };
+
+  img.ontouchend=()=>drag=false;
+
+  captureArea.appendChild(img);
+}
+
+/* ⭐ 以下全部原封不動 */
 
 function setTheme(t){
   document.body.classList.remove("dark","cute","blue","green","purple","rainbow");
