@@ -7,42 +7,57 @@
 <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
 <style>
-body{margin:0;padding:10px;font-family:sans-serif;background:#f5f5f5;}
+body{
+  margin:0;
+  padding:10px;
+  font-family:sans-serif;
+  background:#f5f5f5;
+}
 
 /* 工具列 */
 .topbar{
   display:grid;
   grid-template-columns:repeat(4,1fr);
   gap:10px;
+  position:relative;
+  z-index:1000;
 }
-.topbar label,.topbar button{
+.topbar button{
   height:50px;
+  font-size:22px;
   border:none;
   border-radius:12px;
   background:#fff;
-  font-size:22px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+}
+
+/* 包裹 */
+#wrap{
+  position:relative;
+  margin-top:10px;
+}
+
+/* 背景 */
+#bg{
+  position:absolute;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  z-index:0;
 }
 
 /* 月曆 */
-#wrap{position:relative;}
-#bg{position:absolute;width:100%;height:100%;object-fit:cover;z-index:0;}
-
 .calendar{
   position:relative;
   z-index:1;
   display:grid;
   grid-template-columns:repeat(7,1fr);
   gap:8px;
-  margin-top:10px;
 }
 
 .day{
   aspect-ratio:1;
+  background:rgba(255,255,255,0.9);
   border-radius:12px;
-  background:rgba(255,255,255,0.85);
   display:flex;
   flex-direction:column;
   align-items:center;
@@ -52,7 +67,7 @@ body{margin:0;padding:10px;font-family:sans-serif;background:#f5f5f5;}
 .saturday{background:#f3f3f3;}
 .sunday{background:#FBE7EF;color:red;}
 
-/* 班別顏色 */
+/* 班別 */
 .shift{
   width:80%;
   text-align:center;
@@ -61,11 +76,11 @@ body{margin:0;padding:10px;font-family:sans-serif;background:#f5f5f5;}
   margin-top:2px;
 }
 
-.morning{background:#fff3a3;}
-.noon{background:#ffc9a9;}
-.night{background:#d6c4a3;}
-.full{background:#d6c4f0;color:#fff;}
-.off{background:#c7f0d8;}
+.morning{background:#f7e7a9;}
+.noon{background:#f5c6aa;}
+.night{background:#d8c3a5;}
+.full{background:#d6c2f0;}
+.off{background:#bfe3d0;}
 
 /* 底部 */
 .bottom{
@@ -78,15 +93,22 @@ body{margin:0;padding:10px;font-family:sans-serif;background:#f5f5f5;}
   padding:10px;
   border:none;
   border-radius:20px;
-  background:#fff;
+}
+
+/* 對應顏色 */
+.bottom button:nth-child(1){background:#f7e7a9;}
+.bottom button:nth-child(2){background:#f5c6aa;}
+.bottom button:nth-child(3){background:#d8c3a5;}
+.bottom button:nth-child(4){background:#d6c2f0;}
+.bottom button:nth-child(5){background:#bfe3d0;}
+
+.bottom button.active{
+  outline:2px solid #333;
 }
 
 /* 預覽 */
 #preview{text-align:center;margin-top:15px;}
 #preview canvas{width:100%;border-radius:10px;}
-
-input{display:none;}
-#menu{display:none;margin-top:10px;}
 </style>
 </head>
 
@@ -95,15 +117,13 @@ input{display:none;}
 <!-- 工具列 -->
 <div class="topbar">
   <button onclick="exportImage()">📸</button>
-  <label>🖼️<input type="file" onchange="addSticker(event)"></label>
-  <label>🎨<input type="file" onchange="setBg(event)"></label>
-  <button onclick="toggleMenu()">⚙️</button>
+  <button onclick="document.getElementById('stickerInput').click()">🖼️</button>
+  <button onclick="document.getElementById('bgInput').click()">🎨</button>
+  <button onclick="clearAll()">🧹</button>
 </div>
 
-<div id="menu">
-  <button onclick="clearBg()">清除背景</button>
-  <button onclick="clearAll()">清空班表</button>
-</div>
+<input id="stickerInput" type="file" style="display:none" onchange="addSticker(event)">
+<input id="bgInput" type="file" style="display:none" onchange="setBg(event)">
 
 <h3 style="text-align:center;">2026年4月</h3>
 
@@ -112,13 +132,13 @@ input{display:none;}
   <div class="calendar" id="calendar"></div>
 </div>
 
-<!-- 底部班別 -->
+<!-- 班別 -->
 <div class="bottom">
-  <button onclick="setType('morning')">早</button>
-  <button onclick="setType('noon')">午</button>
-  <button onclick="setType('night')">晚</button>
-  <button onclick="setType('full')">全</button>
-  <button onclick="setType('off')">休</button>
+  <button onclick="setType(event,'morning')">早</button>
+  <button onclick="setType(event,'noon')">午</button>
+  <button onclick="setType(event,'night')">晚</button>
+  <button onclick="setType(event,'full')">全</button>
+  <button onclick="setType(event,'off')">休</button>
 </div>
 
 <div id="preview"></div>
@@ -128,7 +148,11 @@ let selected="";
 let data={};
 const order=["morning","noon","night","full"];
 
-function setType(t){selected=t;}
+function setType(e,t){
+  selected=t;
+  document.querySelectorAll(".bottom button").forEach(b=>b.classList.remove("active"));
+  e.target.classList.add("active");
+}
 
 function render(){
   const cal=document.getElementById("calendar");
@@ -141,11 +165,9 @@ function render(){
     if(i%7==6)d.classList.add("saturday");
     if(i%7==0)d.classList.add("sunday");
 
-    let box=data[i]||[];
-
     d.innerHTML=`<div>${i}</div>`;
 
-    box.forEach(t=>{
+    (data[i]||[]).forEach(t=>{
       const div=document.createElement("div");
       div.className="shift "+t;
       div.innerText={
@@ -176,21 +198,46 @@ function setBg(e){
   document.getElementById("bg").src=URL.createObjectURL(e.target.files[0]);
 }
 
-function clearBg(){document.getElementById("bg").src="";}
+function clearAll(){
+  data={};
+  document.getElementById("bg").src="";
+  document.querySelectorAll(".sticker").forEach(s=>s.remove());
+  render();
+}
 
+/* 🔥 貼圖（可拖曳） */
 function addSticker(e){
   const img=document.createElement("img");
   img.src=URL.createObjectURL(e.target.files[0]);
+  img.className="sticker";
   img.style.position="absolute";
-  img.style.width="60px";
+  img.style.width="80px";
   img.style.top="50px";
   img.style.left="50px";
+  img.style.zIndex="999";
+
+  let isDragging=false,offsetX=0,offsetY=0;
+
+  img.addEventListener("touchstart",(ev)=>{
+    isDragging=true;
+    offsetX=ev.touches[0].clientX-img.offsetLeft;
+    offsetY=ev.touches[0].clientY-img.offsetTop;
+  });
+
+  img.addEventListener("touchmove",(ev)=>{
+    if(!isDragging)return;
+    img.style.left=(ev.touches[0].clientX-offsetX)+"px";
+    img.style.top=(ev.touches[0].clientY-offsetY)+"px";
+  });
+
+  img.addEventListener("touchend",()=>isDragging=false);
+
   img.ondblclick=()=>img.remove();
+
   document.getElementById("wrap").appendChild(img);
 }
 
-function clearAll(){data={};render();}
-
+/* 匯出（預覽） */
 function exportImage(){
   html2canvas(document.querySelector("#wrap")).then(canvas=>{
     const p=document.getElementById("preview");
@@ -207,11 +254,6 @@ function exportImage(){
     };
     p.appendChild(btn);
   });
-}
-
-function toggleMenu(){
-  const m=document.getElementById("menu");
-  m.style.display=m.style.display==="none"?"block":"none";
 }
 
 render();
