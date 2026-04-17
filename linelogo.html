@@ -3,63 +3,162 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LINE Canva 編輯器 Pro</title>
+<title>LINE 大頭照產生器 Pro</title>
 
 <style>
 body{margin:0;font-family:-apple-system;background:#f3f4f6;}
 .header{
-background:linear-gradient(135deg,#06C755,#00e676);
-color:#fff;padding:20px;text-align:center;font-weight:bold;
+  background:linear-gradient(135deg,#06C755,#00e676);
+  color:#fff;padding:20px;text-align:center;font-weight:bold;
 }
 .container{max-width:520px;margin:auto;padding:15px;}
-
 .card{
-background:#fff;border-radius:16px;padding:15px;margin-bottom:15px;
-box-shadow:0 10px 25px rgba(0,0,0,0.08);
+  background:#fff;border-radius:16px;padding:15px;margin-bottom:15px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.08);
 }
-
 canvas{
-width:100%;border-radius:20px;
-background:repeating-conic-gradient(#ccc 0% 25%, #eee 0% 50%) 50%/20px 20px;
-box-shadow:0 8px 20px rgba(0,0,0,0.1);
+  width:100%;
+  border-radius:20px;
+  background:repeating-conic-gradient(#ccc 0% 25%, #eee 0% 50%) 50%/20px 20px;
+  box-shadow:inset 0 0 0 2px #fff, 0 8px 20px rgba(0,0,0,0.1);
 }
 
-button{padding:12px;border:none;border-radius:10px;margin-top:10px;width:100%;font-weight:bold;}
+.tabs{display:flex;gap:20px;border-bottom:2px solid #eee;margin-bottom:10px;}
+.tab{padding:10px 0;cursor:pointer;color:#999;font-weight:bold;transition:.25s;}
+.tab.active{color:#06C755;border-bottom:3px solid #06C755;transform:translateY(-2px);}
+
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+
+.big-input{
+  width:100%;
+  padding:14px;
+  font-size:20px;
+  border-radius:12px;
+  border:1px solid #ddd;
+  margin-top:10px;
+}
+
+.colors{
+  display:grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap:8px;
+  margin-top:10px;
+}
+
+.color{
+  width:100%;
+  aspect-ratio:1;
+  border-radius:50%;
+  cursor:pointer;
+}
+
+.emoji-panel{
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:10px;
+}
+
+.kao-panel{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+}
+
+.emoji{
+  font-size:22px;
+  text-align:center;
+  padding:12px;
+  border-radius:10px;
+  background:#f2f2f2;
+  cursor:pointer;
+  transition:.15s;
+}
+.emoji:active{transform:scale(0.85);}
+
+.slider{margin-top:10px;}
+
+.row{display:flex;gap:10px;}
+button{flex:1;padding:14px;border:none;border-radius:10px;font-weight:bold;font-size:16px;}
 .green{background:#06C755;color:#fff;}
 .gray{background:#ddd;}
 
-input{width:100%;padding:10px;margin-top:10px;border-radius:10px;border:1px solid #ddd;}
 label{display:block;margin-top:8px;}
 </style>
 </head>
 
 <body>
 
-<div class="header">LINE Canva 編輯器 Pro</div>
+<div class="header">LINE 大頭照產生器 Pro</div>
 
 <div class="container">
 
 <div class="card">
+<div class="tabs">
+<div class="tab active" onclick="setShape('square')">方形</div>
+<div class="tab" onclick="setShape('circle')">圓形</div>
+</div>
 <canvas id="canvas" width="512" height="512"></canvas>
 </div>
 
 <div class="card">
-<input id="inputText" placeholder="輸入文字（可用 \n 換行）">
 
+背景色
+<input type="color" id="bg" value="#06C755">
+<div class="colors" id="colorPalette"></div>
+
+文字顏色
+<input type="color" id="textColor" value="#ffffff">
+
+<!-- 新增功能 -->
 <label><input type="checkbox" id="shadowToggle"> 文字陰影</label>
 <label><input type="checkbox" id="gradientToggle"> 漸層文字</label>
 <label><input type="checkbox" id="glassToggle"> 玻璃背景</label>
 <label><input type="checkbox" id="transparentToggle"> 透明背景</label>
 
-<button class="green" onclick="addText()">新增文字</button>
-<button class="green" onclick="addEmoji()">新增Emoji</button>
-<button class="gray" onclick="clearAll()">清空</button>
-<button class="green" onclick="showPreview()">產生 PNG</button>
+<div class="tabs">
+<div class="tab active" data-tab="0">文字</div>
+<div class="tab" data-tab="1">Emoji</div>
+<div class="tab" data-tab="2">顏文字</div>
+<div class="tab" data-tab="3">LOGO</div>
 </div>
 
-<!-- 預覽區 -->
+<div class="tab-content active" data-content="0">
+大小
+<input type="range" id="sizeText" min="40" max="200" value="120">
+<input id="text" class="big-input" placeholder="輸入文字（可用 \n 換行）">
+</div>
+
+<div class="tab-content" data-content="1">
+大小
+<input type="range" id="sizeEmoji" min="40" max="200" value="80">
+<div class="emoji-panel" id="emojiPanel"></div>
+</div>
+
+<div class="tab-content" data-content="2">
+大小
+<input type="range" id="sizeKao" min="40" max="200" value="80">
+<input id="kaomoji" class="big-input" placeholder="(＾▽＾)">
+<div id="kaoList" class="kao-panel"></div>
+</div>
+
+<div class="tab-content" data-content="3">
+大小
+<input type="range" id="sizeLogo" min="0.5" max="3" step="0.01" value="1">
+<input type="file" id="upload">
+<input id="logoText" class="big-input" placeholder="LOGO文字">
+</div>
+
+</div>
+
+<div class="card row">
+<button class="gray" onclick="resetAll()">重設</button>
+<button class="green" onclick="showPreview()">產生圖片</button>
+</div>
+
+<!-- 預覽 -->
 <div class="card">
-<div style="font-weight:bold;margin-bottom:10px;">輸出結果（長按圖片存到相簿）</div>
+<div style="font-weight:bold;margin-bottom:10px;">輸出結果（長按存到相簿）</div>
 <img id="preview" style="width:100%;border-radius:16px;">
 </div>
 
@@ -69,96 +168,129 @@ label{display:block;margin-top:8px;}
 const canvas=document.getElementById("canvas");
 const ctx=canvas.getContext("2d");
 
-let objects=[];
-let selected=null;
+const textInput=document.getElementById("text");
+const kaomojiInput=document.getElementById("kaomoji");
+const logoTextInput=document.getElementById("logoText");
+
+const sizeText=document.getElementById("sizeText");
+const sizeEmoji=document.getElementById("sizeEmoji");
+const sizeKao=document.getElementById("sizeKao");
+const sizeLogo=document.getElementById("sizeLogo");
+
+const bgInput=document.getElementById("bg");
+const textColorInput=document.getElementById("textColor");
+
+const emojiPanel=document.getElementById("emojiPanel");
+const kaoList=document.getElementById("kaoList");
+const colorPalette=document.getElementById("colorPalette");
+const upload=document.getElementById("upload");
+
+let currentTab=0;
+let shape="square";
+
+let img=new Image();
+let loaded=false;
+
+// 拖曳
+let pos={x:256,y:256};
 let dragging=false;
 
-const textInput=document.getElementById("inputText");
-
-const shadowToggle=document.getElementById("shadowToggle");
-const gradientToggle=document.getElementById("gradientToggle");
-const glassToggle=document.getElementById("glassToggle");
-const transparentToggle=document.getElementById("transparentToggle");
-
-// ===== 新增 =====
-function addText(){
-objects.push({
-type:"text",
-text:textInput.value||"文字",
-x:256,y:256,size:80
-});
-save();draw();
-}
-
-function addEmoji(){
-objects.push({
-type:"emoji",
-text:"🎧",
-x:256,y:256,size:80
-});
-save();draw();
-}
-
-// ===== 拖曳 =====
-canvas.onmousedown=e=>{
+canvas.addEventListener("mousedown",()=>dragging=true);
+canvas.addEventListener("mouseup",()=>dragging=false);
+canvas.addEventListener("mousemove",(e)=>{
+if(!dragging) return;
 const rect=canvas.getBoundingClientRect();
-let x=(e.clientX-rect.left)*(512/rect.width);
-let y=(e.clientY-rect.top)*(512/rect.height);
-
-selected=null;
-objects.forEach(o=>{
-if(Math.abs(x-o.x)<50 && Math.abs(y-o.y)<50){
-selected=o;
-}
+pos.x=(e.clientX-rect.left)*(512/rect.width);
+pos.y=(e.clientY-rect.top)*(512/rect.height);
+draw();
 });
-dragging=true;
-};
 
-canvas.onmouseup=()=>dragging=false;
-
-canvas.onmousemove=e=>{
-if(!dragging||!selected) return;
-
-const rect=canvas.getBoundingClientRect();
-selected.x=(e.clientX-rect.left)*(512/rect.width);
-selected.y=(e.clientY-rect.top)*(512/rect.height);
-
-save();
+// tabs
+document.querySelectorAll("[data-tab]").forEach(tab=>{
+tab.onclick=()=>{
+currentTab=parseInt(tab.dataset.tab);
+document.querySelectorAll("[data-tab]").forEach(t=>t.classList.remove("active"));
+tab.classList.add("active");
+document.querySelectorAll("[data-content]").forEach(c=>{
+c.classList.remove("active");
+if(c.dataset.content==currentTab) c.classList.add("active");
+});
 draw();
 };
+});
 
-// ===== 自動縮放 =====
-function fitText(text){
-let size=120;
-do{
-ctx.font=`900 ${size}px sans-serif`;
-size--;
-}while(ctx.measureText(text).width>400 && size>20);
-return size;
-}
+function setShape(s){shape=s;draw();}
 
-// ===== 畫圖 =====
+// 色票
+const colors=["#FF3B30","#FF9500","#FFCC00","#34C759","#00C7BE","#007AFF","#5856D6","#FF2D55","#8E8E93"];
+colors.forEach(c=>{
+const div=document.createElement("div");
+div.className="color";
+div.style.background=c;
+div.onclick=()=>{
+document.querySelectorAll(".color").forEach(el=>el.style.outline="none");
+div.style.outline="3px solid #000";
+bgInput.value=c;
+draw();
+};
+colorPalette.appendChild(div);
+});
+
+// emoji
+const emojis=["🎧","🎵","🎶","🎤","🎸","🥁","🎹","🏋️","🧘","🏃","🚴","⚽","🏀"];
+emojis.forEach(e=>{
+const d=document.createElement("div");
+d.className="emoji";
+d.innerText=e;
+d.onclick=()=>{textInput.value+=e;draw();}
+emojiPanel.appendChild(d);
+});
+
+// 顏文字
+const kaomojis=["(≧▽≦)","(T_T)","(ಠ_ಠ)","(•‿•)","(ง •̀_•́)ง"];
+kaomojis.forEach(k=>{
+const d=document.createElement("div");
+d.className="emoji";
+d.innerText=k;
+d.onclick=()=>{kaomojiInput.value=k;draw();}
+kaoList.appendChild(d);
+});
+
+// 上傳
+upload.onchange=e=>{
+const reader=new FileReader();
+reader.onload=ev=>{
+img.onload=()=>{loaded=true;draw();}
+img.src=ev.target.result;
+};
+reader.readAsDataURL(e.target.files[0]);
+};
+
+// 畫圖
 function draw(){
 ctx.clearRect(0,0,512,512);
 
+if(shape==="circle"){
+ctx.save();
+ctx.beginPath();
+ctx.arc(256,256,256,0,Math.PI*2);
+ctx.clip();
+}
+
 // 背景
-if(!transparentToggle.checked){
-ctx.fillStyle="#06C755";
+if(!document.getElementById("transparentToggle").checked){
+ctx.fillStyle=bgInput.value;
 ctx.fillRect(0,0,512,512);
 }
 
 // glass
-if(glassToggle.checked){
+if(document.getElementById("glassToggle").checked){
 ctx.fillStyle="rgba(255,255,255,0.15)";
 ctx.fillRect(0,0,512,512);
 }
 
-objects.forEach(o=>{
-ctx.textAlign="center";
-ctx.textBaseline="middle";
-
 // 陰影
-if(shadowToggle.checked){
+if(document.getElementById("shadowToggle").checked){
 ctx.shadowColor="rgba(0,0,0,0.3)";
 ctx.shadowBlur=10;
 ctx.shadowOffsetY=4;
@@ -167,75 +299,78 @@ ctx.shadowColor="transparent";
 }
 
 // 漸層
-if(gradientToggle.checked){
+if(document.getElementById("gradientToggle").checked){
 let g=ctx.createLinearGradient(0,0,512,512);
 g.addColorStop(0,"#fff");
 g.addColorStop(1,"#ffd700");
 ctx.fillStyle=g;
 }else{
-ctx.fillStyle="#fff";
+ctx.fillStyle=textColorInput.value;
 }
 
-// 多行
-let lines=o.text.split("\\n");
-let size=fitText(o.text);
+ctx.textAlign="center";
+ctx.textBaseline="middle";
 
-lines.forEach((line,i)=>{
-ctx.font=`bold ${size}px sans-serif`;
-ctx.fillText(line,o.x,o.y+(i*size));
-});
-
-// 選取框
-if(o===selected){
-ctx.strokeStyle="#000";
-ctx.strokeRect(o.x-60,o.y-60,120,120);
-}
+if(currentTab===0){
+ctx.font=`900 ${sizeText.value}px sans-serif`;
+let lines=(textInput.value||"哈囉").split("\\n");
+lines.forEach((l,i)=>{
+ctx.fillText(l,pos.x,pos.y+i*sizeText.value);
 });
 }
 
-// ===== 預覽 PNG =====
+if(currentTab===1){
+ctx.font=`bold ${sizeEmoji.value}px sans-serif`;
+ctx.fillText(textInput.value||"🎧",pos.x,pos.y);
+}
+
+if(currentTab===2){
+ctx.font=`bold ${sizeKao.value}px sans-serif`;
+ctx.fillText(kaomojiInput.value||"(≧▽≦)",pos.x,pos.y);
+}
+
+if(currentTab===3){
+if(loaded){
+let s=parseFloat(sizeLogo.value);
+ctx.drawImage(img,(512-512*s)/2,(512-512*s)/2,512*s,512*s);
+}
+ctx.font="bold 80px sans-serif";
+ctx.fillText(logoTextInput.value||"",256,256);
+}
+
+if(shape==="circle") ctx.restore();
+}
+
+// 預覽
 function showPreview(){
 const temp=document.createElement("canvas");
 temp.width=1024;
 temp.height=1024;
-
 const t=temp.getContext("2d");
 
-// 透明背景支援
-if(!transparentToggle.checked){
-t.fillStyle="#06C755";
+if(!document.getElementById("transparentToggle").checked){
+t.fillStyle=bgInput.value;
 t.fillRect(0,0,1024,1024);
 }
 
 t.drawImage(canvas,0,0,1024,1024);
 
 const url=temp.toDataURL("image/png");
-
 const img=document.getElementById("preview");
 img.src=url;
 img.scrollIntoView({behavior:"smooth"});
 }
 
-// ===== 儲存 =====
-function save(){
-localStorage.setItem("canvas_data",JSON.stringify(objects));
-}
-
-function load(){
-let data=localStorage.getItem("canvas_data");
-if(data) objects=JSON.parse(data);
-}
-
-// ===== 清空 =====
-function clearAll(){
-objects=[];
-localStorage.clear();
+// reset
+function resetAll(){
+textInput.value="";
+kaomojiInput.value="";
+logoTextInput.value="";
+img.src="";
+loaded=false;
 draw();
 }
 
-textInput.addEventListener("input",draw);
-
-load();
 draw();
 </script>
 
