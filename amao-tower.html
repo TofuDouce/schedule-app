@@ -3,84 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>阿毛之塔：生活與榮耀</title>
+    <title>阿毛之塔：勇者鬥餓龍</title>
     <style>
         :root { 
             --gold: #f1c40f; --pink: #ff99cc; --bg: #0a0a12; --card: #1a1a2e; 
-            --equip-glow: #00f2ff; --s-rank: #ff4500; --choco: #5d4037;
+            --equip: #00f2ff; --monster: #e74c3c; --choco: #5d4037;
         }
-        body { margin:0; font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background: var(--bg); color: #fff; user-select: none; overflow-x: hidden; }
-
-        /* 頂部大型標題：阿毛之塔 */
-        .tower-header { 
-            padding: 20px 0; text-align: center; background: linear-gradient(to bottom, #000, #1a1a2e);
-            border-bottom: 4px solid var(--gold); box-shadow: 0 5px 20px rgba(241, 196, 15, 0.3);
-        }
-        .tower-title { 
-            font-size: 3rem; font-weight: 900; letter-spacing: 5px; color: var(--gold);
-            text-shadow: 0 0 10px var(--gold), 0 0 20px #f39c12; margin: 0;
-        }
-        .amao-subtitle { font-size: 14px; color: #888; margin-top: 5px; letter-spacing: 2px; }
-
-        /* 數值面板 */
+        body { margin:0; font-family: sans-serif; background: var(--bg); color: #fff; user-select: none; overflow-x: hidden; }
+        
+        /* 標題與數值 */
+        .tower-header { padding: 20px 0; text-align: center; border-bottom: 4px solid var(--gold); background: #000; }
+        .tower-title { font-size: 2.5rem; color: var(--gold); text-shadow: 0 0 10px var(--gold); margin: 0; }
         .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); background: #111; padding: 12px; text-align: center; border-bottom: 1px solid #333; }
         .stat-val { color: var(--pink); font-weight: bold; font-size: 1.1rem; }
-
-        /* 究極紙娃娃系統 */
-        .avatar-container { position: relative; width: 140px; height: 140px; margin: 25px auto; display: flex; align-items: center; justify-content: center; }
-        #amao-sprite { font-size: 90px; z-index: 10; transition: transform 0.2s; cursor: pointer; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5)); }
-        .layer { position: absolute; font-size: 50px; pointer-events: none; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); opacity: 0; transform: scale(0); }
+        
+        /* 戰鬥舞台 */
+        .adventure-zone { min-height: 450px; display: flex; flex-direction: column; align-items: center; padding-top: 20px; }
+        .battle-stage { display: flex; justify-content: space-around; align-items: center; width: 100%; height: 200px; position: relative; }
+        
+        .unit { display: flex; flex-direction: column; align-items: center; transition: 0.3s; }
+        .unit-sprite { font-size: 80px; position: relative; }
+        .hp-bar { width: 60px; height: 6px; background: #444; border-radius: 3px; margin-top: 10px; overflow: hidden; }
+        .hp-fill { height: 100%; background: #2ecc71; transition: 0.3s; }
+        
+        /* 阿毛紙娃娃 */
+        .layer { position: absolute; font-size: 45px; pointer-events: none; opacity: 0; transform: scale(0); transition: 0.3s; }
         .layer.active { opacity: 1; transform: scale(1); }
         .layer-head { top: -15px; z-index: 15; }
-        .layer-body { top: 35px; z-index: 5; font-size: 65px; opacity: 0.75; }
-        .layer-hand { right: -25px; top: 50px; z-index: 20; }
-        .layer-feet { bottom: -10px; z-index: 3; font-size: 35px; }
+        .layer-body { top: 30px; z-index: 5; font-size: 60px; opacity: 0.7; }
+        .layer-hand { right: -25px; top: 40px; z-index: 20; }
+        .layer-feet { bottom: -10px; z-index: 3; }
 
-        /* 事件與寶箱 */
-        .adventure-zone { min-height: 380px; display: flex; flex-direction: column; align-items: center; }
-        .stage { display: flex; justify-content: center; gap: 12px; min-height: 180px; width: 100%; padding: 10px; box-sizing: border-box; }
-        .card { 
-            width: 45%; max-width: 160px; background: var(--card); border: 2px solid #444; border-radius: 15px; 
-            display: none; flex-direction: column; align-items: center; padding: 12px; text-align: center;
-        }
-        .card.reveal { display: flex; animation: pop 0.4s forwards; }
-        .card.is-equip { border-color: var(--equip-glow); box-shadow: 0 0 15px var(--equip-glow); }
-        .item-rank { font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 10px; background: #333; margin-bottom: 5px; }
-        .desc-text { font-size: 10px; color: #aaa; margin: 6px 0; height: 30px; line-height: 1.2; }
-        .bonus-text { font-size: 12px; color: var(--gold); font-weight: bold; }
+        /* 卡片與按鈕 */
+        .stage { display: flex; justify-content: center; gap: 10px; min-height: 180px; padding: 10px; }
+        .card { width: 140px; background: var(--card); border: 2px solid #444; border-radius: 15px; display: none; flex-direction: column; align-items: center; padding: 10px; text-align: center; animation: pop 0.4s forwards; }
+        .card.reveal { display: flex; }
+        .bonus-text { font-size: 11px; color: var(--gold); font-weight: bold; margin-top: 5px; }
 
-        /* 按鈕與菜單 */
-        .dice-btn { 
-            width: 90px; height: 90px; background: #fff; border-radius: 20px; margin: 20px auto;
-            display: flex; align-items: center; justify-content: center; font-size: 45px; 
-            box-shadow: 0 8px 0 #bbb, 0 10px 20px rgba(0,0,0,0.5); cursor: pointer;
-        }
-        .dice-btn:active { transform: translateY(6px); box-shadow: 0 2px 0 #bbb; }
-        
-        .nav-menu { position: fixed; right: 20px; bottom: 20px; display: flex; flex-direction: column; gap: 15px; z-index: 100; }
-        .circle-btn { width: 65px; height: 65px; background: #222; border: 3px solid var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
+        .dice { width: 80px; height: 80px; background: #fff; color: #000; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 40px; cursor: pointer; box-shadow: 0 6px 0 #999; margin: 20px; }
+        .dice:active { transform: translateY(4px); box-shadow: 0 2px 0 #999; }
 
-        /* 巧克力救援 */
+        .nav-menu { position: fixed; right: 20px; bottom: 100px; display: flex; flex-direction: column; gap: 15px; }
+        .circle-btn { width: 60px; height: 60px; background: #222; border: 3px solid var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; cursor: pointer; }
+
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; padding: 20px; overflow-y: auto; }
         #choco-screen { display: none; position: fixed; inset: 0; background: var(--choco); z-index: 10000; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
         
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 1000; padding: 20px; overflow-y: auto; }
-        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-        
-        @keyframes pop { 0%{transform:scale(0) rotate(-10deg)} 100%{transform:scale(1) rotate(0deg)} }
+        @keyframes pop { 0%{transform:scale(0)} 100%{transform:scale(1)} }
+        @keyframes attackAmao { 0% { transform: translateX(0); } 50% { transform: translateX(30px); } 100% { transform: translateX(0); } }
+        @keyframes attackEnemy { 0% { transform: translateX(0); } 50% { transform: translateX(-30px); } 100% { transform: translateX(0); } }
     </style>
 </head>
 <body>
 
 <div id="choco-screen">
-    <div style="font-size:120px; filter: drop-shadow(0 0 20px #fff);">🍫</div>
-    <h1 style="color:#fff; margin-top:20px;">巧克力聖光救援！</h1>
-    <p id="choco-msg" style="color:var(--gold); font-size:18px; font-weight:bold; padding:0 30px;"></p>
-    <button onclick="closeChoco()" style="margin-top:20px; background:var(--gold); border:none; padding:15px 40px; border-radius:30px; font-size:18px; font-weight:900;">感謝主公巧克力！</button>
+    <div style="font-size:100px;">🍫</div>
+    <h2 style="color:#fff;">巧克力神救援！</h2>
+    <p id="choco-msg" style="color:var(--gold); padding:20px;"></p>
+    <button onclick="closeChoco()" style="background:var(--gold); border:none; padding:15px 30px; border-radius:10px; font-weight:bold; cursor:pointer;">謝謝巧克力！</button>
 </div>
 
 <div class="tower-header">
     <h1 class="tower-title">阿毛之塔</h1>
-    <div class="amao-subtitle" id="amao-full-title">👑 究極生命體 阿毛</div>
+    <div id="amao-title" style="color:#888; font-size:14px; margin-top:5px;">👑 冒險者 阿毛</div>
 </div>
 
 <div class="stats-grid">
@@ -89,33 +74,40 @@
     <div><small>👟 速度</small><br><span id="st-spd" class="stat-val">5</span></div>
     <div><small>✨ 魅力</small><br><span id="st-chr" class="stat-val">5</span></div>
 </div>
+
 <div class="adventure-zone">
-    <div class="avatar-container">
-        <div id="layer-head" class="layer layer-head"></div>
-        <div id="layer-body" class="layer layer-body"></div>
-        <div id="amao-sprite" onclick="pet()">🐶</div>
-        <div id="layer-hand" class="layer layer-hand"></div>
-        <div id="layer-feet" class="layer layer-feet"></div>
+    <div class="battle-stage">
+        <div class="unit" id="am-unit">
+            <div class="unit-sprite">
+                <div id="layer-head" class="layer layer-head"></div>
+                <div id="layer-body" class="layer layer-body"></div>
+                🐶
+                <div id="layer-hand" class="layer layer-hand"></div>
+                <div id="layer-feet" class="layer layer-feet"></div>
+            </div>
+            <div class="hp-bar"><div id="am-hp" class="hp-fill" style="width:100%"></div></div>
+        </div>
+
+        <div style="font-size:30px; color:var(--monster); font-weight:bold;" id="vs">VS</div>
+
+        <div class="unit" id="en-unit" style="opacity:0">
+            <div class="unit-sprite" id="en-sprite">👾</div>
+            <div id="en-name" style="font-size:12px; font-weight:bold;">怪物</div>
+            <div class="hp-bar"><div id="en-hp" class="hp-fill" style="width:100%"></div></div>
+        </div>
     </div>
-    <div id="info-msg" style="text-align:center; color:var(--gold); font-weight:bold; height:20px; margin-bottom:10px;"></div>
+
+    <div id="info-msg" style="text-align:center; color:var(--gold); font-weight:bold; height:40px; padding:0 10px;">點擊骰子開始爬塔！</div>
+    
     <div class="stage" id="stage"></div>
+
+    <div class="dice" onclick="roll()">🎲</div>
 </div>
 
-<div class="dice-btn" onclick="roll()">🎲</div>
-
-<div style="display:flex; justify-content:space-around; padding:15px; background: #000; border-top: 2px solid #333; font-weight:bold;">
+<div style="display:flex; justify-content:space-around; padding:15px; background:#000; border-top:1px solid #333;">
     <span>🏰 層數: <b id="lvl" style="color:var(--gold)">0</b></span>
     <span>⚡ 體力: <b id="nrg" style="color:var(--pink)">60</b></span>
     <span>💰 金幣: <b id="gold" style="color:#2ecc71">100</b></span>
-</div>
-
-<div id="store-modal" class="modal">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h2 style="color:#5dade2">🍣 鮪魚堡黑心商店</h2>
-        <button onclick="closeModal('store-modal')" style="background:var(--gold); border:none; padding:5px 15px; border-radius:5px;">逃跑</button>
-    </div>
-    <p style="font-size:12px; color:#888;">鮪魚堡：「嘿嘿，買不起就別看，看了就要買！」</p>
-    <div id="store-grid" class="grid"></div>
 </div>
 
 <div class="nav-menu">
@@ -123,378 +115,228 @@
     <div class="circle-btn" onclick="openInv()">🎒</div>
 </div>
 
+<div id="inv-modal" class="modal">
+    <div style="display:flex; justify-content:space-between;"><h2>🎒 背包</h2><button onclick="closeModal('inv-modal')">關閉</button></div>
+    <div id="inv-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"></div>
+</div>
+
+<div id="store-modal" class="modal">
+    <div style="display:flex; justify-content:space-between;"><h2>🏪 商店</h2><button onclick="closeModal('store-modal')">離開</button></div>
+    <div id="store-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"></div>
+</div>
+
 <script>
-// --- 核心狀態 ---
+// --- 資料庫 ---
+const FOOD_ADJ = ["極致","閃光","噴火","發臭","媽媽味","濃郁","爆漿","神級","巧克力味","鮪魚味","焦掉的","夢幻","超彈牙","大份量","特製","秘傳","隔壁家","深夜"];
+const FOOD_MTH = ["紅燒","清蒸","油炸","乾燒","慢燉","冰鎮","香煎","炭烤","白燙","煙燻","麻辣","酸湯","勾芡","蜜汁","鹽酥","火烤"];
+const FOOD_ING = ["豬肉","骨頭","魚片","牛排","雞腿","水餃","肉包","蝦仁","雞排","罐頭","丸子","章魚","甜不辣","玉米","雞蛋","泡麵","肉燥","小籠包"];
+
+const ENEMY_DB = [
+    {n: "史萊姆", i: "💧", hp: 30, atk: 5},
+    {n: "哥布林", i: "👺", hp: 50, atk: 12},
+    {n: "小烏鴉", i: "🐦", hp: 20, atk: 15},
+    {n: "巨大蜘蛛", i: "🕷️", hp: 60, atk: 18},
+    {n: "隔壁惡犬", i: "🐕", hp: 80, atk: 25},
+    {n: "掃地機器人(失控)", i: "🤖", hp: 100, atk: 30}
+];
+
+const EQUIP_DB = {
+    head: ["戰鬥墨鏡","安全帽","鴨鴨帽","耳機","派對帽","蝴蝶結"],
+    body: ["睡衣","汗衫","雨衣","圍裙","西裝","羽絨衣"],
+    hand: ["不求人","吹風機","蒼蠅拍","遙控器","湯匙","皮帶"],
+    feet: ["涼鞋","拖鞋","滑板","溜冰鞋","藍白拖","長靴"]
+};
+
+// --- 狀態 ---
 let state = {
-    lvl: 0, nrg: 60, gold: 100, 
-    titlePrefix: "究極生命體", titleSuffix: "阿毛",
-    inv: [], 
-    equips: {head:null, body:null, hand:null, feet:null}
+    lvl: 0, nrg: 60, gold: 100,
+    inv: [], equips: {head:null, body:null, hand:null, feet:null},
+    isBattle: false
 };
 
-// --- 萬種組合資料庫核心 ---
-const DB_GEN = {
-    // 稱號組合件 (可組合出 10,000+ 種結果)
-    adj: ["傳說中","被沒收過","穿著睡衣","巧克力認證","鮪魚堡認可","發光的","飢餓的","爬塔狂人","被媽媽抓到","散發汗香"],
-    identity: ["冒險者","守護神","小幫手","破壞王","美食家","紙娃娃大師","睡覺專家","耍賴高手","拆家員","好狗狗"],
-    
-    // 生活用品資料庫 (核心品項)
-    equips: [
-        {n:"媽媽的真絲睡衣", i:"👘", t:"body", def:80, spd:10, d:"絲滑親膚，媽媽的愛"},
-        {n:"爸爸的陳年汗衫", i:"👕", t:"body", atk:10, def:20, d:"充滿了安心的味道"},
-        {n:"姊姊的增高涼鞋", i:"👡", t:"feet", spd:60, d:"視野突然變得很寬廣"},
-        {n:"掃地機器人", i:"🤖", t:"feet", spd:100, d:"阿毛專屬奢華座駕"},
-        {n:"不求人抓背棒", i:"🥢", t:"hand", atk:40, d:"阿毛手不夠長的救星"},
-        {n:"媽媽的長柄吹風機", i:"💨", t:"hand", atk:30, d:"對敵人發射熱風"},
-        {n:"酷炫戰鬥墨鏡", i:"🕶️", t:"head", chr:100, d:"全場你最帥"},
-        {n:"生日派對尖帽", i:"🥳", t:"head", chr:30, atk:5, d:"每天都要慶祝過關"},
-        {n:"洗澡用的黃色小鴨", i:"🐤", t:"head", def:15, d:"能減緩阿毛對水的恐懼"},
-        {n:"全罩式抗噪耳機", i:"🎧", t:"head", def:10, spd:5, d:"聽不到媽媽叫我剪指甲"}
-    ],
-    
-    // 美食名稱演算法元件
-    foodPrefix: ["超級","媽媽特製","香噴噴","巧克力秘傳","鮪魚堡偷來的","過期的","燙手的","發光的"],
-    foodNames: ["紅燒肉","水餃","罐頭","手搖飲","大骨湯","雞腿","便當","滷味"],
-    
-    // 鮪魚堡雜物 (商店專用)
-    junks: [
-        {n:"鮪魚堡的脫落腳毛", i:"🦵", v:8888, d:"極其昂貴但毫無用途"},
-        {n:"沒水的原子筆", i:"🖊️", v:500, d:"鮪魚堡說是傳說魔杖"},
-        {n:"純金垃圾桶", i:"🗑️", v:5000, d:"炫富專用的家具"}
-    ]
-};
-
-// --- 生成器函數 ---
-function getRandomTitle() {
-    const a = DB_GEN.adj[Math.floor(Math.random()*DB_GEN.adj.length)];
-    const i = DB_GEN.identity[Math.floor(Math.random()*DB_GEN.identity.length)];
-    return `${a}的${i}`;
-}
-
+// --- 邏輯 ---
 function getRandomFood() {
-    const p = DB_GEN.foodPrefix[Math.floor(Math.random()*DB_GEN.foodPrefix.length)];
-    const n = DB_GEN.foodNames[Math.floor(Math.random()*DB_GEN.foodNames.length)];
-    const val = Math.floor(Math.random()*40) + 20; // 恢復 20~60
-    return { n: p+n, i: "🍱", v: val, d: `這是一份${p}的${n}，恢復 ${val} 體力。`, type: 'food' };
+    const name = FOOD_ADJ[Math.floor(Math.random()*FOOD_ADJ.length)] + 
+                 FOOD_MTH[Math.floor(Math.random()*FOOD_MTH.length)] + 
+                 FOOD_ING[Math.floor(Math.random()*FOOD_ING.length)];
+    const val = Math.floor(Math.random()*30)+20;
+    return { n: name, i: "🍱", v: val, type: 'food', d: `恢復 ${val} 體力` };
 }
-</script>
-<script> ---
 
-// 更新 UI 總表 (含稱號動態更新)
+function getRandomEquip() {
+    const slots = ["head", "body", "hand", "feet"];
+    const slot = slots[Math.floor(Math.random()*4)];
+    const name = EQUIP_DB[slot][Math.floor(Math.random()*EQUIP_DB[slot].length)];
+    const icons = {head:"🕶️", body:"👕", hand:"🥢", feet:"👟"};
+    return {
+        n: name, i: icons[slot], t: slot, type: 'equip',
+        atk: slot==='hand'?20:5, def: slot==='body'?20:5, spd: slot==='feet'?20:5
+    };
+}
+
 function update() {
-    // 重新計算裝備總值
     let s = {atk:5, def:5, spd:5, chr:5};
-    Object.values(state.equips).forEach(e => { 
-        if(e){ 
-            s.atk += (e.atk||0); s.def += (e.def||0); 
-            s.spd += (e.spd||0); s.chr += (e.chr||0); 
-        }
-    });
-
-    // 更新畫面數值
+    Object.values(state.equips).forEach(e => { if(e){ s.atk+=e.atk||0; s.def+=e.def||0; s.spd+=e.spd||0; }});
+    
     document.getElementById('st-atk').innerText = s.atk;
     document.getElementById('st-def').innerText = s.def;
     document.getElementById('st-spd').innerText = s.spd;
-    document.getElementById('st-chr').innerText = s.chr;
     document.getElementById('lvl').innerText = state.lvl;
     document.getElementById('nrg').innerText = state.nrg;
     document.getElementById('gold').innerText = state.gold;
-    
-    // 更新稱號 (根據等級與數值隨機變換)
-    if(state.lvl % 10 === 0 && state.lvl !== 0) {
-        state.titlePrefix = DB_GEN.adj[Math.floor(Math.random()*DB_GEN.adj.length)];
-    }
-    document.getElementById('amao-full-title').innerText = `👑 ${state.titlePrefix} ${state.titleSuffix}`;
 
-    // 紙娃娃視覺同步
     ['head','body','hand','feet'].forEach(slot => {
         const el = document.getElementById(`layer-${slot}`);
-        if(state.equips[slot]) { 
-            el.innerText = state.equips[slot].i; 
-            el.classList.add('active'); 
-        } else { 
-            el.classList.remove('active'); 
-        }
+        if(state.equips[slot]) { el.innerText = state.equips[slot].i; el.classList.add('active'); }
+        else { el.classList.remove('active'); }
     });
 }
 
-// 強化版：卡片生成器 (包含詳細數據小字)
-function renderCard(it) {
-    let card = document.createElement('div');
-    card.className = `card reveal ${it.type==='equip'?'is-equip':''}`;
-    
-    // 組合數值小字
-    let bonusText = "";
-    if(it.type === 'equip') {
-        bonusText = `<div class="bonus-text">` +
-            (it.atk ? `⚔️${it.atk} ` : "") +
-            (it.def ? `🛡️${it.def} ` : "") +
-            (it.spd ? `👟${it.spd} ` : "") +
-            (it.chr ? `✨${it.chr} ` : "") + `</div>`;
-    } else {
-        bonusText = `<div class="bonus-text">🔋 恢復 ${it.v}</div>`;
-    }
-
-    card.innerHTML = `
-        <div class="item-rank">${it.type==='equip'?'生活用品':'美味佳餚'}</div>
-        <div style="font-size:40px; margin-bottom:5px;">${it.i}</div>
-        <b style="font-size:13px">${it.n}</b>
-        <p class="desc-text">${it.d}</p>
-        ${bonusText}
-    `;
-    return card;
-}
-
-// 鮪魚堡商店：商品上架邏輯
-function openStore() {
-    document.getElementById('store-modal').style.display = 'block';
-    const grid = document.getElementById('store-grid');
-    grid.innerHTML = "";
-    
-    // 每次進商店都會刷出隨機商品
-    for(let i=0; i<4; i++) {
-        let item;
-        const r = Math.random();
-        if(r < 0.3) item = {...DB_GEN.equips[Math.floor(Math.random()*DB_GEN.equips.length)], type:'equip'};
-        else if(r < 0.7) item = getRandomFood();
-        else item = {...DB_GEN.junks[Math.floor(Math.random()*DB_GEN.junks.length)], type:'junk'};
-        
-        let price = (item.type === 'junk' ? item.v : Math.floor(Math.random()*50)+30);
-        
-        let box = document.createElement('div');
-        box.className = "item-box";
-        box.style.border = "1px solid #444";
-        box.innerHTML = `
-            <div style="font-size:30px">${item.i}</div>
-            <div style="font-size:11px; font-weight:bold;">${item.n}</div>
-            <button onclick="buyItem(${JSON.stringify(item).replace(/"/g, '&quot;')}, ${price})" 
-                style="margin-top:5px; background:#2ecc71; border:none; border-radius:4px; padding:4px 8px; color:#fff; font-size:10px;">
-                💰 ${price}
-            </button>
-        `;
-        grid.appendChild(box);
-    }
-}
-
-function buyItem(item, price) {
-    if(state.gold >= price) {
-        state.gold -= price;
-        state.inv.push(item);
-        alert(`鮪魚堡：「謝啦！${item.n} 現在是你的了！」`);
-        update();
-        openStore(); // 重新整理商店
-    } else {
-        alert("鮪魚堡：「沒錢？沒錢就去爬塔滾遠點！」");
-    }
-}
-</script>
-<script> ---
-
-// 擲骰子核心邏輯
 function roll() {
-    // 1. 檢查體力，沒體力直接請巧克力出場
-    if (state.nrg <= 0) {
-        triggerChoco("阿毛累得肚皮朝天，動不了啦！<br>巧克力帶著加薪便當聖光降臨！");
-        return;
-    }
-
-    // 2. 扣除體力並隨機步數
+    if(state.isBattle) return;
+    if(state.nrg <= 0) return triggerChoco("體力耗盡！");
+    
     state.nrg--;
-    const step = Math.floor(Math.random() * 6) + 1;
+    const step = Math.floor(Math.random()*6)+1;
     state.lvl += step;
+    document.querySelector('.dice').innerText = step;
     
-    // 3. 視覺反饋：擲骰子動畫感
-    const diceEl = document.querySelector('.dice-btn');
-    diceEl.innerText = step;
+    const r = Math.random();
+    if(r < 0.4) startBattle();
+    else if(r < 0.5) triggerMom();
+    else findTreasure();
     
-    // 4. 事件觸發：15% 媽媽保管，其餘發現寶箱
-    if (Math.random() < 0.15) {
-        triggerMomEvent();
-    } else {
-        generateAdventureEvent();
-    }
-    
-    update(); // 更新所有數據與紙娃娃
-}
-
-// 媽媽溫馨事件：幫忙收裝備
-function triggerMomEvent() {
-    const s = document.getElementById('stage');
-    s.innerHTML = ""; // 清空場景
-    document.getElementById('info-msg').innerText = "媽媽出現了！";
-    
-    // 找出目前穿在身上的裝備
-    const equippedSlots = Object.keys(state.equips).filter(slot => state.equips[slot] !== null);
-    
-    if (equippedSlots.length > 0) {
-        const randomSlot = equippedSlots[Math.floor(Math.random() * equippedSlots.length)];
-        const item = state.equips[randomSlot];
-        
-        // 媽媽把裝備收回背包（或是暫時洗滌消失，這裡設定收回背包最溫馨）
-        alert(`媽媽：「阿毛，你的【${item.n}】玩髒了，我拿去洗喔，先放回包包！」`);
-        state.inv.push(item);
-        state.equips[randomSlot] = null;
-    } else {
-        alert("媽媽：「阿毛真乖，今天穿得很整齊喔！」（獲得鼓勵金 20 元）");
-        state.gold += 20;
-    }
-}
-
-// 冒險事件：發現隨機寶箱
-function generateAdventureEvent() {
-    const s = document.getElementById('stage');
-    s.innerHTML = "";
-    document.getElementById('info-msg').innerText = `阿毛在第 ${state.lvl} 層發現寶箱！`;
-    
-    // 一次出現兩張卡片供玩家選擇（自動加入背包）
-    for (let i = 0; i < 2; i++) {
-        let item;
-        const r = Math.random();
-        
-        if (r < 0.45) {
-            // 隨機生活用品
-            item = { ...DB_GEN.equips[Math.floor(Math.random() * DB_GEN.equips.length)], type: 'equip' };
-        } else {
-            // 隨機美食 (萬種組合)
-            item = getRandomFood();
-        }
-        
-        state.inv.push(item);
-        s.appendChild(renderCard(item));
-    }
-}
-
-// 巧克力全螢幕救援邏輯
-function triggerChoco(msg) {
-    const chocoScreen = document.getElementById('choco-screen');
-    const chocoMsg = document.getElementById('choco-msg');
-    
-    chocoMsg.innerHTML = msg;
-    chocoScreen.style.display = 'flex';
-    
-    // 巧克力神力：體力補滿、金幣加成
-    state.nrg = 60;
-    state.gold += 50;
-    
-    // 隨機給予一個高品質稱號形容詞
-    state.titlePrefix = "受寵愛的";
-}
-
-function closeChoco() {
-    document.getElementById('choco-screen').style.display = 'none';
     update();
 }
 
-// 摸摸阿毛的小特效
-function pet() {
-    const amao = document.getElementById('amao-sprite');
-    amao.style.transform = "scale(1.2) rotate(10deg)";
-    setTimeout(() => {
-        amao.style.transform = "scale(1) rotate(0deg)";
-    }, 200);
+// 戰鬥邏輯
+async function startBattle() {
+    state.isBattle = true;
+    const enemy = {...ENEMY_DB[Math.floor(Math.random()*ENEMY_DB.length)]};
+    const enUI = document.getElementById('en-unit');
+    const msg = document.getElementById('info-msg');
     
-    const messages = ["汪！", "阿毛最愛你了！", "（搖尾巴）", "有吃的嗎？", "媽媽在看我嗎？"];
-    document.getElementById('info-msg').innerText = messages[Math.floor(Math.random() * messages.length)];
-}
-</script>
-<script> ---
+    document.getElementById('en-sprite').innerText = enemy.i;
+    document.getElementById('en-name').innerText = enemy.n;
+    document.getElementById('en-hp').style.width = "100%";
+    enUI.style.opacity = "1";
+    msg.innerText = `遭遇 ${enemy.n}！戰鬥開始！`;
 
-// 開啟背包彈窗
-function openInv() {
-    const modal = document.getElementById('inv-modal');
-    const grid = document.getElementById('inv-grid');
-    modal.style.display = 'block';
-    grid.innerHTML = "";
+    let eHP = enemy.hp;
+    let aHP = 100; // 阿毛假想血量
 
-    if (state.inv.length === 0) {
-        grid.innerHTML = "<div style='grid-column: 1/3; color:#666; padding:20px;'>背包空空如也...</div>";
-        return;
+    while(eHP > 0 && aHP > 0) {
+        await new Promise(r => setTimeout(r, 800));
+        // 阿毛攻擊
+        let dmg = Math.max(5, (parseInt(document.getElementById('st-atk').innerText) - 2));
+        eHP -= dmg;
+        document.getElementById('en-hp').style.width = Math.max(0, (eHP/enemy.hp)*100) + "%";
+        document.getElementById('am-unit').style.animation = "attackAmao 0.2s";
+        msg.innerText = `阿毛攻擊！造成 ${dmg} 傷害`;
+        setTimeout(()=>document.getElementById('am-unit').style.animation="", 200);
+
+        if(eHP <= 0) break;
+
+        await new Promise(r => setTimeout(r, 800));
+        // 敵人攻擊
+        let eDmg = Math.max(2, enemy.atk - Math.floor(parseInt(document.getElementById('st-def').innerText)/2));
+        aHP -= eDmg;
+        document.getElementById('am-hp').style.width = Math.max(0, aHP) + "%";
+        document.getElementById('en-unit').style.animation = "attackEnemy 0.2s";
+        msg.innerText = `${enemy.n} 反擊！造成 ${eDmg} 傷害`;
+        setTimeout(()=>document.getElementById('en-unit').style.animation="", 200);
     }
 
-    // 渲染背包內的物品
-    state.inv.forEach((item, index) => {
-        let box = document.createElement('div');
-        box.className = "item-box";
-        box.style.background = item.type === 'equip' ? "rgba(0, 242, 255, 0.1)" : "rgba(255, 153, 204, 0.1)";
-        
-        let subInfo = item.type === 'equip' ? "裝備" : `恢復 ${item.v}`;
-        
-        box.innerHTML = `
-            <div style="font-size:35px">${item.i}</div>
-            <div style="font-size:12px; font-weight:bold; margin:5px 0;">${item.n}</div>
-            <div style="font-size:10px; color:#aaa; margin-bottom:8px;">${subInfo}</div>
-            <button onclick="useItem(${index})" style="width:100%; padding:5px; border:none; border-radius:5px; background:var(--gold); font-weight:bold; cursor:pointer;">
-                ${item.type === 'equip' ? '穿上' : '食用'}
-            </button>
-        `;
-        grid.appendChild(box);
+    if(eHP <= 0) {
+        msg.innerText = `勝利！獲得 30 金幣`;
+        state.gold += 30;
+    } else {
+        msg.innerText = `慘敗... 體力大量流失`;
+        state.nrg = Math.max(0, state.nrg - 20);
+    }
+
+    setTimeout(() => {
+        enUI.style.opacity = "0";
+        document.getElementById('am-hp').style.width = "100%";
+        state.isBattle = false;
+        update();
+    }, 2000);
+}
+
+function findTreasure() {
+    const s = document.getElementById('stage'); s.innerHTML = "";
+    document.getElementById('info-msg').innerText = "發現寶箱！";
+    for(let i=0; i<2; i++) {
+        let it = (Math.random()<0.5) ? getRandomEquip() : getRandomFood();
+        state.inv.push(it);
+        let c = document.createElement('div');
+        c.className = "card reveal";
+        c.innerHTML = `<div style="font-size:30px">${it.i}</div><div style="font-size:12px"><b>${it.n}</b></div>`;
+        s.appendChild(c);
+    }
+}
+
+function triggerMom() {
+    alert("媽媽出現了！把你的裝備拿去洗了！");
+    const keys = Object.keys(state.equips).filter(k => state.equips[k]);
+    if(keys.length > 0) {
+        const k = keys[Math.floor(Math.random()*keys.length)];
+        state.inv.push(state.equips[k]);
+        state.equips[k] = null;
+    }
+    update();
+}
+
+function openInv() {
+    document.getElementById('inv-modal').style.display='block';
+    const g = document.getElementById('inv-grid'); g.innerHTML = "";
+    state.inv.forEach((it, i) => {
+        let d = document.createElement('div');
+        d.style.background="#222"; d.style.padding="10px"; d.style.textAlign="center"; d.style.borderRadius="10px";
+        d.innerHTML = `${it.i}<br><small>${it.n}</small><br><button onclick="useItem(${i})">使用</button>`;
+        g.appendChild(d);
     });
 }
 
-// 使用物品邏輯 (換裝或吃東西)
-function useItem(index) {
-    const item = state.inv[index];
-
-    if (item.type === 'food') {
-        // 食物：增加體力
-        state.nrg = Math.min(60, state.nrg + item.v);
-        alert(`阿毛吃掉了【${item.n}】，體力恢復了！`);
-        state.inv.splice(index, 1); // 消耗掉
-    } else if (item.type === 'equip') {
-        // 裝備：穿上並替換舊的
-        const slot = item.t; // head, body, hand, feet
-        const oldEquip = state.equips[slot];
-
-        if (oldEquip) {
-            state.inv.push(oldEquip); // 舊的脫下來放回背包
-        }
-
-        state.equips[slot] = item;
-        state.inv.splice(index, 1); // 從背包移除（因為穿在身上了）
-        alert(`阿毛穿上了【${item.n}】！`);
+function useItem(i) {
+    const it = state.inv[i];
+    if(it.type === 'food') state.nrg = Math.min(60, state.nrg + it.v);
+    else {
+        let old = state.equips[it.t];
+        if(old) state.inv.push(old);
+        state.equips[it.t] = it;
     }
-
-    saveGame();
-    update();
-    openInv(); // 刷新背包介面
+    state.inv.splice(i, 1);
+    update(); closeModal('inv-modal');
 }
 
-// 存檔與讀檔功能
-function saveGame() {
-    localStorage.setItem('amao_tower_ultimate', JSON.stringify(state));
-}
-
-function loadGame() {
-    const saved = localStorage.getItem('amao_tower_ultimate');
-    if (saved) {
-        try {
-            const parsed = JSON.parse(saved);
-            state = parsed;
-        } catch (e) {
-            console.log("讀檔失敗，啟動全新冒險");
-        }
+function openStore() {
+    document.getElementById('store-modal').style.display='block';
+    const g = document.getElementById('store-grid'); g.innerHTML = "";
+    for(let i=0; i<4; i++) {
+        let it = getRandomEquip();
+        let d = document.createElement('div');
+        d.style.background="#222"; d.style.padding="10px"; d.style.textAlign="center"; d.style.borderRadius="10px";
+        d.innerHTML = `${it.i}<br><small>${it.n}</small><br><button onclick="buy(50, ${i})">💰50</button>`;
+        g.appendChild(d);
     }
 }
 
-// 關閉彈窗通用函數
-function closeModal(id) {
-    document.getElementById(id).style.display = 'none';
+function buy(p, i) {
+    if(state.gold >= p) { state.gold -= p; state.inv.push(getRandomEquip()); update(); alert("購買成功！"); }
+    else alert("金幣不足！");
 }
 
-// --- 初始化啟動 ---
-window.onload = function() {
-    loadGame(); // 讀取進度
-    
-    // 如果是新遊戲，給一點初始稱號
-    if (state.lvl === 0) {
-        state.titlePrefix = DB_GEN.adj[0];
-        state.titleSuffix = "阿毛";
-    }
-    
-    update(); // 初始化介面
-    console.log("阿毛之塔系統啟動成功！製作人請開始冒險。");
-};
+function triggerChoco(m) { 
+    document.getElementById('choco-screen').style.display='flex';
+    document.getElementById('choco-msg').innerText = m + " 巧克力帶著加薪便當來救你了！";
+    state.nrg = 60;
+}
+function closeChoco() { document.getElementById('choco-screen').style.display='none'; update(); }
+function closeModal(id) { document.getElementById(id).style.display='none'; }
+function pet() { alert("汪！(阿毛很開心地搖尾巴)"); }
 
+window.onload = update;
 </script>
 </body>
 </html>
