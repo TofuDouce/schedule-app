@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>我的質感班表</title>
+<title>高級質感班表 Pro</title>
 <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
 <style>
@@ -116,7 +116,6 @@ button:active { transform: scale(0.92); }
   border-radius: 24px;
   overflow: hidden;
   background: var(--bg);
-  box-shadow: 0 10px 40px rgba(0,0,0,0.1);
 }
 
 #bg { position: absolute; width: 100%; height: 100%; object-fit: cover; z-index: 0; }
@@ -158,7 +157,7 @@ button:active { transform: scale(0.92); }
   font-weight: bold; color: #000;
 }
 
-/* 顏色樣式 */
+/* 班表顏色樣式 */
 .morning { background: #fde2b5; }
 .noon { background: #fdccba; }
 .night { background: #B7E1FF; }
@@ -170,7 +169,7 @@ button:active { transform: scale(0.92); }
   position: absolute; width: 80px;
   z-index: 50; touch-action: none;
   cursor: move;
-  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));
 }
 
 /* 下方工具欄 */
@@ -185,12 +184,14 @@ button:active { transform: scale(0.92); }
   box-shadow: 0 4px 10px rgba(0,0,0,0.05);
 }
 
+/* 增加選中時的視覺效果 */
 .bottom button.active {
   transform: scale(1.1);
-  box-shadow: 0 0 15px rgba(0,0,0,0.2);
+  box-shadow: 0 0 15px rgba(0,0,0,0.25);
   outline: 2px solid var(--text);
 }
 
+#preview { text-align: center; margin-bottom: 50px; }
 #preview img {
   width: 100%; margin-top: 20px;
   border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
@@ -201,10 +202,10 @@ button:active { transform: scale(0.92); }
 <body>
 
 <div class="topbar">
-  <button onclick="exportImage()" title="匯出圖片">📸</button>
+  <button onclick="exportImage()" title="匯出高畫質圖片">📸</button>
   <button onclick="document.getElementById('stickerInput').click()" title="新增貼圖">🖼️</button>
-  <button onclick="document.getElementById('bgInput').click()" title="換背景">🎨</button>
-  <button onclick="goToday()" title="回今天">📅</button>
+  <button onclick="document.getElementById('bgInput').click()" title="更換背景">🎨</button>
+  <button onclick="goToday()" title="回到本月">📅</button>
 </div>
 
 <div class="fabMenu" id="fabMenu">
@@ -223,19 +224,19 @@ button:active { transform: scale(0.92); }
   </div>
   <div class="group">
     <button onclick="confirmClear('bg')">清除背景</button>
-    <button onclick="confirmClear('stickers')">清除貼圖</button>
-    <button onclick="confirmClear('all')">清空班表</button>
+    <button onclick="confirmClear('stickers')">清除所有貼圖</button>
+    <button onclick="confirmClear('all')">重置當前班表</button>
   </div>
   <div class="group">
     <button onclick="setOpacity(1)">表格不透明</button>
-    <button onclick="setOpacity(0.6)">60%透明</button>
+    <button onclick="setOpacity(0.6)">60% 透明</button>
   </div>
   <div class="group">
     <button onclick="setBgFade(0)">背景清晰</button>
     <button onclick="setBgFade(0.5)">背景淡化</button>
   </div>
   <div class="group">
-    <button onclick="exportICS()" style="width:100%; background:#4cd964">🗓️ 匯出至行事曆</button>
+    <button onclick="exportICS()" style="width:100%; background:#4cd964; color:white !important;">🗓️ 匯出至行事曆 (.ics)</button>
   </div>
 </div>
 
@@ -248,7 +249,7 @@ button:active { transform: scale(0.92); }
   <div id="bgOverlay"></div>
   <div class="header">
     <button onclick="changeMonth(-1)" style="background:none; font-size:24px;">❮</button>
-    <h2 id="title">2024年1月</h2>
+    <h2 id="title">2026年 4月</h2>
     <button onclick="changeMonth(1)" style="background:none; font-size:24px;">❯</button>
   </div>
   <div class="weekRow">
@@ -287,7 +288,6 @@ function init() {
 function setTheme(t) {
   document.body.className = t;
   localStorage.setItem("theme", t);
-  // 同步 captureArea 背景
   setTimeout(() => {
     document.getElementById("captureArea").style.background = getComputedStyle(document.body).background;
   }, 50);
@@ -363,14 +363,13 @@ function render() {
     let idx = (first + i - 1) % 7;
     let key = `${y}-${m}-${i}`;
 
-    // 週末樣式
     if (idx === 5) d.style.background = `rgba(214,238,236,${alpha})`;
     if (idx === 6) {
       d.style.background = `rgba(249,221,229,${alpha})`;
       d.classList.add("sunday");
     }
 
-    d.innerHTML = `<div>${i}</div>`;
+    d.innerHTML = `<div style="font-weight:600">${i}</div>`;
 
     (data[key] || []).forEach(t => {
       let s = document.createElement("div");
@@ -380,11 +379,11 @@ function render() {
     });
 
     d.onclick = () => {
-      if (idx === 6) return; // 週日固定不給點
+      if (idx === 6) return; // 依需求：週日鎖定不排班
 
       let now = Date.now();
       if (lastKey === key && now - lastClickTime < 300) {
-        data[key] = []; // 雙擊清空
+        data[key] = []; // 快速連點兩下清空該日
       } else {
         if (!selected) return;
         let arr = data[key] || [];
@@ -413,17 +412,17 @@ document.getElementById("bgInput").onchange = e => {
   if (!document.getElementById("bg")) document.getElementById("captureArea").prepend(bg);
 };
 
-// ⭐ 貼圖處理
+// ⭐ 貼圖處理 (支援拖曳 + 雙擊刪除單個)
 document.getElementById("stickerInput").onchange = e => {
   let file = e.target.files[0];
   if (!file) return;
   let img = document.createElement("img");
   img.src = URL.createObjectURL(file);
   img.className = "sticker";
-  img.style.left = "30%"; img.style.top = "30%";
+  img.style.left = "35%"; img.style.top = "35%";
   makeDraggable(img);
-  // 雙擊貼圖刪除該貼圖
-  img.ondblclick = () => img.remove();
+  // 提示：雙擊貼圖可以單獨刪除它
+  img.addEventListener('dblclick', function() { this.remove(); });
   document.getElementById("captureArea").appendChild(img);
 };
 
@@ -433,7 +432,6 @@ function makeDraggable(el) {
   el.ontouchstart = dragMouseDown;
 
   function dragMouseDown(e) {
-    e.preventDefault();
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
     pos3 = clientX; pos4 = clientY;
@@ -458,14 +456,20 @@ function makeDraggable(el) {
   }
 }
 
-// ⭐ 功能：導出圖片
+// ⭐ 功能：導出圖片 (核心解析度優化)
 function exportImage() {
   const area = document.getElementById("captureArea");
-  html2canvas(area, { useCORS: true, scale: 2 }).then(canvas => {
+  // 使用 scale: 3 提升至 3倍像素解析度，解決模糊問題
+  html2canvas(area, { 
+    useCORS: true, 
+    scale: 3, 
+    backgroundColor: null,
+    logging: false 
+  }).then(canvas => {
     let img = new Image();
     img.src = canvas.toDataURL("image/png");
     const preview = document.getElementById("preview");
-    preview.innerHTML = "<h3>長按下方圖片儲存：</h3>";
+    preview.innerHTML = "<h3>✅ 製作完成！長按下方圖片儲存：</h3>";
     preview.appendChild(img);
     img.scrollIntoView({ behavior: 'smooth' });
   });
@@ -473,7 +477,7 @@ function exportImage() {
 
 // ⭐ 功能：導出 ICS
 function exportICS() {
-  let text = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Gemini//Schedule App//TW\n";
+  let text = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Gemini//ScheduleApp//TW\n";
   for (let key in data) {
     if (data[key].length === 0) continue;
     data[key].forEach(type => {
