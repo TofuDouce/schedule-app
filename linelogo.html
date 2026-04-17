@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Lazy DoDo - 完整最終版</title>
+<title>Lazy DoDo - 巔峰版</title>
 
 <style>
 :root { --primary: #06C755; }
@@ -11,24 +11,13 @@ body{margin:0;font-family:-apple-system, sans-serif;background:#f3f4f6; padding-
 .header{background: var(--primary); color:#fff; padding:15px; text-align:center; font-weight:bold; font-size:1.2rem;}
 .container{max-width:520px; margin:auto; padding:10px;}
 
-/* 畫布置頂功能 */
-.canvas-section {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: #f3f4f6;
-    padding: 10px 0;
-}
-.canvas-container {
-    background:#fff; border-radius:16px; padding:10px; 
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    max-width: 320px; margin: auto;
-}
+/* 畫布置頂 */
+.canvas-section { position: sticky; top: 0; z-index: 100; background: #f3f4f6; padding: 10px 0; }
+.canvas-container { background:#fff; border-radius:16px; padding:10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 320px; margin: auto; }
 canvas{width:100%; border-radius:12px; background:#eee; aspect-ratio: 1/1; display: block;}
 
 .card{background:#fff; border-radius:16px; padding:15px; margin-bottom:15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);}
 
-/* 收合設計 */
 .collapsible-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: bold; font-size: 15px; padding: 5px 0; }
 .toggle-icon { transition: transform 0.3s; }
 .hidden { display: none !important; }
@@ -83,7 +72,7 @@ button{flex:1; padding:12px; border:none; border-radius:10px; font-weight:bold; 
 
     <div class="card">
         <div class="collapsible-header" onclick="toggleSection('styleConfig', this)">
-            <span>1. 樣式與顏色設定</span>
+            <span>1. 樣式、顏色與魔王特效</span>
             <span class="toggle-icon">▼</span>
         </div>
         <div id="styleConfig" class="collapsible-content">
@@ -105,11 +94,15 @@ button{flex:1; padding:12px; border:none; border-radius:10px; font-weight:bold; 
             </div>
 
             <div class="tool-row">
+                <span>文字透明度</span><input type="range" id="textAlpha" min="0" max="100" value="100">
+            </div>
+
+            <div class="tool-row">
                 <span>文字大小</span><input type="range" id="sizeText" min="10" max="500" value="150">
             </div>
 
             <div class="tool-row" style="flex-wrap: wrap; gap: 15px;">
-                <span>特效風格:</span>
+                <span>陰影特效:</span>
                 <label><input type="radio" name="effect" value="none" onclick="draw()" checked> 無</label>
                 <label><input type="radio" name="effect" value="soft" onclick="draw()"> 柔光</label>
                 <label><input type="radio" name="effect" value="lift" onclick="draw()"> 浮起</label>
@@ -125,12 +118,12 @@ button{flex:1; padding:12px; border:none; border-radius:10px; font-weight:bold; 
         </div>
         <div id="contentConfig" class="collapsible-content">
             <div class="tabs">
-                <div class="tab active" data-tab="0">純文字</div>
+                <div class="tab active" data-tab="0">文字模式</div>
                 <div class="tab" data-tab="1">Emoji</div>
                 <div class="tab" data-tab="2">顏文字</div>
-                <div class="tab" data-tab="3">上傳圖片</div>
+                <div class="tab" data-tab="3">圖片</div>
             </div>
-            <div class="tab-content active" data-content="0"><p style="font-size:12px; color:#999;">僅顯示最下方的疊加文字內容</p></div>
+            <div class="tab-content active" data-content="0"><p style="font-size:12px; color:#999;">純文字模式，請在下方輸入內容。</p></div>
             <div class="tab-content" data-content="1">
                 <div class="tool-row"><span>Emoji大小</span><input type="range" id="sizeEmoji" min="100" max="600" value="300"></div>
                 <div class="emoji-panel" id="emojiPanel"></div>
@@ -139,7 +132,7 @@ button{flex:1; padding:12px; border:none; border-radius:10px; font-weight:bold; 
             <div class="tab-content" data-content="2">
                 <div class="tool-row"><span>顏文字大小</span><input type="range" id="sizeKao" min="40" max="350" value="120"></div>
                 <div id="kaoList" class="kao-panel"></div>
-                <input id="selectedKao" type="hidden" value="(っ˙꒳˙ )╮=͟͟͞͞🍑">
+                <input id="selectedKao" type="hidden" value="꒰ ⩌ᴥ⩌ ꒱">
             </div>
             <div class="tab-content" data-content="3">
                 <div class="tool-row">
@@ -157,13 +150,13 @@ button{flex:1; padding:12px; border:none; border-radius:10px; font-weight:bold; 
 
     <div class="card">
         <div style="font-weight:bold; margin-bottom:5px;">✍️ 疊加文字內容</div>
-        <input id="text" class="big-input" placeholder="輸入文字..." value="筆記">
+        <input id="text" class="big-input" placeholder="點擊圖標模式會自動清除..." value="筆記">
     </div>
 </div>
 
 <div class="action-row">
     <button class="gray" onclick="resetAll()">重設</button>
-    <button class="green" onclick="showPreview()">產生下載預覽</button>
+    <button class="green" onclick="showPreview()">預覽下載</button>
 </div>
 
 <div id="previewModal" class="preview-modal" onclick="this.style.display='none'">
@@ -176,14 +169,13 @@ button{flex:1; padding:12px; border:none; border-radius:10px; font-weight:bold; 
 const canvas=document.getElementById("canvas"), ctx=canvas.getContext("2d");
 let shape="square", currentTab=0, img=new Image(), loaded=false;
 
-// 切換收合區塊
 function toggleSection(id, el) {
-    document.getElementById(id).classList.toggle('hidden');
+    const target = document.getElementById(id);
+    target.classList.toggle('hidden');
     const icon = el.querySelector('.toggle-icon');
-    icon.style.transform = document.getElementById(id).classList.contains('hidden') ? 'rotate(-90deg)' : 'rotate(0deg)';
+    icon.style.transform = target.classList.contains('hidden') ? 'rotate(-90deg)' : 'rotate(0deg)';
 }
 
-// 切換色票
 function togglePalette() {
     const p = document.getElementById("colorPalette"), s = document.getElementById("paletteStatus");
     const isHidden = p.style.display !== "grid";
@@ -194,7 +186,6 @@ function togglePalette() {
 function setShape(s) { shape = s; draw(); }
 
 function init() {
-    // 🎨 色票擴充
     const colors=["#FF3B30","#FF9500","#FFCC00","#34C759","#00C7BE","#007AFF","#5856D6","#FF2D55","#8E8E93","#D6A6A6","#D9B08C","#E6D3A3","#A8C3A0","#9EC1CF","#8EA6C9","#B5A6D6","#D6A6C1","#C4C4C4","#FFB3BA","#FFD6A5","#FFF3B0","#C8E6C9","#B2EBF2","#B3E5FC","#D1C4E9","#F8BBD0","#EEEEEE"];
     colors.forEach(c => {
         let d=document.createElement("div"); d.className="color"; d.style.background=c;
@@ -202,7 +193,6 @@ function init() {
         document.getElementById("colorPalette").appendChild(d);
     });
 
-    // 🏃 Emoji 擴充
     const emojis=["🏃","🧘","🏋️","🚴","⚽","🏀","🎾","🏌️","🎨","🎧","🎸","📸","🎮","🎬","🎤","🧩","💆","💄","💅","💇","✨","🧖","👗","👜","💰","📈","📊","💹","💎","☕","🍰","🍱","🐶","🐱","🐰","🐹","🦊","🐻","🐼","🐨","🔥","🌟","🌈","🍀","🌸","🍎","🍉","🚀"];
     emojis.forEach(e=>{
         let d=document.createElement("div"); d.className="emoji-item"; d.innerText=e;
@@ -210,20 +200,19 @@ function init() {
         document.getElementById("emojiPanel").appendChild(d);
     });
 
-    // (っ˙꒳˙ ) 顏文字擴充
-    const kaomojis=["(っ˙꒳˙ )╮=͟͟͞͞🍑","ฅ^•ﻌ•^ฅ","( ‘• ω • `)","(๑•̀ㅂ•́)و","(❁´◡`❁)","(｡♥‿♥｡)","ദ്ദി ˉ꒳ˉ )✧","(づ•ᴗ•)づ","(≧▽≦)","(๑>ᴗ<๑)","(✿◠‿◠)","(＾▽＾)","(ง •̀_•́)ง","(¬_¬)","(눈_눈)","(ಥ﹏ಥ)","(╥﹏╥)","(ಠ_ಠ)","( •‿• )","(ʘ‿ʘ)","(╯°▽°)╯","(〃▽〃)","(///▽///)","(◦˙▽˙◦)","ヾ(•ω•)o","(^_−)☆","(o゜▽゜)o","ヘ( ^o^)ノ","(ˉ▽ˉ；)","(。・∀・)ノ","(￣▽￣)ノ","(o^ ^o)"];
+    // 擴充顏文字，新增 ꒰ ⩌ᴥ⩌ ꒱，並將桃子放最後
+    const kaomojis=["꒰ ⩌ᴥ⩌ ꒱","ฅ^•ﻌ•^ฅ","( ‘• ω • `)","(๑•̀ㅂ•́)و","(❁´◡`❁)","(｡♥‿♥｡)","ദ്ദി ˉ꒳ˉ )✧","(づ•ᴗ•)づ","(≧▽≦)","(๑>ᴗ<๑)","(✿◠‿◠)","(＾▽＾)","(ง •̀_•́)ง","(¬_¬)","(눈_눈)","(ಥ﹏ಥ)","(╥﹏╥)","(ಠ_ಠ)","( •‿• )","(ʘ‿ʘ)","(╯°▽°)╯","(〃▽〃)","(///▽///)","(◦˙▽˙◦)","ヾ(•ω•)o","(^_−)☆","(o゜▽゜)o","ヘ( ^o^)ノ","(ˉ▽ˉ；)","(。・∀・)ノ","(￣▽￣)ノ","(o^ ^o)","(っ˙꒳˙ )╮=͟͟͞͞🍑"];
     kaomojis.forEach(k=>{
         let d=document.createElement("div"); d.className="emoji-item"; d.innerText=k;
         d.onclick=()=>{ document.getElementById("selectedKao").value=k; draw(); };
         document.getElementById("kaoList").appendChild(d);
     });
 
-    const inputs = ["text","sizeText","sizeEmoji","sizeKao","sizeLogo","posX","posY","bg","textColor","transparentBg","strokeToggle","strokeColor","strokeWidth"];
+    const inputs = ["text","sizeText","textAlpha","sizeEmoji","sizeKao","sizeLogo","posX","posY","bg","textColor","transparentBg","strokeToggle","strokeColor","strokeWidth"];
     inputs.forEach(id => document.getElementById(id).addEventListener("input", draw));
     draw();
 }
 
-// 標籤切換
 document.querySelectorAll("[data-tab]").forEach(tab=>{
     tab.onclick=()=>{
         currentTab=parseInt(tab.dataset.tab);
@@ -233,28 +222,39 @@ document.querySelectorAll("[data-tab]").forEach(tab=>{
             c.classList.remove("active");
             if(c.dataset.content==currentTab) c.classList.add("active");
         });
+        
+        // 智慧清除：當切換到 Emoji 或 顏文字或圖片，且文字內容是「筆記」時，自動清除
+        let textInput = document.getElementById("text");
+        if(currentTab !== 0 && textInput.value === "筆記") {
+            textInput.value = "";
+        }
         draw();
     };
 });
 
+// 魔王級函式：將 HEX 轉為帶 Alpha 的 RGBA
+function hexToRGBA(hex, alpha) {
+    let r = parseInt(hex.slice(1, 3), 16),
+        g = parseInt(hex.slice(3, 5), 16),
+        b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r},${g},${b},${alpha})`;
+}
+
 function draw(){
     ctx.clearRect(0,0,512,512); ctx.save();
-    // 裁切形狀
     if(shape==="circle"){ ctx.beginPath(); ctx.arc(256,256,256,0,Math.PI*2); ctx.clip(); }
     
-    // 背景
     if(!document.getElementById("transparentBg").checked){
         ctx.fillStyle=document.getElementById("bg").value; ctx.fillRect(0,0,512,512);
     }
 
-    // 設定陰影特效
     const effect = document.querySelector('input[name="effect"]:checked').value;
     ctx.shadowColor = "transparent";
     if(effect === "soft") { ctx.shadowColor="rgba(0,0,0,0.2)"; ctx.shadowBlur=15; ctx.shadowOffsetY=5; }
     else if(effect === "lift") { ctx.shadowColor="rgba(0,0,0,0.3)"; ctx.shadowBlur=10; ctx.shadowOffsetY=10; }
     else if(effect === "strong") { ctx.shadowColor="rgba(0,0,0,0.5)"; ctx.shadowBlur=0; ctx.shadowOffsetY=10; }
 
-    // 1. 繪製底部層 (Emoji/顏文字/圖片)
+    // 1. 底部層
     if(currentTab === 1){
         ctx.font = `${document.getElementById("sizeEmoji").value}px serif`;
         ctx.textAlign="center"; ctx.textBaseline="middle";
@@ -277,15 +277,20 @@ function draw(){
         ctx.drawImage(img, 256-dw/2+xOff, 256-dh/2+yOff, dw, dh);
     }
 
-    // 2. 繪製頂部層 (疊加文字)
+    // 2. 疊加文字層 (含透明度)
     let txt = document.getElementById("text").value;
     if(txt){
-        ctx.fillStyle = document.getElementById("textColor").value;
+        let alpha = document.getElementById("textAlpha").value / 100;
+        let textColor = hexToRGBA(document.getElementById("textColor").value, alpha);
+        let strokeColor = hexToRGBA(document.getElementById("strokeColor").value, alpha);
+
+        ctx.fillStyle = textColor;
         ctx.font=`900 ${document.getElementById("sizeText").value}px sans-serif`;
         ctx.textAlign="center"; ctx.textBaseline="middle";
+        
         if(document.getElementById("strokeToggle").checked){
             ctx.lineWidth=document.getElementById("strokeWidth").value;
-            ctx.strokeStyle=document.getElementById("strokeColor").value;
+            ctx.strokeStyle=strokeColor;
             ctx.strokeText(txt, 256, 256);
         }
         ctx.fillText(txt, 256, 256);
@@ -293,14 +298,12 @@ function draw(){
     ctx.restore();
 }
 
-// 處理圖片上傳
 document.getElementById("upload").onchange=e=>{
     const reader=new FileReader();
     reader.onload=ev=>{ img.onload=()=>{ loaded=true; draw(); }; img.src=ev.target.result; };
     reader.readAsDataURL(e.target.files[0]);
 };
 
-// 顯示預覽
 function showPreview() {
     document.getElementById("previewImage").src = canvas.toDataURL("image/png");
     document.getElementById("previewModal").style.display = "flex";
