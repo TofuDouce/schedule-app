@@ -3,73 +3,69 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lazy DoDo</title>
+<title>LINE 大頭照產生器 5.0</title>
 
 <style>
-body{margin:0;font-family:-apple-system;background:#f3f4f6;}
-.header{background:#06C755;color:#fff;padding:20px;text-align:center;font-weight:bold;}
+body{margin:0;font-family:-apple-system, sans-serif;background:#f3f4f6;}
+.header{background:#06C755;color:#fff;padding:20px;text-align:center;font-weight:bold;font-size:1.2rem;}
 .container{max-width:520px;margin:auto;padding:15px;}
-.card{background:#fff;border-radius:16px;padding:15px;margin-bottom:15px;}
-canvas{width:100%;border-radius:20px;background:#eee;}
+.card{background:#fff;border-radius:16px;padding:15px;margin-bottom:15px;box-shadow: 0 2px 8px rgba(0,0,0,0.05);}
+canvas{width:100%;border-radius:20px;background:#eee;aspect-ratio: 1/1;}
 
-.preview{width:100%;border-radius:20px;margin-top:10px;background:#fff;padding:10px;display:none;}
+.preview{width:100%;border-radius:20px;margin-top:10px;background:#fff;padding:10px;display:none;border: 2px dashed #06C755;}
 
-.tabs{display:flex;gap:20px;border-bottom:2px solid #eee;margin-bottom:10px;}
-.tab{padding:10px 0;cursor:pointer;color:#999;font-weight:bold;}
+.tabs{display:flex;gap:20px;border-bottom:2px solid #f0f0f0;margin-bottom:15px;}
+.tab{padding:10px 0;cursor:pointer;color:#999;font-weight:bold;flex:1;text-align:center;}
 .tab.active{color:#06C755;border-bottom:3px solid #06C755;}
 
 .tab-content{display:none;}
 .tab-content.active{display:block;}
 
-.big-input{width:100%;padding:14px;font-size:20px;border-radius:12px;border:1px solid #ddd;margin-top:10px;}
+.big-input{width:100%;padding:14px;font-size:18px;border-radius:12px;border:1px solid #ddd;margin-top:10px;box-sizing: border-box;}
 
 .colors{display:grid;grid-template-columns: repeat(9, 1fr);gap:8px;margin-top:10px;}
-.color{width:100%;aspect-ratio:1;border-radius:50%;cursor:pointer;}
+.color{width:100%;aspect-ratio:1;border-radius:50%;cursor:pointer;border: 1px solid rgba(0,0,0,0.05);}
 
-.emoji-panel{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;}
-.kao-panel{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.emoji-panel{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:10px;}
+.kao-panel{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px;}
 
 .emoji{font-size:18px;text-align:center;padding:8px;border-radius:10px;background:#f2f2f2;cursor:pointer;}
 
 .row{display:flex;gap:10px;}
-button{flex:1;padding:14px;border:none;border-radius:10px;font-weight:bold;font-size:16px;}
+button{flex:1;padding:14px;border:none;border-radius:12px;font-weight:bold;font-size:16px;cursor:pointer;}
 .green{background:#06C755;color:#fff;}
-.gray{background:#ddd;}
+.gray{background:#eee;color:#666;}
 
-.tool-row{display:flex;align-items:center;gap:10px;margin-top:10px;}
+.tool-row{display:flex;align-items:center;gap:10px;margin-top:12px;font-size: 14px;color: #666;}
 .tool-row input[type="range"]{flex:1;}
-.tool-row input[type="color"]{width:36px;height:36px;border:none;}
+.tool-row input[type="color"]{width:30px;height:30px;border:none;padding:0;background:none;}
+label{display:flex;align-items:center;gap:4px;cursor:pointer;}
 </style>
 </head>
-
 <body>
 
-<div class="header">
-Lazy dodo (っ˙꒳˙ )╮ =͟͟͞͞💖<br>
-
-</div>
+<div class="header">LINE 大頭照產生器 5.0</div>
 
 <div class="container">
 
 <div class="card">
-<div class="tabs">
-<div class="tab active" onclick="setShape('square')">方形</div>
-<div class="tab" onclick="setShape('circle')">圓形</div>
+<div class="tabs" id="shapeTabs">
+<div class="tab active" onclick="setShape('square', this)">方形</div>
+<div class="tab" onclick="setShape('circle', this)">圓形</div>
 </div>
 <canvas id="canvas" width="512" height="512"></canvas>
 </div>
 
 <div class="card">
-
-背景色
+<div style="font-weight:bold; margin-bottom:8px;">1. 背景與顏色</div>
+<div class="tool-row">
 <input type="color" id="bg" value="#06C755">
-<label><input type="checkbox" id="togglePalette" checked> 色票</label>
-<label><input type="checkbox" id="transparentBg"> 透明</label>
+<label><input type="checkbox" id="transparentBg"> 透明背景</label>
+<span style="margin-left:auto">文字顏色</span>
+<input type="color" id="textColor" value="#ffffff">
+</div>
 
 <div class="colors" id="colorPalette"></div>
-
-文字顏色
-<input type="color" id="textColor" value="#ffffff">
 
 <div class="tool-row">
 <label><input type="checkbox" id="strokeToggle"> 描邊</label>
@@ -78,92 +74,122 @@ Lazy dodo (っ˙꒳˙ )╮ =͟͟͞͞💖<br>
 </div>
 
 <div class="tool-row">
-<label><input type="checkbox" id="shadowSoft"> 柔光</label>
-<label><input type="checkbox" id="shadowLift"> 浮起</label>
-<label><input type="checkbox" id="shadowStrong"> 設計</label>
+<span style="margin-right:5px">特效:</span>
+<label><input type="radio" name="effect" onclick="draw()" id="eNone" checked> 無</label>
+<label><input type="radio" name="effect" onclick="draw()" id="shadowSoft"> 柔光</label>
+<label><input type="radio" name="effect" onclick="draw()" id="shadowLift"> 浮起</label>
+<label><input type="radio" name="effect" onclick="draw()" id="shadowStrong"> 扎實</label>
+</div>
 </div>
 
+<div class="card">
+<div style="font-weight:bold; margin-bottom:8px;">2. 內容設定</div>
 <div class="tabs">
 <div class="tab active" data-tab="0">文字</div>
 <div class="tab" data-tab="1">Emoji</div>
 <div class="tab" data-tab="2">顏文字</div>
-<div class="tab" data-tab="3">LOGO</div>
+<div class="tab" data-tab="3">上傳</div>
 </div>
 
 <div class="tab-content active" data-content="0">
-<input type="range" id="sizeText" min="40" max="300" value="150">
-<input id="text" class="big-input" value="筆記">
+<div class="tool-row"><span>大小</span><input type="range" id="sizeText" min="40" max="450" value="180"></div>
+<input id="text" class="big-input" placeholder="輸入文字..." value="筆記">
 </div>
 
 <div class="tab-content" data-content="1">
-<input type="range" id="sizeEmoji" min="40" max="300" value="120">
+<div class="tool-row"><span>大小</span><input type="range" id="sizeEmoji" min="100" max="450" value="250"></div>
 <div class="emoji-panel" id="emojiPanel"></div>
 </div>
 
 <div class="tab-content" data-content="2">
-<input type="range" id="sizeKao" min="40" max="300" value="120">
-<input id="kaomoji" class="big-input">
+<div class="tool-row"><span>大小</span><input type="range" id="sizeKao" min="40" max="300" value="100"></div>
+<input id="kaomoji" class="big-input" value="(≧▽wide)">
 <div id="kaoList" class="kao-panel"></div>
 </div>
 
 <div class="tab-content" data-content="3">
-<input type="range" id="sizeLogo" min="40" max="300" value="120">
-<input type="file" id="upload">
-<input id="logoText" class="big-input">
+<div class="tool-row"><span>縮放</span><input type="range" id="sizeLogo" min="10" max="100" value="80"></div>
+<input type="file" id="upload" accept="image/*" style="margin-top:10px;">
 </div>
-
 </div>
 
 <div class="card row">
 <button class="gray" onclick="resetAll()">重設</button>
-<button class="green" onclick="download()">下載</button>
+<button class="green" onclick="download()">產生預覽圖</button>
 </div>
 
-<div class="card">
-<div>長按圖片可儲存</div>
 <img id="preview" class="preview">
-</div>
+<div id="tip" style="text-align:center; color:#666; font-size:12px; margin-top:5px; display:none;">長按上方圖片即可儲存</div>
 
 </div>
 
 <script>
-
 const canvas=document.getElementById("canvas");
 const ctx=canvas.getContext("2d");
+const preview=document.getElementById("preview");
+const tip=document.getElementById("tip");
 
-const textInput=document.getElementById("text");
-const kaomojiInput=document.getElementById("kaomoji");
-const logoTextInput=document.getElementById("logoText");
+// 控制項
+const inputs = [
+  "text","kaomoji","sizeText","sizeEmoji","sizeKao","sizeLogo",
+  "bg","textColor","transparentBg","strokeToggle","strokeColor","strokeWidth"
+];
 
-const sizeText=document.getElementById("sizeText");
-const sizeEmoji=document.getElementById("sizeEmoji");
-const sizeKao=document.getElementById("sizeKao");
-const sizeLogo=document.getElementById("sizeLogo");
-
-const bgInput=document.getElementById("bg");
-const textColorInput=document.getElementById("textColor");
-const transparentBg=document.getElementById("transparentBg");
-
-const strokeToggle=document.getElementById("strokeToggle");
-const strokeColor=document.getElementById("strokeColor");
-const strokeWidth=document.getElementById("strokeWidth");
-
-const shadowSoft=document.getElementById("shadowSoft");
-const shadowLift=document.getElementById("shadowLift");
-const shadowStrong=document.getElementById("shadowStrong");
-
-const emojiPanel=document.getElementById("emojiPanel");
-const kaoList=document.getElementById("kaoList");
-const colorPalette=document.getElementById("colorPalette");
-const upload=document.getElementById("upload");
-
-let currentTab=0;
 let shape="square";
+let currentTab=0;
 let img=new Image();
 let loaded=false;
-let autoSize=true;
 
-// tab
+// 初始化
+function init() {
+  // 色票設定 (三列)
+  const vivid=["#FF3B30","#FF9500","#FFCC00","#34C759","#00C7BE","#007AFF","#5856D6","#FF2D55","#8E8E93"];
+  const morandi=["#D6A6A6","#D9B08C","#E6D3A3","#A8C3A0","#9EC1CF","#8EA6C9","#B5A6D6","#D6A6C1","#C4C4C4"];
+  const pastel=["#FFB3BA","#FFD6A5","#FFF3B0","#C8E6C9","#B2EBF2","#B3E5FC","#D1C4E9","#F8BBD0","#F1F1F1"];
+  
+  [vivid, morandi, pastel].forEach(group => {
+    group.forEach(c => {
+      let d=document.createElement("div");
+      d.className="color";
+      d.style.background=c;
+      d.onclick=()=>{ document.getElementById("bg").value=c; draw(); };
+      document.getElementById("colorPalette").appendChild(d);
+    });
+  });
+
+  // Emoji
+  const emojis=["🎧","✨","⭐","❤️","🔥","✅","💡","🍀","🐱","🐶","🦊","🐼","☕","🥤","🎨","🎮","⚽","🌈"];
+  emojis.forEach(e=>{
+    let d=document.createElement("div");
+    d.className="emoji";
+    d.innerText=e;
+    d.onclick=()=>{ 
+      if(currentTab === 1) document.getElementById("text").value = e;
+      else document.getElementById("text").value += e;
+      draw(); 
+    };
+    document.getElementById("emojiPanel").appendChild(d);
+  });
+
+  // 顏文字
+  const kaomojis=["ദ്ദി ˉ꒳ˉ )✧","( ‘• ω • `)","(๑•̀ㅂ•́)و","(❁´◡`❁)","(｡♥‿♥｡)","(ಥ﹏ಥ)","(¬_¬)","(ง •̀_•́)ง"];
+  kaomojis.forEach(k=>{
+    let d=document.createElement("div");
+    d.className="emoji";
+    d.innerText=k;
+    d.onclick=()=>{ document.getElementById("kaomoji").value=k; draw(); };
+    document.getElementById("kaoList").appendChild(d);
+  });
+
+  // 綁定事件
+  inputs.forEach(id => {
+    document.getElementById(id).addEventListener("input", draw);
+  });
+
+  draw();
+}
+
+// Tab 切換
 document.querySelectorAll("[data-tab]").forEach(tab=>{
   tab.onclick=()=>{
     currentTab=parseInt(tab.dataset.tab);
@@ -177,150 +203,108 @@ document.querySelectorAll("[data-tab]").forEach(tab=>{
   };
 });
 
-// slider control
-sizeText.oninput=()=>{autoSize=false;draw();}
-textInput.oninput=()=>{autoSize=true;draw();}
+function setShape(s, el){
+  shape=s;
+  document.querySelectorAll("#shapeTabs .tab").forEach(t=>t.classList.remove("active"));
+  el.classList.add("active");
+  draw();
+}
 
-// 即時更新
-[bgInput,textColorInput,strokeToggle,strokeColor,strokeWidth,
-shadowSoft,shadowLift,shadowStrong,transparentBg]
-.forEach(el=>el.addEventListener("input",draw));
-
-// 色票（三排）
-const vivid=["#FF3B30","#FF9500","#FFCC00","#34C759","#00C7BE","#007AFF","#5856D6","#FF2D55","#8E8E93"];
-const pastel=["#FFB3BA","#FFD6A5","#FFF3B0","#C8E6C9","#B2EBF2","#B3E5FC","#D1C4E9","#F8BBD0","#E0E0E0"];
-const morandi=["#D6A6A6","#D9B08C","#E6D3A3","#A8C3A0","#9EC1CF","#8EA6C9","#B5A6D6","#D6A6C1","#C4C4C4"];
-
-[vivid,pastel,morandi].forEach(group=>{
-  group.forEach(c=>{
-    let d=document.createElement("div");
-    d.className="color";
-    d.style.background=c;
-    d.onclick=()=>{bgInput.value=c;draw();}
-    colorPalette.appendChild(d);
-  });
-});
-
-// emoji
-const emojis=["🎧","🎵","🎶","🎤","🎸","🥁","🎹","🏋️","🧘","🏃","🚴","⚽","🏀","🏊","🍔","🍟","🍕","🍣","🍩","🍰","☕","🧋","📚","💻","📱","🎮","🎨","✈️","🚗","🔥","✨","⭐","❤️","💛","💚","💙","💜","🐶","🐱","🐼","🦊","🐰"];
-
-emojis.forEach(e=>{
-  let d=document.createElement("div");
-  d.className="emoji";
-  d.innerText=e;
-  d.onclick=()=>{textInput.value+=e;draw();}
-  emojiPanel.appendChild(d);
-});
-
-// 顏文字（完整版）
-const kaomojis=[
-"ദ്ദി ˉ꒳ˉ )✧","( ‘• ω • `)","ฅ^•ﻌ•^ฅ","(づ•ᴗ•)づᯓ🍕","꒰ ⩌ᴥ⩌ ꒱","(⑉･̆༥･̆⑉)",
-"(≧▽≦)","(≧◡≦)","(๑•̀ㅂ•́)و✧","(๑˃ᴗ˂)ﻭ","(❁´◡`❁)",
-"(￣▽￣)","(￣ω￣)","(⌒‿⌒)","(〃＾▽＾〃)",
-"(｡♥‿♥｡)","(｡•̀ᴗ-)✧","(๑>ᴗ<๑)",
-"(ಥ﹏ಥ)","(T_T)","(；′⌒`)","(；￣Д￣)",
-"(╥﹏╥)","(ノ_<。)","(；′д｀)ゞ",
-"(¬_¬)","(ಠ_ಠ)","(눈_눈)",
-"(・_・;)","(°ロ°)","(⊙_⊙)",
-"(ʘ‿ʘ)","(•‿•)","(•̀ᴗ•́)",
-"(ง •̀_•́)ง","(ง'̀-'́)ง",
-"(づ｡◕‿‿◕｡)づ","(づ￣ ³￣)づ",
-"(つ≧▽≦)つ","(ノ・∀・)ノ",
-"(☞ﾟヮﾟ)☞","☜(ﾟヮﾟ☜)",
-"(✿◠‿◠)","(◕‿◕✿)",
-"(≧∇≦)/","(＾▽＾)"
-];
-
-kaomojis.forEach(k=>{
-  let d=document.createElement("div");
-  d.className="emoji";
-  d.innerText=k;
-  d.onclick=()=>{kaomojiInput.value=k;draw();}
-  kaoList.appendChild(d);
-});
-
-// draw（穩定版）
+// 繪製邏輯
 function draw(){
-ctx.clearRect(0,0,512,512);
+  ctx.clearRect(0,0,512,512);
+  ctx.save();
 
-if(shape==="circle"){
-ctx.save();
-ctx.beginPath();
-ctx.arc(256,256,256,0,Math.PI*2);
-ctx.clip();
+  if(shape==="circle"){
+    ctx.beginPath();
+    ctx.arc(256,256,256,0,Math.PI*2);
+    ctx.clip();
+  }
+
+  if(!document.getElementById("transparentBg").checked){
+    ctx.fillStyle=document.getElementById("bg").value;
+    ctx.fillRect(0,0,512,512);
+  }
+
+  ctx.fillStyle=document.getElementById("textColor").value;
+  ctx.textAlign="center";
+  ctx.textBaseline="middle";
+
+  // 陰影設定
+  ctx.shadowColor = "transparent";
+  if(document.getElementById("shadowSoft").checked){
+    ctx.shadowColor="rgba(0,0,0,0.2)"; ctx.shadowBlur=15; ctx.shadowOffsetY=5;
+  } else if(document.getElementById("shadowLift").checked){
+    ctx.shadowColor="rgba(0,0,0,0.3)"; ctx.shadowBlur=10; ctx.shadowOffsetY=10;
+  } else if(document.getElementById("shadowStrong").checked){
+    ctx.shadowColor="rgba(0,0,0,0.5)"; ctx.shadowBlur=2; ctx.shadowOffsetY=8;
+  }
+
+  if(currentTab===0){
+    let txt = document.getElementById("text").value || "筆記";
+    let fSize = document.getElementById("sizeText").value;
+    ctx.font=`900 ${fSize}px "PingFang TC", "Microsoft JhengHei", sans-serif`;
+    
+    if(document.getElementById("strokeToggle").checked){
+      ctx.lineWidth=document.getElementById("strokeWidth").value;
+      ctx.strokeStyle=document.getElementById("strokeColor").value;
+      ctx.strokeText(txt, 256, 256);
+    }
+    ctx.fillText(txt, 256, 256);
+
+  } else if(currentTab===1){
+    let emo = document.getElementById("text").value || "🎧";
+    ctx.font=`${document.getElementById("sizeEmoji").value}px serif`;
+    ctx.fillText(emo, 256, 256);
+
+  } else if(currentTab===2){
+    let kao = document.getElementById("kaomoji").value || "(≧▽≦)";
+    ctx.font=`bold ${document.getElementById("sizeKao").value}px sans-serif`;
+    ctx.fillText(kao, 256, 256);
+
+  } else if(currentTab===3){
+    if(loaded){
+      let scale = document.getElementById("sizeLogo").value / 100;
+      let w = img.width, h = img.height;
+      let ratio = Math.min(512/w, 512/h) * scale;
+      ctx.drawImage(img, 256-(w*ratio)/2, 256-(h*ratio)/2, w*ratio, h*ratio);
+    } else {
+      ctx.font="20px sans-serif";
+      ctx.fillText("請上傳圖片", 256, 256);
+    }
+  }
+
+  ctx.restore();
 }
 
-if(!transparentBg.checked){
-ctx.fillStyle=bgInput.value;
-ctx.fillRect(0,0,512,512);
-}
-
-ctx.fillStyle=textColorInput.value;
-ctx.textAlign="center";
-ctx.textBaseline="middle";
-
-// 陰影
-if(shadowSoft.checked){ctx.shadowColor="rgba(0,0,0,0.15)";ctx.shadowBlur=20;ctx.shadowOffsetY=4;}
-if(shadowLift.checked){ctx.shadowColor="rgba(0,0,0,0.25)";ctx.shadowBlur=8;ctx.shadowOffsetY=8;}
-if(shadowStrong.checked){ctx.shadowColor="rgba(0,0,0,0.4)";ctx.shadowBlur=2;ctx.shadowOffsetY=14;}
-
-if(currentTab===0){
-ctx.font=`900 ${sizeText.value}px sans-serif`;
-if(strokeToggle.checked){
-ctx.lineWidth=strokeWidth.value;
-ctx.strokeStyle=strokeColor.value;
-ctx.strokeText(textInput.value||"筆記",256,256);
-}
-ctx.fillText(textInput.value||"筆記",256,256);
-}
-
-if(currentTab===1){
-ctx.font=`bold ${sizeEmoji.value}px sans-serif`;
-ctx.fillText(textInput.value||"🎧",256,256);
-}
-
-if(currentTab===2){
-ctx.font=`bold ${sizeKao.value}px sans-serif`;
-ctx.fillText(kaomojiInput.value||"(≧▽≦)",256,256);
-}
-
-if(currentTab===3){
-if(loaded){
-let s=parseFloat(sizeLogo.value)/100;
-ctx.drawImage(img,256-256*s,256-256*s,512*s,512*s);
-}
-ctx.font=`bold ${sizeLogo.value}px sans-serif`;
-ctx.fillText(logoTextInput.value||"",256,256);
-}
-
-ctx.shadowColor="transparent";
-
-if(shape==="circle") ctx.restore();
-}
-
-upload.onchange=e=>{
-const reader=new FileReader();
-reader.onload=ev=>{
-img.onload=()=>{loaded=true;draw();}
-img.src=ev.target.result;
-};
-reader.readAsDataURL(e.target.files[0]);
+// 功能函式
+document.getElementById("upload").onchange=e=>{
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    img.onload=()=>{ loaded=true; draw(); };
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(e.target.files[0]);
 };
 
 function download(){
-document.getElementById("preview").src=canvas.toDataURL();
-document.getElementById("preview").style.display="block";
+  preview.src=canvas.toDataURL("image/png");
+  preview.style.display="block";
+  tip.style.display="block";
+  window.scrollTo(0, document.body.scrollHeight);
 }
 
 function resetAll(){
-textInput.value="";
-draw();
+  document.getElementById("text").value="筆記";
+  document.getElementById("bg").value="#06C755";
+  document.getElementById("textColor").value="#ffffff";
+  document.getElementById("transparentBg").checked = false;
+  document.getElementById("eNone").checked = true;
+  loaded = false;
+  draw();
 }
 
-function setShape(s){shape=s;draw();}
-
-draw();
-
+init();
 </script>
 
 </body>
