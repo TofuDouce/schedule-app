@@ -12,23 +12,8 @@ body{margin:0;font-family:-apple-system;background:#f3f4f6;}
 .card{background:#fff;border-radius:16px;padding:15px;margin-bottom:15px;}
 canvas{width:100%;border-radius:20px;background:#eee;touch-action:none;}
 
-.tabs{display:flex;gap:20px;border-bottom:2px solid #eee;margin-bottom:10px;}
-.tab{padding:10px 0;color:#999;font-weight:bold;cursor:pointer;}
-.tab.active{color:#06C755;border-bottom:3px solid #06C755;}
-
-.tab-content{display:none;}
-.tab-content.active{display:block;}
-
-.big-input{width:100%;padding:14px;font-size:20px;border-radius:12px;border:1px solid #ddd;margin-top:10px;}
-
 .colors{display:grid;grid-template-columns:repeat(9,1fr);gap:8px;}
-.color{width:100%;aspect-ratio:1;border-radius:50%;cursor:pointer;}
-
-.emoji-panel{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;}
-.emoji{font-size:20px;padding:10px;background:#f2f2f2;border-radius:10px;text-align:center;cursor:pointer;}
-
-.kaomoji-panel{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
-.kaomoji{padding:14px;background:#f2f2f2;border-radius:12px;text-align:center;white-space:nowrap;cursor:pointer;}
+.color{aspect-ratio:1;border-radius:50%;cursor:pointer;}
 
 .row{display:flex;gap:10px;}
 button{flex:1;padding:12px;border:none;border-radius:10px;font-weight:bold;}
@@ -44,50 +29,30 @@ button{flex:1;padding:12px;border:none;border-radius:10px;font-weight:bold;}
 <div class="container">
 
 <div class="card">
-<div class="tabs">
-<div class="tab active" onclick="setShape('square')">方形</div>
-<div class="tab" onclick="setShape('circle')">圓形</div>
-</div>
 <canvas id="canvas" width="512" height="512"></canvas>
 </div>
 
 <div class="card">
 
-大小
-<input type="range" id="size" min="40" max="200" value="80">
+文字
+<input id="text" value="哈囉">
+
+文字大小
+<input type="range" id="fontSize" min="40" max="200" value="100">
 
 背景色
 <input type="color" id="bg" value="#06C755">
-<div class="colors" id="colorPalette"></div>
+
+<div class="colors" id="palette"></div>
 
 文字顏色
 <input type="color" id="textColor" value="#ffffff">
 
-<div class="tabs">
-<div class="tab active" data-tab="0">文字</div>
-<div class="tab" data-tab="1">Emoji</div>
-<div class="tab" data-tab="2">顏文字</div>
-<div class="tab" data-tab="3">LOGO</div>
-</div>
-
-<div class="tab-content active" data-content="0">
-<input id="text" class="big-input">
-</div>
-
-<div class="tab-content" data-content="1">
-<div class="emoji-panel" id="emojiPanel"></div>
-</div>
-
-<div class="tab-content" data-content="2">
-<input id="kaomoji" class="big-input">
-<div class="kaomoji-panel" id="kaomojiPanel"></div>
-</div>
-
-<div class="tab-content" data-content="3">
+LOGO
 <input type="file" id="upload">
-<input id="logoText" class="big-input" placeholder="LOGO文字">
-<button onclick="toggleLayer()">切換圖層</button>
-</div>
+
+圖片縮放
+<input type="range" id="imgScale" min="0.5" max="3" step="0.01" value="1">
 
 </div>
 
@@ -99,212 +64,114 @@ button{flex:1;padding:12px;border:none;border-radius:10px;font-weight:bold;}
 </div>
 
 <script>
-// ===== DOM =====
 const canvas=document.getElementById("canvas");
 const ctx=canvas.getContext("2d");
-const textInput=document.getElementById("text");
-const kaomojiInput=document.getElementById("kaomoji");
-const logoText=document.getElementById("logoText");
-const bgInput=document.getElementById("bg");
-const textColor=document.getElementById("textColor");
-const size=document.getElementById("size");
-const emojiPanel=document.getElementById("emojiPanel");
-const kaomojiPanel=document.getElementById("kaomojiPanel");
-const colorPalette=document.getElementById("colorPalette");
 
 // ===== 狀態 =====
-let currentTab=0,shape="square";
-let img=new Image(),loaded=false;
-let imgX=0,imgY=0;
-let scale=1;
+let text="哈囉";
+let fontSize=100;
+let bgColor="#06C755";
+let textColor="#ffffff";
 
-let textX=256,textY=256;
-let dragging=null;
-let textOnTop=true;
+let img=new Image();
+let imgLoaded=false;
+let imgX=0,imgY=0,imgScale=1;
 
-// 預設文字
-let defaultText="哈囉";
+let dragging=false;
 
-// ===== 分頁 =====
-document.querySelectorAll("[data-tab]").forEach(tab=>{
-tab.onclick=()=>{
-currentTab=+tab.dataset.tab;
-document.querySelectorAll("[data-tab]").forEach(t=>t.classList.remove("active"));
-tab.classList.add("active");
-document.querySelectorAll("[data-content]").forEach(c=>{
-c.classList.remove("active");
-if(c.dataset.content==currentTab)c.classList.add("active");
-});
-draw();
-};
-});
+// ===== DOM =====
+const textInput=document.getElementById("text");
+const fontSlider=document.getElementById("fontSize");
+const bgInput=document.getElementById("bg");
+const textColorInput=document.getElementById("textColor");
+const imgScaleSlider=document.getElementById("imgScale");
 
 // ===== 色票 =====
-const colors=[
-"#FF3B30","#FF9500","#FFCC00","#34C759","#00C7BE","#007AFF","#5856D6","#FF2D55","#8E8E93",
-"#FFB3BA","#FFD6A5","#FFF3B0","#C8E6C9","#B2EBF2","#B3E5FC","#D1C4E9","#F8BBD0","#E0E0E0",
-"#D6A6A6","#D9B08C","#E6D3A3","#A8C3A0","#9EC1CF","#8EA6C9","#B5A6D6","#D6A6C1","#C4C4C4"
-];
+const colors=["#FF3B30","#FF9500","#FFCC00","#34C759","#00C7BE","#007AFF","#5856D6","#FF2D55","#8E8E93"];
 
 colors.forEach(c=>{
 let d=document.createElement("div");
 d.className="color";
 d.style.background=c;
-d.onclick=()=>{bgInput.value=c;draw();}
-colorPalette.appendChild(d);
+d.onclick=()=>{bgColor=c;bgInput.value=c;draw();}
+palette.appendChild(d);
 });
 
-// ===== emoji =====
-const emojis=["🎵","🎧","🎤","🎸","🥁","🎹","🧘","🏃","🏋️","🚴","⚽","🏀","🍔","🍟","🍕","🍩","🍣","🍜","☕","🍺","🎉","🎁","✨","🔥","❤️","💙","💚","💛","💜","🐶","🐱","🌈","🌟"];
-
-emojis.forEach(e=>{
-let d=document.createElement("div");
-d.className="emoji";
-d.innerText=e;
-d.onclick=()=>{
-textInput.value+=e;
-draw();
-};
-emojiPanel.appendChild(d);
-});
-
-// ===== 顏文字 =====
-["ദ്ദി ˉ꒳ˉ )✧","( ‘• ω • `)","ฅ^•ﻌ•^ฅ","(づ•ᴗ•)づᯓ🍕","꒰ ⩌ᴥ⩌ ꒱","(⑉･̆༥･̆⑉)"].forEach(k=>{
-let d=document.createElement("div");
-d.className="kaomoji";
-d.innerText=k;
-d.onclick=()=>{kaomojiInput.value=k;draw();}
-kaomojiPanel.appendChild(d);
-});
+// ===== 監聽 =====
+textInput.oninput=()=>{text=textInput.value;draw();}
+fontSlider.oninput=()=>{fontSize=fontSlider.value;draw();}
+bgInput.oninput=()=>{bgColor=bgInput.value;draw();}
+textColorInput.oninput=()=>{textColor=textColorInput.value;draw();}
+imgScaleSlider.oninput=()=>{imgScale=parseFloat(imgScaleSlider.value);draw();}
 
 // ===== 上傳 =====
-document.getElementById("upload").onchange=e=>{
+upload.onchange=e=>{
 let r=new FileReader();
 r.onload=ev=>{
-img.onload=()=>{loaded=true;draw();}
+img.onload=()=>{imgLoaded=true;draw();}
 img.src=ev.target.result;
 };
 r.readAsDataURL(e.target.files[0]);
 };
 
 // ===== 拖曳 =====
-canvas.onmousedown=e=>{
-dragging = e.shiftKey ? "text" : "img";
-};
+canvas.onmousedown=()=>dragging=true;
+canvas.onmouseup=()=>dragging=false;
 
 canvas.onmousemove=e=>{
-if(e.buttons!==1)return;
-
-let rect=canvas.getBoundingClientRect();
-let x=e.clientX-rect.left;
-let y=e.clientY-rect.top;
-
-if(dragging==="img"){
-imgX=x-256;
-imgY=y-256;
-}else if(dragging==="text"){
-textX=x;
-textY=y;
-}
-
-limit();
+if(!dragging)return;
+imgX+=e.movementX;
+imgY+=e.movementY;
 draw();
 };
 
-// ===== 手機雙指縮放 =====
-let startDist=0,startScale=1;
-
-canvas.addEventListener("touchstart",e=>{
-if(e.touches.length===2){
-startDist=getDist(e);
-startScale=scale;
-}
-});
-
-canvas.addEventListener("touchmove",e=>{
-e.preventDefault();
-
-if(e.touches.length===2){
-let d=getDist(e);
-scale=startScale*(d/startDist);
-scale=Math.max(0.5,Math.min(3,scale));
-}
-
-if(e.touches.length===1){
-let rect=canvas.getBoundingClientRect();
-let x=e.touches[0].clientX-rect.left;
-let y=e.touches[0].clientY-rect.top;
-imgX=x-256;
-imgY=y-256;
-}
-
-limit();
-draw();
-},{passive:false});
-
-function getDist(e){
-let dx=e.touches[0].clientX-e.touches[1].clientX;
-let dy=e.touches[0].clientY-e.touches[1].clientY;
-return Math.sqrt(dx*dx+dy*dy);
-}
-
-// ===== 限制範圍 =====
-function limit(){
-let sizeScaled=512*scale;
-let min=512-sizeScaled;
-
-imgX=Math.max(min,Math.min(0,imgX));
-imgY=Math.max(min,Math.min(0,imgY));
-}
-
-// ===== draw =====
+// ===== 畫 =====
 function draw(){
 ctx.clearRect(0,0,512,512);
 
-if(shape==="circle"){
-ctx.save();
-ctx.beginPath();
-ctx.arc(256,256,256,0,Math.PI*2);
-ctx.clip();
-}
-
-ctx.fillStyle=bgInput.value;
+// 背景
+ctx.fillStyle=bgColor;
 ctx.fillRect(0,0,512,512);
 
-let displayText = textInput.value || kaomojiInput.value || defaultText;
+// 圖
+if(imgLoaded){
+let size=512*imgScale;
+ctx.drawImage(img,imgX,imgY,size,size);
+}
 
-ctx.fillStyle=textColor.value;
-ctx.font="bold "+size.value+"px sans-serif";
+// 文字
+ctx.fillStyle=textColor;
+ctx.font=`bold ${fontSize}px sans-serif`;
 ctx.textAlign="center";
 ctx.textBaseline="middle";
-
-if(currentTab===3 && loaded){
-let s=512*scale;
-
-if(textOnTop){
-ctx.drawImage(img,imgX,imgY,s,s);
-ctx.fillText(logoText.value||displayText,textX,textY);
-}else{
-ctx.fillText(logoText.value||displayText,textX,textY);
-ctx.drawImage(img,imgX,imgY,s,s);
-}
-}else{
-ctx.fillText(displayText,256,256);
+ctx.fillText(text,256,256);
 }
 
-if(shape==="circle") ctx.restore();
+// ===== 重設（這裡是重點修好）=====
+function resetAll(){
+text="哈囉";
+fontSize=100;
+bgColor="#06C755";
+textColor="#ffffff";
+imgX=0;imgY=0;imgScale=1;
+imgLoaded=false;
+
+textInput.value=text;
+fontSlider.value=fontSize;
+bgInput.value=bgColor;
+textColorInput.value=textColor;
+imgScaleSlider.value=1;
+
+draw();
 }
 
-// ===== 其他 =====
-function toggleLayer(){textOnTop=!textOnTop;draw();}
-function setShape(s){shape=s;draw();}
+// ===== 下載 =====
 function download(){
 let a=document.createElement("a");
 a.href=canvas.toDataURL();
 a.download="avatar.png";
 a.click();
 }
-function resetAll(){draw();}
 
 draw();
 </script>
