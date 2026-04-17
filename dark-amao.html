@@ -3,24 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>阿毛的萬象食堂 - 傳奇稱號鑑定</title>
+<title>阿毛的奇幻旅行</title>
 <style>
-:root { --gold: #f1c40f; --deep-purple: #2c003e; --wood: #5e3a24; }
+:root { --gold: #f1c40f; --fairy-pink: #ffcce6; --hunter-brown: #5e3a24; }
 body{margin:0;font-family:"PingFang TC", "Microsoft JhengHei", sans-serif;background:#1a1a2e; padding-bottom: 120px; color: #fff;}
-.header{background: linear-gradient(135deg, #5e3a24, #2c003e); color: var(--gold); padding:20px; text-align:center; font-weight:900; font-size:1.5rem; letter-spacing: 2px; border-bottom: 3px solid var(--gold); text-shadow: 0 0 10px rgba(241,196,15,0.5);}
+.header{background: linear-gradient(135deg, #2d1b0d, #4b0082); color: var(--gold); padding:20px; text-align:center; font-weight:900; font-size:1.4rem; border-bottom: 3px solid var(--gold); text-shadow: 0 0 10px rgba(241,196,15,0.5); min-height: 1.5em;}
 .container{max-width:520px; margin:auto; padding:10px;}
 .canvas-section { position: sticky; top: 0; z-index: 100; background: #1a1a2e; padding: 10px 0; }
 .canvas-container { background:#000; border-radius:15px; padding:8px; box-shadow: 0 0 30px rgba(0,0,0,0.8); max-width: 320px; margin: auto; border: 2px solid var(--gold); }
 canvas{width:100%; border-radius:10px; display: block;}
 .card{background: rgba(255,255,255,0.05); border-radius:20px; padding:20px; margin-top:15px; border: 1px solid rgba(241,196,15,0.2); text-align: center; backdrop-filter: blur(5px);}
 .magic-btn { 
-    background: radial-gradient(circle, #f39c12, #d35400);
-    border: 3px solid #fff; border-radius: 50%; width: 120px; height: 120px; margin: 10px auto;
+    background: radial-gradient(circle, #ff99cc, #ff3399);
+    border: 3px solid #fff; border-radius: 50%; width: 110px; height: 110px; margin: 10px auto;
     display: flex; flex-direction: column; justify-content: center; align-items: center;
-    cursor: pointer; transition: 0.2s; box-shadow: 0 0 15px rgba(241,196,15,0.5);
+    cursor: pointer; transition: 0.2s; box-shadow: 0 0 20px rgba(255,51,153,0.5);
 }
 .magic-btn:active { transform: scale(0.92); }
-.icon-big { font-size: 50px; margin-bottom: 5px; }
+.icon-big { font-size: 45px; margin-bottom: 5px; }
 .action-row{display:flex; gap:10px; position: fixed; bottom: 0; left:0; right:0; background: rgba(26,26,46,0.95); padding: 15px; border-top: 2px solid var(--gold);}
 button{flex:1; padding:15px; border:none; border-radius:12px; font-weight:bold; cursor:pointer;}
 .gold-btn{background: var(--gold); color:#2c003e;}
@@ -31,7 +31,7 @@ button{flex:1; padding:15px; border:none; border-radius:12px; font-weight:bold; 
 </head>
 <body>
 
-<div class="header">🏰 阿毛的傳奇食堂 🧚</div>
+<div class="header" id="dynamicTitle">阿毛的萬象名片</div>
 
 <div class="container">
     <div class="canvas-section">
@@ -41,33 +41,44 @@ button{flex:1; padding:15px; border:none; border-radius:12px; font-weight:bold; 
     </div>
     <div class="card">
         <div class="magic-btn" onclick="rollDice()">
-            <span id="magicIcon" class="icon-big">🍗</span>
-            <span style="font-weight:bold; color:#fff;">命定召喚</span>
+            <span id="magicIcon" class="icon-big">🍱</span>
+            <span style="font-weight:bold; color:#fff; font-size: 14px;">出發鑑定</span>
         </div>
-        <p style="font-size: 13px; color: #aaa;">結合MH狩獵、精靈魔法與童話幻獸的奇蹟</p>
+        <p style="font-size: 12px; color: #aaa; margin-top: 10px;">★ 每次抽選皆是命定的羈絆 ★</p>
     </div>
 </div>
 
 <div class="action-row">
     <button class="gray-btn" onclick="location.reload()">重新整備</button>
-    <button class="gold-btn" onclick="showPreview()">領取傳奇稱號</button>
+    <button class="gold-btn" onclick="showPreview()">領取工會名片</button>
 </div>
 
 <div id="previewModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:1000; justify-content:center; align-items:center; flex-direction:column;" onclick="this.style.display='none'">
     <img id="previewImage" style="max-width:85%; border: 3px solid var(--gold); border-radius: 15px;">
-    <p style="color:var(--gold); margin-top:20px;">長按保存這份幸福預言 ✨</p>
+    <p style="color:var(--gold); margin-top:20px; font-weight:bold;">長按圖片保存你的傳奇工會名片 🏆</p>
 </div>
 
 <script>
 const canvas = document.getElementById("canvas"), ctx = canvas.getContext("2d");
 
-// --- 50x50x50 傳奇詞庫矩陣 ---
+// 1. 隨機標題庫
+const titles = [
+    "⚔️ 阿毛公會：傳奇職位鑑定所", "🍱 勇者阿毛的冒險食堂", "✨ 阿毛之塔：稱號召喚祭壇", 
+    "🍜 阿毛深夜食堂：靈魂鑑定", "🍰 阿毛星級廚房：封號領取處", "🧚 精靈阿毛的魔法屋", 
+    "🔮 阿毛夢境實驗室：奇蹟生成", "👍 阿毛拍胸脯保證：超強名片", "💤 阿毛不想上班：只想取稱號", 
+    "🏠 阿毛萬事屋：命定鑑定所"
+];
+
+// 2. 80x80x80 矩陣 (已剔除第一列的「認證」)
 const part1 = [
-    "傳說中的", "被星辰選中的", "公會最強的", "剛烤好熟透的", "充滿多巴胺的", "被艾露貓祝福的", "極致昇華的", "絕對領域的", "被古龍認可的", "永恆閃耀的",
-    "充滿幻獸能量的", "來自精靈界的", "神級入味過的", "超越時空的", "被糖果包裹的", "守護正義的", "冒險意志的", "擁有王者之風的", "被貓飯療癒的", "充滿童話色彩的",
-    "戰無不勝的", "被香氣吸引的", "火熱沸騰的", "極致清爽的", "夢想成真的", "被森林守護的", "閃亮登場的", "絕對美味的", "充滿奇蹟的", "從深淵歸來的",
-    "被黃金加持的", "充滿勇氣的", "被幸運眷顧的", "不朽傳奇的", "被大自然擁抱的", "極度溫暖的", "充滿魔力的", "剛出爐熱騰騰的", "被愛灌溉的", "突破天際的",
-    "被龍結晶淬煉的", "充滿靈感的", "被微光引導的", "絕對純淨的", "充滿希望的", "被回憶裝飾的", "極速狂飆的", "被自由召喚的", "充滿朝氣的", "被阿毛認證的"
+    "傳說中的", "星辰選中的", "公會最強的", "剛烤好熟透的", "充滿多巴胺的", "艾露貓祝福的", "極致昇華的", "絕對領域的", "古龍認可的", "永恆閃耀的",
+    "幻獸能量的", "精靈界的", "神級入味過的", "超越時空的", "糖果包裹的", "守護正義的", "冒險意志的", "王者之風的", "貓飯療癒的", "童話色彩的",
+    "戰無不勝的", "香氣吸引的", "火熱沸騰的", "極致清爽的", "夢想成真的", "森林守護的", "閃亮登場的", "絕對美味的", "充滿奇蹟的", "深淵歸來的",
+    "黃金加持的", "勇氣滿點的", "幸運眷顧的", "不朽傳奇的", "大自然擁抱的", "極度溫暖的", "充滿魔力的", "剛出爐熱騰騰的", "愛灌溉的", "突破天際的",
+    "龍結晶淬煉的", "充滿靈感的", "微光引導的", "絕對純淨的", "充滿希望的", "回憶裝飾的", "極速狂飆的", "自由召喚的", "充滿朝氣的", "阿毛精選的",
+    "封印解除的", "充滿香料的", "炭火直燒的", "幸福綻放的", "黃金酥脆的", "靈魂顫抖的", "光輝璀璨的", "神聖不可侵犯的", "優雅迷人的", "極致奢華的",
+    "糖霜覆蓋的", "爆漿口感的", "鮮嫩多汁的", "充滿嚼勁的", "如夢似幻的", "百煉成鋼的", "大氣磅礡的", "神采飛揚的", "意志堅定的", "溫馨治癒的",
+    "跨越邊境的", "次元切換的", "魔法加成的", "幻獸召喚的", "陽光眷顧的", "夜空點綴的", "清晨露水般的", "晚風輕拂的", "盛夏限定的", "嚴冬不凋的"
 ];
 
 const part2 = [
@@ -75,7 +86,10 @@ const part2 = [
     "巧克力熔岩", "大馬力引擎", "貓飯特製", "艾露貓手作", "紅寶石糖漿", "冒險者之心", "正能量瀑布", "幸福流星", "絕代美味", "戰場霸主",
     "勇氣果實", "幸運草", "生命之水", "魔力泉源", "傳奇香料", "極致饗宴", "夢幻氣泡", "晨曦之露", "大地氣息", "星光粉末",
     "龍之氣息", "大劍豪之盾", "精靈羽翼", "童話故事", "幻獸契約", "美味黑洞", "糖果屋頂", "蜂蜜果醬", "焦糖布丁", "炭烤牛排",
-    "極鮮刺身", "大馬鈴薯", "元氣飯糰", "幸福甜甜圈", "傳說料理", "公會秘寶", "獵人裝備", "古代樹果實", "幻之藥草", "阿毛特調"
+    "極鮮刺身", "大馬鈴薯", "元氣飯糰", "幸福甜甜圈", "傳說料理", "公會秘寶", "獵人裝備", "古代樹果實", "幻之藥草", "阿毛特調",
+    "霜降和牛", "黑松露菌", "波士頓龍蝦", "香脆炸雞", "特級壽司", "麻辣燙", "起司瀑布", "紅油炒手", "泰式奶茶", "抹茶冰淇淋",
+    "幻境噴泉", "精靈果實", "童話寶箱", "戰鬥頭銜", "封印之鑰", "幻獸麒麟角", "龍之牙", "英雄披風", "正義之劍", "奇蹟之門",
+    "紅蓮火水", "冰晶花瓣", "雷鳴鼓動", "疾風之刃", "光之碎片", "暗影斗篷", "巨龍之鱗", "妖精之粉", "勇者之心", "幸福藥水"
 ];
 
 const part3 = [
@@ -83,21 +97,24 @@ const part3 = [
     "美食專家", "傳承者", "首席官", "修煉者", "戰略家", "品味家", "導師", "教頭", "大領主", "執行長",
     "觀察家", "紀錄保持者", "探險隊長", "守護聖徒", "終結者", "調配師", "演奏家", "大祭司", "煉金術師", "賞味家",
     "守望者", "築夢師", "先驅者", "支配者", "收藏家", "愛好者", "研究員", "實踐家", "發現者", "愛心大使",
-    "親善官", "應援團長", "冒險團長", "守護之盾", "光之使者", "傳說本人", "榮耀之魂", "幸福代言人", "快樂泉源", "幸運錦鯉"
+    "親善官", "應援團長", "冒險團長", "守護之盾", "光之使者", "傳說本人", "榮耀之魂", "幸福代言人", "快樂泉源", "幸運錦鯉",
+    "封印者", "破壞神", "救世主", "審判官", "仲裁者", "遊俠", "魔導士", "聖戰士", "賢者", "武神",
+    "大胃王", "食神", "主廚", "美食導師", "味覺大師", "飽食專家", "饗宴之主", "甜點達人", "烘業家", "料理王",
+    "幻境之主", "森林之子", "精靈使者", "童話勇者", "夢想家", "創造者", "幸運兒", "守護神", "光輝者", "超越者"
 ];
 
 const themes = [
     { bg: "#1a1a2e", line: "#f1c40f", text: "#fff", sub: "公會G級" },
-    { bg: "#2d1b0d", line: "#e67e22", text: "#fff", sub: "稀少種" },
-    { bg: "#0d2d1b", line: "#2ecc71", text: "#fff", sub: "精靈選定" },
-    { bg: "#0f0c29", line: "#8e44ad", text: "#fff", sub: "幻境認證" }
+    { bg: "#2d1b0d", line: "#e67e22", text: "#fff", sub: "傳奇獵人" },
+    { bg: "#2c003e", line: "#ffccff", text: "#fff", sub: "精靈祝福" },
+    { bg: "#003366", line: "#00ccff", text: "#fff", sub: "童話英雄" }
 ];
 
-let lastP = "阿毛幫你", lastS = "準備驚喜";
+let lastP = "阿毛幫你", lastS = "鑑定名片";
 
 function rollDice() {
     const icon = document.getElementById("magicIcon");
-    const icons = ["🍖", "⚔️", "🛡️", "🏹", "🐲", "🍰", "🧚", "✨"];
+    const icons = ["🍖", "⚔️", "🥘", "🏹", "🍰", "🍱", "🧚", "✨"];
     icon.innerText = icons[Math.floor(Math.random() * icons.length)];
     
     document.querySelector(".magic-btn").classList.add("shake");
@@ -110,7 +127,6 @@ function rollDice() {
 
 function draw(){
     const theme = themes[Math.floor(Math.random() * themes.length)];
-    
     const grad = ctx.createRadialGradient(300, 300, 50, 300, 300, 450);
     grad.addColorStop(0, theme.bg);
     grad.addColorStop(1, "#000");
@@ -118,52 +134,47 @@ function draw(){
     ctx.fillRect(0, 0, 600, 600);
 
     ctx.strokeStyle = theme.line;
-    ctx.lineWidth = 10;
+    ctx.lineWidth = 8;
     ctx.strokeRect(30, 30, 540, 540);
-    ctx.lineWidth = 2;
-    ctx.strokeRect(45, 45, 510, 510);
+    ctx.strokeStyle = "rgba(255,255,255,0.2)";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(42, 42, 516, 516);
 
     ctx.fillStyle = theme.line;
     [ [30,30], [570,30], [30,570], [570,570] ].forEach(p => {
         ctx.beginPath(); ctx.arc(p[0], p[1], 15, 0, Math.PI*2); ctx.fill();
-        ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
+        ctx.strokeStyle = "#fff"; ctx.stroke();
     });
 
     ctx.textAlign = "center"; ctx.textBaseline = "middle";
-
     ctx.fillStyle = "white";
     ctx.font = `bold 42px "PingFang TC", sans-serif`;
-    ctx.shadowColor = "rgba(255,255,255,0.5)";
-    ctx.shadowBlur = 10;
+    ctx.shadowBlur = 10; ctx.shadowColor = "white";
     ctx.fillText(lastP, 300, 220);
 
     let sSize = 95;
     ctx.font = `900 ${sSize}px "PingFang TC", sans-serif`;
-    while(ctx.measureText(lastS).width > 480 && sSize > 30) {
+    while(ctx.measureText(lastS).width > 480 && sSize > 20) {
         sSize -= 5;
         ctx.font = `900 ${sSize}px "PingFang TC", sans-serif`;
     }
-
-    ctx.shadowColor = theme.line;
-    ctx.shadowBlur = 25;
-    ctx.strokeStyle = theme.line;
-    ctx.lineWidth = 8;
+    ctx.shadowBlur = 25; ctx.shadowColor = theme.line;
+    ctx.strokeStyle = theme.line; ctx.lineWidth = 8;
     ctx.strokeText(lastS, 300, 350);
-    ctx.fillStyle = "white";
-    ctx.shadowBlur = 5;
+    ctx.fillStyle = "white"; ctx.shadowBlur = 2;
     ctx.fillText(lastS, 300, 350);
 
+    // 右下角：阿毛認證 (唯一出現處)
     ctx.save();
-    ctx.translate(450, 480); ctx.rotate(-0.15);
+    ctx.translate(450, 480); ctx.rotate(-0.1);
     ctx.fillStyle = "rgba(255,255,255,0.1)";
     ctx.fillRect(-75, -35, 150, 70);
-    ctx.strokeStyle = theme.line;
-    ctx.lineWidth = 3;
+    ctx.strokeStyle = theme.line; ctx.lineWidth = 3;
     ctx.strokeRect(-75, -35, 150, 70);
-    ctx.fillStyle = theme.line;
-    ctx.shadowBlur = 0;
+    ctx.fillStyle = theme.line; ctx.shadowBlur = 0;
     ctx.font = "bold 20px sans-serif";
-    ctx.fillText(theme.sub, 0, -10);
+    ctx.fillText(theme.sub, 0, -12);
+    ctx.font = "bold 22px sans-serif";
     ctx.fillText("阿毛認證", 0, 15);
     ctx.restore();
 }
@@ -172,7 +183,12 @@ function showPreview() {
     document.getElementById("previewImage").src = canvas.toDataURL("image/png");
     document.getElementById("previewModal").style.display = "flex";
 }
-window.onload = draw;
+
+// 初始：隨機一個標題
+window.onload = () => {
+    document.getElementById("dynamicTitle").innerText = titles[Math.floor(Math.random() * titles.length)];
+    draw();
+};
 </script>
 </body>
 </html>
