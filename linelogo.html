@@ -32,7 +32,7 @@ canvas{width:100%;border-radius:20px;background:#eee;}
 .tab-content{display:none;}
 .tab-content.active{display:block;}
 
-input,select{
+input{
   width:100%;
   padding:10px;
   margin-top:10px;
@@ -89,33 +89,31 @@ button{flex:1;padding:12px;border:none;border-radius:10px;font-weight:bold;}
 
 <!-- 分頁 -->
 <div class="tabs">
-<div class="tab active" onclick="switchTab(0)">文字</div>
-<div class="tab" onclick="switchTab(1)">Emoji</div>
-<div class="tab" onclick="switchTab(2)">文字+Emoji</div>
-<div class="tab" onclick="switchTab(3)">LOGO</div>
+<div class="tab active" data-tab="0">文字</div>
+<div class="tab" data-tab="1">Emoji</div>
+<div class="tab" data-tab="2">文字+Emoji</div>
+<div class="tab" data-tab="3">LOGO</div>
 </div>
 
 <!-- 文字 -->
-<div class="tab-content active">
+<div class="tab-content active" data-content="0">
 <input id="text" placeholder="輸入文字">
 </div>
 
 <!-- emoji -->
-<div class="tab-content">
+<div class="tab-content" data-content="1">
 <div class="emoji-panel" id="emojiPanel"></div>
 </div>
 
 <!-- 混合 -->
-<div class="tab-content">
+<div class="tab-content" data-content="2">
 <input id="mixText" placeholder="文字 + emoji">
 </div>
 
 <!-- LOGO -->
-<div class="tab-content">
+<div class="tab-content" data-content="3">
 <input type="file" id="upload">
 </div>
-
-<!-- 👇 這裡完全保留你的功能 -->
 
 背景色
 <input type="color" id="bg" value="#06C755">
@@ -128,33 +126,46 @@ button{flex:1;padding:12px;border:none;border-radius:10px;font-weight:bold;}
 </div>
 
 <div class="card row">
-<button class="gray" onclick="resetAll()">重設</button>
-<button class="green" onclick="download()">下載</button>
+<button class="gray" id="resetBtn">重設</button>
+<button class="green" id="downloadBtn">下載</button>
 </div>
 
 </div>
 
 <script>
-const canvas=document.getElementById("canvas");
-const ctx=canvas.getContext("2d");
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
 
-let currentTab=0;
-let img=new Image();
-let loaded=false;
+const textInput = document.getElementById("text");
+const mixInput = document.getElementById("mixText");
+const bgInput = document.getElementById("bg");
+const textColorInput = document.getElementById("textColor");
+const uploadInput = document.getElementById("upload");
 
-// 分頁
-function switchTab(i){
-  currentTab=i;
-  document.querySelectorAll(".tab").forEach((t,idx)=>{
-    t.classList.toggle("active",idx===i);
+let currentTab = 0;
+let img = new Image();
+let loaded = false;
+
+// ===== 分頁 =====
+document.querySelectorAll(".tab").forEach(tab=>{
+  tab.addEventListener("click",()=>{
+    currentTab = parseInt(tab.dataset.tab);
+
+    document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+    tab.classList.add("active");
+
+    document.querySelectorAll(".tab-content").forEach(c=>{
+      c.classList.remove("active");
+      if(c.dataset.content == currentTab){
+        c.classList.add("active");
+      }
+    });
+
+    draw();
   });
-  document.querySelectorAll(".tab-content").forEach((c,idx)=>{
-    c.classList.toggle("active",idx===i);
-  });
-  draw();
-}
+});
 
-// 色票（保留你原本）
+// ===== 色票 =====
 const vividColors=["#FF3B30","#FF9500","#FFCC00","#34C759","#00C7BE","#007AFF","#5856D6","#FF2D55","#8E8E93"];
 const pastelColors=["#FFB3BA","#FFD6A5","#FFF3B0","#C8E6C9","#B2EBF2","#B3E5FC","#D1C4E9","#F8BBD0","#E0E0E0"];
 const morandiColors=["#D6A6A6","#D9B08C","#E6D3A3","#A8C3A0","#9EC1CF","#8EA6C9","#B5A6D6","#D6A6C1","#C4C4C4"];
@@ -162,12 +173,12 @@ const morandiColors=["#D6A6A6","#D9B08C","#E6D3A3","#A8C3A0","#9EC1CF","#8EA6C9"
 function initColors(){
   const palette=document.getElementById("colorPalette");
   [vividColors,pastelColors,morandiColors].forEach(group=>{
-    group.forEach(c=>{
+    group.forEach(color=>{
       const div=document.createElement("div");
       div.className="color";
-      div.style.background=c;
+      div.style.background=color;
       div.onclick=()=>{
-        bg.value=c;
+        bgInput.value=color;
         draw();
       };
       palette.appendChild(div);
@@ -175,7 +186,7 @@ function initColors(){
   });
 }
 
-// emoji
+// ===== emoji =====
 const emojis=["😀","😎","🥺","😂","🔥","❤️","✨","🎉","🐶","🍀","🌈","🍩"];
 
 function initEmoji(){
@@ -185,76 +196,73 @@ function initEmoji(){
     span.className="emoji";
     span.innerText=e;
     span.onclick=()=>{
-      text.value+=e;
+      textInput.value += e;
       draw();
     };
     panel.appendChild(span);
   });
 }
 
-// 上傳
-upload.onchange=e=>{
-const file=e.target.files[0];
-const reader=new FileReader();
-reader.onload=ev=>{
-img.onload=()=>{loaded=true;draw();}
-img.src=ev.target.result;
-};
-reader.readAsDataURL(file);
-};
+// ===== 上傳 =====
+uploadInput.addEventListener("change", e=>{
+  const file=e.target.files[0];
+  if(!file) return;
 
-// 更新
-["text","mixText","bg","textColor"].forEach(id=>{
-  document.getElementById(id).addEventListener("input",draw);
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    img.onload=function(){
+      loaded=true;
+      draw();
+    };
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(file);
 });
 
-// 畫圖（保留簡單邏輯）
+// ===== 監聽 =====
+[textInput, mixInput, bgInput, textColorInput].forEach(el=>{
+  el.addEventListener("input", draw);
+});
+
+// ===== 畫圖 =====
 function draw(){
-const bgColor=bg.value;
-const textVal=text.value;
-const mixVal=mixText.value;
+  ctx.fillStyle = bgInput.value;
+  ctx.fillRect(0,0,512,512);
 
-ctx.fillStyle=bgColor;
-ctx.fillRect(0,0,512,512);
+  ctx.fillStyle = textColorInput.value;
+  ctx.font = "bold 80px sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
 
-ctx.fillStyle=textColor.value;
-ctx.font="bold 80px sans-serif";
-ctx.textAlign="center";
-ctx.textBaseline="middle";
-
-if(currentTab===0){
-ctx.fillText(textVal,256,256);
-}
-else if(currentTab===1){
-ctx.fillText(textVal,256,256);
-}
-else if(currentTab===2){
-ctx.fillText(mixVal,256,256);
-}
-else if(currentTab===3 && loaded){
-ctx.drawImage(img,0,0,512,512);
-}
+  if(currentTab===0){
+    ctx.fillText(textInput.value,256,256);
+  }
+  else if(currentTab===1){
+    ctx.fillText(textInput.value,256,256);
+  }
+  else if(currentTab===2){
+    ctx.fillText(mixInput.value,256,256);
+  }
+  else if(currentTab===3 && loaded){
+    ctx.drawImage(img,0,0,512,512);
+  }
 }
 
-function download(){
-const a=document.createElement("a");
-a.href=canvas.toDataURL("image/png");
-a.download="avatar.png";
-a.click();
-}
+// ===== 按鈕 =====
+document.getElementById("downloadBtn").onclick=()=>{
+  const a=document.createElement("a");
+  a.href=canvas.toDataURL("image/png");
+  a.download="avatar.png";
+  a.click();
+};
 
-function resetAll(){
-text.value="";
-mixText.value="";
-draw();
-}
+document.getElementById("resetBtn").onclick=()=>{
+  textInput.value="";
+  mixInput.value="";
+  draw();
+};
 
-const text=document.getElementById("text");
-const mixText=document.getElementById("mixText");
-const bg=document.getElementById("bg");
-const textColor=document.getElementById("textColor");
-const upload=document.getElementById("upload");
-
+// ===== 初始化 =====
 initColors();
 initEmoji();
 draw();
