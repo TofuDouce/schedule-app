@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Lazy DoDo</title>
+<title>Lazy DoDo - 稱號產生器版</title>
 
 <style>
 :root { --primary: #06C755; }
@@ -21,8 +21,8 @@ canvas{width:100%; border-radius:12px; background:#eee; aspect-ratio: 1/1; displ
 .toggle-icon { transition: transform 0.3s; }
 .hidden { display: none !important; }
 
-.tabs{display:flex;gap:8px; border-bottom:2px solid #f0f0f0; margin-bottom:15px;}
-.tab{padding:8px 0; cursor:pointer; color:#999; font-weight:bold; flex:1; text-align:center; font-size: 14px;}
+.tabs{display:flex; gap:4px; border-bottom:2px solid #f0f0f0; margin-bottom:15px; overflow-x: auto; white-space: nowrap;}
+.tab{padding:8px 10px; cursor:pointer; color:#999; font-weight:bold; flex:1; text-align:center; font-size: 13px; min-width: 60px;}
 .tab.active{color: var(--primary); border-bottom:3px solid var(--primary);}
 .tab-content{display:none;}
 .tab-content.active{display:block;}
@@ -38,6 +38,16 @@ canvas{width:100%; border-radius:12px; background:#eee; aspect-ratio: 1/1; displ
 .emoji-panel { grid-template-columns:repeat(6,1fr); }
 .kao-panel { grid-template-columns:repeat(3,1fr); }
 .emoji-item { font-size:18px; text-align:center; padding:8px 0; border-radius:8px; background:#f8f9fa; cursor:pointer; border:1px solid #eee; display: flex; align-items: center; justify-content: center;}
+
+/* 功能3：骰子專屬樣式 */
+.dice-box { background: #fdfdfd; border: 2px dashed #ddd; border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; transition: 0.3s; }
+.dice-box:active { background: #f0f0f0; transform: scale(0.98); }
+.dice-icon-big { font-size: 40px; display: block; margin-bottom: 5px; }
+.shake { animation: shakeAnim 0.4s ease-in-out; }
+@keyframes shakeAnim {
+    0% { transform: rotate(0deg); } 25% { transform: rotate(15deg); } 
+    50% { transform: rotate(-15deg); } 75% { transform: rotate(10deg); } 100% { transform: rotate(0deg); }
+}
 
 .tool-row{display:flex; align-items:center; gap:10px; margin-top:10px; font-size: 13px;}
 .tool-row input[type="range"]{flex:1;}
@@ -96,14 +106,14 @@ button{flex:1; padding:12px; border:none; border-radius:10px; font-weight:bold; 
             </div>
 
             <div class="tool-row">
-                <span>大小</span><input type="range" id="sizeText" min="10" max="500" value="150">
+                <span>大小</span><input type="range" id="sizeText" min="10" max="500" value="120">
                 <span>透明度</span><input type="range" id="textAlpha" min="0" max="100" value="100">
             </div>
 
             <div class="tool-row">
                 <span>文字位移</span>
-                <input type="range" id="textPosX" min="-256" max="256" value="0" placeholder="X">
-                <input type="range" id="textPosY" min="-256" max="256" value="0" placeholder="Y">
+                <input type="range" id="textPosX" min="-256" max="256" value="0">
+                <input type="range" id="textPosY" min="-256" max="256" value="0">
                 <button class="reset-btn" onclick="resetPos('text')">置中</button>
             </div>
 
@@ -119,7 +129,7 @@ button{flex:1; padding:12px; border:none; border-radius:10px; font-weight:bold; 
 
     <div class="card">
         <div class="collapsible-header" onclick="toggleSection('contentConfig', this)">
-            <span>2. 底部圖案/圖片設定</span>
+            <span>2. 底部圖案/稱號設定</span>
             <span class="toggle-icon">▼</span>
         </div>
         <div id="contentConfig" class="collapsible-content">
@@ -128,8 +138,9 @@ button{flex:1; padding:12px; border:none; border-radius:10px; font-weight:bold; 
                 <div class="tab" data-tab="1">Emoji</div>
                 <div class="tab" data-tab="2">顏文字</div>
                 <div class="tab" data-tab="3">圖片</div>
+                <div class="tab" data-tab="4">🎲 稱號</div>
             </div>
-            <div class="tab-content active" data-content="0"><p style="font-size:12px; color:#999;">純文字模式</p></div>
+            <div class="tab-content active" data-content="0"><p style="font-size:12px; color:#999;">手動輸入模式</p></div>
             <div class="tab-content" data-content="1">
                 <div class="tool-row"><span>大小</span><input type="range" id="sizeEmoji" min="100" max="600" value="300"></div>
                 <div class="emoji-panel" id="emojiPanel"></div>
@@ -155,12 +166,19 @@ button{flex:1; padding:12px; border:none; border-radius:10px; font-weight:bold; 
                 </div>
                 <input type="file" id="upload" accept="image/*" style="width: 100%; margin-top:5px;">
             </div>
+            <div class="tab-content" data-content="4">
+                <div class="dice-box" onclick="rollDice()">
+                    <span id="diceIcon" class="dice-icon-big">🎲</span>
+                    <strong style="color:var(--primary)">點擊骰子隨機生成稱號</strong>
+                    <p style="font-size:12px; color:#999; margin:5px 0 0 0;">混搭：職人、魔王、武俠、生活風</p>
+                </div>
+            </div>
         </div>
     </div>
 
     <div class="card">
         <div style="font-weight:bold; margin-bottom:5px;">✍️ 疊加文字內容</div>
-        <input id="text" class="big-input" placeholder="輸入文字..." value="筆記">
+        <input id="text" class="big-input" placeholder="輸入文字..." value="空靈的劍魂">
     </div>
 </div>
 
@@ -179,11 +197,15 @@ button{flex:1; padding:12px; border:none; border-radius:10px; font-weight:bold; 
 const canvas=document.getElementById("canvas"), ctx=canvas.getContext("2d");
 let shape="square", currentTab=0, img=new Image(), loaded=false;
 
+// --- 稱號詞庫 ---
+const prefixArr = ["空間的", "光影的", "微風的", "動線的", "素材的", "收納的", "蒼天的", "不朽的", "碎裂的", "混沌的", "永恆的", "漆黑的", "深淵的", "雷鳴的", "逍遙的", "冷血的", "孤傲的", "凌風的", "斷腸的", "笑傲的", "大漠的", "無痕的", "腸胃的", "薪水的", "熬夜的", "沙發的", "脫髮的", "宿醉的", "減肥中的", "單身的", "冰山的", "致命的", "夢幻的", "命定的", "糖果色的", "流淚的", "憂鬱的"];
+const suffixArr = ["魔術師", "職人", "引導者", "守護神", "大師", "鍊金術師", "屠龍者", "暴君", "先鋒", "災厄", "隱士", "斬擊者", "遊俠", "浪子", "狂客", "劍魂", "散人", "邪魔", "仙子", "神捕", "演奏家", "小偷", "馬鈴薯", "終結者", "逃兵", "愛好者", "黑洞", "總裁", "接班人", "灰姑娘", "守候者", "暖男", "獨裁者"];
+
 function toggleSection(id, el) {
     const target = document.getElementById(id);
     target.classList.toggle('hidden');
     const icon = el.querySelector('.toggle-icon');
-    icon.style.transform = target.classList.contains('hidden') ? 'rotate(-90deg)' : 'rotate(0deg)';
+    if(icon) icon.style.transform = target.classList.contains('hidden') ? 'rotate(-90deg)' : 'rotate(0deg)';
 }
 
 function togglePalette() {
@@ -195,7 +217,6 @@ function togglePalette() {
 
 function setShape(s) { shape = s; draw(); }
 
-// 新增：位移重置函式
 function resetPos(type) {
     if(type === 'text') {
         document.getElementById("textPosX").value = 0;
@@ -204,6 +225,21 @@ function resetPos(type) {
         document.getElementById("posX").value = 0;
         document.getElementById("posY").value = 0;
     }
+    draw();
+}
+
+// 功能 3 核心邏輯
+function rollDice() {
+    const dice = document.getElementById("diceIcon");
+    dice.classList.remove("shake");
+    void dice.offsetWidth; 
+    dice.classList.add("shake");
+
+    const p = prefixArr[Math.floor(Math.random() * prefixArr.length)];
+    const s = suffixArr[Math.floor(Math.random() * suffixArr.length)];
+    
+    // 將結果填入原本的文字框並觸發重繪
+    document.getElementById("text").value = p + s;
     draw();
 }
 
@@ -222,7 +258,7 @@ function init() {
         document.getElementById("emojiPanel").appendChild(d);
     });
 
-    const kaomojis=["꒰ ⩌ᴥ⩌ ꒱","ฅ^•ﻌ•^ฅ","( ‘• ω • `)","(๑•̀ㅂ•́)و","(❁´◡`❁)","(｡♥‿♥｡)","ദ്ദി ˉ꒳ˉ )✧","(づ•ᴗ•)づ","(≧▽≦)","(๑>ᴗ<๑)","(✿◠‿◠)","(＾▽＾)","(ง •̀_•́)ง","(¬_¬)","(눈_눈)","(ಥ﹏ಥ)","(╥﹏╥)","(ಠ_ಠ)","( •‿• )","(ʘ‿ʘ)","(╯°▽°)╯","(〃▽〃)","(///▽///)","(◦˙▽˙◦)","ヾ(•ω•)o","(^_−)☆","(o゜▽゜)o","ヘ( ^o^)ノ","(ˉ▽ˉ；)","(。・∀・)ノ","(￣▽￣)ノ","(o^ ^o)","(っ˙꒳˙ )╮=͟͟͞͞🍑"];
+    const kaomojis=["꒰ ⩌ᴥ⩌ ꒱","ฅ^•ﻌ•^ฅ","( ‘• ω • `)","(๑•̀ㅂ•́)و","(❁´◡`❁)","(｡♥‿♥｡)","ദ്ദി ˉ꒳ˉ )✧","(づ•ᴗ•)づ","(≧▽≦)","(๑>ᴗ<๑)","(✿◠‿◠)","(＾▽＾)","(ง •̀_•́)ง","(¬_¬)","(눈_눈)","(ಥ﹏ಥ)","(╥﹏╥)","(ಠ_ಠ)","( •‿• )","(ʘ‿ʘ)","(╯°▽°)╯","(〃▽〃)","(///▽///)","(◦˙▽˙◦)","ヾ(•ω•)o","(^_−)☆","(o゜▽゜)o","ヘ( ^o^)ノ","(ˉ▽ˉ；)","(。・∀・)ノ","(￣▽￣)ノ","(o^ ^o)","(っ˙꒳˙ )╮=͟͟͞͞桃子"];
     kaomojis.forEach(k=>{
         let d=document.createElement("div"); d.className="emoji-item"; d.innerText=k;
         d.onclick=()=>{ document.getElementById("selectedKao").value=k; draw(); };
@@ -243,11 +279,6 @@ document.querySelectorAll("[data-tab]").forEach(tab=>{
             c.classList.remove("active");
             if(c.dataset.content==currentTab) c.classList.add("active");
         });
-        
-        let textInput = document.getElementById("text");
-        if(currentTab !== 0 && textInput.value === "筆記") {
-            textInput.value = "";
-        }
         draw();
     };
 });
