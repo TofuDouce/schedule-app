@@ -43,7 +43,10 @@ button{flex:1;padding:14px;border:none;border-radius:10px;font-weight:bold;font-
 </head>
 <body>
 
-<div class="header">LINE 大頭照產生器</div>
+<div class="header">
+Lazy dodo LINE 大頭照產生器<br>
+(っ˙꒳˙ )╮ =͟͟͞͞💖
+</div>
 
 <div class="container">
 
@@ -124,7 +127,6 @@ button{flex:1;padding:14px;border:none;border-radius:10px;font-weight:bold;font-
 
 <script>
 
-// ===== 基本 =====
 const canvas=document.getElementById("canvas");
 const ctx=canvas.getContext("2d");
 const preview=document.getElementById("preview");
@@ -161,40 +163,49 @@ let shape="square";
 let currentTab=0;
 let img=new Image();
 let loaded=false;
+
 let autoSize=true;
 
-// ===== tab =====
+// 🔥 修正：slider 控制權
+sizeText.addEventListener("input",()=>{
+  autoSize=false;
+  draw();
+});
+
+textInput.addEventListener("input",()=>{
+  autoSize=true;
+  draw();
+});
+
+// tab
 document.querySelectorAll("[data-tab]").forEach(tab=>{
   tab.onclick=()=>{
     currentTab=parseInt(tab.dataset.tab);
-
     document.querySelectorAll("[data-tab]").forEach(t=>t.classList.remove("active"));
     tab.classList.add("active");
-
     document.querySelectorAll("[data-content]").forEach(c=>{
       c.classList.remove("active");
       if(c.dataset.content==currentTab) c.classList.add("active");
     });
-
     draw();
   };
 });
 
-// ===== 即時更新（修正你問題③）=====
+// 即時更新
 [
 bgInput,textColorInput,
 strokeToggle,strokeColor,strokeWidth,
 shadowSoft,shadowLift,shadowStrong,
-transparentBg,sizeText,sizeEmoji,sizeKao,sizeLogo,
-textInput,kaomojiInput,logoTextInput
+transparentBg,sizeEmoji,sizeKao,sizeLogo,
+kaomojiInput,logoTextInput
 ].forEach(el=>el.addEventListener("input",draw));
 
-// ===== 色票開關 =====
+// 色票開關
 togglePalette.onchange=()=>{
 colorPalette.style.display=togglePalette.checked?"grid":"none";
 };
 
-// ===== 色票（五組）=====
+// 色票（五組）
 const vivid=["#FF3B30","#FF9500","#FFCC00","#34C759","#00C7BE","#007AFF","#5856D6","#FF2D55","#8E8E93"];
 const pastel=["#FFB3BA","#FFD6A5","#FFF3B0","#C8E6C9","#B2EBF2","#B3E5FC","#D1C4E9","#F8BBD0","#E0E0E0"];
 const morandi=["#D6A6A6","#D9B08C","#E6D3A3","#A8C3A0","#9EC1CF","#8EA6C9","#B5A6D6","#D6A6C1","#C4C4C4"];
@@ -211,10 +222,9 @@ colorPalette.appendChild(d);
 });
 });
 
-// ===== emoji =====
-const emojis=["🎧","🎵","🎶","🎤","🎸","🥁","🎹","🏋️","🧘","🏃","🚴","⚽","🏀","🏊","🍔","🍟","🍕","🍣","🍩","🍰","☕","🧋","📚","💻","📱","🎮","🎨","✈️","🚗","🔥","✨","⭐","❤️","💛","💚","💙","💜","🐶","🐱","🐼","🦊","🐰"];
-
-emojis.forEach(e=>{
+// emoji
+["🎧","🎵","🎶","🎤","🎸","🥁","🎹","🏋️","🧘","🏃","🚴","⚽","🏀","🏊","🍔","🍟","🍕","🍣","🍩","🍰","☕","🧋","📚","💻","📱","🎮","🎨","✈️","🚗","🔥","✨","⭐","❤️","💛","💚","💙","💜","🐶","🐱","🐼","🦊","🐰"]
+.forEach(e=>{
 let d=document.createElement("div");
 d.className="emoji";
 d.innerText=e;
@@ -222,20 +232,9 @@ d.onclick=()=>{textInput.value+=e;draw();}
 emojiPanel.appendChild(d);
 });
 
-// ===== 顏文字 =====
-const kaomojis=[
-"ദ്ദി ˉ꒳ˉ )✧","( ‘• ω • `)","ฅ^•ﻌ•^ฅ","(づ•ᴗ•)づ","(≧▽≦)",
-"(≧◡≦)","(๑•̀ㅂ•́)و","(๑˃ᴗ˂)ﻭ","(❁´◡`❁)",
-"(￣▽￣)","(￣ω￣)","(⌒‿⌒)",
-"(｡♥‿♥｡)","(๑>ᴗ<๑)",
-"(ಥ﹏ಥ)","(T_T)","(╥﹏╥)",
-"(¬_¬)","(ಠ_ಠ)","(눈_눈)",
-"(⊙_⊙)","(ʘ‿ʘ)","(•‿•)",
-"(ง •̀_•́)ง","(づ｡◕‿‿◕｡)づ",
-"(☞ﾟヮﾟ)☞","(✿◠‿◠)","(＾▽＾)"
-];
-
-kaomojis.forEach(k=>{
+// 顏文字
+["ദ്ദി ˉ꒳ˉ )✧","(≧▽≦)","(￣▽￣)","(ಥ﹏ಥ)","(ಠ_ಠ)","(•‿•)","(⊙_⊙)","(＾▽＾)"]
+.forEach(k=>{
 let d=document.createElement("div");
 d.className="emoji";
 d.innerText=k;
@@ -243,17 +242,7 @@ d.onclick=()=>{kaomojiInput.value=k;draw();}
 kaoList.appendChild(d);
 });
 
-// ===== 上傳 =====
-upload.onchange=e=>{
-const reader=new FileReader();
-reader.onload=ev=>{
-img.onload=()=>{loaded=true;draw();}
-img.src=ev.target.result;
-};
-reader.readAsDataURL(e.target.files[0]);
-};
-
-// ===== 換行 + 自動最大 =====
+// 換行
 function wrap(text,size){
 ctx.font=`900 ${size}px sans-serif`;
 let arr=[],line="";
@@ -268,7 +257,7 @@ arr.push(line);
 return arr;
 }
 
-// ===== draw =====
+// draw
 function draw(){
 ctx.clearRect(0,0,512,512);
 
@@ -288,8 +277,9 @@ ctx.fillStyle=textColorInput.value;
 ctx.textAlign="center";
 ctx.textBaseline="middle";
 
+if(currentTab===0){
 let text=textInput.value||"筆記";
-let size=autoSize?200:sizeText.value;
+let size = autoSize ? 200 : parseInt(sizeText.value);
 let lines;
 
 do{
@@ -301,19 +291,15 @@ ctx.font=`900 ${size}px sans-serif`;
 let lh=size*1.2;
 let start=256-(lines.length-1)*lh/2;
 
-// 陰影
-if(shadowSoft.checked){ctx.shadowColor="rgba(0,0,0,0.15)";ctx.shadowBlur=20;ctx.shadowOffsetY=4;}
-if(shadowLift.checked){ctx.shadowColor="rgba(0,0,0,0.25)";ctx.shadowBlur=8;ctx.shadowOffsetY=8;}
-if(shadowStrong.checked){ctx.shadowColor="rgba(0,0,0,0.4)";ctx.shadowBlur=2;ctx.shadowOffsetY=14;}
-
-if(currentTab===0){
 lines.forEach((l,i)=>{
 let y=start+i*lh;
+
 if(strokeToggle.checked){
 ctx.lineWidth=strokeWidth.value;
 ctx.strokeStyle=strokeColor.value;
 ctx.strokeText(l,256,y);
 }
+
 ctx.fillText(l,256,y);
 });
 }
@@ -337,10 +323,17 @@ ctx.font=`bold ${sizeLogo.value}px sans-serif`;
 ctx.fillText(logoTextInput.value||"",256,256);
 }
 
-ctx.shadowColor="transparent";
-
 if(shape==="circle") ctx.restore();
 }
+
+upload.onchange=e=>{
+const reader=new FileReader();
+reader.onload=ev=>{
+img.onload=()=>{loaded=true;draw();}
+img.src=ev.target.result;
+};
+reader.readAsDataURL(e.target.files[0]);
+};
 
 function download(){
 preview.src=canvas.toDataURL();
