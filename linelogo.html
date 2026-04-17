@@ -3,18 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LINE 大頭照產生器 5.0</title>
+<title>Lazy DoDo</title>
 
 <style>
 body{margin:0;font-family:-apple-system, sans-serif;background:#f3f4f6;}
-.header{background:#06C755;color:#fff;padding:20px;text-align:center;font-weight:bold;font-size:1.2rem;}
+.header{background:#06C755;color:#fff;padding:20px;text-align:center;font-weight:bold;font-size:1.5rem;letter-spacing:1px;}
 .container{max-width:520px;margin:auto;padding:15px;}
 .card{background:#fff;border-radius:16px;padding:15px;margin-bottom:15px;box-shadow: 0 2px 8px rgba(0,0,0,0.05);}
 canvas{width:100%;border-radius:20px;background:#eee;aspect-ratio: 1/1;}
 
 .preview{width:100%;border-radius:20px;margin-top:10px;background:#fff;padding:10px;display:none;border: 2px dashed #06C755;}
 
-.tabs{display:flex;gap:20px;border-bottom:2px solid #f0f0f0;margin-bottom:15px;}
+.tabs{display:flex;gap:10px;border-bottom:2px solid #f0f0f0;margin-bottom:15px;}
 .tab{padding:10px 0;cursor:pointer;color:#999;font-weight:bold;flex:1;text-align:center;}
 .tab.active{color:#06C755;border-bottom:3px solid #06C755;}
 
@@ -23,13 +23,16 @@ canvas{width:100%;border-radius:20px;background:#eee;aspect-ratio: 1/1;}
 
 .big-input{width:100%;padding:14px;font-size:18px;border-radius:12px;border:1px solid #ddd;margin-top:10px;box-sizing: border-box;}
 
-.colors{display:grid;grid-template-columns: repeat(9, 1fr);gap:8px;margin-top:10px;}
+/* 色票排版 */
+.colors{display:grid;grid-template-columns: repeat(9, 1fr);gap:8px;margin:12px 0;}
 .color{width:100%;aspect-ratio:1;border-radius:50%;cursor:pointer;border: 1px solid rgba(0,0,0,0.1);}
 
-.emoji-panel{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:10px;}
-.kao-panel{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px;}
+/* Emoji & 顏文字 排版 */
+.emoji-panel{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:10px;}
+.kao-panel{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;}
 
-.emoji{font-size:18px;text-align:center;padding:8px;border-radius:10px;background:#f2f2f2;cursor:pointer;}
+.emoji{font-size:18px;text-align:center;padding:10px 5px;border-radius:10px;background:#f8f9fa;cursor:pointer;border:1px solid #eee; display: flex; align-items: center; justify-content: center;}
+.emoji:hover{background:#f0f0f0;}
 
 .row{display:flex;gap:10px;}
 button{flex:1;padding:14px;border:none;border-radius:12px;font-weight:bold;font-size:16px;cursor:pointer;}
@@ -38,13 +41,24 @@ button{flex:1;padding:14px;border:none;border-radius:12px;font-weight:bold;font-
 
 .tool-row{display:flex;align-items:center;gap:10px;margin-top:12px;font-size: 14px;color: #333;}
 .tool-row input[type="range"]{flex:1;}
-.tool-row input[type="color"]{width:34px;height:34px;border:none;padding:0;background:none;cursor:pointer;}
+
+/* 顏色選擇器外框強化 */
+.color-picker-wrapper {
+    background: #f0f0f0; 
+    border: 1px solid #ddd; 
+    border-radius: 8px; 
+    padding: 2px 8px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+input[type="color"]{width:30px;height:30px;border:none;padding:0;background:none;cursor:pointer;}
 label{display:flex;align-items:center;gap:4px;cursor:pointer;}
 </style>
 </head>
 <body>
 
-<div class="header">LINE 大頭照產生器 5.0</div>
+<div class="header">Lazy DoDo</div>
 
 <div class="container">
 
@@ -57,12 +71,16 @@ label{display:flex;align-items:center;gap:4px;cursor:pointer;}
 </div>
 
 <div class="card">
-<div style="font-weight:bold; margin-bottom:8px;">1. 顏色設定</div>
+<div style="font-weight:bold; margin-bottom:8px;">1. 顏色與特效設定</div>
 <div class="tool-row">
   <span>背景顏色</span>
   <input type="color" id="bg" value="#06C755">
-  <span style="margin-left:15px">文字顏色</span>
-  <input type="color" id="textColor" value="#ffffff">
+  
+  <span style="margin-left:10px">文字顏色</span>
+  <div class="color-picker-wrapper">
+      <input type="color" id="textColor" value="#ffffff">
+  </div>
+  
   <label style="margin-left:auto"><input type="checkbox" id="transparentBg"> 透明</label>
 </div>
 
@@ -71,7 +89,15 @@ label{display:flex;align-items:center;gap:4px;cursor:pointer;}
 <div class="tool-row">
 <label><input type="checkbox" id="strokeToggle"> 描邊</label>
 <input type="color" id="strokeColor" value="#000000">
-<input type="range" id="strokeWidth" min="1" max="20" value="6">
+<input type="range" id="strokeWidth" min="1" max="25" value="8">
+</div>
+
+<div class="tool-row" style="border-top: 1px solid #eee; padding-top: 10px;">
+<span style="margin-right:5px">特效風格:</span>
+<label><input type="radio" name="effect" onclick="draw()" id="eNone" checked> 無</label>
+<label><input type="radio" name="effect" onclick="draw()" id="shadowSoft"> 柔光</label>
+<label><input type="radio" name="effect" onclick="draw()" id="shadowLift"> 浮起</label>
+<label><input type="radio" name="effect" onclick="draw()" id="shadowStrong"> 扎實</label>
 </div>
 </div>
 
@@ -96,7 +122,7 @@ label{display:flex;align-items:center;gap:4px;cursor:pointer;}
 
 <div class="tab-content" data-content="2">
 <div class="tool-row"><span>文字大小</span><input type="range" id="sizeKao" min="40" max="300" value="100"></div>
-<input id="kaomoji" class="big-input" value="(≧▽≦)">
+<input id="kaomoji" class="big-input" value="(っ˙꒳˙ )╮ =͟͟͞͞🍑">
 <div id="kaoList" class="kao-panel"></div>
 </div>
 
@@ -108,7 +134,7 @@ label{display:flex;align-items:center;gap:4px;cursor:pointer;}
 
 <div class="card row">
 <button class="gray" onclick="resetAll()">重設</button>
-<button class="green" onclick="download()">產生下載預覽</button>
+<button class="green" onclick="download()">產生預覽並下載</button>
 </div>
 
 <img id="preview" class="preview">
@@ -148,8 +174,14 @@ function init() {
     });
   });
 
-  // Emoji 與 顏文字 初始化
-  const emojis=["🎧","✨","⭐","❤️","🔥","✅","💡","🍀","🐱","🐶","🐼","☕","🎨","🎮","⚽","🌈"];
+  // Emoji 擴充 (36個) - 興趣、運動、理財、生活
+  const emojis=[
+    "🏃","🧘","🏋️","🚴","⚽","🏀","🎾","🏌️", // 運動
+    "🎨","🎧","🎸","📸","🎮","🎬","🎤","🧩", // 興趣
+    "💆","💄","💅","💇","✨","🧖","👗","👜", // 美容生活
+    "💰","📈","📊","💹","💎","☕","🍰","🍱", // 理財與食
+    "🐶","🐱","🐰","🔥"
+  ];
   emojis.forEach(e=>{
     let d=document.createElement("div"); d.className="emoji"; d.innerText=e;
     d.onclick=()=>{ 
@@ -160,7 +192,14 @@ function init() {
     document.getElementById("emojiPanel").appendChild(d);
   });
 
-  const kaomojis=["ദ്ദി ˉ꒳ˉ )✧","( ‘• ω • `)","(๑•̀ㅂ•́)و","(❁´◡`❁)","(｡♥‿♥｡)","(ง •̀_•́)ง","(≧◡≦)","( •‿• )"];
+  // 顏文字 擴充 (30個)
+  const kaomojis=[
+    "(っ˙꒳˙ )╮=͟͟͞͞🍑","ฅ^•ﻌ•^ฅ","( ‘• ω • `)","(๑•̀ㅂ•́)و","(❁´◡`❁)","(｡♥‿♥｡)",
+    "ദ്ദി ˉ꒳ˉ )✧","(づ•ᴗ•)づ","(≧▽≦)","(๑>ᴗ<๑)","(✿◠‿◠)","(＾▽＾)",
+    "(ง •̀_•́)ง","(¬_¬)","(눈_눈)","(ಥ﹏ಥ)","(╥﹏╥)","(ಠ_ಠ)",
+    "( •‿• )","(ʘ‿ʘ)","(╯°▽°)╯","(〃▽〃)","(///▽///)","(◦˙▽˙◦)",
+    "ヾ(•ω•)o","(^_−)☆","(o゜▽゜)o","ヘ( ^o^)ノ","(ˉ▽ˉ；)","(。・∀・)ノ"
+  ];
   kaomojis.forEach(k=>{
     let d=document.createElement("div"); d.className="emoji"; d.innerText=k;
     d.onclick=()=>{ document.getElementById("kaomoji").value=k; draw(); };
@@ -210,6 +249,16 @@ function draw(){
   ctx.textAlign="center";
   ctx.textBaseline="middle";
 
+  // 陰影/特效 邏輯
+  ctx.shadowColor = "transparent";
+  if(document.getElementById("shadowSoft").checked){
+    ctx.shadowColor="rgba(0,0,0,0.2)"; ctx.shadowBlur=15; ctx.shadowOffsetY=5;
+  } else if(document.getElementById("shadowLift").checked){
+    ctx.shadowColor="rgba(0,0,0,0.3)"; ctx.shadowBlur=10; ctx.shadowOffsetY=10;
+  } else if(document.getElementById("shadowStrong").checked){
+    ctx.shadowColor="rgba(0,0,0,0.5)"; ctx.shadowBlur=0; ctx.shadowOffsetY=10;
+  }
+
   if(currentTab===0){
     let txt = document.getElementById("text").value || "筆記";
     let fSize = document.getElementById("sizeText").value;
@@ -222,7 +271,7 @@ function draw(){
     ctx.fillText(txt, 256, 256);
 
   } else if(currentTab===1){
-    let emo = document.getElementById("text").value || "🎧";
+    let emo = document.getElementById("text").value || "🏃";
     ctx.font=`${document.getElementById("sizeEmoji").value}px serif`;
     ctx.fillText(emo, 256, 256);
 
@@ -255,13 +304,15 @@ function download(){
   preview.src=canvas.toDataURL("image/png");
   preview.style.display="block";
   tip.style.display="block";
+  window.scrollTo(0, document.body.scrollHeight);
 }
 
 function resetAll(){
   document.getElementById("text").value="筆記";
   document.getElementById("bg").value="#06C755";
   document.getElementById("textColor").value="#ffffff";
-  document.getElementById("sizeText").value="180";
+  document.getElementById("eNone").checked = true;
+  loaded = false;
   draw();
 }
 
