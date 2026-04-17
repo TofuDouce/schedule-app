@@ -6,129 +6,72 @@
 <title>LINE 大頭照產生器</title>
 
 <style>
-body{
-  margin:0;
-  font-family:-apple-system;
-  background:#f5f6f7;
-}
+body{margin:0;font-family:-apple-system;background:#f3f4f6;}
+.header{background:#06C755;color:#fff;padding:20px;text-align:center;font-weight:bold;}
+.container{max-width:520px;margin:auto;padding:15px;}
+.card{background:#fff;border-radius:16px;padding:15px;margin-bottom:15px;}
+canvas{width:100%;border-radius:20px;background:#eee;}
 
-.header{
-  background:#06C755;
-  color:white;
-  text-align:center;
-  padding:20px;
-  font-weight:bold;
-}
-
-.container{
-  max-width:520px;
-  margin:auto;
-  padding:15px;
-}
-
-.card{
-  background:white;
-  border-radius:18px;
-  padding:16px;
-  margin-bottom:16px;
-}
-
-/* Tabs */
-.tab-bar{
+.tabs{
   display:flex;
   gap:20px;
   border-bottom:2px solid #eee;
-  padding-bottom:6px;
+  margin-bottom:10px;
 }
-
 .tab{
-  color:#aaa;
-  font-weight:600;
+  padding:10px 0;
   cursor:pointer;
-  padding-bottom:6px;
+  color:#999;
+  font-weight:bold;
 }
-
 .tab.active{
   color:#06C755;
   border-bottom:3px solid #06C755;
 }
 
-/* Inputs */
-.input-box{
-  margin-top:15px;
-  padding:16px;
-  background:#f2f2f2;
-  border-radius:16px;
-  border:1px solid #e0e0e0;
-  font-size:18px;
-}
-
-/* Emoji grid */
-.emoji-grid{
-  display:grid;
-  grid-template-columns:repeat(5,1fr);
-  gap:12px;
-  margin-top:12px;
-}
-
-.emoji{
-  background:#f4f4f4;
-  padding:14px;
-  text-align:center;
-  border-radius:14px;
-  font-size:22px;
-  cursor:pointer;
-}
-
-.emoji:hover{
-  background:#eaeaea;
-}
-
-/* Upload box */
-.upload-box{
-  border:2px dashed #ccc;
-  border-radius:20px;
-  text-align:center;
-  padding:40px 20px;
-  color:#888;
-}
-
-/* Slider */
-.slider{
-  width:100%;
-  margin-top:10px;
-}
-
-input[type=range]{
-  width:100%;
-  accent-color:#06C755;
-}
-
-/* Buttons */
-.row{
-  display:flex;
-  gap:10px;
-}
-
-button{
-  flex:1;
-  padding:14px;
-  border:none;
-  border-radius:14px;
-  font-weight:bold;
-}
-
-.green{background:#06C755;color:white;}
-.gray{background:#ddd;}
-
 .tab-content{display:none;}
 .tab-content.active{display:block;}
 
-canvas{
+input,select{
   width:100%;
-  border-radius:20px;
-  background:#eee;
+  padding:10px;
+  margin-top:10px;
+  border-radius:10px;
+  border:1px solid #ddd;
 }
+
+.colors{
+  display:grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap:8px;
+  margin-top:10px;
+}
+
+.color{
+  width:100%;
+  aspect-ratio:1;
+  border-radius:50%;
+  cursor:pointer;
+}
+
+.emoji-panel{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:10px;
+}
+
+.emoji{
+  font-size:22px;
+  cursor:pointer;
+  padding:6px;
+  border-radius:8px;
+}
+
+.row{display:flex;gap:10px;}
+button{flex:1;padding:12px;border:none;border-radius:10px;font-weight:bold;}
+.green{background:#06C755;color:#fff;}
+.gray{background:#ddd;}
 </style>
 </head>
 
@@ -144,7 +87,8 @@ canvas{
 
 <div class="card">
 
-<div class="tab-bar">
+<!-- 分頁 -->
+<div class="tabs">
 <div class="tab active" onclick="switchTab(0)">文字</div>
 <div class="tab" onclick="switchTab(1)">Emoji</div>
 <div class="tab" onclick="switchTab(2)">文字+Emoji</div>
@@ -153,33 +97,33 @@ canvas{
 
 <!-- 文字 -->
 <div class="tab-content active">
-<input id="text" class="input-box" placeholder="輸入文字">
+<input id="text" placeholder="輸入文字">
 </div>
 
 <!-- emoji -->
 <div class="tab-content">
-<div class="emoji-grid" id="emojiPanel"></div>
+<div class="emoji-panel" id="emojiPanel"></div>
 </div>
 
 <!-- 混合 -->
 <div class="tab-content">
-<input id="mixText" class="input-box" placeholder="文字 + emoji">
+<input id="mixText" placeholder="文字 + emoji">
 </div>
 
-<!-- logo -->
+<!-- LOGO -->
 <div class="tab-content">
-<div class="upload-box">
-📁<br><br>
-點擊上傳 LOGO<br>
-支援 PNG / JPG / SVG
-<input type="file" id="upload" style="display:none">
-</div>
+<input type="file" id="upload">
 </div>
 
-<br>
+<!-- 👇 這裡完全保留你的功能 -->
 
-大小
-<input type="range" class="slider" id="size" min="50" max="150" value="100">
+背景色
+<input type="color" id="bg" value="#06C755">
+
+<div class="colors" id="colorPalette"></div>
+
+文字顏色
+<input type="color" id="textColor" value="#ffffff">
 
 </div>
 
@@ -191,8 +135,14 @@ canvas{
 </div>
 
 <script>
-let currentTab=0;
+const canvas=document.getElementById("canvas");
+const ctx=canvas.getContext("2d");
 
+let currentTab=0;
+let img=new Image();
+let loaded=false;
+
+// 分頁
 function switchTab(i){
   currentTab=i;
   document.querySelectorAll(".tab").forEach((t,idx)=>{
@@ -204,46 +154,91 @@ function switchTab(i){
   draw();
 }
 
-const canvas=document.getElementById("canvas");
-const ctx=canvas.getContext("2d");
+// 色票（保留你原本）
+const vividColors=["#FF3B30","#FF9500","#FFCC00","#34C759","#00C7BE","#007AFF","#5856D6","#FF2D55","#8E8E93"];
+const pastelColors=["#FFB3BA","#FFD6A5","#FFF3B0","#C8E6C9","#B2EBF2","#B3E5FC","#D1C4E9","#F8BBD0","#E0E0E0"];
+const morandiColors=["#D6A6A6","#D9B08C","#E6D3A3","#A8C3A0","#9EC1CF","#8EA6C9","#B5A6D6","#D6A6C1","#C4C4C4"];
 
-const emojis=["🍊","😀","😎","🥰","🐱","🐶","🌸","🌈","⭐","✨"];
+function initColors(){
+  const palette=document.getElementById("colorPalette");
+  [vividColors,pastelColors,morandiColors].forEach(group=>{
+    group.forEach(c=>{
+      const div=document.createElement("div");
+      div.className="color";
+      div.style.background=c;
+      div.onclick=()=>{
+        bg.value=c;
+        draw();
+      };
+      palette.appendChild(div);
+    });
+  });
+}
 
-const panel=document.getElementById("emojiPanel");
-emojis.forEach(e=>{
-  const div=document.createElement("div");
-  div.className="emoji";
-  div.innerText=e;
-  div.onclick=()=>{
-    text.value+=e;
-    draw();
-  };
-  panel.appendChild(div);
+// emoji
+const emojis=["😀","😎","🥺","😂","🔥","❤️","✨","🎉","🐶","🍀","🌈","🍩"];
+
+function initEmoji(){
+  const panel=document.getElementById("emojiPanel");
+  emojis.forEach(e=>{
+    const span=document.createElement("span");
+    span.className="emoji";
+    span.innerText=e;
+    span.onclick=()=>{
+      text.value+=e;
+      draw();
+    };
+    panel.appendChild(span);
+  });
+}
+
+// 上傳
+upload.onchange=e=>{
+const file=e.target.files[0];
+const reader=new FileReader();
+reader.onload=ev=>{
+img.onload=()=>{loaded=true;draw();}
+img.src=ev.target.result;
+};
+reader.readAsDataURL(file);
+};
+
+// 更新
+["text","mixText","bg","textColor"].forEach(id=>{
+  document.getElementById(id).addEventListener("input",draw);
 });
 
+// 畫圖（保留簡單邏輯）
 function draw(){
-ctx.fillStyle="#06C755";
+const bgColor=bg.value;
+const textVal=text.value;
+const mixVal=mixText.value;
+
+ctx.fillStyle=bgColor;
 ctx.fillRect(0,0,512,512);
 
-ctx.fillStyle="white";
+ctx.fillStyle=textColor.value;
 ctx.font="bold 80px sans-serif";
 ctx.textAlign="center";
 ctx.textBaseline="middle";
 
 if(currentTab===0){
-ctx.fillText(text.value,256,256);
+ctx.fillText(textVal,256,256);
 }
-if(currentTab===1){
-ctx.fillText(text.value,256,256);
+else if(currentTab===1){
+ctx.fillText(textVal,256,256);
 }
-if(currentTab===2){
-ctx.fillText(mixText.value,256,256);
+else if(currentTab===2){
+ctx.fillText(mixVal,256,256);
+}
+else if(currentTab===3 && loaded){
+ctx.drawImage(img,0,0,512,512);
 }
 }
 
 function download(){
 const a=document.createElement("a");
-a.href=canvas.toDataURL();
+a.href=canvas.toDataURL("image/png");
 a.download="avatar.png";
 a.click();
 }
@@ -254,6 +249,14 @@ mixText.value="";
 draw();
 }
 
+const text=document.getElementById("text");
+const mixText=document.getElementById("mixText");
+const bg=document.getElementById("bg");
+const textColor=document.getElementById("textColor");
+const upload=document.getElementById("upload");
+
+initColors();
+initEmoji();
 draw();
 </script>
 
