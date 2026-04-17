@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Lazy DoDo - 阿毛的稱號產生器</title>
+<title>Lazy DoDo - 阿毛取稱號</title>
 
 <style>
 :root { --primary: #06C755; }
@@ -13,16 +13,16 @@ body{margin:0;font-family:-apple-system, sans-serif;background:#f3f4f6; padding-
 
 .canvas-section { position: sticky; top: 0; z-index: 100; background: #f3f4f6; padding: 10px 0; }
 .canvas-container { background:#fff; border-radius:16px; padding:10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 320px; margin: auto; }
-canvas{width:100%; border-radius:12px; background:#333; aspect-ratio: 1/1; display: block;}
+canvas{width:100%; border-radius:12px; backgroundㄅ:#1a1a1a; aspect-ratio: 1/1; display: block;}
 
 .card{background:#fff; border-radius:16px; padding:15px; margin-bottom:15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);}
 
 .dice-box { 
-    background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+    background: linear-gradient(135deg, #ffffff 0%, #f9f9f9 100%);
     border: 3px solid var(--primary);
-    border-radius: 16px; padding: 25px; text-align: center; cursor: pointer; 
+    border-radius: 16px; padding: 30px 20px; text-align: center; cursor: pointer; 
 }
-.dice-icon-big { font-size: 50px; display: block; margin-bottom: 10px; }
+.dice-icon-big { font-size: 60px; display: block; margin-bottom: 10px; }
 .shake { animation: shakeAnim 0.4s ease-in-out; }
 @keyframes shakeAnim {
     0% { transform: rotate(0deg); } 25% { transform: rotate(20deg); } 
@@ -40,7 +40,7 @@ button{flex:1; padding:12px; border:none; border-radius:10px; font-weight:bold; 
 </head>
 <body>
 
-<div class="header">Lazy DoDo 🎲 稱號神搜</div>
+<div class="header">Lazy DoDo 🎲 阿毛取稱號</div>
 
 <div class="container">
     <div class="canvas-section">
@@ -52,56 +52,52 @@ button{flex:1; padding:12px; border:none; border-radius:10px; font-weight:bold; 
     <div class="card">
         <div class="dice-box" onclick="rollDice()">
             <span id="diceIcon" class="dice-icon-big">🎲</span>
-            <strong style="font-size:1.2rem; color:#333">點擊擲出傳奇稱號</strong>
-            <p style="color:#666; font-size:13px; margin-top:5px;">OO的 (換行) OOO 模式已啟動！</p>
+            <strong style="font-size:1.3rem; color:#333">點擊擲出傳奇稱號</strong>
         </div>
     </div>
 
     <div class="card">
-        <div style="font-weight:bold; margin-bottom:10px;">🎨 樣式調整</div>
+        <div style="font-weight:bold; margin-bottom:10px;">🎨 樣式自訂</div>
         <div class="tool-row">
-            <span>背景</span><input type="color" id="bg" value="#1a1a1a">
+            <span>底色</span><input type="color" id="bg" value="#1a1a1a">
             <span>文字</span><input type="color" id="textColor" value="#ffffff">
-        </div>
-        <div class="tool-row">
-            <span>描邊</span><input type="checkbox" id="strokeToggle" checked>
-            <input type="color" id="strokeColor" value="#06C755">
+            <span>描邊</span><input type="color" id="strokeColor" value="#06C755">
         </div>
     </div>
 </div>
 
 <div class="action-row">
     <button class="gray" onclick="location.reload()">重置</button>
-    <button class="green" onclick="showPreview()">下載圖片</button>
+    <button class="green" onclick="showPreview()">生成圖片</button>
 </div>
 
 <div id="previewModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:1000; justify-content:center; align-items:center; flex-direction:column;">
-    <img id="previewImage" style="max-width:80%; border-radius:15px;">
-    <p style="color:white; margin-top:20px;">長按存圖分享你的中二靈魂</p>
-    <button onclick="document.getElementById('previewModal').style.display='none'" style="margin-top:10px; width:100px;">關閉</button>
+    <img id="previewImage" style="max-width:85%; border-radius:20px; border: 3px solid white;">
+    <p style="color:white; margin-top:20px; font-weight:bold;">長按存圖分享</p>
+    <button onclick="document.getElementById('previewModal').style.display='none'" style="margin-top:10px; width:120px; background:white; color:black;">回首頁</button>
 </div>
 
 <script>
-const canvas=document.getElementById("canvas"), ctx=canvas.getContext("2d");
+const canvas = document.getElementById("canvas"), ctx = canvas.getContext("2d");
 
-// --- 爆笑/地獄/中二詞庫 ---
+// --- 詞庫大升級 ---
 const prefixArr = [
-    "被掏空的", "迴光返照的", "薪水小偷的", "腸胃脆弱的", "懶到出汁的", 
-    "社恐發作的", "沒錢好窮的", "充滿肝味的", "單身一輩子的", "熬夜修仙的",
-    "專業背鍋的", "原地爆炸的", "邏輯死去的", "滿臉問號的", "莫名其妙的",
-    "已經放棄的", "佛系經營的", "五音不全的", "卡在門縫的", "不願面對的",
-    "渴望準時下班的", "頭髮掉光的", "酒精中毒的", "咖啡過量的", "智商欠稅的"
+    "被掏空的", "薪水小偷的", "腸胃脆弱的", "懶到出汁的", "社恐發作的", 
+    "充滿肝味的", "單身一輩子的", "熬夜修仙的", "專業背鍋的", "原地爆炸的", 
+    "邏輯死去的", "滿臉問號的", "莫名其妙的", "佛系經營的", "卡在門縫的", 
+    "頭髮掉光的", "智商欠稅的", "自帶霉運的", "極度缺錢的", "水逆受災的",
+    "想被包養的", "已經看開的", "活在夢裡的", "邊緣到透明的", "連呼吸都會胖的"
 ];
 
 const suffixArr = [
     "錢包專家", "減肥鬥士", "垃圾桶守護者", "鍵盤俠", "馬鈴薯隊長",
-    "肝臟終結者", "邊緣人導師", "延期大師", "睡覺比賽冠軍", "冷場王",
-    "表情包傳人", "外送依賴者", "負能量供應商", "尷尬製造機", "智障女神",
-    "薪水小偷", "單身貴族", "熬夜冠名贊助", "社畜領頭羊", "借錢藝術家",
-    "排隊專業戶", "走路撞牆大師", "白日夢想家", "垃圾話詩人", "水逆受災戶"
+    "肝臟終結者", "邊緣人導師", "延期大師", "冷場王", "表情包傳人", 
+    "外送依賴者", "負能量供應商", "尷尬製造機", "社畜領頭羊", "借錢藝術家",
+    "走路撞牆大師", "垃圾話詩人", "白日夢大亨", "躺平發起人", "人生登出者",
+    "薪水回收站", "單身公害", "睡懶覺冠軍", "美食垃圾桶", "初老症患者"
 ];
 
-let lastP = "", lastS = "";
+let lastP = "阿毛幫你", lastS = "取稱號";
 
 function rollDice() {
     const dice = document.getElementById("diceIcon");
@@ -117,60 +113,55 @@ function draw(){
     const bgColor = document.getElementById("bg").value;
     const txtColor = document.getElementById("textColor").value;
     const strokeColor = document.getElementById("strokeColor").value;
-    const useStroke = document.getElementById("strokeToggle").checked;
 
-    // 背景
+    // 背景畫布
     ctx.fillStyle = bgColor;
     ctx.fillRect(0, 0, 512, 512);
 
-    // 裝飾邊框
-    ctx.strokeStyle = "rgba(255,255,255,0.1)";
-    ctx.lineWidth = 10;
-    ctx.strokeRect(20, 20, 472, 472);
+    // 質感邊框
+    ctx.strokeStyle = "rgba(255,255,255,0.15)";
+    ctx.lineWidth = 15;
+    ctx.strokeRect(25, 25, 462, 462);
 
-    if(!lastP) {
-        lastP = "點擊🎲骰子";
-        lastS = "生成稱號";
-    }
-
-    // 繪製第一行 (OO的)
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillStyle = txtColor;
-    
-    let pSize = 40;
-    ctx.font = `bold ${pSize}px "Microsoft JhengHei", sans-serif`;
-    ctx.fillText(lastP, 256, 180);
 
-    // 繪製第二行 (OOO) - 大字體
-    let sSize = 90;
+    // 第一行 (OO的)
+    ctx.fillStyle = txtColor;
+    let pSize = 45;
+    ctx.font = `bold ${pSize}px "Microsoft JhengHei", sans-serif`;
+    ctx.fillText(lastP, 256, 185);
+
+    // 第二行 (OOO) - 大字級
+    let sSize = 95;
     ctx.font = `900 ${sSize}px "Microsoft JhengHei", sans-serif`;
     
-    // 自動縮放第二行
-    while(ctx.measureText(lastS).width > 440 && sSize > 20) {
+    // 自動縮放第二行避免爆框
+    while(ctx.measureText(lastS).width > 420 && sSize > 30) {
         sSize -= 5;
         ctx.font = `900 ${sSize}px "Microsoft JhengHei", sans-serif`;
     }
 
-    if(useStroke) {
-        ctx.strokeStyle = strokeColor;
-        ctx.lineWidth = 12;
-        ctx.lineJoin = "round";
-        ctx.strokeText(lastS, 256, 290);
-    }
-    ctx.fillStyle = txtColor;
-    ctx.fillText(lastS, 256, 290);
+    // 繪製描邊
+    ctx.strokeStyle = strokeColor;
+    ctx.lineWidth = 14;
+    ctx.lineJoin = "round";
+    ctx.strokeText(lastS, 256, 305);
 
-    // 加入一個有趣的「認證章」
+    // 繪製本體
+    ctx.fillStyle = txtColor;
+    ctx.fillText(lastS, 256, 305);
+
+    // 認證章
     ctx.save();
-    ctx.translate(400, 400);
-    ctx.rotate(-0.2);
-    ctx.fillStyle = "rgba(255,0,0,0.6)";
-    ctx.font = "bold 20px sans-serif";
-    ctx.strokeStyle = "rgba(255,0,0,0.6)";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(-50, -20, 100, 40);
-    ctx.fillText("絕對認證", 0, 8);
+    ctx.translate(410, 420);
+    ctx.rotate(-0.25);
+    ctx.fillStyle = "rgba(255, 60, 60, 0.7)";
+    ctx.strokeStyle = "rgba(255, 60, 60, 0.7)";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(-55, -22, 110, 44);
+    ctx.font = "bold 22px sans-serif";
+    ctx.fillText("阿毛認證", 0, 8);
     ctx.restore();
 }
 
@@ -179,13 +170,11 @@ function showPreview() {
     document.getElementById("previewModal").style.display = "flex";
 }
 
-// 監聽輸入即時更新
+// 監聽即時更新
 document.getElementById("bg").oninput = draw;
 document.getElementById("textColor").oninput = draw;
 document.getElementById("strokeColor").oninput = draw;
-document.getElementById("strokeToggle").onchange = draw;
 
-// 初始化
 window.onload = draw;
 </script>
 </body>
