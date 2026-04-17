@@ -98,20 +98,39 @@ let state = {
 };
 
 const DB = {
-    adj: ["傳說中","沒收過的","穿睡衣的","巧克力味的","帥氣的","飢餓的","散發汗味的"],
+    // 稱號組件：可組合出百種稱號
+    adj: ["傳說中","被沒收過","穿著睡衣","巧克力認證","鮪魚堡認可","發光的","飢餓的","爬塔狂人","被媽媽抓到","散發汗香","極致尊榮","不可一世","軟綿綿"],
+    identity: ["冒險者","守護神","小幫手","破壞王","美食家","紙娃娃大師","睡覺專家","耍賴高手","拆家員","好狗狗","大將軍","小霸王"],
+    
+    // 生活用品資料庫：豐富你的裝備庫
     equips: [
-        {n:"媽媽的睡衣", i:"👘", t:"body", def:80, spd:10, d:"柔軟舒適，超強防禦"},
-        {n:"爸爸的汗衫", i:"👕", t:"body", atk:10, def:20, d:"安心的汗味"},
-        {n:"姊姊的涼鞋", i:"👡", t:"feet", spd:60, d:"追逐美食必備"},
-        {n:"曬衣架手杖", i:"🥢", t:"hand", atk:45, d:"阿毛傳說武器"},
-        {n:"酷炫墨鏡", i:"🕶️", t:"head", chr:100, d:"全場你最帥"},
-        {n:"派對帽", i:"🥳", t:"head", chr:30, atk:5, d:"慶祝每一層"},
-        {n:"掃地機器人", i:"🤖", t:"feet", spd:100, d:"全自動座駕"}
+        {n:"媽媽的真絲睡衣", i:"👘", t:"body", def:80, spd:10, d:"絲滑親膚，媽媽的愛"},
+        {n:"爸爸的陳年汗衫", i:"👕", t:"body", atk:10, def:20, d:"充滿了安心的味道"},
+        {n:"姊姊的增高涼鞋", i:"👡", t:"feet", spd:60, d:"視野突然變得很寬廣"},
+        {n:"掃地機器人", i:"🤖", t:"feet", spd:100, d:"阿毛專屬奢華座駕"},
+        {n:"不求人抓背棒", i:"🥢", t:"hand", atk:45, d:"阿毛手不夠長的救星"},
+        {n:"長柄吹風機", i:"💨", t:"hand", atk:30, d:"對敵人發射熱風"},
+        {n:"酷炫戰鬥墨鏡", i:"🕶️", t:"head", chr:100, d:"全場你最帥"},
+        {n:"生日派對尖帽", i:"🥳", t:"head", chr:30, atk:5, d:"每天都要慶祝過關"},
+        {n:"黃色小鴨帽", i:"🐤", t:"head", def:15, d:"減緩對水的恐懼"},
+        {n:"抗噪耳機", i:"🎧", t:"head", def:10, spd:5, d:"聽不到媽媽叫我"},
+        {n:"阿公的拐杖", i:"🦯", t:"hand", atk:50, spd:-5, d:"雖然重但很有威嚴"},
+        {n:"藍白拖", i:"🩴", t:"feet", spd:30, atk:10, d:"台灣味神速戰靴"}
     ],
-    fPrefix: ["超級","香噴噴","過期的","燙手的","媽媽味"],
-    fNames: ["紅燒肉","水餃","罐頭","雞腿","便當"]
+    
+    // 美食組件：可隨機生成數百種美食
+    fPrefix: ["超級","香噴噴","過期的","燙手的","媽媽特製","巧克力秘傳","鮪魚堡偷來的","發光的","深夜的"],
+    fNames: ["紅燒肉","水餃","罐頭","雞腿","便當","手搖飲","大骨湯","滷肉飯","甜不辣"]
 };
 
+// 讓稱號動起來的函數
+function updateTitle() {
+    const a = DB.adj[Math.floor(Math.random()*DB.adj.length)];
+    const i = DB.identity[Math.floor(Math.random()*DB.identity.length)];
+    state.titlePrefix = a;
+    state.titleSuffix = i;
+    document.getElementById('amao-full-title').innerText = `👑 ${a}的${i} 阿毛`;
+}
 function roll() {
     if (state.nrg <= 0) return triggerChoco("阿毛累壞了！聖光降臨！");
     state.nrg--;
@@ -140,9 +159,45 @@ function findBox() {
 }
 
 function getRandomFood() {
-    const n = DB.fPrefix[Math.floor(Math.random()*DB.fPrefix.length)] + DB.fNames[Math.floor(Math.random()*DB.fNames.length)];
-    const v = Math.floor(Math.random()*30)+20;
-    return { n, i: "🍱", v, d: `恢復 ${v} 體力`, type: 'food' };
+    // 形容詞 (20個)
+    const adjectives = [
+        "香噴噴的", "發光的", "媽媽特製的", "巧克力秘傳的", "鮪魚堡偷來的", 
+        "燙手的", "過期的", "深夜限定的", "超級豪華的", "軟綿綿的", 
+        "充滿靈魂的", "會爆漿的", "阿毛夢見的", "傳說級的", "微甜的", 
+        "酸溜溜的", "鹹甜適中的", "咬不動的", "入口即化的", "五彩繽紛的"
+    ];
+
+    // 烹飪/狀態 (18個)
+    const methods = [
+        "紅燒", "清蒸", "油炸", "慢火燉", "炭烤", 
+        "涼拌", "香煎", "秘製", "現做", "冷凍", 
+        "煙燻", "水煮", "乾拌", "鹽酥", "麻辣", 
+        "勾芡", "糖醋", "火烤"
+    ];
+
+    // 食材 (18個)
+    const ingredients = [
+        "豬五花", "大骨頭", "鮮魚片", "厚切牛排", "大雞腿", 
+        "手工水餃", "多汁肉包", "鮮蝦仁", "厚厚雞排", "特級罐頭", 
+        "雞米花", "章魚燒", "甜不辣", "黃金玉米", "半熟蛋", 
+        "馬鈴薯泥", "炒泡麵", "糯米飯"
+    ];
+
+    // 隨機組合邏輯 (組合數 = 20 * 18 * 18 = 6,480 種)
+    const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+    const method = methods[Math.floor(Math.random() * methods.length)];
+    const ing = ingredients[Math.floor(Math.random() * ingredients.length)];
+    
+    const name = adj + method + ing;
+    const value = Math.floor(Math.random() * 40) + 20; // 恢復 20~60 體力
+
+    return { 
+        n: name, 
+        i: "🍱", 
+        v: value, 
+        d: `這是一份${name}，聞起來超棒！`, 
+        type: 'food' 
+    };
 }
 
 function renderCard(it) {
@@ -157,11 +212,16 @@ function renderCard(it) {
 function update() {
     let s = {atk:5, def:5, spd:5, chr:5};
     Object.values(state.equips).forEach(e => { if(e){ s.atk+=(e.atk||0); s.def+=(e.def||0); s.spd+=(e.spd||0); s.chr+=(e.chr||0); }});
+    
+    // 每升 5 層換一次稱號
+    if(state.lvl > 0 && state.lvl % 5 === 0) updateTitle();
+
     const ids = ['st-atk','st-def','st-spd','st-chr','lvl','nrg','gold'];
     ids.forEach(id => { 
-        let val = (id==='lvl' || id==='nrg' || id==='gold') ? state[id] : s[id.split('-')[1]];
+        let val = (['lvl','nrg','gold'].includes(id)) ? state[id] : s[id.replace('st-','')];
         document.getElementById(id).innerText = val;
     });
+    
     ['head','body','hand','feet'].forEach(slot => {
         const el = document.getElementById(`layer-${slot}`);
         if(state.equips[slot]) { el.innerText = state.equips[slot].i; el.classList.add('active'); }
@@ -199,10 +259,25 @@ function openStore() {
     document.getElementById('store-modal').style.display='block';
     const g = document.getElementById('store-grid'); g.innerHTML = "";
     for(let i=0; i<4; i++) {
-        let it = {...DB.equips[Math.floor(Math.random()*DB.equips.length)], type:'equip'};
-        let box = document.createElement('div'); box.className = "item-box";
-        box.innerHTML = `<div style="font-size:30px">${it.i}</div><small>${it.n}</small><br><button>💰50</button>`;
-        box.onclick = () => { if(state.gold>=50){ state.gold-=50; state.inv.push(it); update(); alert("買好啦！"); } };
+        // 隨機抽裝備或美食
+        let isEquip = Math.random() > 0.5;
+        let it = isEquip ? 
+            {...DB.equips[Math.floor(Math.random()*DB.equips.length)], type:'equip'} : 
+            getRandomFood();
+            
+        let price = isEquip ? 80 : 40;
+        let box = document.createElement('div'); 
+        box.className = "item-box";
+        box.innerHTML = `<div style="font-size:30px">${it.i}</div><small>${it.n}</small><br><button style="background:#2ecc71; border:none; border-radius:3px; color:white;">💰${price}</button>`;
+        box.onclick = () => { 
+            if(state.gold >= price){ 
+                state.gold -= price; state.inv.push(it); update(); 
+                alert(`鮪魚堡：「${it.n} 拿去吧，別說我虧待你！」`); 
+                openStore(); // 刷新商店
+            } else {
+                alert("鮪魚堡：「沒錢還想買東西？去爬塔掙點錢再來！」");
+            }
+        };
         g.appendChild(box);
     }
 }
