@@ -88,26 +88,22 @@ button{flex:1;padding:14px;border:none;border-radius:10px;font-weight:bold;font-
 </div>
 
 <div class="tab-content active" data-content="0">
-大小
 <input type="range" id="sizeText" min="40" max="300" value="150">
 <input id="text" class="big-input" placeholder="筆記">
 </div>
 
 <div class="tab-content" data-content="1">
-大小
 <input type="range" id="sizeEmoji" min="40" max="300" value="120">
 <div class="emoji-panel" id="emojiPanel"></div>
 </div>
 
 <div class="tab-content" data-content="2">
-大小
 <input type="range" id="sizeKao" min="40" max="300" value="120">
 <input id="kaomoji" class="big-input">
 <div id="kaoList" class="kao-panel"></div>
 </div>
 
 <div class="tab-content" data-content="3">
-大小
 <input type="range" id="sizeLogo" min="40" max="300" value="120">
 <input type="file" id="upload">
 <input id="logoText" class="big-input">
@@ -126,13 +122,23 @@ button{flex:1;padding:14px;border:none;border-radius:10px;font-weight:bold;font-
 </div>
 
 </div>
+
 <script>
+
+// ===== 基本 =====
 const canvas=document.getElementById("canvas");
 const ctx=canvas.getContext("2d");
 const preview=document.getElementById("preview");
 
 const textInput=document.getElementById("text");
+const kaomojiInput=document.getElementById("kaomoji");
+const logoTextInput=document.getElementById("logoText");
+
 const sizeText=document.getElementById("sizeText");
+const sizeEmoji=document.getElementById("sizeEmoji");
+const sizeKao=document.getElementById("sizeKao");
+const sizeLogo=document.getElementById("sizeLogo");
+
 const bgInput=document.getElementById("bg");
 const textColorInput=document.getElementById("textColor");
 const transparentBg=document.getElementById("transparentBg");
@@ -148,21 +154,36 @@ const shadowStrong=document.getElementById("shadowStrong");
 const togglePalette=document.getElementById("togglePalette");
 const colorPalette=document.getElementById("colorPalette");
 
-let shape="square";
-let autoSize=true;
+const emojiPanel=document.getElementById("emojiPanel");
+const kaoList=document.getElementById("kaoList");
+const upload=document.getElementById("upload");
 
-// 色票開關
+let shape="square";
+let currentTab=0;
+let img=new Image();
+let loaded=false;
+
+// ===== tab =====
+document.querySelectorAll("[data-tab]").forEach(tab=>{
+  tab.onclick=()=>{
+    currentTab=parseInt(tab.dataset.tab);
+
+    document.querySelectorAll("[data-tab]").forEach(t=>t.classList.remove("active"));
+    tab.classList.add("active");
+
+    document.querySelectorAll("[data-content]").forEach(c=>{
+      c.classList.remove("active");
+      if(c.dataset.content==currentTab) c.classList.add("active");
+    });
+
+    draw();
+  };
+});
+
+// ===== 色票開關 =====
 togglePalette.onchange=()=>{
 colorPalette.style.display=togglePalette.checked?"grid":"none";
 };
-
-// 自動大小
-sizeText.oninput=()=>{autoSize=false;draw();}
-textInput.oninput=()=>{autoSize=true;draw();}
-
-// 即時更新
-[strokeToggle,strokeColor,strokeWidth,shadowSoft,shadowLift,shadowStrong,transparentBg]
-.forEach(el=>el.addEventListener("change",draw));
 
 // ===== 色票（五組）=====
 const vivid=["#FF3B30","#FF9500","#FFCC00","#34C759","#00C7BE","#007AFF","#5856D6","#FF2D55","#8E8E93"];
@@ -189,7 +210,7 @@ let d=document.createElement("div");
 d.className="emoji";
 d.innerText=e;
 d.onclick=()=>{textInput.value+=e;draw();}
-document.getElementById("emojiPanel").appendChild(d);
+emojiPanel.appendChild(d);
 });
 
 // ===== 顏文字 =====
@@ -209,28 +230,25 @@ kaomojis.forEach(k=>{
 let d=document.createElement("div");
 d.className="emoji";
 d.innerText=k;
-d.onclick=()=>{document.getElementById("kaomoji").value=k;draw();}
-document.getElementById("kaoList").appendChild(d);
+d.onclick=()=>{kaomojiInput.value=k;draw();}
+kaoList.appendChild(d);
 });
 
-// ===== 換行 =====
-function wrap(text){
-let arr=[],line="";
-for(let ch of text){
-let test=line+ch;
-ctx.font="900 100px sans-serif";
-if(ctx.measureText(test).width>480){
-arr.push(line);
-line=ch;
-}else line=test;
-}
-arr.push(line);
-return arr;
-}
+// ===== 上傳 =====
+upload.onchange=e=>{
+const reader=new FileReader();
+reader.onload=ev=>{
+img.onload=()=>{loaded=true;draw();}
+img.src=ev.target.result;
+};
+reader.readAsDataURL(e.target.files[0]);
+};
 
+// ===== draw（已修）=====
 function draw(){
 ctx.clearRect(0,0,512,512);
 
+// 圓形
 if(shape==="circle"){
 ctx.save();
 ctx.beginPath();
@@ -238,44 +256,40 @@ ctx.arc(256,256,256,0,Math.PI*2);
 ctx.clip();
 }
 
+// 背景
 if(!transparentBg.checked){
 ctx.fillStyle=bgInput.value;
 ctx.fillRect(0,0,512,512);
 }
 
-let text=textInput.value||"筆記";
-let lines=wrap(text);
-
-let size=autoSize?200:sizeText.value;
-ctx.font=`900 ${size}px sans-serif`;
-
-while(lines.some(l=>ctx.measureText(l).width>480)){
-size-=2;
-ctx.font=`900 ${size}px sans-serif`;
-}
-
-let lh=size*1.2;
-let start=256-(lines.length-1)*lh/2;
-
 ctx.fillStyle=textColorInput.value;
 ctx.textAlign="center";
 ctx.textBaseline="middle";
 
-if(shadowSoft.checked){ctx.shadowColor="rgba(0,0,0,0.15)";ctx.shadowBlur=20;ctx.shadowOffsetY=4;}
-if(shadowLift.checked){ctx.shadowColor="rgba(0,0,0,0.25)";ctx.shadowBlur=8;ctx.shadowOffsetY=8;}
-if(shadowStrong.checked){ctx.shadowColor="rgba(0,0,0,0.4)";ctx.shadowBlur=2;ctx.shadowOffsetY=14;}
-
-lines.forEach((l,i)=>{
-let y=start+i*lh;
-if(strokeToggle.checked){
-ctx.lineWidth=strokeWidth.value;
-ctx.strokeStyle=strokeColor.value;
-ctx.strokeText(l,256,y);
+// 🔥 分頁控制
+if(currentTab===0){
+ctx.font=`900 ${sizeText.value}px sans-serif`;
+ctx.fillText(textInput.value||"筆記",256,256);
 }
-ctx.fillText(l,256,y);
-});
 
-ctx.shadowColor="transparent";
+if(currentTab===1){
+ctx.font=`bold ${sizeEmoji.value}px sans-serif`;
+ctx.fillText(textInput.value||"🎧",256,256);
+}
+
+if(currentTab===2){
+ctx.font=`bold ${sizeKao.value}px sans-serif`;
+ctx.fillText(kaomojiInput.value||"(≧▽≦)",256,256);
+}
+
+if(currentTab===3){
+if(loaded){
+let s=parseFloat(sizeLogo.value)/100;
+ctx.drawImage(img,256-256*s,256-256*s,512*s,512*s);
+}
+ctx.font=`bold ${sizeLogo.value}px sans-serif`;
+ctx.fillText(logoTextInput.value||"",256,256);
+}
 
 if(shape==="circle") ctx.restore();
 }
@@ -287,12 +301,15 @@ preview.style.display="block";
 
 function resetAll(){
 textInput.value="";
+kaomojiInput.value="";
+logoTextInput.value="";
 draw();
 }
 
 function setShape(s){shape=s;draw();}
 
 draw();
+
 </script>
 
 </body>
