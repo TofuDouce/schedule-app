@@ -19,8 +19,13 @@ button{padding:10px;border:none;border-radius:10px;font-weight:bold;}
 .green{background:#06C755;color:#fff;}
 .gray{background:#ddd;}
 
-.tabs{display:flex;background:#eee;border-radius:10px;margin-bottom:10px;}
-.tabs button{flex:1;background:none;}
+.tabs,.emoji-tabs{
+  display:flex;background:#eee;border-radius:10px;margin-bottom:10px;
+}
+.tabs button,.emoji-tabs button{
+  flex:1;background:none;
+}
+
 .active{background:#fff;color:#06C755;}
 
 input,select{
@@ -32,29 +37,11 @@ input,select{
 }
 
 .colors{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
-.color{
-  width:28px;height:28px;border-radius:50%;
-  cursor:pointer;
-}
+.color{width:28px;height:28px;border-radius:50%;cursor:pointer;}
 
-/* emoji 面板 */
-.emoji-panel{
-  display:flex;
-  flex-wrap:wrap;
-  gap:6px;
-  margin-top:10px;
-}
-
-.emoji{
-  font-size:22px;
-  cursor:pointer;
-  padding:6px;
-  border-radius:8px;
-}
-
-.emoji:hover{
-  background:#eee;
-}
+.emoji-panel{display:flex;flex-wrap:wrap;gap:6px;}
+.emoji{font-size:22px;cursor:pointer;padding:6px;border-radius:8px;}
+.emoji:hover{background:#eee;}
 </style>
 </head>
 
@@ -88,7 +75,13 @@ input,select{
 文字 / emoji
 <input id="text">
 
-<!-- emoji 面板 -->
+<!-- emoji 分類 -->
+<div class="emoji-tabs">
+<button onclick="setEmojiTab(0)" class="active">😀</button>
+<button onclick="setEmojiTab(1)">🐶</button>
+<button onclick="setEmojiTab(2)">❤️</button>
+</div>
+
 <div class="emoji-panel" id="emojiPanel"></div>
 
 字體
@@ -116,53 +109,72 @@ const ctx=canvas.getContext("2d");
 
 let img=new Image();
 let loaded=false;
+
 let offsetX=0,offsetY=0;
 let isDragging=false;
+
+let textX=256,textY=256;
+let draggingText=false;
+
 let shape="square";
 
-// 🎨 莫蘭迪色系（10色）
 const morandiColors=[
 "#D6A6A6","#D9B08C","#E6D3A3","#A8C3A0",
 "#9EC1CF","#8EA6C9","#B5A6D6","#D6A6C1",
 "#C4C4C4","#6E6E6E"
 ];
 
-// 😊 emoji 清單
-const emojis=["😀","😎","🥺","😂","🔥","❤️","✨","🎉","🐶","🍀","🌈","🍩"];
+const emojiSets=[
+["😀","😎","🥺","😂","🔥","✨","🎉"],
+["🐶","🐱","🐼","🐸","🦊","🐰"],
+["❤️","💛","💙","💜","🖤","💕"]
+];
+
+let currentEmojiSet=0;
 
 function init(){
-  // 顏色
   const palette=document.getElementById("colorPalette");
   morandiColors.forEach(c=>{
-    const div=document.createElement("div");
-    div.className="color";
-    div.style.background=c;
-    div.onclick=()=>{document.getElementById("bg").value=c;draw();}
-    palette.appendChild(div);
+    const d=document.createElement("div");
+    d.className="color";
+    d.style.background=c;
+    d.onclick=()=>{bg.value=c;draw();}
+    palette.appendChild(d);
   });
 
-  // emoji
+  renderEmoji();
+}
+
+function renderEmoji(){
   const panel=document.getElementById("emojiPanel");
-  emojis.forEach(e=>{
-    const span=document.createElement("span");
-    span.className="emoji";
-    span.innerText=e;
-    span.onclick=()=>{
-      document.getElementById("text").value+=e;
+  panel.innerHTML="";
+  emojiSets[currentEmojiSet].forEach(e=>{
+    const s=document.createElement("span");
+    s.className="emoji";
+    s.innerText=e;
+    s.onclick=()=>{
+      text.value+=e;
       draw();
     };
-    panel.appendChild(span);
+    panel.appendChild(s);
   });
+}
+
+function setEmojiTab(i){
+  currentEmojiSet=i;
+  document.querySelectorAll(".emoji-tabs button")
+    .forEach((b,idx)=>b.classList.toggle("active",idx===i));
+  renderEmoji();
 }
 
 function setShape(s){
-shape=s;
-document.getElementById("sq").classList.toggle("active",s==="square");
-document.getElementById("ci").classList.toggle("active",s==="circle");
-draw();
+  shape=s;
+  document.getElementById("sq").classList.toggle("active",s==="square");
+  document.getElementById("ci").classList.toggle("active",s==="circle");
+  draw();
 }
 
-document.getElementById("upload").onchange=e=>{
+upload.onchange=e=>{
 const file=e.target.files[0];
 const reader=new FileReader();
 reader.onload=ev=>{
@@ -176,22 +188,41 @@ reader.readAsDataURL(file);
 document.getElementById(id).addEventListener("input",draw);
 });
 
-// 拖曳
-canvas.onmousedown=()=>isDragging=true;
-canvas.onmouseup=()=>isDragging=false;
-canvas.onmousemove=e=>{
-if(!isDragging)return;
-offsetX+=e.movementX;
-offsetY+=e.movementY;
-draw();
-};
+// 拖曳（判斷文字或圖片）
+canvas.addEventListener("mousedown",e=>{
+  const dx=e.offsetX-textX;
+  const dy=e.offsetY-textY;
+  if(Math.abs(dx)<100 && Math.abs(dy)<50){
+    draggingText=true;
+  }else{
+    isDragging=true;
+  }
+});
+
+canvas.addEventListener("mouseup",()=>{
+  isDragging=false;
+  draggingText=false;
+});
+
+canvas.addEventListener("mousemove",e=>{
+  if(isDragging){
+    offsetX+=e.movementX;
+    offsetY+=e.movementY;
+    draw();
+  }
+  if(draggingText){
+    textX+=e.movementX;
+    textY+=e.movementY;
+    draw();
+  }
+});
 
 function draw(){
-const bg=document.getElementById("bg").value;
-const text=document.getElementById("text").value;
-const scale=parseFloat(document.getElementById("scale").value);
-const color=document.getElementById("textColor").value;
-const font=document.getElementById("font").value;
+const bgColor=bg.value;
+const txt=text.value;
+const scale=parseFloat(scaleInput.value||scale.value);
+const color=textColor.value;
+const font=fontSelect.value||font.value;
 
 ctx.clearRect(0,0,512,512);
 
@@ -202,7 +233,7 @@ ctx.arc(256,256,256,0,Math.PI*2);
 ctx.clip();
 }
 
-ctx.fillStyle=bg;
+ctx.fillStyle=bgColor;
 ctx.fillRect(0,0,512,512);
 
 if(loaded){
@@ -217,19 +248,18 @@ offsetY+256-256*scale,
 );
 }
 
-if(text){
+if(txt){
 let fontSize=120;
-ctx.fillStyle=color;
 ctx.font=`bold ${fontSize}px ${font}`;
-
-while(ctx.measureText(text).width>400){
-fontSize-=5;
-ctx.font=`bold ${fontSize}px ${font}`;
+while(ctx.measureText(txt).width>420){
+  fontSize-=4;
+  ctx.font=`bold ${fontSize}px ${font}`;
 }
 
+ctx.fillStyle=color;
 ctx.textAlign="center";
 ctx.textBaseline="middle";
-ctx.fillText(text,256,256);
+ctx.fillText(txt,textX,textY);
 }
 
 if(shape==="circle") ctx.restore();
@@ -244,9 +274,18 @@ a.click();
 
 function resetAll(){
 offsetX=0;offsetY=0;
-document.getElementById("text").value="";
+textX=256;textY=256;
+text.value="";
 draw();
 }
+
+// 修正變數引用
+const bg=document.getElementById("bg");
+const text=document.getElementById("text");
+const scaleInput=document.getElementById("scale");
+const textColor=document.getElementById("textColor");
+const fontSelect=document.getElementById("font");
+const upload=document.getElementById("upload");
 
 init();
 draw();
