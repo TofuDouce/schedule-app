@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Lazy DoDo</title>
+<title>Lazy DoDo - 完整最終版</title>
 
 <style>
 :root { --primary: #06C755; }
-body{margin:0;font-family:-apple-system, sans-serif;background:#f3f4f6; padding-bottom: 100px;}
+body{margin:0;font-family:-apple-system, sans-serif;background:#f3f4f6; padding-bottom: 120px;}
 .header{background: var(--primary); color:#fff; padding:15px; text-align:center; font-weight:bold; font-size:1.2rem;}
 .container{max-width:520px; margin:auto; padding:10px;}
 
@@ -18,12 +18,11 @@ body{margin:0;font-family:-apple-system, sans-serif;background:#f3f4f6; padding-
     z-index: 100;
     background: #f3f4f6;
     padding: 10px 0;
-    transition: all 0.3s;
 }
 .canvas-container {
     background:#fff; border-radius:16px; padding:10px; 
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    max-width: 300px; margin: auto;
+    max-width: 320px; margin: auto;
 }
 canvas{width:100%; border-radius:12px; background:#eee; aspect-ratio: 1/1; display: block;}
 
@@ -40,7 +39,8 @@ canvas{width:100%; border-radius:12px; background:#eee; aspect-ratio: 1/1; displ
 .tab-content{display:none;}
 .tab-content.active{display:block;}
 
-.big-input{width:100%; padding:12px; font-size:16px; border-radius:10px; border:1px solid #ddd; margin-top:10px; box-sizing: border-box;}
+.big-input{width:100%; padding:12px; font-size:16px; border-radius:10px; border:1px solid #ddd; margin-top:10px; box-sizing: border-box; outline:none;}
+.big-input:focus { border-color: var(--primary); }
 
 .palette-header { background: #f9f9f9; padding: 8px 12px; border-radius: 8px; margin: 10px 0; cursor: pointer; font-size: 13px; color: #666; border: 1px solid #eee; display: flex; justify-content: space-between; }
 #colorPalette { display: none; grid-template-columns: repeat(9, 1fr); gap: 6px; margin: 10px 0; }
@@ -49,7 +49,7 @@ canvas{width:100%; border-radius:12px; background:#eee; aspect-ratio: 1/1; displ
 .emoji-panel, .kao-panel { display:grid; gap:6px; margin-top:10px; }
 .emoji-panel { grid-template-columns:repeat(6,1fr); }
 .kao-panel { grid-template-columns:repeat(3,1fr); }
-.emoji-item { font-size:18px; text-align:center; padding:8px 0; border-radius:8px; background:#f8f9fa; cursor:pointer; border:1px solid #eee; }
+.emoji-item { font-size:18px; text-align:center; padding:8px 0; border-radius:8px; background:#f8f9fa; cursor:pointer; border:1px solid #eee; display: flex; align-items: center; justify-content: center;}
 
 .tool-row{display:flex; align-items:center; gap:10px; margin-top:10px; font-size: 13px;}
 .tool-row input[type="range"]{flex:1;}
@@ -108,7 +108,7 @@ button{flex:1; padding:12px; border:none; border-radius:10px; font-weight:bold; 
                 <span>文字大小</span><input type="range" id="sizeText" min="10" max="500" value="150">
             </div>
 
-            <div class="tool-row" style="flex-wrap: wrap;">
+            <div class="tool-row" style="flex-wrap: wrap; gap: 15px;">
                 <span>特效風格:</span>
                 <label><input type="radio" name="effect" value="none" onclick="draw()" checked> 無</label>
                 <label><input type="radio" name="effect" value="soft" onclick="draw()"> 柔光</label>
@@ -125,19 +125,19 @@ button{flex:1; padding:12px; border:none; border-radius:10px; font-weight:bold; 
         </div>
         <div id="contentConfig" class="collapsible-content">
             <div class="tabs">
-                <div class="tab active" data-tab="0">文字</div>
+                <div class="tab active" data-tab="0">純文字</div>
                 <div class="tab" data-tab="1">Emoji</div>
                 <div class="tab" data-tab="2">顏文字</div>
-                <div class="tab" data-tab="3">圖片</div>
+                <div class="tab" data-tab="3">上傳圖片</div>
             </div>
-            <div class="tab-content active" data-content="0"><p style="font-size:12px; color:#999;">僅顯示下方輸入框內容</p></div>
+            <div class="tab-content active" data-content="0"><p style="font-size:12px; color:#999;">僅顯示最下方的疊加文字內容</p></div>
             <div class="tab-content" data-content="1">
                 <div class="tool-row"><span>Emoji大小</span><input type="range" id="sizeEmoji" min="100" max="600" value="300"></div>
                 <div class="emoji-panel" id="emojiPanel"></div>
                 <input id="selectedEmoji" type="hidden" value="🏃">
             </div>
             <div class="tab-content" data-content="2">
-                <div class="tool-row"><span>大小</span><input type="range" id="sizeKao" min="40" max="350" value="120"></div>
+                <div class="tool-row"><span>顏文字大小</span><input type="range" id="sizeKao" min="40" max="350" value="120"></div>
                 <div id="kaoList" class="kao-panel"></div>
                 <input id="selectedKao" type="hidden" value="(っ˙꒳˙ )╮=͟͟͞͞🍑">
             </div>
@@ -148,7 +148,8 @@ button{flex:1; padding:12px; border:none; border-radius:10px; font-weight:bold; 
                     <label><input type="radio" name="imageMode" value="sticker" onclick="draw()"> 貼圖</label>
                 </div>
                 <div class="tool-row"><span>縮放</span><input type="range" id="sizeLogo" min="10" max="250" value="100"></div>
-                <div class="tool-row"><span>X</span><input type="range" id="posX" min="-256" max="256" value="0"><span>Y</span><input type="range" id="posY" min="-256" max="256" value="0"></div>
+                <div class="tool-row"><span>X位移</span><input type="range" id="posX" min="-256" max="256" value="0"></div>
+                <div class="tool-row"><span>Y位移</span><input type="range" id="posY" min="-256" max="256" value="0"></div>
                 <input type="file" id="upload" accept="image/*" style="width: 100%; margin-top:5px;">
             </div>
         </div>
@@ -156,13 +157,13 @@ button{flex:1; padding:12px; border:none; border-radius:10px; font-weight:bold; 
 
     <div class="card">
         <div style="font-weight:bold; margin-bottom:5px;">✍️ 疊加文字內容</div>
-        <input id="text" class="big-input" placeholder="在這裡輸入文字..." value="筆記">
+        <input id="text" class="big-input" placeholder="輸入文字..." value="筆記">
     </div>
 </div>
 
 <div class="action-row">
     <button class="gray" onclick="resetAll()">重設</button>
-    <button class="green" onclick="showPreview()">產生預覽並下載</button>
+    <button class="green" onclick="showPreview()">產生下載預覽</button>
 </div>
 
 <div id="previewModal" class="preview-modal" onclick="this.style.display='none'">
@@ -175,12 +176,14 @@ button{flex:1; padding:12px; border:none; border-radius:10px; font-weight:bold; 
 const canvas=document.getElementById("canvas"), ctx=canvas.getContext("2d");
 let shape="square", currentTab=0, img=new Image(), loaded=false;
 
+// 切換收合區塊
 function toggleSection(id, el) {
     document.getElementById(id).classList.toggle('hidden');
     const icon = el.querySelector('.toggle-icon');
     icon.style.transform = document.getElementById(id).classList.contains('hidden') ? 'rotate(-90deg)' : 'rotate(0deg)';
 }
 
+// 切換色票
 function togglePalette() {
     const p = document.getElementById("colorPalette"), s = document.getElementById("paletteStatus");
     const isHidden = p.style.display !== "grid";
@@ -191,6 +194,7 @@ function togglePalette() {
 function setShape(s) { shape = s; draw(); }
 
 function init() {
+    // 🎨 色票擴充
     const colors=["#FF3B30","#FF9500","#FFCC00","#34C759","#00C7BE","#007AFF","#5856D6","#FF2D55","#8E8E93","#D6A6A6","#D9B08C","#E6D3A3","#A8C3A0","#9EC1CF","#8EA6C9","#B5A6D6","#D6A6C1","#C4C4C4","#FFB3BA","#FFD6A5","#FFF3B0","#C8E6C9","#B2EBF2","#B3E5FC","#D1C4E9","#F8BBD0","#EEEEEE"];
     colors.forEach(c => {
         let d=document.createElement("div"); d.className="color"; d.style.background=c;
@@ -198,14 +202,16 @@ function init() {
         document.getElementById("colorPalette").appendChild(d);
     });
 
-    const emojis=["🏃","🧘","🏋️","🚴","🎨","🎮","🎬","🎤","💆","💄","💰","📈","💎","☕","🍰","🐶","🐱","🐰","🔥"];
+    // 🏃 Emoji 擴充
+    const emojis=["🏃","🧘","🏋️","🚴","⚽","🏀","🎾","🏌️","🎨","🎧","🎸","📸","🎮","🎬","🎤","🧩","💆","💄","💅","💇","✨","🧖","👗","👜","💰","📈","📊","💹","💎","☕","🍰","🍱","🐶","🐱","🐰","🐹","🦊","🐻","🐼","🐨","🔥","🌟","🌈","🍀","🌸","🍎","🍉","🚀"];
     emojis.forEach(e=>{
         let d=document.createElement("div"); d.className="emoji-item"; d.innerText=e;
         d.onclick=()=>{ document.getElementById("selectedEmoji").value=e; draw(); };
         document.getElementById("emojiPanel").appendChild(d);
     });
 
-    const kaomojis=["(っ˙꒳˙ )╮=͟͟͞͞🍑","ฅ^•ﻌ•^ฅ","( ‘• ω • `)","(๑•̀ㅂ•́)و","(❁´◡`❁)","ദ്ദി ˉ꒳ˉ )✧","(づ•ᴗ•)づ","(≧▽≦)","(๑>ᴗ<๑)","(ಥ﹏ಥ)","(ಠ_ಠ)"];
+    // (っ˙꒳˙ ) 顏文字擴充
+    const kaomojis=["(っ˙꒳˙ )╮=͟͟͞͞🍑","ฅ^•ﻌ•^ฅ","( ‘• ω • `)","(๑•̀ㅂ•́)و","(❁´◡`❁)","(｡♥‿♥｡)","ദ്ദി ˉ꒳ˉ )✧","(づ•ᴗ•)づ","(≧▽≦)","(๑>ᴗ<๑)","(✿◠‿◠)","(＾▽＾)","(ง •̀_•́)ง","(¬_¬)","(눈_눈)","(ಥ﹏ಥ)","(╥﹏╥)","(ಠ_ಠ)","( •‿• )","(ʘ‿ʘ)","(╯°▽°)╯","(〃▽〃)","(///▽///)","(◦˙▽˙◦)","ヾ(•ω•)o","(^_−)☆","(o゜▽゜)o","ヘ( ^o^)ノ","(ˉ▽ˉ；)","(。・∀・)ノ","(￣▽￣)ノ","(o^ ^o)"];
     kaomojis.forEach(k=>{
         let d=document.createElement("div"); d.className="emoji-item"; d.innerText=k;
         d.onclick=()=>{ document.getElementById("selectedKao").value=k; draw(); };
@@ -217,6 +223,7 @@ function init() {
     draw();
 }
 
+// 標籤切換
 document.querySelectorAll("[data-tab]").forEach(tab=>{
     tab.onclick=()=>{
         currentTab=parseInt(tab.dataset.tab);
@@ -232,18 +239,22 @@ document.querySelectorAll("[data-tab]").forEach(tab=>{
 
 function draw(){
     ctx.clearRect(0,0,512,512); ctx.save();
+    // 裁切形狀
     if(shape==="circle"){ ctx.beginPath(); ctx.arc(256,256,256,0,Math.PI*2); ctx.clip(); }
+    
+    // 背景
     if(!document.getElementById("transparentBg").checked){
         ctx.fillStyle=document.getElementById("bg").value; ctx.fillRect(0,0,512,512);
     }
 
-    // 重新校正特效邏輯
+    // 設定陰影特效
     const effect = document.querySelector('input[name="effect"]:checked').value;
     ctx.shadowColor = "transparent";
     if(effect === "soft") { ctx.shadowColor="rgba(0,0,0,0.2)"; ctx.shadowBlur=15; ctx.shadowOffsetY=5; }
     else if(effect === "lift") { ctx.shadowColor="rgba(0,0,0,0.3)"; ctx.shadowBlur=10; ctx.shadowOffsetY=10; }
     else if(effect === "strong") { ctx.shadowColor="rgba(0,0,0,0.5)"; ctx.shadowBlur=0; ctx.shadowOffsetY=10; }
 
+    // 1. 繪製底部層 (Emoji/顏文字/圖片)
     if(currentTab === 1){
         ctx.font = `${document.getElementById("sizeEmoji").value}px serif`;
         ctx.textAlign="center"; ctx.textBaseline="middle";
@@ -266,6 +277,7 @@ function draw(){
         ctx.drawImage(img, 256-dw/2+xOff, 256-dh/2+yOff, dw, dh);
     }
 
+    // 2. 繪製頂部層 (疊加文字)
     let txt = document.getElementById("text").value;
     if(txt){
         ctx.fillStyle = document.getElementById("textColor").value;
@@ -281,12 +293,14 @@ function draw(){
     ctx.restore();
 }
 
+// 處理圖片上傳
 document.getElementById("upload").onchange=e=>{
     const reader=new FileReader();
     reader.onload=ev=>{ img.onload=()=>{ loaded=true; draw(); }; img.src=ev.target.result; };
     reader.readAsDataURL(e.target.files[0]);
 };
 
+// 顯示預覽
 function showPreview() {
     document.getElementById("previewImage").src = canvas.toDataURL("image/png");
     document.getElementById("previewModal").style.display = "flex";
