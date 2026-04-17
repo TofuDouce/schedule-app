@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>我的質感班表</title>
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+<style>
+/* ⭐ 主題變數設定 */
+:root {
+  --bg: #f2f2f7;
+  --glass: rgba(255, 255, 255, 0.55);
+  --btn: rgba(255, 255, 255, 0.6);
+  --text: #000;
+  --alpha: 1;
+}
+
+.dark {
+  --bg: #1c1c1e;
+  --glass: rgba(40, 40, 45, 0.6);
+  --btn: rgba(60, 60, 65, 0.6);
+  --text: #fff;
+}
+
+.cute { --bg: #fff0f5; --glass: rgba(255, 240, 245, 0.85); --btn: rgba(255, 220, 230, 0.7); }
+.blue { --bg: #eef5f7; --glass: rgba(220, 235, 240, 0.85); --btn: rgba(200, 220, 230, 0.7); }
+.green { --bg: #eef3ef; --glass: rgba(220, 235, 225, 0.85); --btn: rgba(200, 220, 210, 0.7); }
+.purple { --bg: #f2eef7; --glass: rgba(230, 220, 240, 0.85); --btn: rgba(210, 200, 230, 0.7); }
+.rainbow { 
+  --bg: linear-gradient(135deg, #ffd6e0, #fff3c7, #d7f0ff, #e6d6ff);
+  --glass: rgba(255, 255, 255, 0.6);
+  --btn: rgba(255, 255, 255, 0.7);
+}
+
+body {
+  margin: 0; padding: 10px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang TC", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overscroll-behavior: none;
+  transition: background 0.3s ease;
+}
+
+input[type="file"] { display: none; }
+
+button {
+  color: var(--text) !important;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button:active { transform: scale(0.92); }
+
+.topbar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.topbar button {
+  height: 48px;
+  border-radius: 16px;
+  font-size: 20px;
+  background: var(--btn);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* 浮動選單 */
+.fab {
+  position: fixed; right: 20px; bottom: 80px;
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  font-size: 24px;
+  background: var(--btn);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  z-index: 10000;
+}
+
+.fabMenu {
+  position: fixed; right: 20px; bottom: 150px;
+  display: flex; flex-direction: column;
+  gap: 12px; z-index: 9999;
+  opacity: 0; transform: translateY(20px);
+  pointer-events: none; transition: all 0.3s ease;
+}
+
+.fabMenu.active { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+.group {
+  background: var(--glass);
+  backdrop-filter: blur(25px);
+  border-radius: 18px;
+  padding: 12px;
+  display: flex; flex-wrap: wrap;
+  gap: 8px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+}
+
+.group button {
+  padding: 8px 12px;
+  background: var(--btn);
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+/* 日曆主體 */
+#captureArea {
+  position: relative;
+  border-radius: 24px;
+  overflow: hidden;
+  background: var(--bg);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+}
+
+#bg { position: absolute; width: 100%; height: 100%; object-fit: cover; z-index: 0; }
+#bgOverlay { position: absolute; width: 100%; height: 100%; z-index: 1; pointer-events: none; transition: 0.3s; }
+
+.header, .weekRow, .calendar { position: relative; z-index: 2; }
+
+.header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 15px 20px;
+}
+
+.header h2 { margin: 0; font-size: 22px; letter-spacing: 1px; }
+
+.weekRow {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  padding: 5px 10px; text-align: center;
+  font-size: 14px; opacity: 0.7;
+}
+
+.calendar {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  gap: 8px; padding: 10px;
+}
+
+.day {
+  min-height: 75px;
+  border-radius: 14px;
+  display: flex; flex-direction: column;
+  align-items: center; padding-top: 6px;
+  background: rgba(255,255,255, var(--alpha));
+  transition: background 0.2s;
+}
+
+.shift {
+  width: 85%; border-radius: 8px;
+  margin-top: 3px; font-size: 11px;
+  text-align: center; padding: 2px 0;
+  font-weight: bold; color: #000;
+}
+
+/* 顏色樣式 */
+.morning { background: #fde2b5; }
+.noon { background: #fdccba; }
+.night { background: #B7E1FF; }
+.full { background: #d6cdf3; }
+.off { background: #bfe3d0; }
+.sunday { color: #ff3b30 !important; opacity: 0.5; }
+
+.sticker {
+  position: absolute; width: 80px;
+  z-index: 50; touch-action: none;
+  cursor: move;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+}
+
+/* 下方工具欄 */
+.bottom {
+  display: flex; gap: 10px; margin-top: 15px;
+  padding: 5px;
+}
+
+.bottom button {
+  flex: 1; height: 50px;
+  border-radius: 15px; font-size: 16px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.bottom button.active {
+  transform: scale(1.1);
+  box-shadow: 0 0 15px rgba(0,0,0,0.2);
+  outline: 2px solid var(--text);
+}
+
+#preview img {
+  width: 100%; margin-top: 20px;
+  border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+</style>
+</head>
+
+<body>
+
+<div class="topbar">
+  <button onclick="exportImage()" title="匯出圖片">📸</button>
+  <button onclick="document.getElementById('stickerInput').click()" title="新增貼圖">🖼️</button>
+  <button onclick="document.getElementById('bgInput').click()" title="換背景">🎨</button>
+  <button onclick="goToday()" title="回今天">📅</button>
+</div>
+
+<div class="fabMenu" id="fabMenu">
+  <div class="group">
+    <button onclick="setTheme('light')">🌞 淺色</button>
+    <button onclick="setTheme('dark')">🌙 深色</button>
+    <button onclick="setTheme('rainbow')">🌈 七彩</button>
+    <button onclick="setTheme('cute')">🍓</button>
+    <button onclick="setTheme('blue')">💧</button>
+    <button onclick="setTheme('green')">🌿</button>
+  </div>
+  <div class="group">
+    <button onclick="switchSheet(1)">班表❶</button>
+    <button onclick="switchSheet(2)">班表❷</button>
+    <button onclick="switchSheet(3)">班表❸</button>
+  </div>
+  <div class="group">
+    <button onclick="confirmClear('bg')">清除背景</button>
+    <button onclick="confirmClear('stickers')">清除貼圖</button>
+    <button onclick="confirmClear('all')">清空班表</button>
+  </div>
+  <div class="group">
+    <button onclick="setOpacity(1)">表格不透明</button>
+    <button onclick="setOpacity(0.6)">60%透明</button>
+  </div>
+  <div class="group">
+    <button onclick="setBgFade(0)">背景清晰</button>
+    <button onclick="setBgFade(0.5)">背景淡化</button>
+  </div>
+  <div class="group">
+    <button onclick="exportICS()" style="width:100%; background:#4cd964">🗓️ 匯出至行事曆</button>
+  </div>
+</div>
+
+<button class="fab" onclick="toggleFab()">⚙️</button>
+
+<input id="stickerInput" type="file" accept="image/*">
+<input id="bgInput" type="file" accept="image/*">
+
+<div id="captureArea">
+  <div id="bgOverlay"></div>
+  <div class="header">
+    <button onclick="changeMonth(-1)" style="background:none; font-size:24px;">❮</button>
+    <h2 id="title">2024年1月</h2>
+    <button onclick="changeMonth(1)" style="background:none; font-size:24px;">❯</button>
+  </div>
+  <div class="weekRow">
+    <div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div><div style="color:#ff3b30">日</div>
+  </div>
+  <div class="calendar" id="calendar"></div>
+</div>
+
+<div class="bottom">
+  <button onclick="setType(event,'morning')" class="morning">早</button>
+  <button onclick="setType(event,'noon')" class="noon">午</button>
+  <button onclick="setType(event,'night')" class="night">晚</button>
+  <button onclick="setType(event,'full')" class="full">全</button>
+  <button onclick="setType(event,'off')" class="off">休</button>
+</div>
+
+<div id="preview"></div>
+
+<script>
+let selected = "";
+let currentDate = new Date();
+let currentSheet = 1;
+let data = {};
+let alpha = 1;
+let lastClickTime = 0;
+let lastKey = "";
+
+// ⭐ 初始化
+function init() {
+  const savedTheme = localStorage.getItem("theme") || 'light';
+  setTheme(savedTheme);
+  load();
+  render();
+}
+
+function setTheme(t) {
+  document.body.className = t;
+  localStorage.setItem("theme", t);
+  // 同步 captureArea 背景
+  setTimeout(() => {
+    document.getElementById("captureArea").style.background = getComputedStyle(document.body).background;
+  }, 50);
+}
+
+function toggleFab() { document.getElementById("fabMenu").classList.toggle("active"); }
+
+function save() { localStorage.setItem("sheet" + currentSheet, JSON.stringify(data)); }
+function load() { 
+  let s = localStorage.getItem("sheet" + currentSheet); 
+  data = s ? JSON.parse(s) : {}; 
+}
+
+function switchSheet(n) {
+  currentSheet = n;
+  load();
+  render();
+  toggleFab();
+}
+
+function setType(e, t) {
+  selected = t;
+  document.querySelectorAll(".bottom button").forEach(b => b.classList.remove("active"));
+  e.currentTarget.classList.add("active");
+}
+
+function changeMonth(n) {
+  currentDate.setMonth(currentDate.getMonth() + n);
+  render();
+}
+
+function goToday() {
+  currentDate = new Date();
+  render();
+}
+
+function setOpacity(v) {
+  alpha = v;
+  document.documentElement.style.setProperty('--alpha', v);
+  render();
+}
+
+function setBgFade(v) {
+  document.getElementById("bgOverlay").style.background = `rgba(255,255,255,${v})`;
+}
+
+function confirmClear(type) {
+  if (!confirm("確定要執行此操作嗎？")) return;
+  if (type === 'bg') { document.getElementById("bg")?.remove(); }
+  else if (type === 'stickers') { document.querySelectorAll(".sticker").forEach(s => s.remove()); }
+  else if (type === 'all') { data = {}; save(); render(); }
+  toggleFab();
+}
+
+// ⭐ 渲染日曆
+function render() {
+  const calendar = document.getElementById("calendar");
+  const title = document.getElementById("title");
+  calendar.innerHTML = "";
+  
+  const y = currentDate.getFullYear();
+  const m = currentDate.getMonth();
+  title.innerText = `${y}年 ${m + 1}月`;
+
+  let first = (new Date(y, m, 1).getDay() + 6) % 7; 
+  let days = new Date(y, m + 1, 0).getDate();
+
+  for (let i = 0; i < first; i++) calendar.appendChild(document.createElement("div"));
+
+  for (let i = 1; i <= days; i++) {
+    let d = document.createElement("div");
+    d.className = "day";
+    let idx = (first + i - 1) % 7;
+    let key = `${y}-${m}-${i}`;
+
+    // 週末樣式
+    if (idx === 5) d.style.background = `rgba(214,238,236,${alpha})`;
+    if (idx === 6) {
+      d.style.background = `rgba(249,221,229,${alpha})`;
+      d.classList.add("sunday");
+    }
+
+    d.innerHTML = `<div>${i}</div>`;
+
+    (data[key] || []).forEach(t => {
+      let s = document.createElement("div");
+      s.className = `shift ${t}`;
+      s.innerText = { morning: "早", noon: "午", night: "晚", full: "全", off: "休" }[t];
+      d.appendChild(s);
+    });
+
+    d.onclick = () => {
+      if (idx === 6) return; // 週日固定不給點
+
+      let now = Date.now();
+      if (lastKey === key && now - lastClickTime < 300) {
+        data[key] = []; // 雙擊清空
+      } else {
+        if (!selected) return;
+        let arr = data[key] || [];
+        if (selected === "off") arr = ["off"];
+        else if (selected === "full") arr = ["full"];
+        else {
+          arr = arr.filter(x => x !== "full" && x !== "off");
+          arr.includes(selected) ? arr = arr.filter(x => x !== selected) : arr.push(selected);
+        }
+        data[key] = arr;
+      }
+      lastClickTime = now; lastKey = key;
+      save(); render();
+    };
+    calendar.appendChild(d);
+  }
+}
+
+// ⭐ 背景圖處理
+document.getElementById("bgInput").onchange = e => {
+  let file = e.target.files[0];
+  if (!file) return;
+  let bg = document.getElementById("bg") || document.createElement("img");
+  bg.id = "bg";
+  bg.src = URL.createObjectURL(file);
+  if (!document.getElementById("bg")) document.getElementById("captureArea").prepend(bg);
+};
+
+// ⭐ 貼圖處理
+document.getElementById("stickerInput").onchange = e => {
+  let file = e.target.files[0];
+  if (!file) return;
+  let img = document.createElement("img");
+  img.src = URL.createObjectURL(file);
+  img.className = "sticker";
+  img.style.left = "30%"; img.style.top = "30%";
+  makeDraggable(img);
+  // 雙擊貼圖刪除該貼圖
+  img.ondblclick = () => img.remove();
+  document.getElementById("captureArea").appendChild(img);
+};
+
+function makeDraggable(el) {
+  let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+  el.onmousedown = dragMouseDown;
+  el.ontouchstart = dragMouseDown;
+
+  function dragMouseDown(e) {
+    e.preventDefault();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    pos3 = clientX; pos4 = clientY;
+    document.onmouseup = closeDragElement;
+    document.onmousemove = elementDrag;
+    document.ontouchend = closeDragElement;
+    document.ontouchmove = elementDrag;
+  }
+
+  function elementDrag(e) {
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    pos1 = pos3 - clientX; pos2 = pos4 - clientY;
+    pos3 = clientX; pos4 = clientY;
+    el.style.top = (el.offsetTop - pos2) + "px";
+    el.style.left = (el.offsetLeft - pos1) + "px";
+  }
+
+  function closeDragElement() {
+    document.onmouseup = null; document.onmousemove = null;
+    document.ontouchend = null; document.ontouchmove = null;
+  }
+}
+
+// ⭐ 功能：導出圖片
+function exportImage() {
+  const area = document.getElementById("captureArea");
+  html2canvas(area, { useCORS: true, scale: 2 }).then(canvas => {
+    let img = new Image();
+    img.src = canvas.toDataURL("image/png");
+    const preview = document.getElementById("preview");
+    preview.innerHTML = "<h3>長按下方圖片儲存：</h3>";
+    preview.appendChild(img);
+    img.scrollIntoView({ behavior: 'smooth' });
+  });
+}
+
+// ⭐ 功能：導出 ICS
+function exportICS() {
+  let text = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Gemini//Schedule App//TW\n";
+  for (let key in data) {
+    if (data[key].length === 0) continue;
+    data[key].forEach(type => {
+      if (type === "off") return;
+      let [y, m, d] = key.split("-");
+      let dateStr = `${y}${String(+m + 1).padStart(2, '0')}${String(d).padStart(2, '0')}`;
+      let summary = { morning: "早班", noon: "午班", night: "晚班", full: "全天班" }[type];
+      text += `BEGIN:VEVENT\nDTSTART;VALUE=DATE:${dateStr}\nDTEND;VALUE=DATE:${dateStr}\nSUMMARY:${summary}\nEND:VEVENT\n`;
+    });
+  }
+  text += "END:VCALENDAR";
+  const blob = new Blob([text], { type: "text/calendar" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `班表_${currentDate.getFullYear()}_${currentDate.getMonth()+1}.ics`;
+  a.click();
+}
+
+init();
+</script>
+
+</body>
+</html>
