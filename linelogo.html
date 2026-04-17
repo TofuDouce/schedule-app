@@ -42,14 +42,12 @@ canvas{width:100%;border-radius:20px;background:#eee;}
   cursor:pointer;
 }
 
-/* emoji */
 .emoji-panel{
   display:grid;
   grid-template-columns:repeat(6,1fr);
   gap:10px;
 }
 
-/* ✅ 顏文字專用（2欄） */
 .kao-panel{
   display:grid;
   grid-template-columns:repeat(2,1fr);
@@ -64,8 +62,6 @@ canvas{width:100%;border-radius:20px;background:#eee;}
   background:#f2f2f2;
   cursor:pointer;
 }
-
-.slider{margin-top:10px;}
 
 .row{display:flex;gap:10px;}
 button{flex:1;padding:14px;border:none;border-radius:10px;font-weight:bold;font-size:16px;}
@@ -108,31 +104,47 @@ button{flex:1;padding:14px;border:none;border-radius:10px;font-weight:bold;font-
 <div class="tab-content active" data-content="0">
 大小
 <input type="range" id="sizeText" min="40" max="200" value="80">
-<input id="text" class="big-input" placeholder="輸入文字">
+<input id="text" class="big-input">
 </div>
 
-<!-- emoji -->
+<!-- Emoji -->
 <div class="tab-content" data-content="1">
-大小
+Emoji大小
 <input type="range" id="sizeEmoji" min="40" max="200" value="80">
+
+<!-- ⭐新增 -->
+文字大小
+<input type="range" id="sizeEmojiText" min="40" max="200" value="60">
+<input id="emojiText" class="big-input" placeholder="輸入文字">
+
 <div class="emoji-panel" id="emojiPanel"></div>
 </div>
 
 <!-- 顏文字 -->
 <div class="tab-content" data-content="2">
-大小
+顏文字大小
 <input type="range" id="sizeKao" min="40" max="200" value="80">
-<input id="kaomoji" class="big-input" placeholder="(＾▽＾)">
-<!-- ✅ 修正這裡 -->
+
+<!-- ⭐新增 -->
+文字大小
+<input type="range" id="sizeKaoText" min="40" max="200" value="60">
+<input id="kaoText" class="big-input" placeholder="輸入文字">
+
+<input id="kaomoji" class="big-input">
 <div id="kaoList" class="kao-panel"></div>
 </div>
 
 <!-- LOGO -->
 <div class="tab-content" data-content="3">
-大小
+LOGO大小
 <input type="range" id="sizeLogo" min="0.5" max="3" step="0.01" value="1">
+
+<!-- ⭐新增 -->
+文字大小
+<input type="range" id="sizeLogoText" min="40" max="200" value="60">
+
 <input type="file" id="upload">
-<input id="logoText" class="big-input" placeholder="LOGO文字">
+<input id="logoText" class="big-input">
 </div>
 
 </div>
@@ -148,6 +160,13 @@ button{flex:1;padding:14px;border:none;border-radius:10px;font-weight:bold;font-
 const canvas=document.getElementById("canvas");
 const ctx=canvas.getContext("2d");
 
+let currentTab=0;
+let shape="square";
+
+let img=new Image();
+let loaded=false;
+
+// 原本
 const textInput=document.getElementById("text");
 const kaomojiInput=document.getElementById("kaomoji");
 const logoTextInput=document.getElementById("logoText");
@@ -157,75 +176,47 @@ const sizeEmoji=document.getElementById("sizeEmoji");
 const sizeKao=document.getElementById("sizeKao");
 const sizeLogo=document.getElementById("sizeLogo");
 
+// ⭐新增
+const emojiText=document.getElementById("emojiText");
+const kaoText=document.getElementById("kaoText");
+const sizeEmojiText=document.getElementById("sizeEmojiText");
+const sizeKaoText=document.getElementById("sizeKaoText");
+const sizeLogoText=document.getElementById("sizeLogoText");
+
 const bgInput=document.getElementById("bg");
 const textColorInput=document.getElementById("textColor");
 
 const emojiPanel=document.getElementById("emojiPanel");
 const kaoList=document.getElementById("kaoList");
-const colorPalette=document.getElementById("colorPalette");
 const upload=document.getElementById("upload");
-
-let currentTab=0;
-let shape="square";
-
-let img=new Image();
-let loaded=false;
 
 // 分頁
 document.querySelectorAll("[data-tab]").forEach(tab=>{
   tab.onclick=()=>{
     currentTab=parseInt(tab.dataset.tab);
-
     document.querySelectorAll("[data-tab]").forEach(t=>t.classList.remove("active"));
     tab.classList.add("active");
-
     document.querySelectorAll("[data-content]").forEach(c=>{
       c.classList.remove("active");
       if(c.dataset.content==currentTab) c.classList.add("active");
     });
-
     draw();
   };
 });
 
 function setShape(s){shape=s;draw();}
 
-// 色票
-const vivid=["#FF3B30","#FF9500","#FFCC00","#34C759","#00C7BE","#007AFF","#5856D6","#FF2D55","#8E8E93"];
-const pastel=["#FFB3BA","#FFD6A5","#FFF3B0","#C8E6C9","#B2EBF2","#B3E5FC","#D1C4E9","#F8BBD0","#E0E0E0"];
-const morandi=["#D6A6A6","#D9B08C","#E6D3A3","#A8C3A0","#9EC1CF","#8EA6C9","#B5A6D6","#D6A6C1","#C4C4C4"];
-
-[vivid,pastel,morandi].forEach(group=>{
-  group.forEach(c=>{
-    const div=document.createElement("div");
-    div.className="color";
-    div.style.background=c;
-    div.onclick=()=>{bgInput.value=c;draw();}
-    colorPalette.appendChild(div);
-  });
-});
-
-// ✅ Emoji（大量）
-const emojis=[
-"🎧","🎵","🎶","🎤","🎸","🥁","🎹","🎼",
-"🏋️","🧘","🏃","🚴","⚽","🏀","🏊","🏸",
-"🍔","🍟","🍕","🍣","🍩","🍰","☕","🧋",
-"🍜","🍱","🥗","🍓","🍇","🍉",
-"📚","💻","📱","🎮","🎨","📸","✈️","🚗",
-"🔥","✨","⭐","❤️","💛","💚","💙","💜",
-"🐶","🐱","🐼","🦊","🐰","🐻"
-];
-
-emojis.forEach(e=>{
+// emoji
+["🎧","🎵","🎸","🏋️","🧘","🏃","⚽","🍔","🍣","☕"].forEach(e=>{
   const d=document.createElement("div");
   d.className="emoji";
   d.innerText=e;
-  d.onclick=()=>{textInput.value+=e;draw();}
+  d.onclick=()=>{emojiText.value+=e;draw();}
   emojiPanel.appendChild(d);
 });
 
 // 顏文字
-["ദ്ദി ˉ꒳ˉ )✧","( ‘• ω • `)","ฅ^•ﻌ•^ฅ","(づ•ᴗ•)づᯓ🍕","꒰ ⩌ᴥ⩌ ꒱","(⑉･̆༥･̆⑉)"]
+["ദ്ദി ˉ꒳ˉ )✧","( ‘• ω • `)","ฅ^•ﻌ•^ฅ","(づ•ᴗ•)づᯓ🍕"]
 .forEach(k=>{
   const d=document.createElement("div");
   d.className="emoji";
@@ -244,20 +235,12 @@ img.src=ev.target.result;
 reader.readAsDataURL(e.target.files[0]);
 };
 
-// 監聽
-[textInput,kaomojiInput,logoTextInput,sizeText,sizeEmoji,sizeKao,sizeLogo,bgInput,textColorInput]
-.forEach(el=>el.addEventListener("input",draw));
+// 監聽（保留 + 新增）
+document.querySelectorAll("input").forEach(el=>el.addEventListener("input",draw));
 
 // 畫圖
 function draw(){
 ctx.clearRect(0,0,512,512);
-
-if(shape==="circle"){
-ctx.save();
-ctx.beginPath();
-ctx.arc(256,256,256,0,Math.PI*2);
-ctx.clip();
-}
 
 ctx.fillStyle=bgInput.value;
 ctx.fillRect(0,0,512,512);
@@ -273,12 +256,18 @@ ctx.fillText(textInput.value||"哈囉",256,256);
 
 if(currentTab===1){
 ctx.font=`bold ${sizeEmoji.value}px sans-serif`;
-ctx.fillText(textInput.value||"🎧",256,256);
+ctx.fillText(emojiText.value||"🎧",256,200);
+
+ctx.font=`bold ${sizeEmojiText.value}px sans-serif`;
+ctx.fillText(emojiText.value||"",256,350);
 }
 
 if(currentTab===2){
 ctx.font=`bold ${sizeKao.value}px sans-serif`;
-ctx.fillText(kaomojiInput.value||"ദ്ദി ˉ꒳ˉ )✧",256,256);
+ctx.fillText(kaomojiInput.value||"(＾▽＾)",256,200);
+
+ctx.font=`bold ${sizeKaoText.value}px sans-serif`;
+ctx.fillText(kaoText.value||"",256,350);
 }
 
 if(currentTab===3){
@@ -286,11 +275,9 @@ if(loaded){
 let s=parseFloat(sizeLogo.value);
 ctx.drawImage(img,(512-512*s)/2,(512-512*s)/2,512*s,512*s);
 }
-ctx.font="bold 80px sans-serif";
+ctx.font=`bold ${sizeLogoText.value}px sans-serif`;
 ctx.fillText(logoTextInput.value||"",256,256);
 }
-
-if(shape==="circle") ctx.restore();
 }
 
 function download(){
@@ -301,9 +288,7 @@ a.click();
 }
 
 function resetAll(){
-textInput.value="";
-kaomojiInput.value="";
-logoTextInput.value="";
+document.querySelectorAll("input").forEach(i=>i.value="");
 img.src="";
 loaded=false;
 draw();
