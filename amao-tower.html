@@ -3,59 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>阿毛之塔：極致萬物版</title>
+    <title>阿毛之塔：萬味覺醒</title>
     <style>
-        :root { --gold: #f1c40f; --blue: #3498db; --bg: #0a0a12; --card-bg: #1a1a2e; --rare: #ff4500; --green: #2ecc71; }
-        body { margin:0; font-family: "PingFang TC", sans-serif; background: var(--bg); color: #fff; user-select: none; overflow-x: hidden; }
-
-        /* UI 框架 */
+        :root { --gold: #f1c40f; --blue: #3498db; --bg: #0a0a12; --card-bg: #1a1a2e; --rare: #ff4500; }
+        body { margin:0; font-family: "PingFang TC", sans-serif; background: var(--bg); color: #fff; user-select: none; }
         .header { padding: 20px 0; text-align: center; background: #000; border-bottom: 3px solid var(--gold); }
         .main-title { font-size: 2rem; font-weight: 900; text-shadow: 0 0 10px var(--gold); margin: 0; }
         #currentTitle { color: var(--gold); font-size: 13px; margin-top: 5px; background: rgba(255,255,255,0.1); padding: 2px 10px; border-radius: 10px; }
-
         .status-panel { background: rgba(255,255,255,0.05); padding: 10px; text-align: center; display: flex; justify-content: space-around; font-size: 14px; border-bottom: 1px solid #333; }
-        .val { color: var(--gold); font-weight: bold; }
-
-        /* 冒險區域 */
-        .adventure-zone { height: 350px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; }
-        #eventMsg { font-size: 0.95rem; color: #fff; margin-bottom: 15px; text-align: center; padding: 0 15px; height: 4em; display: flex; align-items: center; }
-
-        .stage { display: flex; justify-content: center; gap: 5px; width: 100%; min-height: 160px; }
+        .adventure-zone { height: 350px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #eventMsg { font-size: 1rem; color: #fff; margin-bottom: 15px; text-align: center; padding: 0 15px; height: 4em; display: flex; align-items: center; justify-content: center; }
+        .stage { display: flex; justify-content: center; gap: 8px; width: 100%; min-height: 160px; }
         .card { 
-            width: 95px; height: 140px; background: var(--card-bg); border: 2px solid #444; border-radius: 10px; 
-            display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 5px; box-sizing: border-box;
+            width: 100px; height: 150px; background: var(--card-bg); border: 2px solid #444; border-radius: 12px; 
+            display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 8px; box-sizing: border-box;
         }
         .card.reveal { display: flex; animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-        @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
-        .card .emoji { font-size: 35px; margin-bottom: 5px; }
-        .card .name { font-size: 10px; font-weight: bold; overflow: hidden; }
-
-        /* 骰子與按鈕 */
-        .controls { text-align: center; padding: 15px 0; background: rgba(0,0,0,0.3); }
-        .dice { width: 65px; height: 65px; background: #fff; color: #000; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; font-size: 30px; cursor: pointer; box-shadow: 0 5px 0 #bbb; }
-        .dice.gm-mode { background: var(--rare); color: #fff; box-shadow: 0 5px 0 #900; }
-        .rolling { animation: roll 0.1s infinite; }
-        @keyframes roll { 0% { transform: rotate(0); } 100% { transform: rotate(360deg); } }
-
-        /* 背包與商店導覽 */
-        .nav-btns { position: fixed; right: 15px; bottom: 15px; display: flex; flex-direction: column; gap: 10px; }
-        .circle-btn { width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; border: 2px solid var(--gold); background: #222; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-
-        /* 彈窗系統 */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 1000; padding: 20px; box-sizing: border-box; overflow-y: auto; }
-        .tab-bar { display: flex; gap: 10px; margin-bottom: 15px; border-bottom: 1px solid #444; padding-bottom: 10px; }
-        .tab { padding: 5px 15px; cursor: pointer; border-radius: 5px; font-size: 14px; }
+        @keyframes pop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .card .emoji { font-size: 40px; margin-bottom: 8px; }
+        .card .name { font-size: 11px; font-weight: bold; line-height: 1.2; }
+        .rarity-food { border-color: var(--blue); }
+        .rarity-title { border-color: var(--gold); }
+        .rarity-empty { border-color: #333; color: #666; }
+        .controls { text-align: center; padding: 20px; }
+        .dice { width: 70px; height: 70px; background: #fff; color: #000; border-radius: 15px; display: inline-flex; align-items: center; justify-content: center; font-size: 35px; cursor: pointer; box-shadow: 0 5px 0 #bbb; }
+        .rolling { animation: shake 0.1s infinite; }
+        @keyframes shake { 0% { transform: rotate(5deg); } 100% { transform: rotate(-5deg); } }
+        .nav-btns { position: fixed; right: 20px; bottom: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .circle-btn { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer; border: 2px solid var(--gold); background: #222; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 1000; padding: 20px; box-sizing: border-box; }
+        .tab-bar { display: flex; gap: 10px; margin-bottom: 15px; }
+        .tab { padding: 8px 15px; cursor: pointer; border-radius: 5px; font-size: 14px; background: #333; }
         .tab.active { background: var(--gold); color: #000; }
-        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .item-box { background: #1a1a2e; padding: 8px; border-radius: 8px; text-align: center; border: 1px solid #333; font-size: 10px; }
-        .sell-btn { background: var(--green); color: #fff; border: none; padding: 2px 5px; border-radius: 3px; margin-top: 5px; cursor: pointer; }
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; overflow-y: auto; max-height: 70vh; }
+        .item-box { background: #1a1a2e; padding: 10px; border-radius: 10px; text-align: center; border: 1px solid #333; font-size: 11px; }
     </style>
 </head>
 <body>
 
 <div class="header">
     <h1 class="main-title">阿毛之塔</h1>
-    <div id="currentTitle">📜 冒險初心者</div>
+    <div id="currentTitle">📜 飢餓的冒險者</div>
 </div>
 
 <div class="status-panel">
@@ -65,169 +53,137 @@
 </div>
 
 <div class="adventure-zone">
-    <div id="eventMsg">擲骰子開始漫長的 9999 層挑戰！</div>
+    <div id="eventMsg">投擲骰子，開啟萬味冒險！</div>
     <div class="stage" id="stage"></div>
 </div>
 
 <div class="controls">
     <div id="dice" class="dice" onclick="rollDice()">🎲</div>
     <div style="margin-top:10px;">
-        <input type="text" id="gmCode" placeholder="兌換碼..." style="background:#111; border:1px solid #444; color:#fff; padding:5px; border-radius:5px; width:80px;">
-        <button onclick="applyGM()" style="padding:5px 10px; background:#333; color:#fff; border:none; border-radius:5px;">套用</button>
+        <input type="text" id="gmCode" placeholder="GM 密語" style="padding:5px; border-radius:5px; width:100px;">
+        <button onclick="applyGM()">套用</button>
     </div>
 </div>
 
 <div class="nav-btns">
-    <div class="circle-btn" onclick="openStore()">🏪</div>
     <div class="circle-btn" onclick="openInv()">🎒</div>
 </div>
 
 <div id="invModal" class="modal">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h2 style="color:var(--gold)">我的背包</h2>
-        <button onclick="closeModal('invModal')" style="padding:5px 15px; background:var(--gold); border:none; border-radius:5px;">關閉</button>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+        <h2 style="color:var(--gold)">冒險背包</h2>
+        <button onclick="closeModal()" style="padding:5px 15px;">關閉</button>
     </div>
     <div class="tab-bar">
-        <div class="tab active" onclick="switchTab('food')">美食</div>
-        <div class="tab" onclick="switchTab('stuff')">雜物</div>
-        <div class="tab" onclick="switchTab('title')">稱號</div>
+        <div id="tab-food" class="tab active" onclick="switchTab('food')">美食</div>
+        <div id="tab-stuff" class="tab" onclick="switchTab('stuff')">日常</div>
+        <div id="tab-title" class="tab" onclick="switchTab('title')">稱號</div>
     </div>
     <div id="invGrid" class="grid"></div>
 </div>
 
-<div id="storeModal" class="modal">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h2 style="color:var(--green)">阿毛神祕商店</h2>
-        <button onclick="closeModal('storeModal')" style="padding:5px 15px; background:var(--green); border:none; border-radius:5px;">離開</button>
-    </div>
-    <p style="color:#888; font-size:12px;">塔內商人阿毛：嘿！有錢好辦事！</p>
-    <div id="storeGrid" class="grid"></div>
-</div>
-
 <script>
-// --- 資料庫 ---
-const DB = {
-    food: {
-        prefix: ["泰式","日式","法式","鮮茶道式","茶88風格","阿毛特製","酥脆的","爆汁的","沒洗澡的"],
-        main: ["伯爵紅茶","藍莓果茶","阿里山冰茶","珍珠奶茶","招牌咖啡","和牛排","馬鈴薯","史萊姆果凍","炸蝦","冬瓜青茶"],
-        suffix: ["佐靈魂香氣","搭配秘密醬汁","拌入金箔","加了太多糖","放在破碗裡"]
-    },
-    stuff: [
-        {n:"阿毛的掃把", i:"🧹", v:50}, {n:"臭襪子", i:"🧦", v:1}, {n:"公園散步券", i:"🎟️", v:100},
-        {n:"到火星的機票", i:"✈️", v:5000}, {n:"沒水的原子筆", i:"🖊️", v:2}, {n:"破掉的帽子", i:"👒", v:5},
-        {n:"阿毛的私房寫真集", i:"📚", v:9999}, {n:"過期的電影票", i:"🎬", v:10}
-    ],
-    titles: {
-        pfx: ["傳說中","路過的","飢餓的","萬年單身","超級頂級","阿毛認可的"],
-        sfx: ["吃貨","鑑定師","邊緣人","外送大師","破壞神","清潔工"]
-    },
-    enemies: ["偷襲的黑粉","飢餓的胖虎","塔內收稅員","迷路的阿毛分身"]
+// --- 美食引擎資料庫 ---
+const FOOD_PARTS = {
+    methods: ["泰式","日式","鮮茶道式","阿毛特製","酥脆的","爆汁的","火烤的","剛出爐的","淋上金箔的","來自天堂的"],
+    mains: ["伯爵紅茶","藍莓果茶","招牌咖啡","阿里山冰茶","珍珠奶茶","馬鈴薯","和牛","史萊姆果凍","炸蝦","冬瓜青茶","特大號雞排"],
+    extras: ["佐靈魂香氣","配上秘密醬汁","拌入秘製紅油","灑滿了金粉","附贈特製酸菜","配上阿毛的愛"]
+};
+
+const STUFF_DB = [
+    {n:"阿毛的掃把", i:"🧹"}, {n:"臭襪子", i:"🧦"}, {n:"公園散步券", i:"🎟️"},
+    {n:"到火星的機票", i:"✈️"}, {n:"阿毛寫真集", i:"📚"}, {n:"破掉的帽子", i:"👒"}
+];
+
+const TITLE_PARTS = {
+    pfx: ["傳說中","路過的","飢餓的","萬年單身","超級頂級","閃光的"],
+    sfx: ["吃貨","鑑定師","外送大師","教主","史萊姆","破壞神"]
 };
 
 let state = {
-    nrg: 60, lvl: 0, gold: 0, inv: [], equipped: "📜 冒險初心者",
-    lastUpd: Date.now(), currentTab: 'food', gm: false
+    nrg: 60, lvl: 0, gold: 0, inv: [], equipped: "📜 飢餓的冒險者",
+    lastUpd: Date.now(), currentTab: 'food'
 };
 
-// --- 初始化與存檔 ---
-function save() { localStorage.setItem('amao_tower_v99', JSON.stringify(state)); }
+function save() { localStorage.setItem('amao_v_god', JSON.stringify(state)); }
 function load() {
-    const d = localStorage.getItem('amao_tower_v99');
-    if(d) {
-        state = JSON.parse(d);
-        if(!state.gm) {
-            let pass = Math.floor((Date.now() - state.lastUpd)/300000); // 5分回1點
-            state.nrg = Math.min(60, state.nrg + pass);
-        }
-    }
+    const d = localStorage.getItem('amao_v_god');
+    if(d) state = JSON.parse(d);
     updateUI();
 }
 
 function updateUI() {
     document.getElementById('lvl').innerText = state.lvl;
-    document.getElementById('nrg').innerText = state.gm ? "∞" : state.nrg;
+    document.getElementById('nrg').innerText = state.nrg;
     document.getElementById('gold').innerText = state.gold;
     document.getElementById('currentTitle').innerText = state.equipped;
 }
 
-// --- GM 模式 ---
-function applyGM() {
-    const code = document.getElementById('gmCode').value;
-    if(code === "製作人是我") {
-        state.gm = true;
-        document.getElementById('dice').classList.add('gm-mode');
-        alert("🛡️ GM 模式啟動：體力無限、無敵神骰！");
-    } else {
-        alert("密語錯誤，阿毛不理你。");
-    }
-    save(); updateUI();
-}
-
-// --- 核心邏輯 ---
 function rollDice() {
-    if(!state.gm && state.nrg <= 0) return alert("沒體力了，去塔外睡一下吧。");
+    if(state.nrg <= 0) return alert("沒體力了！");
     const d = document.getElementById('dice');
     d.classList.add('rolling');
-    if(!state.gm) state.nrg--;
+    state.nrg--;
     
     setTimeout(() => {
         d.classList.remove('rolling');
-        let step = state.gm ? 100 : Math.floor(Math.random()*6)+1;
+        let step = Math.floor(Math.random()*6)+1;
         d.innerText = step;
         state.lvl += step;
-        
-        if(state.lvl >= 9999) return triggerEnding();
-        
         handleEvent(step);
-        state.lastUpd = Date.now();
         save(); updateUI();
-    }, 600);
+    }, 500);
 }
 
 function handleEvent(step) {
     const stage = document.getElementById('stage');
     const msg = document.getElementById('eventMsg');
     stage.innerHTML = "";
-    const rand = Math.random();
-
-    if(rand < 0.15) { // 遇到壞人
-        const enemy = DB.enemies[Math.floor(Math.random()*DB.enemies.length)];
-        const weapon = state.inv.length > 0 ? state.inv[Math.floor(Math.random()*state.inv.length)] : {n:"自己的拳頭", i:"👊"};
-        msg.innerHTML = `⚔️ 遇到<b>${enemy}</b>！<br>阿毛掏出背包裡的【${weapon.i}${weapon.n}】一頓亂打，戰勝了敵人！獲得 20 金幣！`;
-        state.gold += 20;
-    } else if (rand < 0.7) { // 獲得寶箱
-        msg.innerText = `🎁 在第 ${state.lvl} 層發現了寶箱！`;
+    
+    // 80% 機率有寶箱，20% 遇到壞人
+    if(Math.random() > 0.2) {
+        msg.innerHTML = `🎁 發現寶箱！正在打開第 ${state.lvl} 層的驚喜...`;
         for(let i=0; i<3; i++) {
-            let item = generateAny();
-            state.inv.push(item);
-            let c = document.createElement('div');
-            c.className = "card reveal";
-            c.innerHTML = `<div class="emoji">${item.i}</div><div class="name">${item.n}</div>`;
-            stage.appendChild(c);
+            let item = generateItem();
+            if(item) state.inv.push(item);
+            
+            let card = document.createElement('div');
+            card.className = `card reveal ${item ? (item.type === 'food' ? 'rarity-food' : (item.type === 'title' ? 'rarity-title' : '')) : 'rarity-empty'}`;
+            card.innerHTML = item ? `<div class="emoji">${item.i}</div><div class="name">${item.n}</div>` : `<div class="emoji">💨</div><div class="name">空的包裝袋</div>`;
+            stage.appendChild(card);
         }
     } else {
-        msg.innerText = `🚶 爬了 ${step} 層，這層只有風聲跟阿毛的哈欠聲。`;
+        msg.innerHTML = `⚔️ 遇到壞人偷襲！<br>阿毛掏出隨身物品亂打，嚇跑了對方！獲得 30 金幣！`;
+        state.gold += 30;
     }
 }
 
-function generateAny() {
+function generateItem() {
     const r = Math.random();
+    if(r < 0.15) return null; // 15% 機率是空的
     if(r < 0.6) { // 美食
-        const m = DB.food.method[Math.floor(Math.random()*DB.food.method.length)];
-        const i = DB.food.main[Math.floor(Math.random()*DB.food.main.length)];
-        const s = DB.food.suffix[Math.floor(Math.random()*DB.food.suffix.length)];
-        return {n: m+i+s, i: "🍱", type: "food", v: 10};
-    } else if(r < 0.9) { // 雜物
-        let it = DB.stuff[Math.floor(Math.random()*DB.stuff.length)];
-        return {...it, type: "stuff"};
+        const m = FOOD_PARTS.methods[Math.floor(Math.random()*FOOD_PARTS.methods.length)];
+        const main = FOOD_PARTS.mains[Math.floor(Math.random()*FOOD_PARTS.mains.length)];
+        const e = FOOD_PARTS.extras[Math.floor(Math.random()*FOOD_PARTS.extras.length)];
+        return {n: m+main+e, i: "🍱", type: "food", v: 10};
+    } else if (r < 0.85) { // 雜物
+        let s = STUFF_DB[Math.floor(Math.random()*STUFF_DB.length)];
+        return {...s, type: "stuff", v: 5};
     } else { // 稱號
-        const p = DB.titles.pfx[Math.floor(Math.random()*DB.titles.pfx.length)];
-        const s = DB.titles.sfx[Math.floor(Math.random()*DB.titles.sfx.length)];
+        const p = TITLE_PARTS.pfx[Math.floor(Math.random()*TITLE_PARTS.pfx.length)];
+        const s = TITLE_PARTS.sfx[Math.floor(Math.random()*TITLE_PARTS.sfx.length)];
         return {n: p+s, i: "✨", type: "title", v: 100};
     }
 }
 
-// --- 背包功能 ---
+function applyGM() {
+    if(document.getElementById('gmCode').value === "製作人是我") {
+        state.nrg = 9999;
+        alert("GM 模式：能量已滿！");
+        save(); updateUI();
+    }
+}
+
 function openInv() {
     document.getElementById('invModal').style.display = 'block';
     switchTab(state.currentTab);
@@ -235,75 +191,21 @@ function openInv() {
 
 function switchTab(t) {
     state.currentTab = t;
-    const tabs = document.querySelectorAll('.tab');
-    tabs.forEach(tab => tab.classList.remove('active'));
-    event?.target?.classList?.add('active');
-
+    document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-'+t).classList.add('active');
+    
     const grid = document.getElementById('invGrid');
     grid.innerHTML = "";
-    state.inv.filter(x => x.type === t).forEach((item, index) => {
+    state.inv.filter(x => x.type === t).forEach(item => {
         let box = document.createElement('div');
         box.className = "item-box";
-        if(state.equipped.includes(item.n)) box.classList.add('equipped');
-        box.innerHTML = `<div style="font-size:20px">${item.i}</div>${item.n}<br>
-            <button class="sell-btn" onclick="sellItem('${item.n}', ${item.v})">賣 $${item.v}</button>`;
+        box.innerHTML = `<div style="font-size:24px">${item.i}</div>${item.n}`;
         if(t === 'title') box.onclick = () => { state.equipped = "📜 " + item.n; save(); updateUI(); openInv(); };
         grid.appendChild(box);
     });
 }
 
-function sellItem(name, price) {
-    const idx = state.inv.findIndex(x => x.n === name);
-    if(idx > -1) {
-        state.inv.splice(idx, 1);
-        state.gold += price;
-        save(); updateUI(); switchTab(state.currentTab);
-    }
-}
-
-// --- 商店功能 ---
-const storeItems = [
-    {n:"阿毛的無敵星", i:"⭐", v:500, d:"使用後一小時內爬樓層翻倍"},
-    {n:"超級捕蟲網", i:"🕸️", v:200, d:"大幅增加遇到寶箱的機率"},
-    {n:"塔內神祕傳送卷", i:"🌀", v:1000, d:"直接隨機跳 50~100 層"}
-];
-
-function openStore() {
-    document.getElementById('storeModal').style.display = 'block';
-    const grid = document.getElementById('storeGrid');
-    grid.innerHTML = "";
-    storeItems.forEach(it => {
-        grid.innerHTML += `<div class="item-box">
-            <div style="font-size:24px">${it.i}</div><b>${it.n}</b><br><small>${it.d}</small><br>
-            <button class="sell-btn" onclick="buyStore('${it.n}', ${it.v})">買 $${it.v}</button>
-        </div>`;
-    });
-}
-
-function buyStore(n, v) {
-    if(state.gold >= v) {
-        state.gold -= v;
-        alert(`成功購買 ${n}！(目前道具功能開發中，阿毛先幫你保管)`);
-        save(); updateUI();
-    } else {
-        alert("錢不夠啦！去賣掉一些臭襪子好嗎？");
-    }
-}
-
-function triggerEnding() {
-    document.body.innerHTML = `
-        <div style="padding:50px; text-align:center;">
-            <h1 style="font-size:4rem; color:var(--gold);">恭喜通關！</h1>
-            <p style="font-size:1.5rem;">你竟然爬完了 9999 層...</p>
-            <div style="font-size:100px;">👑</div>
-            <p>阿毛在終點送你一句話：<br><b>「樓梯很長，但你抽到的飯糰更香。」</b></p>
-            <button onclick="location.reload()" style="padding:15px 30px; background:var(--gold); border:none; border-radius:10px; font-weight:bold;">重新攀登</button>
-        </div>
-    `;
-    localStorage.removeItem('amao_tower_v99');
-}
-
-function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+function closeModal() { document.getElementById('invModal').style.display = 'none'; }
 window.onload = load;
 </script>
 </body>
