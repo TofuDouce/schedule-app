@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>阿毛之塔 - 好食光</title>
+    <style>
+        :root { --gold: #f1c40f; --blue: #3498db; --bg: #0a0a12; --card-bg: #1a1a2e; --rare: #ff4500; }
+        body { margin:0; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; background: var(--bg); color: #fff; user-select: none; overflow-x: hidden; touch-action: manipulation; }
+
+        /* 頂部區域 */
+        .header { padding: 25px 0; text-align: center; background: #000; border-bottom: 3px solid var(--gold); box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .main-title { font-size: 2.5rem; font-weight: 900; text-shadow: 0 0 15px var(--gold); margin: 0; letter-spacing: 5px; }
+        #currentTitle { color: var(--gold); font-size: 14px; margin-top: 8px; font-weight: bold; background: rgba(255,255,255,0.1); display: inline-block; padding: 4px 15px; border-radius: 20px; border: 1px solid rgba(241,196,15,0.3); }
+
+        /* 狀態面板 */
+        .status-panel { background: rgba(255,255,255,0.05); padding: 15px; text-align: center; border-bottom: 1px solid #333; }
+        .energy-bar-bg { width: 75%; height: 12px; background: #222; margin: 10px auto; border-radius: 6px; overflow: hidden; border: 1px solid #444; }
+        #energyFill { width: 100%; height: 100%; background: linear-gradient(90deg, #f1c40f, #e67e22); transition: 0.5s; }
+        .stats-text { font-size: 14px; color: #aaa; margin-top: 5px; font-weight: bold; }
+
+        /* 冒險區 */
+        .adventure-zone { height: 320px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+        #eventMsg { font-size: 1.1rem; color: #fff; margin-bottom: 20px; text-align: center; padding: 0 20px; height: 3em; display: flex; align-items: center; justify-content: center; text-shadow: 0 2px 5px #000; }
+
+        /* 卡片系統 */
+        .stage { display: flex; justify-content: center; gap: 8px; width: 100%; min-height: 160px; }
+        .card { 
+            width: 105px; height: 155px; background: var(--card-bg); border: 2px solid #444; border-radius: 12px; 
+            display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+            padding: 8px; box-sizing: border-box; box-shadow: 0 8px 15px rgba(0,0,0,0.5); position: relative;
+        }
+        .card.reveal { display: flex; animation: cardPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes cardPop { from { transform: scale(0) rotate(-10deg); opacity: 0; } to { transform: scale(1) rotate(0deg); opacity: 1; } }
+        
+        .card .emoji { font-size: 42px; margin-bottom: 10px; filter: drop-shadow(0 0 5px rgba(255,255,255,0.2)); }
+        .card .name { font-size: 11px; font-weight: bold; line-height: 1.3; color: #eee; }
+
+        /* 稀有度樣式 */
+        .rarity-food { border-color: var(--blue); }
+        .rarity-title { border-color: var(--gold); }
+        .rarity-super { border-color: var(--rare); animation: glow 0.8s infinite alternate; }
+        @keyframes glow { from { box-shadow: 0 0 5px var(--rare); border-color: #ff0000; } to { box-shadow: 0 0 20px var(--rare); border-color: #ffaa00; } }
+
+        /* 骰子區 */
+        .dice-zone { text-align: center; padding: 25px 0; background: rgba(0,0,0,0.2); }
+        .dice { 
+            width: 80px; height: 80px; background: #fff; color: #000; border-radius: 15px; 
+            display: inline-flex; align-items: center; justify-content: center; font-size: 40px;
+            cursor: pointer; box-shadow: 0 6px 0 #bbb, 0 8px 20px rgba(0,0,0,0.4); transition: 0.1s;
+        }
+        .dice:active { transform: translateY(4px); box-shadow: 0 2px 0 #bbb; }
+        .rolling { animation: shake 0.1s infinite; }
+        @keyframes shake { 0% { transform: translate(2px, 2px) rotate(0deg); } 50% { transform: translate(-2px, -2px) rotate(5deg); } 100% { transform: translate(2px, -2px) rotate(-5deg); } }
+
+        /* 背包按鈕 */
+        .inv-btn { position: fixed; right: 25px; bottom: 25px; width: 65px; height: 65px; background: #222; border: 3px solid var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; cursor: pointer; z-index: 100; box-shadow: 0 5px 20px rgba(0,0,0,0.6); }
+
+        /* 背包彈窗 */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; padding: 20px; box-sizing: border-box; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; overflow-y: auto; max-height: 75vh; padding-bottom: 40px; }
+        .inv-item { background: #1a1a2e; padding: 12px 8px; border-radius: 12px; font-size: 10px; border: 1px solid #333; text-align: center; position: relative; }
+        .inv-item.equipped { border: 2px solid var(--gold); background: #2a2a4e; box-shadow: 0 0 10px rgba(241,196,15,0.4); }
+        .inv-item.is-title { cursor: pointer; }
+        
+        .close-btn { background: var(--gold); border: none; padding: 10px 20px; border-radius: 10px; font-weight: 900; font-size: 16px; color: #000; }
+
+        /* 序號輸入 */
+        .promo-box { margin-top: 15px; opacity: 0.6; }
+        .promo-box input { background: #111; border: 1px solid #444; color: var(--gold); padding: 5px; border-radius: 5px; width: 120px; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1 class="main-title">《阿毛之塔》</h1>
+    <div id="currentTitle">📜 飢餓的冒險者</div>
+</div>
+
+<div class="status-panel">
+    <div style="font-size: 20px; font-weight: 900; color: var(--gold); letter-spacing: 2px;">🏰 第 <span id="levelText">0</span> 層 / 999</div>
+    <div class="stats-text">⚡ 能量: <span id="energyText">60</span> / 60 <span id="recoveryTimer" style="color:var(--blue)"></span></div>
+    <div class="energy-bar-bg"><div id="energyFill"></div></div>
+</div>
+
+<div class="adventure-zone">
+    <div id="eventMsg">準備好了嗎？擲骰子開啟美食冒險！</div>
+    <div class="stage" id="stage"></div>
+</div>
+
+<div class="dice-zone">
+    <div id="dice" class="dice" onclick="rollDice()">🎲</div>
+    <div class="promo-box">
+        <input type="text" id="promoCode" placeholder="遠古密語">
+        <button onclick="checkPromo()" style="background:#333; color:#fff; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">啟動</button>
+    </div>
+</div>
+
+<div class="inv-btn" onclick="openInv()">🎒</div>
+
+<div id="invModal" class="modal">
+    <div class="modal-header">
+        <h2 style="color:var(--gold); margin:0;">🍱 萬味珍藏庫</h2>
+        <button class="close-btn" onclick="closeInv()">返回</button>
+    </div>
+    <p style="color:#888; font-size:12px; margin-top:0;">點擊稱號即可穿戴，美食會永遠留存</p>
+    <div class="grid" id="invGrid"></div>
+</div>
+
+<script>
+// --- 核心狀態 (存檔用) ---
+const MAX_ENERGY = 60;
+const RECOVER_SEC = 300; // 5分鐘回1點
+
+let state = {
+    energy: MAX_ENERGY,
+    level: 0,
+    inventory: [],
+    equipped: "📜 飢餓的冒險者",
+    lastUpdate: Date.now()
+};
+
+// --- 萬味引擎資料庫 ---
+const foodParts = {
+    method: ["爆汁的", "發光的", "剛出爐的", "被神祝福的", "阿毛手作的", "淋上金箔的", "極致酥脆的", "充滿罪惡感的", "來自天堂的", "隔夜更好吃的", "被詛咒的", "閃閃發亮的", "阿毛咬過一口的"],
+    main: ["馬鈴薯", "和牛", "阿毛豆腐", "神秘雞排", "流星拉麵", "深淵烤魚", "公會飯糰", "幻象披薩", "靈魂壽司", "史萊姆果凍", "黃金蛋炒飯", "魔力磨菇", "藍莓鬆餅"],
+    extra: ["佐深淵醬汁", "配上靈魂香氣", "附贈神秘小黃瓜", "灑滿了金粉", "拌入秘製紅油", "放在阿毛的碗裡", "帶著一點汗水", "與特製酸菜", "淋上煉乳", "加了太多胡椒粉", "搭配阿毛的愛"],
+    icons: ["🍙", "🍜", "🍕", "🍤", "🍣", "🍱", "🍔", "🥩", "🍲", "🥞", "🍡", "🥘", "🍦", "🍩"]
+};
+
+const titleParts = {
+    pfx: ["傳說的", "路過的", "進擊的", "卑微的", "閃光的", "沒洗澡的", "最頂的", "爆食的", "深淵的"],
+    sfx: ["吃貨", "冒險家", "鑑定師", "外送員", "史萊姆", "破壞神", "教主", "守門員"]
+};
+
+// --- 系統功能 ---
+function save() {
+    state.lastUpdate = Date.now();
+    localStorage.setItem('amao_tower_final', JSON.stringify(state));
+}
+
+function load() {
+    const data = localStorage.getItem('amao_tower_final');
+    if(data) {
+        state = JSON.parse(data);
+        const passed = Math.floor((Date.now() - state.lastUpdate) / 1000);
+        const recover = Math.floor(passed / RECOVER_SEC);
+        if(recover > 0) {
+            state.energy = Math.min(MAX_ENERGY, state.energy + recover);
+            state.lastUpdate = Date.now();
+        }
+    }
+    updateUI();
+}
+
+function updateUI() {
+    document.getElementById("energyText").innerText = state.energy;
+    document.getElementById("levelText").innerText = state.level;
+    document.getElementById("energyFill").style.width = (state.energy/MAX_ENERGY*100) + "%";
+    document.getElementById("currentTitle").innerText = state.equipped;
+}
+
+// --- 遊戲邏輯 ---
+function rollDice() {
+    if(state.energy <= 0) {
+        alert("能量耗盡！請休息一下，或輸入 888 密語。");
+        return;
+    }
+    const diceEl = document.getElementById("dice");
+    if(diceEl.classList.contains("rolling")) return;
+
+    diceEl.classList.add("rolling");
+    state.energy--;
+    save();
+    updateUI();
+
+    setTimeout(() => {
+        diceEl.classList.remove("rolling");
+        const step = Math.floor(Math.random() * 6) + 1;
+        diceEl.innerText = step;
+        state.level = Math.min(999, state.level + step);
+        handleEvent(step);
+        save();
+        updateUI();
+    }, 600);
+}
+
+function generateFood() {
+    const m = foodParts.method[Math.floor(Math.random()*foodParts.method.length)];
+    const i = foodParts.main[Math.floor(Math.random()*foodParts.main.length)];
+    const e = foodParts.extra[Math.floor(Math.random()*foodParts.extra.length)];
+    const icon = foodParts.icons[Math.floor(Math.random()*foodParts.icons.length)];
+    const name = m + i + e;
+    const isSuper = name.includes("金箔") || name.includes("祝福") || name.includes("天堂");
+    return { n: name, i: icon, type: "food", rare: isSuper };
+}
+
+function generateTitle() {
+    const p = titleParts.pfx[Math.floor(Math.random()*titleParts.pfx.length)];
+    const s = titleParts.sfx[Math.floor(Math.random()*titleParts.sfx.length)];
+    return { n: p + s, i: "✨", type: "title", rare: p === "傳說的" || p === "最頂的" };
+}
+
+function handleEvent(step) {
+    const msg = document.getElementById("eventMsg");
+    const stage = document.getElementById("stage");
+    stage.innerHTML = "";
+    
+    if(Math.random() > 0.15) {
+        msg.innerHTML = `🎲 擲出 ${step}！<br>你在第 ${state.level} 層發現了隱藏的美食寶箱！`;
+        for(let i=0; i<3; i++) {
+            const isFood = Math.random() > 0.4 || i === 0;
+            const res = isFood ? generateFood() : generateTitle();
+            const card = document.createElement("div");
+            card.className = `card reveal ${res.type === 'food' ? 'rarity-food' : 'rarity-title'} ${res.rare ? 'rarity-super' : ''}`;
+            card.innerHTML = `<div class="emoji">${res.i}</div><div class="name">${res.n}</div>`;
+            stage.appendChild(card);
+            if(!state.inventory.find(x => x.n === res.n)) state.inventory.push(res);
+        }
+    } else {
+        msg.innerHTML = `🎲 擲出 ${step}！<br>第 ${state.level} 層空空如也，阿毛正在這裡睡覺...`;
+    }
+}
+
+// 能量恢復計時器
+setInterval(() => {
+    if(state.energy < MAX_ENERGY) {
+        const passed = Math.floor((Date.now() - state.lastUpdate) / 1000);
+        if(passed >= RECOVER_SEC) {
+            state.energy++;
+            state.lastUpdate = Date.now();
+            save();
+            updateUI();
+        }
+        document.getElementById("recoveryTimer").innerText = `(${RECOVER_SEC - passed}s)`;
+    } else {
+        document.getElementById("recoveryTimer").innerText = "";
+    }
+}, 1000);
+
+// --- 密語系統 ---
+function checkPromo() {
+    const code = document.getElementById("promoCode").value.toUpperCase();
+    if(code === "AMAO888") {
+        state.energy += 888;
+        alert("💎 神話契約達成！能量暴增 888 點！");
+    } else if(code === "AMAO" + (new Date().getMonth()+1).toString().padStart(2,'0') + new Date().getDate().toString().padStart(2,'0')) {
+        state.energy += 100;
+        alert("🧧 每日福利領取成功！增加 100 點！");
+    } else {
+        alert("❌ 密語無效，塔的深處沒有回應...");
+    }
+    document.getElementById("promoCode").value = "";
+    save();
+    updateUI();
+}
+
+// --- 背包功能 ---
+function openInv() {
+    const grid = document.getElementById("invGrid");
+    grid.innerHTML = "";
+    state.inventory.forEach(item => {
+        const el = document.createElement("div");
+        const isEquipped = state.equipped.includes(item.n);
+        el.className = `inv-item ${isEquipped ? 'equipped' : ''} ${item.type === 'title' ? 'is-title' : ''}`;
+        el.innerHTML = `<div style="font-size:26px">${item.i}</div><div style="margin-top:5px; font-weight:bold;">${item.n}</div>`;
+        if(item.type === "title") {
+            el.onclick = () => {
+                state.equipped = "📜 " + item.n;
+                save();
+                updateUI();
+                openInv();
+            };
+        }
+        grid.appendChild(el);
+    });
+    document.getElementById("invModal").style.display = "block";
+}
+
+function closeInv() { document.getElementById("invModal").style.display = "none"; }
+
+// 啟動
+window.onload = load;
+</script>
+</body>
+</html>
