@@ -11,7 +11,6 @@ body{margin:0;font-family:-apple-system, sans-serif;background:#f3f4f6; padding-
 .header{background: var(--primary); color:#fff; padding:15px; text-align:center; font-weight:bold; font-size:1.2rem;}
 .container{max-width:520px; margin:auto; padding:10px;}
 
-/* 畫布置頂 */
 .canvas-section { position: sticky; top: 0; z-index: 100; background: #f3f4f6; padding: 10px 0; }
 .canvas-container { background:#fff; border-radius:16px; padding:10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 320px; margin: auto; }
 canvas{width:100%; border-radius:12px; background:#eee; aspect-ratio: 1/1; display: block;}
@@ -94,11 +93,13 @@ button{flex:1; padding:12px; border:none; border-radius:10px; font-weight:bold; 
             </div>
 
             <div class="tool-row">
-                <span>文字透明度</span><input type="range" id="textAlpha" min="0" max="100" value="100">
+                <span>文字大小</span><input type="range" id="sizeText" min="10" max="500" value="150">
+                <span>不透明度</span><input type="range" id="textAlpha" min="0" max="100" value="100">
             </div>
 
             <div class="tool-row">
-                <span>文字大小</span><input type="range" id="sizeText" min="10" max="500" value="150">
+                <span>文字X位移</span><input type="range" id="textPosX" min="-256" max="256" value="0">
+                <span>文字Y位移</span><input type="range" id="textPosY" min="-256" max="256" value="0">
             </div>
 
             <div class="tool-row" style="flex-wrap: wrap; gap: 15px;">
@@ -141,8 +142,8 @@ button{flex:1; padding:12px; border:none; border-radius:10px; font-weight:bold; 
                     <label><input type="radio" name="imageMode" value="sticker" onclick="draw()"> 貼圖</label>
                 </div>
                 <div class="tool-row"><span>縮放</span><input type="range" id="sizeLogo" min="10" max="250" value="100"></div>
-                <div class="tool-row"><span>X位移</span><input type="range" id="posX" min="-256" max="256" value="0"></div>
-                <div class="tool-row"><span>Y位移</span><input type="range" id="posY" min="-256" max="256" value="0"></div>
+                <div class="tool-row"><span>圖片X位移</span><input type="range" id="posX" min="-256" max="256" value="0"></div>
+                <div class="tool-row"><span>圖片Y位移</span><input type="range" id="posY" min="-256" max="256" value="0"></div>
                 <input type="file" id="upload" accept="image/*" style="width: 100%; margin-top:5px;">
             </div>
         </div>
@@ -207,7 +208,7 @@ function init() {
         document.getElementById("kaoList").appendChild(d);
     });
 
-    const inputs = ["text","sizeText","textAlpha","sizeEmoji","sizeKao","sizeLogo","posX","posY","bg","textColor","transparentBg","strokeToggle","strokeColor","strokeWidth"];
+    const inputs = ["text","sizeText","textAlpha","textPosX","textPosY","sizeEmoji","sizeKao","sizeLogo","posX","posY","bg","textColor","transparentBg","strokeToggle","strokeColor","strokeWidth"];
     inputs.forEach(id => document.getElementById(id).addEventListener("input", draw));
     draw();
 }
@@ -276,6 +277,8 @@ function draw(){
     let txt = document.getElementById("text").value;
     if(txt){
         let alpha = document.getElementById("textAlpha").value / 100;
+        let tx = parseInt(document.getElementById("textPosX").value);
+        let ty = parseInt(document.getElementById("textPosY").value);
         let textColor = hexToRGBA(document.getElementById("textColor").value, alpha);
         let strokeColor = hexToRGBA(document.getElementById("strokeColor").value, alpha);
 
@@ -286,9 +289,9 @@ function draw(){
         if(document.getElementById("strokeToggle").checked){
             ctx.lineWidth=document.getElementById("strokeWidth").value;
             ctx.strokeStyle=strokeColor;
-            ctx.strokeText(txt, 256, 256);
+            ctx.strokeText(txt, 256 + tx, 256 + ty);
         }
-        ctx.fillText(txt, 256, 256);
+        ctx.fillText(txt, 256 + tx, 256 + ty);
     }
     ctx.restore();
 }
