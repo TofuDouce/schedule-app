@@ -96,7 +96,6 @@ button{flex:1;padding:12px;border:none;border-radius:10px;font-weight:bold;}
 </div>
 
 <script>
-// ===== DOM =====
 const canvas=document.getElementById("canvas");
 const ctx=canvas.getContext("2d");
 
@@ -110,7 +109,6 @@ const uploadInput=document.getElementById("upload");
 const emojiPanel=document.getElementById("emojiPanel");
 const colorPalette=document.getElementById("colorPalette");
 
-// ===== 狀態 =====
 let currentTab=0;
 let shape="square";
 
@@ -122,13 +120,10 @@ let scale=1;
 
 let textX=256,textY=256;
 
-let dragging=false;
-let selected=null;
-
 // 預設文字
 textInput.value="哈囉";
 
-// ===== 分頁 =====
+// 分頁
 document.querySelectorAll("[data-tab]").forEach(tab=>{
 tab.onclick=()=>{
 currentTab=+tab.dataset.tab;
@@ -144,7 +139,7 @@ draw();
 
 function setShape(s){shape=s;draw();}
 
-// ===== 色票 =====
+// 色票
 const colors=[
 "#FF3B30","#FF9500","#FFCC00","#34C759","#00C7BE","#007AFF","#5856D6","#FF2D55","#8E8E93",
 "#FFB3BA","#FFD6A5","#FFF3B0","#C8E6C9","#B2EBF2","#B3E5FC","#D1C4E9","#F8BBD0","#E0E0E0",
@@ -159,14 +154,16 @@ d.onclick=()=>{bgInput.value=c;draw();}
 colorPalette.appendChild(d);
 });
 
-// ===== emoji =====
-const emojis=["😀","😁","😂","🤣","😎","🥺","😍","😘","😜","🤩","🥳","😭",
+// emoji
+const emojis=[
+"😀","😁","😂","🤣","😎","🥺","😍","😘","😜","🤩","🥳","😭",
 "🐶","🐱","🐼","🐸","🦊","🐰",
 "🍎","🍊","🍉","🍇","🍓","🍩",
 "🍔","🍟","🍕","🌸","🌻","🌈",
 "⭐","✨","🔥","❤️","💛","💚",
 "💙","💜","🖤","🤍","🤎","💗",
-"💖","💘","💝","💞","💕","💓"];
+"💖","💘","💝","💞","💕","💓"
+];
 
 emojis.forEach(e=>{
 let d=document.createElement("div");
@@ -176,7 +173,7 @@ d.onclick=()=>{textInput.value+=e;draw();}
 emojiPanel.appendChild(d);
 });
 
-// ===== 上傳 =====
+// 上傳
 uploadInput.onchange=e=>{
 let r=new FileReader();
 r.onload=ev=>{
@@ -186,64 +183,23 @@ img.src=ev.target.result;
 r.readAsDataURL(e.target.files[0]);
 };
 
-// ===== 點擊選取 =====
-canvas.onmousedown=e=>{
-let rect=canvas.getBoundingClientRect();
-let x=e.clientX-rect.left;
-let y=e.clientY-rect.top;
+// ⭐ 修正：文字大小拉桿
+sizeInput.oninput=()=>{draw();};
 
-let imgSize=512*scale;
-
-if(currentTab===3 && loaded &&
-x>=imgX && x<=imgX+imgSize &&
-y>=imgY && y<=imgY+imgSize){
-selected="img";
-dragging=true;
-return;
-}
-
-let textWidth=ctx.measureText(textInput.value||"哈囉").width;
-
-if(x>=textX-textWidth/2 &&
-x<=textX+textWidth/2 &&
-y>=textY-50 &&
-y<=textY+50){
-selected="text";
-dragging=true;
-return;
-}
-
-selected=null;
-dragging=false;
-};
-
-canvas.onmouseup=()=>dragging=false;
-
-// ===== 拖曳 =====
-canvas.onmousemove=e=>{
-if(!dragging || !selected) return;
-
-if(selected==="img"){
-imgX+=e.movementX;
-imgY+=e.movementY;
-limit();
-}
-
-if(selected==="text"){
-textX+=e.movementX;
-textY+=e.movementY;
-}
-
-draw();
-};
-
-// ===== slider =====
+// ⭐ 修正：圖片縮放（中心）
 imgScaleInput.oninput=()=>{
-scale=parseFloat(imgScaleInput.value);
+let newScale=parseFloat(imgScaleInput.value);
+
+let cx=256,cy=256;
+imgX=cx-(cx-imgX)*(newScale/scale);
+imgY=cy-(cy-imgY)*(newScale/scale);
+
+scale=newScale;
+limit();
 draw();
 };
 
-// ===== 限制 =====
+// 限制
 function limit(){
 let size=512*scale;
 let min=512-size;
@@ -251,7 +207,7 @@ imgX=Math.max(min,Math.min(0,imgX));
 imgY=Math.max(min,Math.min(0,imgY));
 }
 
-// ===== 畫 =====
+// 畫圖
 function draw(){
 ctx.clearRect(0,0,512,512);
 
@@ -270,7 +226,12 @@ ctx.font="bold "+sizeInput.value+"px sans-serif";
 ctx.textAlign="center";
 ctx.textBaseline="middle";
 
-let t=textInput.value||kaomojiInput.value||"哈囉";
+let t="哈囉";
+if(currentTab===0||currentTab===1){
+t=textInput.value||"哈囉";
+}else if(currentTab===2){
+t=kaomojiInput.value||"哈囉";
+}
 
 if(currentTab===3 && loaded){
 ctx.drawImage(img,imgX,imgY,512*scale,512*scale);
@@ -282,7 +243,7 @@ ctx.fillText(t,textX,textY);
 if(shape==="circle") ctx.restore();
 }
 
-// ===== reset =====
+// reset
 function resetAll(){
 textInput.value="哈囉";
 kaomojiInput.value="";
@@ -291,13 +252,11 @@ scale=1;
 imgScaleInput.value=1;
 img.src="";
 loaded=false;
-selected=null;
 textX=256;
 textY=256;
 draw();
 }
 
-// ===== download =====
 function download(){
 let a=document.createElement("a");
 a.href=canvas.toDataURL();
