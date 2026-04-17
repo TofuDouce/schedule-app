@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>阿毛的魔法屋 - 稱號占卜</title>
+
+<style>
+:root { --magic-gold: #FFD700; --magic-purple: #4b0082; }
+body{margin:0;font-family:"PingFang TC", "Microsoft JhengHei", sans-serif;background:#120c1a; padding-bottom: 120px; color: #fff;}
+.header{background: linear-gradient(to bottom, #2d004b, #120c1a); color: var(--magic-gold); padding:20px; text-align:center; font-weight:bold; font-size:1.5rem; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255,215,0,0.5);}
+.container{max-width:520px; margin:auto; padding:10px;}
+
+.canvas-section { position: sticky; top: 0; z-index: 100; background: #120c1a; padding: 10px 0; }
+.canvas-container { background:#2d004b; border-radius:20px; padding:12px; box-shadow: 0 0 30px rgba(75,0,130,0.6); max-width: 320px; margin: auto; border: 2px solid var(--magic-gold); }
+canvas{width:100%; border-radius:12px; display: block;}
+
+.card{background: rgba(255,255,255,0.05); border-radius:16px; padding:20px; margin-bottom:15px; border: 1px solid rgba(255,215,0,0.2); backdrop-filter: blur(5px);}
+
+.dice-box { 
+    background: radial-gradient(circle, #3d007a 0%, #1a0033 100%);
+    border: 2px solid var(--magic-gold);
+    border-radius: 50%; width: 150px; height: 150px; margin: 20px auto;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    cursor: pointer; transition: 0.3s; box-shadow: 0 0 20px rgba(255,215,0,0.3);
+}
+.dice-box:hover { transform: scale(1.05); box-shadow: 0 0 30px rgba(255,215,0,0.5); }
+.dice-icon-big { font-size: 50px; margin-bottom: 5px; }
+
+.shake { animation: shakeAnim 0.5s ease-in-out; }
+@keyframes shakeAnim {
+    0% { transform: rotate(0deg); } 20% { transform: rotate(20deg); } 
+    40% { transform: rotate(-20deg); } 60% { transform: rotate(10deg); } 80% { transform: rotate(-10deg); } 100% { transform: rotate(0deg); }
+}
+
+.action-row{display:flex; gap:10px; position: fixed; bottom: 0; left:0; right:0; background: rgba(18,12,26,0.95); padding: 15px; box-shadow: 0 -5px 20px rgba(0,0,0,0.5); z-index: 200;}
+button{flex:1; padding:15px; border:none; border-radius:12px; font-weight:bold; cursor:pointer; font-size: 1rem;}
+.gold-btn{background: var(--magic-gold); color:#2d004b; box-shadow: 0 0 15px rgba(255,215,0,0.4);}
+.gray-btn{background:#3d3d3d; color:#bbb;}
+
+#previewModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:1000; justify-content:center; align-items:center; flex-direction:column; }
+#previewImage { max-width:85%; border-radius:20px; border: 2px solid var(--magic-gold); box-shadow: 0 0 30px rgba(255,215,0,0.5); }
+</style>
+</head>
+<body>
+
+<div class="header">🔮 阿毛的魔法屋</div>
+
+<div class="container">
+    <div class="canvas-section">
+        <div class="canvas-container">
+            <canvas id="canvas" width="600" height="600"></canvas>
+        </div>
+    </div>
+
+    <div class="card" style="text-align: center;">
+        <p style="color: var(--magic-gold); margin-top: 0; font-size: 0.9rem;">— 命運的輪盤已經轉動 —</p>
+        <div class="dice-box" onclick="rollDice()">
+            <span id="diceIcon" class="dice-icon-big">🔮</span>
+            <span style="font-size: 14px; font-weight: bold; color: #fff;">啟動占卜</span>
+        </div>
+        <p style="font-size: 12px; color: #aaa;">點擊水晶球，聽聽阿毛給你的啟示</p>
+    </div>
+</div>
+
+<div class="action-row">
+    <button class="gray-btn" onclick="location.reload()">重新儀式</button>
+    <button class="gold-btn" onclick="showPreview()">保存預言圖片</button>
+</div>
+
+<div id="previewModal" onclick="this.style.display='none'">
+    <img id="previewImage">
+    <p style="color:var(--magic-gold); margin-top:20px; font-weight:bold;">長按圖片保存魔法稱號</p>
+</div>
+
+<script>
+const canvas = document.getElementById("canvas"), ctx = canvas.getContext("2d");
+
+const prefixArr = [
+    "被詛咒的", "遠古封印的", "充滿禁忌的", "來自深淵的", "星辰引導的", 
+    "被薪水掏空的", "極度厭世的", "迴光返照的", "懶散成神的", "社恐末期的", 
+    "邏輯死去的", "熬夜修仙的", "智商欠稅的", "自帶水逆的", "佛系轉世的",
+    "想被富婆包養的", "連呼吸都累的", "靈魂出竅的", "已經看破紅塵的", "萬年單身的"
+];
+
+const suffixArr = [
+    "錢包專家", "減肥鬥士", "垃圾桶守護者", "表情包傳人", "延期大師", 
+    "負能量供應商", "冷場王", "馬鈴薯隊長", "肝臟終結者", "外送依賴者",
+    "尷尬製造機", "社畜領頭羊", "借錢藝術家", "走路撞牆大師", "人生登出者",
+    "薪水回收站", "白日夢大亨", "躺平發起人", "美食垃圾桶", "初老症患者"
+];
+
+// 魔法主題色系
+const magicThemes = [
+    { start: "#2d004b", end: "#000000", accent: "#FFD700" }, // 紫金
+    { start: "#001f3f", end: "#000000", accent: "#7fdbff" }, // 藍銀
+    { start: "#3d0000", end: "#000000", accent: "#ff4136" }, // 血紅
+    { start: "#003d14", end: "#000000", accent: "#2ecc40" }  // 綠森
+];
+
+let lastP = "阿毛幫你", lastS = "占卜稱號";
+
+function rollDice() {
+    const dice = document.getElementById("diceIcon");
+    dice.classList.add("shake");
+    setTimeout(()=>dice.classList.remove("shake"), 500);
+
+    lastP = prefixArr[Math.floor(Math.random() * prefixArr.length)];
+    lastS = suffixArr[Math.floor(Math.random() * suffixArr.length)];
+    draw();
+}
+
+function draw(){
+    const theme = magicThemes[Math.floor(Math.random() * magicThemes.length)];
+    
+    // 1. 繪製神祕徑向漸層背景
+    const grad = ctx.createRadialGradient(300, 300, 50, 300, 300, 450);
+    grad.addColorStop(0, theme.start);
+    grad.addColorStop(1, theme.end);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 600, 600);
+
+    // 2. 繪製魔法陣邊框
+    ctx.strokeStyle = theme.accent;
+    ctx.lineWidth = 3;
+    // 內外雙線
+    ctx.strokeRect(40, 40, 520, 520);
+    ctx.strokeRect(55, 55, 490, 490);
+    
+    // 四個角的裝飾圓陣
+    const corners = [[40,40], [560,40], [40,560], [560,560]];
+    corners.forEach(c => {
+        ctx.beginPath();
+        ctx.arc(c[0], c[1], 25, 0, Math.PI*2);
+        ctx.fillStyle = theme.end;
+        ctx.fill();
+        ctx.stroke();
+        // 小十字星
+        ctx.moveTo(c[0]-10, c[1]); ctx.lineTo(c[0]+10, c[1]);
+        ctx.moveTo(c[0], c[1]-10); ctx.lineTo(c[0], c[1]+10);
+        ctx.stroke();
+    });
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    // 3. 第一行 (OO的) - 柔和光暈
+    ctx.shadowColor = theme.accent;
+    ctx.shadowBlur = 10;
+    ctx.fillStyle = "white";
+    ctx.font = `bold 40px "PingFang TC", sans-serif`;
+    ctx.fillText(lastP, 300, 220);
+
+    // 4. 第二行 (OOO) - 強力魔法光
+    let sSize = 100;
+    ctx.font = `900 ${sSize}px "PingFang TC", sans-serif`;
+    while(ctx.measureText(lastS).width > 480 && sSize > 30) {
+        sSize -= 5;
+        ctx.font = `900 ${sSize}px "PingFang TC", sans-serif`;
+    }
+
+    ctx.shadowBlur = 25;
+    ctx.lineWidth = 10;
+    ctx.strokeStyle = theme.accent;
+    ctx.strokeText(lastS, 300, 350);
+    
+    ctx.fillStyle = "white";
+    ctx.shadowBlur = 5;
+    ctx.fillText(lastS, 300, 350);
+
+    // 5. 魔法印章 (阿毛認證)
+    ctx.save();
+    ctx.translate(450, 480);
+    ctx.rotate(-0.2);
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = theme.accent;
+    ctx.strokeStyle = theme.accent;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(-60, -25, 120, 50);
+    ctx.font = "bold 20px sans-serif";
+    ctx.fillText("阿毛認證", 0, 4);
+    ctx.fillText("✨", -45, -15);
+    ctx.fillText("✨", 45, 15);
+    ctx.restore();
+}
+
+function showPreview() {
+    document.getElementById("previewImage").src = canvas.toDataURL("image/png");
+    document.getElementById("previewModal").style.display = "flex";
+}
+
+window.onload = draw;
+</script>
+</body>
+</html>
