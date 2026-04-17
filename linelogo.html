@@ -12,22 +12,9 @@ body{margin:0;font-family:-apple-system;background:#f3f4f6;}
 .card{background:#fff;border-radius:16px;padding:15px;margin-bottom:15px;}
 canvas{width:100%;border-radius:20px;background:#eee;}
 
-.tabs{
-  display:flex;
-  gap:20px;
-  border-bottom:2px solid #eee;
-  margin-bottom:10px;
-}
-.tab{
-  padding:10px 0;
-  cursor:pointer;
-  color:#999;
-  font-weight:bold;
-}
-.tab.active{
-  color:#06C755;
-  border-bottom:3px solid #06C755;
-}
+.tabs{display:flex;gap:20px;border-bottom:2px solid #eee;margin-bottom:10px;}
+.tab{padding:10px 0;cursor:pointer;color:#999;font-weight:bold;}
+.tab.active{color:#06C755;border-bottom:3px solid #06C755;}
 
 .tab-content{display:none;}
 .tab-content.active{display:block;}
@@ -54,6 +41,26 @@ input{
   cursor:pointer;
 }
 
+.emoji-panel{
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:10px;
+  margin-top:10px;
+}
+
+.emoji{
+  font-size:22px;
+  text-align:center;
+  padding:10px;
+  border-radius:10px;
+  background:#f2f2f2;
+  cursor:pointer;
+}
+
+.slider{
+  margin-top:10px;
+}
+
 .row{display:flex;gap:10px;}
 button{flex:1;padding:12px;border:none;border-radius:10px;font-weight:bold;}
 .green{background:#06C755;color:#fff;}
@@ -68,7 +75,6 @@ button{flex:1;padding:12px;border:none;border-radius:10px;font-weight:bold;}
 <div class="container">
 
 <div class="card">
-<!-- 方形/圓形 -->
 <div class="tabs">
 <div class="tab active" onclick="setShape('square')">方形</div>
 <div class="tab" onclick="setShape('circle')">圓形</div>
@@ -79,7 +85,6 @@ button{flex:1;padding:12px;border:none;border-radius:10px;font-weight:bold;}
 
 <div class="card">
 
-<!-- 分頁 -->
 <div class="tabs">
 <div class="tab active" data-tab="0">文字</div>
 <div class="tab" data-tab="1">Emoji</div>
@@ -87,29 +92,29 @@ button{flex:1;padding:12px;border:none;border-radius:10px;font-weight:bold;}
 <div class="tab" data-tab="3">LOGO</div>
 </div>
 
-<!-- 文字 -->
 <div class="tab-content active" data-content="0">
 <input id="text" placeholder="輸入文字">
 </div>
 
-<!-- emoji -->
 <div class="tab-content" data-content="1">
-<div id="emojiPanel"></div>
+<div class="emoji-panel" id="emojiPanel"></div>
 </div>
 
-<!-- 混合 -->
 <div class="tab-content" data-content="2">
 <input id="mixText" placeholder="文字 + emoji">
 </div>
 
-<!-- LOGO -->
 <div class="tab-content" data-content="3">
 <input type="file" id="upload">
 </div>
 
-<!-- ✅ 色票固定在這（不跟 tab） -->
+<!-- ⭐ 每頁共用 slider -->
+大小
+<input type="range" id="size" class="slider" min="40" max="200" value="80">
+
 背景色
 <input type="color" id="bg" value="#06C755">
+
 <div class="colors" id="colorPalette"></div>
 
 文字顏色
@@ -133,6 +138,7 @@ const mixInput = document.getElementById("mixText");
 const bgInput = document.getElementById("bg");
 const textColorInput = document.getElementById("textColor");
 const uploadInput = document.getElementById("upload");
+const sizeInput = document.getElementById("size");
 
 let currentTab = 0;
 let shape = "square";
@@ -140,7 +146,7 @@ let shape = "square";
 let img = new Image();
 let loaded = false;
 
-// ===== 分頁 =====
+// 分頁
 document.querySelectorAll("[data-tab]").forEach(tab=>{
   tab.onclick=()=>{
     currentTab = parseInt(tab.dataset.tab);
@@ -157,49 +163,69 @@ document.querySelectorAll("[data-tab]").forEach(tab=>{
   };
 });
 
-// ===== 方形圓形 =====
+// 方形 / 圓形
 function setShape(s){
   shape = s;
   draw();
 }
 
-// ===== 色票 =====
-const colors=["#FF3B30","#FF9500","#FFCC00","#34C759","#00C7BE","#007AFF","#5856D6","#FF2D55","#8E8E93"];
+// ⭐ 三組色票
+const vivid=[
+"#FF3B30","#FF9500","#FFCC00","#34C759","#00C7BE","#007AFF","#5856D6","#FF2D55","#8E8E93"
+];
 
-const palette=document.getElementById("colorPalette");
-colors.forEach(c=>{
-  const div=document.createElement("div");
-  div.className="color";
-  div.style.background=c;
-  div.onclick=()=>{
-    bgInput.value=c;
-    draw();
-  };
-  palette.appendChild(div);
-});
+const pastel=[
+"#FFB3BA","#FFD6A5","#FFF3B0","#C8E6C9","#B2EBF2","#B3E5FC","#D1C4E9","#F8BBD0","#E0E0E0"
+];
 
-// ===== emoji =====
-const emojis=["😀","😎","🥺","😂","🔥","❤️","✨","🎉"];
+const morandi=[
+"#D6A6A6","#D9B08C","#E6D3A3","#A8C3A0","#9EC1CF","#8EA6C9","#B5A6D6","#D6A6C1","#C4C4C4"
+];
 
-const emojiPanel=document.getElementById("emojiPanel");
-emojis.forEach(e=>{
-  const span=document.createElement("span");
-  span.innerText=e;
-  span.style.fontSize="24px";
-  span.style.margin="5px";
-  span.style.cursor="pointer";
-  span.onclick=()=>{
-    if(currentTab===1){
-      textInput.value+=e;
-    }else if(currentTab===2){
-      mixInput.value+=e;
-    }
-    draw();
-  };
-  emojiPanel.appendChild(span);
-});
+function initColors(){
+  const palette=document.getElementById("colorPalette");
+  [vivid,pastel,morandi].forEach(group=>{
+    group.forEach(c=>{
+      const div=document.createElement("div");
+      div.className="color";
+      div.style.background=c;
+      div.onclick=()=>{
+        bgInput.value=c;
+        draw();
+      };
+      palette.appendChild(div);
+    });
+  });
+}
 
-// ===== 上傳 =====
+// ⭐ emoji 擴充
+const emojis=[
+"😀","😁","😂","🤣","😎","🥺","😍","😘",
+"🐶","🐱","🐼","🐸","🦊","🐰",
+"🍎","🍊","🍉","🍇","🍩","🍔",
+"🌸","🌻","🌈","⭐","✨","🔥",
+"❤️","💛","💚","💙","💜"
+];
+
+function initEmoji(){
+  const panel=document.getElementById("emojiPanel");
+  emojis.forEach(e=>{
+    const span=document.createElement("div");
+    span.className="emoji";
+    span.innerText=e;
+    span.onclick=()=>{
+      if(currentTab===1){
+        textInput.value+=e;
+      }else if(currentTab===2){
+        mixInput.value+=e;
+      }
+      draw();
+    };
+    panel.appendChild(span);
+  });
+}
+
+// 上傳
 uploadInput.onchange=e=>{
   const file=e.target.files[0];
   const reader=new FileReader();
@@ -210,12 +236,12 @@ uploadInput.onchange=e=>{
   reader.readAsDataURL(file);
 };
 
-// ===== 監聽 =====
-[textInput,mixInput,bgInput,textColorInput].forEach(el=>{
+// 監聽
+[textInput,mixInput,bgInput,textColorInput,sizeInput].forEach(el=>{
   el.addEventListener("input",draw);
 });
 
-// ===== 畫圖 =====
+// 畫圖
 function draw(){
   ctx.clearRect(0,0,512,512);
 
@@ -230,7 +256,7 @@ function draw(){
   ctx.fillRect(0,0,512,512);
 
   ctx.fillStyle = textColorInput.value;
-  ctx.font = "bold 80px sans-serif";
+  ctx.font = "bold "+sizeInput.value+"px sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
 
@@ -250,7 +276,7 @@ function draw(){
   if(shape==="circle") ctx.restore();
 }
 
-// ===== 按鈕 =====
+// 按鈕
 function download(){
   const a=document.createElement("a");
   a.href=canvas.toDataURL("image/png");
@@ -264,6 +290,8 @@ function resetAll(){
   draw();
 }
 
+initColors();
+initEmoji();
 draw();
 </script>
 
