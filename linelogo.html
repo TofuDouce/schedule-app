@@ -41,7 +41,6 @@ button{flex:1;padding:14px;border:none;border-radius:10px;font-weight:bold;font-
 .tool-row input[type="color"]{width:36px;height:36px;border:none;}
 </style>
 </head>
-
 <body>
 
 <div class="header">LINE 大頭照產生器</div>
@@ -89,7 +88,7 @@ button{flex:1;padding:14px;border:none;border-radius:10px;font-weight:bold;font-
 
 <div class="tab-content active" data-content="0">
 <input type="range" id="sizeText" min="40" max="300" value="150">
-<input id="text" class="big-input" placeholder="筆記">
+<input id="text" class="big-input" value="筆記">
 </div>
 
 <div class="tab-content" data-content="1">
@@ -162,6 +161,7 @@ let shape="square";
 let currentTab=0;
 let img=new Image();
 let loaded=false;
+let autoSize=true;
 
 // ===== tab =====
 document.querySelectorAll("[data-tab]").forEach(tab=>{
@@ -179,6 +179,15 @@ document.querySelectorAll("[data-tab]").forEach(tab=>{
     draw();
   };
 });
+
+// ===== 即時更新（修正你問題③）=====
+[
+bgInput,textColorInput,
+strokeToggle,strokeColor,strokeWidth,
+shadowSoft,shadowLift,shadowStrong,
+transparentBg,sizeText,sizeEmoji,sizeKao,sizeLogo,
+textInput,kaomojiInput,logoTextInput
+].forEach(el=>el.addEventListener("input",draw));
 
 // ===== 色票開關 =====
 togglePalette.onchange=()=>{
@@ -244,11 +253,25 @@ img.src=ev.target.result;
 reader.readAsDataURL(e.target.files[0]);
 };
 
-// ===== draw（已修）=====
+// ===== 換行 + 自動最大 =====
+function wrap(text,size){
+ctx.font=`900 ${size}px sans-serif`;
+let arr=[],line="";
+for(let ch of text){
+let test=line+ch;
+if(ctx.measureText(test).width>480){
+arr.push(line);
+line=ch;
+}else line=test;
+}
+arr.push(line);
+return arr;
+}
+
+// ===== draw =====
 function draw(){
 ctx.clearRect(0,0,512,512);
 
-// 圓形
 if(shape==="circle"){
 ctx.save();
 ctx.beginPath();
@@ -256,7 +279,6 @@ ctx.arc(256,256,256,0,Math.PI*2);
 ctx.clip();
 }
 
-// 背景
 if(!transparentBg.checked){
 ctx.fillStyle=bgInput.value;
 ctx.fillRect(0,0,512,512);
@@ -266,10 +288,34 @@ ctx.fillStyle=textColorInput.value;
 ctx.textAlign="center";
 ctx.textBaseline="middle";
 
-// 🔥 分頁控制
+let text=textInput.value||"筆記";
+let size=autoSize?200:sizeText.value;
+let lines;
+
+do{
+lines=wrap(text,size);
+size-=2;
+ctx.font=`900 ${size}px sans-serif`;
+}while(lines.some(l=>ctx.measureText(l).width>480));
+
+let lh=size*1.2;
+let start=256-(lines.length-1)*lh/2;
+
+// 陰影
+if(shadowSoft.checked){ctx.shadowColor="rgba(0,0,0,0.15)";ctx.shadowBlur=20;ctx.shadowOffsetY=4;}
+if(shadowLift.checked){ctx.shadowColor="rgba(0,0,0,0.25)";ctx.shadowBlur=8;ctx.shadowOffsetY=8;}
+if(shadowStrong.checked){ctx.shadowColor="rgba(0,0,0,0.4)";ctx.shadowBlur=2;ctx.shadowOffsetY=14;}
+
 if(currentTab===0){
-ctx.font=`900 ${sizeText.value}px sans-serif`;
-ctx.fillText(textInput.value||"筆記",256,256);
+lines.forEach((l,i)=>{
+let y=start+i*lh;
+if(strokeToggle.checked){
+ctx.lineWidth=strokeWidth.value;
+ctx.strokeStyle=strokeColor.value;
+ctx.strokeText(l,256,y);
+}
+ctx.fillText(l,256,y);
+});
 }
 
 if(currentTab===1){
@@ -291,6 +337,8 @@ ctx.font=`bold ${sizeLogo.value}px sans-serif`;
 ctx.fillText(logoTextInput.value||"",256,256);
 }
 
+ctx.shadowColor="transparent";
+
 if(shape==="circle") ctx.restore();
 }
 
@@ -301,8 +349,6 @@ preview.style.display="block";
 
 function resetAll(){
 textInput.value="";
-kaomojiInput.value="";
-logoTextInput.value="";
 draw();
 }
 
