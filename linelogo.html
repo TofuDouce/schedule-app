@@ -12,14 +12,7 @@ body{margin:0;font-family:-apple-system;background:#f3f4f6;}
 .card{background:#fff;border-radius:16px;padding:15px;margin-bottom:15px;}
 canvas{width:100%;border-radius:20px;background:#eee;}
 
-.preview{
-  width:100%;
-  border-radius:20px;
-  margin-top:10px;
-  background:#fff;
-  padding:10px;
-  display:none;
-}
+.preview{width:100%;border-radius:20px;margin-top:10px;background:#fff;padding:10px;display:none;}
 
 .tabs{display:flex;gap:20px;border-bottom:2px solid #eee;margin-bottom:10px;}
 .tab{padding:10px 0;cursor:pointer;color:#999;font-weight:bold;}
@@ -28,40 +21,15 @@ canvas{width:100%;border-radius:20px;background:#eee;}
 .tab-content{display:none;}
 .tab-content.active{display:block;}
 
-.big-input{
-  width:100%;
-  padding:14px;
-  font-size:20px;
-  border-radius:12px;
-  border:1px solid #ddd;
-  margin-top:10px;
-}
+.big-input{width:100%;padding:14px;font-size:20px;border-radius:12px;border:1px solid #ddd;margin-top:10px;}
 
-.colors{
-  display:grid;
-  grid-template-columns: repeat(9, 1fr);
-  gap:8px;
-  margin-top:10px;
-}
-
-.color{
-  width:100%;
-  aspect-ratio:1;
-  border-radius:50%;
-  cursor:pointer;
-}
+.colors{display:grid;grid-template-columns: repeat(9, 1fr);gap:8px;margin-top:10px;}
+.color{width:100%;aspect-ratio:1;border-radius:50%;cursor:pointer;}
 
 .emoji-panel{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;}
 .kao-panel{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
 
-.emoji{
-  font-size:18px;
-  text-align:center;
-  padding:8px;
-  border-radius:10px;
-  background:#f2f2f2;
-  cursor:pointer;
-}
+.emoji{font-size:18px;text-align:center;padding:8px;border-radius:10px;background:#f2f2f2;cursor:pointer;}
 
 .row{display:flex;gap:10px;}
 button{flex:1;padding:14px;border:none;border-radius:10px;font-weight:bold;font-size:16px;}
@@ -92,19 +60,20 @@ button{flex:1;padding:14px;border:none;border-radius:10px;font-weight:bold;font-
 
 背景色
 <input type="color" id="bg" value="#06C755">
+<label><input type="checkbox" id="togglePalette" checked> 色票</label>
+<label><input type="checkbox" id="transparentBg"> 透明</label>
+
 <div class="colors" id="colorPalette"></div>
 
 文字顏色
 <input type="color" id="textColor" value="#ffffff">
 
-<!-- 描邊 -->
 <div class="tool-row">
 <label><input type="checkbox" id="strokeToggle"> 描邊</label>
 <input type="color" id="strokeColor" value="#000000">
 <input type="range" id="strokeWidth" min="1" max="20" value="6">
 </div>
 
-<!-- 陰影 -->
 <div class="tool-row">
 <label><input type="checkbox" id="shadowSoft"> 柔光</label>
 <label><input type="checkbox" id="shadowLift"> 浮起</label>
@@ -164,16 +133,10 @@ const ctx=canvas.getContext("2d");
 const preview=document.getElementById("preview");
 
 const textInput=document.getElementById("text");
-const kaomojiInput=document.getElementById("kaomoji");
-const logoTextInput=document.getElementById("logoText");
-
 const sizeText=document.getElementById("sizeText");
-const sizeEmoji=document.getElementById("sizeEmoji");
-const sizeKao=document.getElementById("sizeKao");
-const sizeLogo=document.getElementById("sizeLogo");
-
 const bgInput=document.getElementById("bg");
 const textColorInput=document.getElementById("textColor");
+const transparentBg=document.getElementById("transparentBg");
 
 const strokeToggle=document.getElementById("strokeToggle");
 const strokeColor=document.getElementById("strokeColor");
@@ -183,124 +146,125 @@ const shadowSoft=document.getElementById("shadowSoft");
 const shadowLift=document.getElementById("shadowLift");
 const shadowStrong=document.getElementById("shadowStrong");
 
-const emojiPanel=document.getElementById("emojiPanel");
-const kaoList=document.getElementById("kaoList");
+const togglePalette=document.getElementById("togglePalette");
 const colorPalette=document.getElementById("colorPalette");
-const upload=document.getElementById("upload");
 
-let currentTab=0;
 let shape="square";
-let img=new Image();
-let loaded=false;
-
-// 🔥 自動滿版
 let autoSize=true;
+
+// 色票開關
+togglePalette.onchange=()=>{
+colorPalette.style.display=togglePalette.checked?"grid":"none";
+};
+
+// 自動大小
 sizeText.oninput=()=>{autoSize=false;draw();}
 textInput.oninput=()=>{autoSize=true;draw();}
 
-// tab
-document.querySelectorAll("[data-tab]").forEach(tab=>{
-tab.onclick=()=>{
-currentTab=parseInt(tab.dataset.tab);
-document.querySelectorAll("[data-tab]").forEach(t=>t.classList.remove("active"));
-tab.classList.add("active");
-document.querySelectorAll("[data-content]").forEach(c=>{
-c.classList.remove("active");
-if(c.dataset.content==currentTab) c.classList.add("active");
-});
-draw();
-};
-});
-
-function setShape(s){shape=s;draw();}
+// 監聽修正
+[strokeToggle,strokeColor,strokeWidth,shadowSoft,shadowLift,shadowStrong,transparentBg]
+.forEach(el=>el.addEventListener("change",draw));
 
 // 色票
-const vivid=["#FF3B30","#FF9500","#FFCC00","#34C759","#00C7BE","#007AFF","#5856D6","#FF2D55","#8E8E93"];
-const pastel=["#FFB3BA","#FFD6A5","#FFF3B0","#C8E6C9","#B2EBF2","#B3E5FC","#D1C4E9","#F8BBD0","#E0E0E0"];
-const morandi=["#D6A6A6","#D9B08C","#E6D3A3","#A8C3A0","#9EC1CF","#8EA6C9","#B5A6D6","#D6A6C1","#C4C4C4"];
-const cream=["#FFF1E6","#FFE5D9","#FFD7BA","#FEC89A","#FCD5CE","#FAE1DD","#F8EDEB","#E8E8E4","#D8E2DC"];
-const modern=["#B7C4CF","#C8DBBE","#DCCCA3","#EED6D3","#D9BF77","#A0C1B8","#9DB4C0","#C6A4A4","#B8B8AA"];
-
-[vivid,pastel,morandi,cream,modern].forEach(group=>{
-group.forEach(c=>{
+["#FF3B30","#FF9500","#FFCC00","#34C759","#007AFF","#5856D6","#FF2D55","#8E8E93"]
+.forEach(c=>{
 let d=document.createElement("div");
 d.className="color";
 d.style.background=c;
 d.onclick=()=>{bgInput.value=c;draw();}
 colorPalette.appendChild(d);
 });
-});
 
 // emoji
-const emojis=["🎧","🎵","🎶","🎤","🎸","🥁","🎹","🏋️","🧘","🏃","🚴","⚽","🏀","🏊","🍔","🍟","🍕","🍣","🍩","🍰","☕","🧋","📚","💻","📱","🎮","🎨","✈️","🚗","🔥","✨","⭐","❤️","💛","💚","💙","💜","🐶","🐱","🐼","🦊","🐰"];
-emojis.forEach(e=>{
+["🎧","🎵","🎶","🎤","🎸","🔥","✨","❤️"].forEach(e=>{
 let d=document.createElement("div");
 d.className="emoji";
 d.innerText=e;
 d.onclick=()=>{textInput.value+=e;draw();}
-emojiPanel.appendChild(d);
+document.getElementById("emojiPanel").appendChild(d);
 });
 
-// 顏文字（完整）
-const kaomojis=[
-"ദ്ദി ˉ꒳ˉ )✧","( ‘• ω • `)","ฅ^•ﻌ•^ฅ","(づ•ᴗ•)づ","(≧▽≦)","(๑•̀ㅂ•́)و","(ಥ﹏ಥ)",
-"(¬_¬)","(ಠ_ಠ)","(⊙_⊙)","(ʘ‿ʘ)","(•‿•)","(ง •̀_•́)ง","(☞ﾟヮﾟ)☞",
-"(✿◠‿◠)","(￣▽￣)","(｡♥‿♥｡)"
-];
-
-kaomojis.forEach(k=>{
+// 顏文字
+["(≧▽≦)","(ಥ﹏ಥ)","(ಠ_ಠ)","(•‿•)","(⊙_⊙)","(￣▽￣)"].forEach(k=>{
 let d=document.createElement("div");
 d.className="emoji";
 d.innerText=k;
-d.onclick=()=>{kaomojiInput.value=k;draw();}
-kaoList.appendChild(d);
+d.onclick=()=>{document.getElementById("kaomoji").value=k;draw();}
+document.getElementById("kaoList").appendChild(d);
 });
 
-// 上傳
-upload.onchange=e=>{
-const reader=new FileReader();
-reader.onload=ev=>{
-img.onload=()=>{loaded=true;draw();}
-img.src=ev.target.result;
-};
-reader.readAsDataURL(e.target.files[0]);
-};
+// 換行
+function wrap(text){
+let arr=[],line="";
+for(let ch of text){
+let test=line+ch;
+ctx.font="900 100px sans-serif";
+if(ctx.measureText(test).width>480){
+arr.push(line);
+line=ch;
+}else line=test;
+}
+arr.push(line);
+return arr;
+}
 
-// draw
 function draw(){
 ctx.clearRect(0,0,512,512);
+
+// 圓形
+if(shape==="circle"){
+ctx.save();
+ctx.beginPath();
+ctx.arc(256,256,256,0,Math.PI*2);
+ctx.clip();
+}
+
+// 背景
+if(!transparentBg.checked){
 ctx.fillStyle=bgInput.value;
 ctx.fillRect(0,0,512,512);
+}
+
+// 文字
+let text=textInput.value||"筆記";
+let lines=wrap(text);
+
+let size=autoSize?200:sizeText.value;
+
+ctx.font=`900 ${size}px sans-serif`;
+
+while(lines.some(l=>ctx.measureText(l).width>480)){
+size-=2;
+ctx.font=`900 ${size}px sans-serif`;
+}
+
+let lh=size*1.2;
+let start=256-(lines.length-1)*lh/2;
 
 ctx.fillStyle=textColorInput.value;
 ctx.textAlign="center";
 ctx.textBaseline="middle";
 
-let text=textInput.value||"筆記";
-let size=sizeText.value;
+// 陰影
+if(shadowSoft.checked){ctx.shadowColor="rgba(0,0,0,0.15)";ctx.shadowBlur=20;ctx.shadowOffsetY=4;}
+if(shadowLift.checked){ctx.shadowColor="rgba(0,0,0,0.25)";ctx.shadowBlur=8;ctx.shadowOffsetY=8;}
+if(shadowStrong.checked){ctx.shadowColor="rgba(0,0,0,0.4)";ctx.shadowBlur=2;ctx.shadowOffsetY=14;}
 
-if(autoSize){
-let test=300;
-ctx.font=`900 ${test}px sans-serif`;
-while(ctx.measureText(text).width>480){
-test-=5;
-ctx.font=`900 ${test}px sans-serif`;
-}
-size=test;
-}
-
-ctx.font=`900 ${size}px sans-serif`;
-
+lines.forEach((l,i)=>{
+let y=start+i*lh;
 if(strokeToggle.checked){
 ctx.lineWidth=strokeWidth.value;
 ctx.strokeStyle=strokeColor.value;
-ctx.strokeText(text,256,256);
+ctx.strokeText(l,256,y);
+}
+ctx.fillText(l,256,y);
+});
+
+ctx.shadowColor="transparent";
+
+if(shape==="circle") ctx.restore();
 }
 
-ctx.fillText(text,256,256);
-}
-
-// download
 function download(){
 preview.src=canvas.toDataURL();
 preview.style.display="block";
@@ -308,12 +272,10 @@ preview.style.display="block";
 
 function resetAll(){
 textInput.value="";
-kaomojiInput.value="";
-logoTextInput.value="";
-img.src="";
-loaded=false;
 draw();
 }
+
+function setShape(s){shape=s;draw();}
 
 draw();
 </script>
