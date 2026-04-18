@@ -1659,6 +1659,71 @@ window.onload = () => {
             console.error("系統警告：部分模組未正確載入，請檢查區塊代碼是否完整。");
         }
     </script>
+// --- 最終神經連結補強 ---
+
+// 1. 確保骰子點擊功能正常
+AmaoApp.rollDice = function() {
+    // 如果正在處理中或是戰鬥狀態，暫時不回應點擊
+    if (state.isProcessing || state.isBattle) return;
+    
+    // 消耗體力
+    if (state.nrg <= 0) {
+        this.addLog("⚠️ 體力用盡了！快休息或召喚小天使救救命...", "var(--danger)");
+        return;
+    }
+
+    // 骰子動畫效果
+    const diceBtn = document.getElementById('dice-btn');
+    const diceVal = document.getElementById('dice-value');
+    
+    state.isProcessing = true;
+    diceBtn.style.animation = "shake 0.3s infinite";
+    
+    setTimeout(() => {
+        const move = Math.floor(Math.random() * 6) + 1;
+        diceBtn.style.animation = "none";
+        diceVal.innerText = move;
+        
+        // 執行位移與邏輯
+        this.executeMove(move);
+        state.isProcessing = false;
+    }, 500);
+};
+
+// 2. 核心移動邏輯實作
+AmaoApp.executeMove = function(steps) {
+    state.lvl += steps;
+    state.nrg -= 1; // 每次移動消耗 1 體力
+    
+    this.addLog(`🎲 阿毛擲出了 ${steps} 點，成功爬升到第 ${state.lvl} 層！`);
+    
+    // 檢查各種系統連動
+    if (typeof EnvSystem !== 'undefined') EnvSystem.refresh();   // 刷新天氣
+    if (typeof RankSystem !== 'undefined') RankSystem.checkOvertake(state.lvl - steps, state.lvl); // 檢查排名
+    if (typeof AngelSystem !== 'undefined') AngelSystem.check(); // 檢查小天使
+    
+    // 隨機事件判定 (機率遇到 NPC)
+    if (Math.random() < 0.2) { // 20% 機率遇見夥伴
+        const npcs = ["滷滷米達", "羊", "南瓜"];
+        const target = npcs[Math.floor(Math.random() * npcs.length)];
+        NPCSystem.meet(target);
+    }
+
+    this.updateUI();
+};
+
+// 3. 強制刷新 UI 顯示
+AmaoApp.updateUI = function() {
+    document.getElementById('ui-lvl').innerText = state.lvl;
+    document.getElementById('ui-nrg').innerText = state.nrg;
+    document.getElementById('ui-gold').innerText = state.gold;
+    
+    // 這裡可以加入更多 UI 狀態更新（如心情、攻擊力等）
+};
+
+//
+</script> </body>
+</html>
 
 </body>
 </html>
