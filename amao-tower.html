@@ -343,40 +343,30 @@
 </script>
 <script>
 /**
- * 阿毛之塔 - 核心引擎 2.0
- * 包含：1000種美食算法、150種稱號、300件物品、自動存檔與正式版 UI 覆寫
+ * 阿毛之塔 - 核心引擎 2.1 (圖鑑強化版)
  */
 
 const GameDB = {
-    // A: 形容詞 B: 狀態 C: 主體
     foodPrefix: ["香氣四溢的", "極致濃郁的", "灑滿蔥花的", "黃金比例的", "來自地獄的", "媽媽特製的", "滷滷米達嫌棄過的", "南瓜老闆激推的", "充滿魔法氣息的", "散發銀紫光芒的", "路邊撿到的", "奶奶特傳的", "夢幻莫蘭迪色的", "超音速生成的", "罪惡感爆表的", "蒜泥狠的", "讓人流口水的", "焦糖琥珀色的", "苦中帶甜的", "冰鎮極品的"],
     foodMiddle: ["爆發性", "口感滑順", "現炸酥脆", "慢火細熬", "七彩噴發", "Q彈有勁", "香煎熟成", "外酥內嫩", "鮮甜多汁", "微苦甘醇", "冰封後的", "剛出爐的", "文火慢燉", "大火快炒", "魔法加持", "中二魂注入", "極致壓縮", "層層堆疊", "五味雜陳", "鮮味濃縮"],
     foodSuffix: ["豬排大餐", "伯爵紅茶", "藍莓果茶", "炒飯", "鹹稀飯", "現包水餃", "能量飲料", "大骨棒", "手作肉餅", "厚片土司", "義大利麵", "濃厚拉麵", "脆皮泡芙", "舒芙蕾", "雞腿堡", "布丁", "三明治", "夏威夷披薩", "關東煮", "絲襪奶茶"],
-
-    titles: [
-        { id: 1, rank: 'C', name: '新手爬塔狗', effect: 'HP + 10', desc: '剛踏入塔內的神祕小狗。' },
-        { id: 2, rank: 'C', name: '路邊的小乞丐', effect: '金幣獲取 + 5%', desc: '擅長在塔底徘徊。' },
-        { id: 3, rank: 'B', name: '胃袋魔術師', effect: '食物效果提升 20%', desc: '阿毛的胃是異次元。' },
-        { id: 4, rank: 'B', name: '全能拆遷王', effect: '攻擊力 + 20', desc: '走到哪拆到哪。' },
-        { id: 5, rank: 'A', name: '莫蘭迪美學家', effect: '全屬性 + 15', desc: '追求優雅色調的阿毛。' },
-        { id: 6, rank: 'A', name: '中二病覺醒者', effect: '爆擊率 + 10%', desc: '右手封印著黑暗力量。' },
-        { id: 7, rank: 'S', name: '傳說神之胃', effect: '永久生命力 + 500', desc: '連骨頭都能消化的神級存在。' },
-        { id: 8, rank: 'S', name: '鮮茶道品飲大師', effect: '魔力上限 + 200', desc: '喝茶喝到了最高境界。' }
-    ],
-
-    items: [
-        { name: '魔法掃把', desc: '雖然只是掃地的，但看起來很酷。' },
-        { name: '媽媽的毛毯', desc: '防禦力極高，還有安心的味道。' },
-        { name: '香香護手霜', desc: '阿毛的肉球變得超軟嫩。' },
-        { name: '白袍碎片', desc: '上面有明顯的阿毛咬痕，可能是醫生的。' },
-        { name: '火星機票', desc: '一張去不了火星的廢物。' }
-    ]
+    
+    // Emoji 自動配對邏輯
+    getEmoji(name) {
+        if (name.includes("茶") || name.includes("奶")) return "🍵";
+        if (name.includes("飯") || name.includes("粥")) return "🍚";
+        if (name.includes("麵")) return "🍜";
+        if (name.includes("排") || name.includes("肉") || name.includes("骨")) return "🍖";
+        if (name.includes("水餃") || name.includes("煮")) return "🥟";
+        if (name.includes("甜") || name.includes("堡") || name.includes("餅") || name.includes("堡") || name.includes("芙")) return "🍰";
+        if (name.includes("飲")) return "🥤";
+        return "🍱"; // 預設
+    }
 };
 
 const AmaoGame = {
     foodNotebook: [],
     titleNotebook: [],
-    inventory: [],
     floor: 1,
     stats: { hp: 100, gold: 1000, title: '新手爬塔狗' },
 
@@ -385,53 +375,50 @@ const AmaoGame = {
         this.generateTitles();
         this.load();
         this.refreshUI();
-        console.log("阿毛之塔數據引擎啟動...");
     },
 
     generateFood() {
         const special = [
-            { name: "奶奶煮的炒飯", desc: "阿嬤怕妳餓的魔力。HP+5", consumed: false },
-            { name: "爺爺的鹹稀飯", desc: "充滿家的味道。MP+5", consumed: false },
-            { name: "禮拜三的水餃", desc: "週三限定美食。恢復HP", consumed: false },
-            { name: "伯爵紅茶", desc: "鮮茶道招牌。精神百倍", consumed: false },
-            { name: "藍莓果茶", desc: "酸甜魔法味。恢復MP", consumed: false }
+            { name: "奶奶煮的炒飯", desc: "阿嬤怕妳餓的魔力。HP+5", consumed: false, emoji: "🍚" },
+            { name: "爺爺的鹹稀飯", desc: "充滿家的味道。MP+5", consumed: false, emoji: "🥣" },
+            { name: "禮拜三的水餃", desc: "週三限定美食。恢復HP", consumed: false, emoji: "🥟" },
+            { name: "伯爵紅茶", desc: "鮮茶道招牌。精神百倍", consumed: false, emoji: "🍵" },
+            { name: "藍莓果茶", desc: "酸甜魔法味。恢復MP", consumed: false, emoji: "🍹" }
         ];
         this.foodNotebook = [...special];
         for(let i=special.length; i<300; i++) {
             let p = GameDB.foodPrefix[Math.floor(Math.random()*20)];
             let m = GameDB.foodMiddle[Math.floor(Math.random()*20)];
             let s = GameDB.foodSuffix[Math.floor(Math.random()*20)];
-            this.foodNotebook.push({ name: p+m+s, desc: "隨機生成的塔內美食。", consumed: false });
+            let fullName = p+m+s;
+            this.foodNotebook.push({ 
+                name: fullName, 
+                desc: "隨機生成的塔內美食。", 
+                consumed: false,
+                emoji: GameDB.getEmoji(fullName)
+            });
         }
     },
 
     generateTitles() {
         this.titleNotebook = [];
         for(let i=0; i<150; i++) {
-            if(i < GameDB.titles.length) {
-                this.titleNotebook.push({ ...GameDB.titles[i], unlocked: i===0 });
-            } else {
-                this.titleNotebook.push({ id: i+1, rank: 'C', name: '未知的傳說', desc: '繼續探索以解鎖。', unlocked: false });
-            }
+            this.titleNotebook.push({ id: i+1, rank: 'C', name: i===0 ? '新手爬塔狗' : '未知的傳說', desc: '繼續探索以解鎖。', unlocked: i===0 });
         }
     },
 
-    // 點擊骰子
     roll() {
         const step = Math.floor(Math.random() * 6) + 1;
         this.floor += step;
-        
-        // 更新 UI
         document.getElementById('bg-floor').innerText = this.floor.toString().padStart(4, '0');
         
-        // 隨機事件
         let logIcon = "✨";
         let logText = `擲出 ${step} 點！來到 <span class="highlight-text">${this.floor}F</span>。`;
         
-        if(Math.random() > 0.8) {
+        if(Math.random() > 0.7) { // 提高一點獲得機率方便測試
             let fIdx = Math.floor(Math.random()*300);
             this.foodNotebook[fIdx].consumed = true;
-            logIcon = "🎁";
+            logIcon = this.foodNotebook[fIdx].emoji;
             logText += ` 意外獲得了 <span style="color:var(--morandi-green)">${this.foodNotebook[fIdx].name}</span>！`;
         }
 
@@ -450,17 +437,12 @@ const AmaoGame = {
     refreshUI() {
         document.getElementById('bg-floor').innerText = this.floor.toString().padStart(4, '0');
         document.getElementById('gold-val').innerText = this.stats.gold;
-        // 修正原本的按鈕文字與標題
-        document.querySelector('.dice-button').innerHTML = '<span>🎲</span> 投擲命運之骰';
         document.getElementById('current-title').innerText = `【${this.stats.title}】`;
     },
 
     save() {
         localStorage.setItem('AmaoSave', JSON.stringify({
-            floor: this.floor,
-            food: this.foodNotebook,
-            titles: this.titleNotebook,
-            stats: this.stats
+            floor: this.floor, food: this.foodNotebook, titles: this.titleNotebook, stats: this.stats
         }));
     },
 
@@ -476,7 +458,6 @@ const AmaoGame = {
     }
 };
 
-// 覆寫介面點擊邏輯
 window.handleRoll = () => AmaoGame.roll();
 
 window.openMenu = (type) => {
@@ -488,15 +469,15 @@ window.openMenu = (type) => {
 
     if(type === 'food') {
         let count = AmaoGame.foodNotebook.filter(f=>f.consumed).length;
-        tt.innerText = `🍱 美食筆記本 (${count}/300)`;
+        tt.innerText = `🍱 美食圖鑑 (${count}/300)`;
         AmaoGame.foodNotebook.forEach((f, i) => {
             let s = document.createElement('div');
             s.className = 'item-slot' + (f.consumed ? ' unlocked' : '');
             if(f.consumed) {
-                s.style.background = 'var(--morandi-green)';
-                s.style.color = 'white';
-                s.innerText = f.name.substring(0, 2);
-                s.onclick = () => alert(`【${f.name}】\n${f.desc}`);
+                s.style.background = 'var(--panel-bg)';
+                s.style.border = '1px solid var(--morandi-green)';
+                s.innerHTML = `<div style="font-size:1.5em">${f.emoji}</div><div style="font-size:0.6em;color:var(--text-light)">${f.name.substring(0,2)}</div>`;
+                s.onclick = () => alert(`${f.emoji} 【${f.name}】\n${f.desc}`);
             } else {
                 s.innerText = i + 1;
             }
@@ -508,20 +489,17 @@ window.openMenu = (type) => {
             let s = document.createElement('div');
             s.className = 'item-slot';
             s.innerText = t.unlocked ? t.name.substring(0, 2) : '???';
-            if(t.unlocked) s.onclick = () => alert(`【${t.name}】\n${t.desc}`);
             ct.appendChild(s);
         });
     } else {
-        tt.innerText = '背包系統';
-        ct.innerHTML = '<p style="grid-column: span 4; text-align:center; padding: 20px;">背包目前空空如也...</p>';
+        tt.innerText = '功能選單';
+        ct.innerHTML = '<p style="grid-column: span 4; text-align:center; padding: 20px;">施工中...</p>';
     }
 };
 
 window.closeMenu = () => { document.getElementById('menu-overlay').style.display = 'none'; };
 
-// 啟動
 AmaoGame.init();
-
 </script>
 
 </body>
