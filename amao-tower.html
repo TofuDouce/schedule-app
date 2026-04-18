@@ -229,6 +229,171 @@
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
         };
-    </script>
+    </script><script>
+// --- 基礎物件定義 ---
+const ui = {
+    openModal: (type) => {
+        const modal = document.getElementById('main-modal');
+        modal.style.display = 'flex';
+        // 這裡會被下面的 originalOpenModal 擴充功能
+    },
+    closeModal: () => {
+        document.getElementById('main-modal').style.display = 'none';
+    }
+};
+
+const game = {};
+
+// --- (1) 美食與稱號資料庫 (你提供的內容) ---
+const FoodA = ["蜂蜜香", "灑滿香菜", "神級入味", "散發金光的", "外酥內軟的", "阿毛咬過的", "阿嬤覺得你餓的", "極致濃縮的", "冰火五重天的", "地獄級辛辣"];
+const FoodB = ["黃金比例", "滷滷米達特製", "南瓜老闆強力推薦", "隱藏版", "充滿魔力氣息", "碳烤風味", "鮮茶道風味", "口感彈牙", "充滿愛心的", "吃了會流淚的"];
+const FoodC = ["香煎豬排", "全熟肉大餐", "伯爵紅茶", "藍莓果茶", "奶奶的炒飯", "爺爺的鹹稀飯", "週三的水餃", "熔岩巧克力", "特濃奶茶", "噴汁和牛棒棒糖"];
+
+let FOOD_DB = [];
+let foodCount = 0;
+for (let a of FoodA) {
+    for (let b of FoodB) {
+        for (let c of FoodC) {
+            if (foodCount >= 300) break;
+            FOOD_DB.push({
+                id: foodCount,
+                name: `${a}${b}${c}`,
+                desc: `這道料理看起來${a}，且帶有${b}，是不可多得的美味。`,
+                effect: `體力恢復 ${Math.floor(Math.random()*50)+10}`,
+                rarity: foodCount % 5 === 0 ? 'S' : (foodCount % 3 === 0 ? 'A' : 'B')
+            });
+            foodCount++;
+        }
+    }
+}
+
+const SPECIAL_FOOD = [
+    { id: 1001, name: "奶奶煮的炒飯", desc: "記憶中最強的炒飯，每一口都是愛。", effect: "HP 全滿且永久增加 1 點攻擊力", rarity: "S" },
+    { id: 1002, name: "爺爺煮的鹹稀飯", desc: "暖心又暖胃，生病時的救贖。", effect: "防禦力暫時提升 5 回合", rarity: "S" },
+    { id: 1004, name: "鮮茶道伯爵紅茶", desc: "佛手柑的香氣，中二魔法必備。", effect: "魔力恢復", rarity: "B" }
+];
+FOOD_DB = [...SPECIAL_FOOD, ...FOOD_DB];
+
+const TITLE_DB = [
+    { id: 0, name: "新手爬塔狗", rank: "C", desc: "剛踏入塔內的菜鳥。", effect: "無" },
+    { id: 4, name: "黃金尿尿小童", rank: "S", desc: "留下深刻印記。", effect: "敵人遇到你會滑倒" },
+    { id: 6, name: "魔法少女阿毛", rank: "S", desc: "穿上粉紅斗篷後力量湧現！", effect: "全屬性提升 10%" }
+];
+// ... 這裡可以補完你剩下的 150 個稱號迴圈
+
+let Player = {
+    gold: 1000, floor: 1,
+    unlockedTitles: [0, 4, 6],
+    currentTitleId: 0,
+    inventory: { food: [1001, 1004, 5, 10], items: [] },
+    eatenHistory: new Set(),
+    currentTab: 'food'
+};
+
+// --- (2) 渲染邏輯 ---
+function renderTitles() {
+    const body = document.getElementById('modal-body');
+    body.innerHTML = '';
+    TITLE_DB.forEach(t => {
+        const isUnlocked = Player.unlockedTitles.includes(t.id);
+        const card = document.createElement('div');
+        card.className = `item-card ${isUnlocked ? 'unlocked rank-' + t.rank : ''}`;
+        card.innerHTML = `<div class="card-icon">${isUnlocked ? '🏅' : '🔒'}</div><div class="card-name">${isUnlocked ? t.name : '???'}</div>`;
+        if (isUnlocked) {
+            card.onclick = () => {
+                Player.currentTitleId = t.id;
+                updateMainUI();
+                alert(`稱號變更：${t.name}`);
+            };
+        }
+        body.appendChild(card);
+    });
+}
+
+function renderBackpack() {
+    const body = document.getElementById('modal-body');
+    body.innerHTML = '';
+    if (Player.currentTab === 'food') {
+        Player.inventory.food.forEach(fid => {
+            const food = FOOD_DB.find(f => f.id === fid);
+            if (!food) return;
+            const card = document.createElement('div');
+            const eaten = Player.eatenHistory.has(fid);
+            card.className = `item-card unlocked rank-${food.rarity}`;
+            card.innerHTML = `<div class="card-icon">🍱</div><div class="card-name" style="${eaten ? 'color: #FFE082; font-weight:900;' : ''}">${food.name}</div>`;
+            card.onclick = () => {
+                if (confirm(`食用 ${food.name}？`)) eatFood(fid);
+            };
+            body.appendChild(card);
+        });
+    }
+}
+
+function eatFood(fid) {
+    Player.eatenHistory.add(fid);
+    addGameLog("🍴", `阿毛吃了【${FOOD_DB.find(f=>f.id===fid).name}】！`);
+    renderBackpack();
+}
+
+game.switchTab = (tabName) => {
+    Player.currentTab = tabName;
+    renderBackpack();
+};
+
+function updateMainUI() {
+    const titleObj = TITLE_DB.find(t => t.id === Player.currentTitleId) || TITLE_DB[0];
+    document.getElementById('current-title-label').innerText = `【${titleObj.name}】`;
+    document.getElementById('gold-display').innerText = Player.gold.toLocaleString();
+    document.getElementById('bg-floor-number').innerText = Player.floor.toString().padStart(4, '0');
+}
+
+function addGameLog(icon, text) {
+    const logs = document.getElementById('adventure-logs');
+    const entry = document.createElement('div');
+    entry.className = 'log-card';
+    entry.innerHTML = `<div>${icon}</div><div>${text} <small>(${Player.floor}F)</small></div>`;
+    logs.appendChild(entry);
+}
+
+// 魔法對接：擴充原本的 Modal 功能
+const originalOpenModal = ui.openModal;
+ui.openModal = (type) => {
+    originalOpenModal(type);
+    if (type === 'notebook') renderTitles();
+    if (type === 'backpack') renderBackpack();
+};
+
+// --- (3) 粒子引擎啟動 ---
+function initParticles() {
+    const canvas = document.getElementById('magic-engine');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const particles = [];
+    for(let i=0; i<50; i++) {
+        particles.push({
+            x: Math.random()*canvas.width, y: Math.random()*canvas.height,
+            size: Math.random()*2+1, speed: Math.random()*0.3+0.1,
+            opacity: Math.random(), color: i%2===0 ? '#EAC4D5' : '#FFE082'
+        });
+    }
+    function draw() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        particles.forEach(p => {
+            ctx.globalAlpha = p.opacity; ctx.fillStyle = p.color;
+            ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
+            p.y -= p.speed; if(p.y < -10) p.y = canvas.height+10;
+        });
+        requestAnimationFrame(draw);
+    }
+    draw();
+}
+
+window.addEventListener('load', () => {
+    initParticles();
+    updateMainUI();
+    addGameLog("🔮", "「阿毛之塔」大門開啟，背景魔法粒子已啟動！");
+});
+</script>
 </body>
 </html>
