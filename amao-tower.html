@@ -2,411 +2,304 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>阿毛之塔：極致九千九百九十九層冒險</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>阿毛之塔</title>
     <style>
-        /* --- 莫蘭迪核心配色系統 --- */
+        /* --- 莫蘭迪深色調系統 (手機優化) --- */
         :root {
-            --bg-color: #E2D1C3;      /* 莫蘭迪米褐 - 背景 */
-            --panel-color: #F5F5F5;   /* 淺灰白 - 面板 */
-            --primary-accent: #B4C6A6; /* 莫蘭迪豆綠 - 積極/自然 */
-            --secondary-accent: #8E9775; /* 莫蘭迪橄欖 - 魔法/重型 */
-            --magic-purple: #D4ADCF;   /* 莫蘭迪淺紫 - 魔法/銀紫髮氣息 */
-            --text-dark: #6D6875;      /* 灰紫色 - 內文 */
-            --highlight-gold: #EAC4D5; /* 莫蘭迪柔粉金 - 稱號/稀有度 */
-            --border-style: 3px solid #6D6875;
-            --font-main: "PingFang TC", "Microsoft JhengHei", sans-serif;
+            --bg-dark: #2D2D3A;        /* 深色背景 */
+            --panel-bg: #1F1F28;      /* 更深的面板色 */
+            --morandi-green: #B4C6A6; /* 莫蘭迪綠 (按鈕) */
+            --morandi-gold: #EAC4D5;  /* 莫蘭迪柔粉金 (稱號) */
+            --text-light: #E0E0E0;    /* 亮色文字 */
+            --text-dim: #A0A0A0;      /* 暗色文字 */
+            --accent-blue: #A3B1C6;   /* 莫蘭迪藍 (魔法感) */
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent; 
+            font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
+        }
 
         body {
-            background-color: var(--bg-color);
-            color: var(--text-dark);
-            font-family: var(--font-main);
+            background-color: var(--bg-dark);
+            color: var(--text-light);
             margin: 0;
             display: flex;
             justify-content: center;
-            align-items: center;
             height: 100vh;
-            overflow: hidden;
+            overflow: hidden; /* 防止全域滾動，由日誌控制 */
         }
 
-        /* --- 主遊戲容器 --- */
-        #game-container {
-            width: 900px;
-            height: 650px;
-            background: var(--panel-color);
-            border: var(--border-style);
-            border-radius: 20px;
-            box-shadow: 10px 10px 0px rgba(0,0,0,0.1);
-            position: relative;
+        /* --- 手機主容器 --- */
+        #game-phone-container {
+            width: 100%;
+            max-width: 500px;
+            height: 100%;
             display: flex;
             flex-direction: column;
+            position: relative;
         }
 
-        /* --- 頂部狀態列 (Status Bar) --- */
+        /* --- 頂部狀態列 --- */
         header {
-            padding: 15px 25px;
-            border-bottom: var(--border-style);
+            padding: 15px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: white;
-            border-radius: 17px 17px 0 0;
+            font-size: 0.9em;
         }
 
-        .amao-info { display: flex; align-items: center; gap: 15px; }
-        .amao-avatar {
-            width: 60px;
-            height: 60px;
-            background: var(--magic-purple);
-            border-radius: 50%;
-            border: 2px solid var(--text-dark);
+        .status-item { display: flex; align-items: center; gap: 5px; }
+
+        /* --- 標題區 --- */
+        .game-title {
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            padding: 10px 0;
+            letter-spacing: 2px;
+        }
+
+        /* --- 主視角 (阿毛展示區) --- */
+        #stage-view {
+            flex: 1.2;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            font-size: 30px;
-            animation: bounce 2s infinite;
+            position: relative;
         }
 
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
+        .floor-indicator {
+            position: absolute;
+            font-size: 5em;
+            font-weight: 900;
+            color: rgba(255, 255, 255, 0.05);
+            z-index: 0;
         }
 
-        .stats-group { flex-grow: 1; margin-left: 20px; }
-        .bar-container {
-            width: 200px;
-            height: 12px;
-            background: #EEE;
-            border-radius: 6px;
-            margin: 4px 0;
-            overflow: hidden;
-            border: 1px solid var(--text-dark);
+        .amao-main-sprite {
+            font-size: 80px;
+            z-index: 1;
+            filter: drop-shadow(0 0 10px rgba(163, 177, 198, 0.3));
+            margin-bottom: 10px;
         }
-        .hp-bar { width: 100%; height: 100%; background: #E5989B; transition: 0.3s; }
-        .mp-bar { width: 80%; height: 100%; background: var(--magic-purple); transition: 0.3s; }
 
-        /* --- 稱號展示區 (目前最好稱號) --- */
-        .current-title {
-            background: var(--highlight-gold);
-            padding: 5px 15px;
+        .amao-title-label {
+            background: var(--morandi-gold);
+            color: #4A4A4A;
+            padding: 4px 15px;
             border-radius: 20px;
             font-weight: bold;
             font-size: 0.9em;
-            border: 1px solid var(--text-dark);
-            box-shadow: 2px 2px 0px var(--text-dark);
+            z-index: 1;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.2);
         }
 
-        /* --- 遊戲主舞台 (Stage) --- */
-        #stage {
-            flex-grow: 1;
-            position: relative;
-            background-image: linear-gradient(to bottom, #fdfbfb 0%, #ebedee 100%);
+        /* --- 日誌列表 (1.0 風格) --- */
+        #game-log-list {
+            flex: 2;
+            background: var(--panel-bg);
+            margin: 10px 15px;
+            border-radius: 15px;
+            padding: 15px;
+            overflow-y: auto;
+            border-left: 4px solid var(--accent-blue);
+        }
+
+        .log-entry {
+            margin-bottom: 12px;
             display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 1em;
+            animation: slideIn 0.3s ease-out;
         }
 
-        .tower-bg {
-            position: absolute;
-            bottom: 0; width: 100%; height: 40px;
-            background: var(--secondary-accent);
-            opacity: 0.3;
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
         }
 
-        #amao-sprite {
-            font-size: 80px;
-            position: absolute;
-            bottom: 60px;
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
+        .log-icon { font-size: 1.2em; }
+        .log-text { line-height: 1.4; color: var(--text-light); }
+        .log-highlight { color: #81D4FA; font-weight: bold; }
 
-        /* --- 樓層顯示 --- */
-        .floor-counter {
-            position: absolute;
-            top: 20px; right: 20px;
-            font-size: 2em;
-            font-weight: 900;
-            color: var(--secondary-accent);
-            text-shadow: 2px 2px white;
-        }
-
-        /* --- 右下角商人/工具列 --- */
-        .action-menu {
-            position: absolute;
-            bottom: 20px; right: 20px;
+        /* --- 操作區 --- */
+        .controls {
+            padding: 10px 15px 30px 15px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 15px;
         }
 
-        .btn-circle {
-            width: 60px; height: 60px;
-            border-radius: 50%;
-            border: var(--border-style);
-            background: white;
-            cursor: pointer;
+        .dice-button {
+            background-color: #FFE082; /* 淺金黃色，1.0測試模式風格 */
+            color: #333;
+            border: none;
+            border-radius: 15px;
+            padding: 18px;
+            font-size: 1.2em;
+            font-weight: bold;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 24px;
-            transition: 0.2s;
+            gap: 10px;
+            box-shadow: 0 6px 0 #D4A017;
+            cursor: pointer;
+            transition: 0.1s;
         }
-        .btn-circle:hover { transform: scale(1.1) rotate(10deg); background: var(--primary-accent); }
 
-        /* --- 骰子系統 --- */
-        #dice-area {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            text-align: center;
+        .dice-button:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #D4A017;
         }
-        .dice {
-            width: 80px; height: 80px;
-            background: white;
-            border: var(--border-style);
-            border-radius: 15px;
-            display: inline-flex;
+
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            padding-top: 5px;
+        }
+
+        .nav-item {
+            background: rgba(255,255,255,0.1);
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 40px;
-            font-weight: bold;
+            font-size: 1.5em;
             cursor: pointer;
-            box-shadow: 5px 5px 0px var(--text-dark);
-        }
-        .dice.rolling { animation: roll 0.2s infinite; }
-        @keyframes roll {
-            0% { transform: rotate(0); }
-            50% { transform: rotate(10deg) scale(1.1); }
-            100% { transform: rotate(-10deg); }
         }
 
-        /* --- 訊息日誌區 --- */
-        #game-log {
-            height: 120px;
-            background: rgba(255,255,255,0.8);
-            border-top: var(--border-style);
-            padding: 10px 20px;
-            overflow-y: auto;
-            font-size: 0.9em;
-            line-height: 1.6;
-        }
-
-        /* --- 全局彈窗 (筆記本/商店) --- */
+        /* --- 彈窗優化 --- */
         .overlay {
             position: absolute;
-            top: 50px; left: 50px; right: 50px; bottom: 50px;
-            background: white;
-            border: var(--border-style);
-            border-radius: 15px;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-dark);
             z-index: 100;
             display: none;
             flex-direction: column;
-            padding: 20px;
         }
 
         .overlay-header {
+            padding: 20px;
             display: flex;
             justify-content: space-between;
-            border-bottom: 2px solid var(--bg-color);
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-        }
-
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 10px;
-            overflow-y: auto;
-        }
-
-        .grid-item {
-            aspect-ratio: 1;
-            border: 1px solid #DDD;
-            border-radius: 8px;
-            display: flex;
-            justify-content: center;
             align-items: center;
-            font-size: 0.8em;
-            background: #FAFAFA;
+            border-bottom: 1px solid #444;
         }
-        .highlight { background: var(--primary-accent) !important; color: white; }
 
-        /* 中二魔法提示 */
-        .magic-effect {
-            position: absolute;
-            pointer-events: none;
-            color: var(--magic-purple);
-            font-weight: bold;
-            animation: fadeUp 1.5s forwards;
-        }
-        @keyframes fadeUp {
-            to { transform: translateY(-50px); opacity: 0; }
-        }
+        /* 隱藏滾動條但保持功能 */
+        ::-webkit-scrollbar { width: 0; background: transparent; }
+
     </style>
 </head>
 <body>
 
-<div id="game-container">
+<div id="game-phone-container">
     <header>
-        <div class="amao-info">
-            <div class="amao-avatar">🐶</div>
-            <div>
-                <div style="font-weight: bold; margin-bottom: 5px;">阿毛 (A-Mao)</div>
-                <div class="bar-container"><div class="hp-bar" id="hp"></div></div>
-                <div class="bar-container"><div class="mp-bar" id="mp"></div></div>
-            </div>
-        </div>
-        <div class="current-title" id="display-title">新手爬塔狗</div>
+        <div class="status-item">⚡ 體力：<span id="stamina">無限</span></div>
+        <div class="status-item">💰 金幣：<span id="gold">1000</span></div>
     </header>
 
-    <main id="stage">
-        <div class="floor-counter"><span id="floor-val">1</span>F / 9999F</div>
-        <div id="amao-sprite">🐶</div>
-        <div class="tower-bg"></div>
+    <div class="game-title">阿毛之塔</div>
 
-        <div id="dice-area">
-            <div class="dice" id="main-dice" onclick="rollDice()">1</div>
-            <div style="margin-top: 10px; font-size: 0.8em; color: #888;">點擊投擲命運之骰</div>
-        </div>
-
-        <div class="action-menu">
-            <div class="btn-circle" title="美食筆記本" onclick="toggleOverlay('food-book')">🍱</div>
-            <div class="btn-circle" title="稱號筆記本" onclick="toggleOverlay('title-book')">📜</div>
-            <div class="btn-circle" title="背包/物品" onclick="toggleOverlay('bag')">🎒</div>
-            <div class="btn-circle" title="存檔" onclick="saveGame()">💾</div>
-        </div>
-    </main>
-
-    <div id="game-log">
-        <div><span style="color: var(--secondary-accent);">[系統]</span> 歡迎來到阿毛之塔！目標是 9999 樓的鮮茶道！</div>
+    <div id="stage-view">
+        <div class="floor-indicator" id="bg-floor">0001</div>
+        <div class="amao-main-sprite" id="amao-sprite">🐶</div>
+        <div class="amao-title-label" id="current-title">【新手爬塔狗】</div>
     </div>
 
-    <div id="food-book" class="overlay">
+    <div id="game-log-list">
+        <div class="log-entry">
+            <div class="log-icon">🚀</div>
+            <div class="log-text">遊戲初始化完成，阿毛準備好出發了！</div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="dice-button" onclick="handleRoll()">
+            🎲 投擲命運 (測試模式)
+        </button>
+        
+        <div class="bottom-nav">
+            <div class="nav-item" onclick="toggleMenu('food')">🍱</div>
+            <div class="nav-item" onclick="toggleMenu('titles')">🏅</div>
+            <div class="nav-item" onclick="toggleMenu('bag')">🎒</div>
+            <div class="nav-item" onclick="toggleMenu('shop')">🛒</div>
+        </div>
+    </div>
+
+    <div id="menu-overlay" class="overlay">
         <div class="overlay-header">
-            <h3>🍱 美食收藏筆記 (0/300)</h3>
-            <button onclick="toggleOverlay('food-book')">關閉</button>
+            <h2 id="menu-title">選單</h2>
+            <div class="nav-item" style="width:40px;height:40px" onclick="closeMenu()">✕</div>
         </div>
-        <div class="grid-container" id="food-grid">
-            </div>
+        <div id="menu-content" style="padding: 20px; overflow-y: auto;"></div>
     </div>
-
-    <div id="title-book" class="overlay">
-        <div class="overlay-header">
-            <h3>📜 稱號成就 (0/150)</h3>
-            <button onclick="toggleOverlay('title-book')">關閉</button>
-        </div>
-        <div class="grid-container" id="title-grid">
-            </div>
-    </div>
-
-    <div id="angel-area"></div>
 </div>
 
 <script>
-    // --- 遊戲邏輯變數 ---
-    let gameState = {
-        floor: 1,
-        hp: 100,
-        maxHp: 100,
-        mp: 50,
-        currentTitle: "新手爬塔狗",
-        discoveredFood: [], // 紀錄已吃過的食物ID
-        titles: [], // 紀錄已取得的稱號
-        bag: []
-    };
+    let floor = 1;
 
-    // --- 初始化 UI ---
-    function init() {
-        const foodGrid = document.getElementById('food-grid');
-        for(let i=1; i<=300; i++) {
-            let div = document.createElement('div');
-            div.className = 'grid-item';
-            div.id = `food-${i}`;
-            div.innerText = `???`;
-            foodGrid.appendChild(div);
-        }
+    function handleRoll() {
+        const btn = document.querySelector('.dice-button');
+        btn.disabled = true;
 
-        const titleGrid = document.getElementById('title-grid');
-        for(let i=1; i<=150; i++) {
-            let div = document.createElement('div');
-            div.className = 'grid-item';
-            div.id = `title-${i}`;
-            div.innerText = `LOCKED`;
-            titleGrid.appendChild(div);
-        }
-        log("初始化環境完成... 魔法濃稠度上升中。");
-    }
-
-    // --- 核心功能 ---
-    function rollDice() {
-        const dice = document.getElementById('main-dice');
-        if(dice.classList.contains('rolling')) return;
-
-        dice.classList.add('rolling');
+        // 模擬骰子
+        const step = Math.floor(Math.random() * 6) + 1;
         
+        // 增加一點點晃動感
+        const amao = document.getElementById('amao-sprite');
+        amao.style.transform = "scale(1.2) rotate(10deg)";
+
         setTimeout(() => {
-            const val = Math.floor(Math.random() * 6) + 1;
-            dice.innerText = val;
-            dice.classList.remove('rolling');
+            floor += step;
+            amao.style.transform = "scale(1) rotate(0deg)";
             
-            gameState.floor += val;
-            updateUI();
+            // 更新畫面
+            document.getElementById('bg-floor').innerText = floor.toString().padStart(4, '0');
             
-            log(`阿毛奮力一跳！前進了 ${val} 層，目前抵達第 ${gameState.floor} 層。`);
-            triggerMagicEffect(`+${val} Floor!`);
+            // 新增日誌 (最上面)
+            addLog("🎲", `測試投骰：<span class="log-highlight">${step}</span> 點！來到 <span class="log-highlight">${floor}F</span>`);
             
-            // 隨機事件判定 (後續章節會擴充)
-            checkEvent();
-        }, 600);
+            // 隨機獎勵模擬
+            if(Math.random() > 0.7) {
+                addLog("🎁", `獲得測試獎勵：<span style="color:var(--morandi-green)">香噴噴烤雞</span>`);
+            }
+
+            btn.disabled = false;
+        }, 300);
     }
 
-    function updateUI() {
-        document.getElementById('floor-val').innerText = gameState.floor;
-        document.getElementById('hp').style.width = (gameState.hp / gameState.maxHp * 100) + "%";
-        document.getElementById('display-title').innerText = gameState.currentTitle;
+    function addLog(icon, text) {
+        const logList = document.getElementById('game-log-list');
+        const entry = document.createElement('div');
+        entry.className = 'log-entry';
+        entry.innerHTML = `
+            <div class="log-icon">${icon}</div>
+            <div class="log-text">${text}</div>
+        `;
+        logList.insertBefore(entry, logList.firstChild);
     }
 
-    function log(msg) {
-        const logDiv = document.getElementById('game-log');
-        let newLog = document.createElement('div');
-        newLog.innerHTML = `<span style="color:#999">[${new Date().toLocaleTimeString()}]</span> ${msg}`;
-        logDiv.prepend(newLog);
+    function toggleMenu(type) {
+        const overlay = document.getElementById('menu-overlay');
+        const title = document.getElementById('menu-title');
+        overlay.style.display = 'flex';
+        if(type === 'food') title.innerText = '美食筆記本';
+        if(type === 'titles') title.innerText = '稱號與頭銜';
+        if(type === 'bag') title.innerText = '阿毛的背包';
+        if(type === 'shop') title.innerText = '神祕商店';
     }
 
-    function toggleOverlay(id) {
-        const el = document.getElementById(id);
-        el.style.display = (el.style.display === 'flex') ? 'none' : 'flex';
+    function closeMenu() {
+        document.getElementById('menu-overlay').style.display = 'none';
     }
-
-    function triggerMagicEffect(text) {
-        const stage = document.getElementById('stage');
-        const effect = document.createElement('div');
-        effect.className = 'magic-effect';
-        effect.innerText = text;
-        effect.style.left = '50%';
-        effect.style.top = '50%';
-        stage.appendChild(effect);
-        setTimeout(() => effect.remove(), 1500);
-    }
-
-    function checkEvent() {
-        // 模擬事件：之後會加入怪物、寶箱、商人
-        let r = Math.random();
-        if(r < 0.2) log("阿毛聞到了香香的味道，附近似乎有美食？");
-        else if(r < 0.4) log("遠處傳來嘶哈嘶哈的聲音... 是南瓜老闆在重訓嗎？");
-    }
-
-    function saveGame() {
-        localStorage.setItem('amao_tower_save', JSON.stringify(gameState));
-        log("「存檔完成！」阿毛把記憶埋進了土裡。");
-        triggerMagicEffect("Saved!");
-    }
-
-    window.onload = init;
 </script>
 
 </body>
