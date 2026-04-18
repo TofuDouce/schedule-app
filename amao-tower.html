@@ -1750,6 +1750,116 @@ window.openMenu = function(type) {
 };
 
 console.log("阿毛之塔：區塊 9 系統選單已裝載，齒輪運作中！");
+</script><script>
+/**
+ * 阿毛之塔 - 終極直覺背包 (取消標籤分頁，直接顯示內容)
+ */
+
+Object.assign(AmaoGame, {
+    inventory: AmaoGame.inventory || [],
+
+    // 核心：接收物品並強制重新渲染
+    receiveItem(itemData) {
+        const itemName = itemData.fullName || itemData.name;
+        let existingItem = this.inventory.find(i => i.fullName === itemName);
+        
+        if (existingItem) {
+            existingItem.count++;
+        } else {
+            this.inventory.push({
+                fullName: itemName,
+                icon: itemData.icon || '📦',
+                type: itemData.type || (/水餃|肉|麵|堡|飯|餅|布丁/.test(itemName) ? 'food' : 'item'),
+                desc: itemData.desc || '神祕的物件。',
+                count: 1,
+                power: itemData.power || 20
+            });
+        }
+        this.addLog("🎁", `獲得了 <span class="highlight-text">${itemName}</span>！`);
+        this.save();
+        this.refreshUI();
+    },
+
+    // 核心：使用邏輯
+    useItem(itemName) {
+        const idx = this.inventory.findIndex(i => i.fullName === itemName);
+        if (idx === -1) return;
+        const item = this.inventory[idx];
+
+        if (item.type === 'food') {
+            const heal = item.power || 20;
+            this.stats.hp = Math.min(100, this.stats.hp + heal);
+            this.addLog("🍴", `阿毛吃掉了 ${item.fullName}，體力恢復了 ${heal} 點！`);
+        } else {
+            this.addLog("✨", `使用了 ${item.fullName}：${item.desc}`);
+        }
+
+        item.count--;
+        if (item.count <= 0) this.inventory.splice(idx, 1);
+        this.save();
+        this.refreshUI();
+        window.openMenu('inventory'); 
+    }
+});
+
+// 重寫選單：取消 Tab，直接列出所有卡片
+window.openMenu = function(type) {
+    const ov = document.getElementById('menu-overlay');
+    const ct = document.getElementById('menu-content');
+    const tt = document.getElementById('menu-title');
+    if (!ov || !ct || !tt) return;
+
+    ct.innerHTML = '';
+    ov.style.display = 'flex';
+
+    if (type === 'system') {
+        tt.innerText = "⚙️ 系統設定";
+        ct.innerHTML = `<div style="grid-column:span 4; display:flex; flex-direction:column; gap:10px; padding:10px;">
+            <button onclick="AmaoGame.manualSave()" style="padding:10px; background:var(--morandi-green); color:white; border:none; border-radius:10px;">💾 儲存進度</button>
+            <button onclick="AmaoGame.rebirth()" style="padding:10px; background:#D4ADCF; color:white; border:none; border-radius:10px;">🌀 重新爬塔</button>
+        </div>`;
+        return;
+    }
+
+    if (type === 'title') {
+        tt.innerText = '🏅 稱號紀錄';
+        AmaoGame.titleNotebook.forEach(t => {
+            let s = document.createElement('div');
+            s.className = 'item-slot' + (t.unlocked ? ' unlocked' : '');
+            s.innerHTML = `<div>${t.unlocked ? t.name.substring(0, 2) : '??'}</div>`;
+            s.onclick = () => { if(t.unlocked) AmaoGame.switchTitle(t.name); window.openMenu('title'); };
+            ct.appendChild(s);
+        });
+        return;
+    }
+
+    // 預設為背包介面 (不分頁)
+    tt.innerText = `🎒 阿毛的冒險背包`;
+    if (AmaoGame.inventory.length === 0) {
+        ct.innerHTML = '<div style="grid-column:span 4; text-align:center; padding:40px; color:#999;">背包空空的...</div>';
+    } else {
+        AmaoGame.inventory.forEach(item => {
+            let card = document.createElement('div');
+            card.className = 'item-slot unlocked';
+            card.style = "position:relative; display:flex; flex-direction:column; align-items:center; padding:10px; height:auto;";
+            card.innerHTML = `
+                <div style="font-size:1.8em">${item.icon}</div>
+                <div style="font-size:0.6em; margin-top:5px; font-weight:bold;">${item.fullName}</div>
+                <div style="font-size:0.5em; color:#666; text-align:center; line-height:1.2; margin-top:3px;">${item.desc}</div>
+                <div style="position:absolute; top:2px; right:5px; background:var(--morandi-green); color:white; font-size:0.6em; padding:0 4px; border-radius:5px;">x${item.count}</div>
+            `;
+            card.onclick = () => {
+                if (confirm(`要使用/吃掉【${item.fullName}】嗎？`)) AmaoGame.useItem(item.fullName);
+            };
+            ct.appendChild(card);
+        });
+    }
+};
+
+// 強制修正原本撿到食物的舊邏輯，導向新背包
+AmaoGame.receiveFood = function(f) { this.receiveItem(f); };
+
+console.log("🎒 直覺背包已裝載！所有物品現在會直接顯示說明並集中在一起。");
 </script>
 </body>
 </html>
