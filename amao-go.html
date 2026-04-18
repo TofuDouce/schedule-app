@@ -1434,6 +1434,71 @@ document.addEventListener('DOMContentLoaded', () => {
         msgBox.style.flexDirection = 'column-reverse';
     }
 })();
+</<style>
+    /* 這次把按鈕放在右下角，確保不會被頂部狀態欄擋住 */
+    #reset-btn-v2 {
+        position: fixed !important;
+        bottom: 180px !important; /* 避開最下面的按鈕區 */
+        right: 20px !important;
+        width: 60px !important;
+        height: 60px !important;
+        background-color: #ff4757 !important; /* 鮮豔的紅色 */
+        color: white !important;
+        border: 3px solid #ffffff !important;
+        border-radius: 50% !important;
+        font-size: 14px !important;
+        font-weight: bold !important;
+        z-index: 999999 !important; /* 最高層級 */
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important;
+        cursor: pointer !important;
+        line-height: 1.2 !important;
+        text-align: center !important;
+    }
+</style>
+
+<script>
+(function() {
+    // 移除舊的按鈕（如果有）
+    const oldBtn = document.getElementById('reset-btn') || document.getElementById('reset-btn-v2');
+    if (oldBtn) oldBtn.remove();
+
+    // 建立新按鈕
+    const btn = document.createElement('div');
+    btn.id = 'reset-btn-v2';
+    btn.innerHTML = '重啟<br>冒險';
+    document.body.appendChild(btn);
+
+    // 點擊邏輯
+    btn.onclick = function() {
+        if (confirm("🚨 創世警告：阿毛要放棄當前進度，回到第 1 層重新出發嗎？")) {
+            // 1. 清除存檔
+            localStorage.removeItem('amao_tower_save');
+            
+            // 2. 嘗試重置記憶體狀態
+            if (typeof state !== 'undefined') {
+                state.lvl = 1;
+                state.gold = 100;
+                state.isBattle = false;
+                // 存入一個初始化的狀態
+                localStorage.setItem('amao_tower_save', JSON.stringify(state));
+            }
+            
+            // 3. 暴力重新整理，徹底洗牌
+            location.href = location.href.split('?')[0]; 
+        }
+    };
+
+    // 再次強制修正字體（確保太太太太大）
+    const msgBox = document.getElementById('msg-box');
+    if (msgBox) {
+        msgBox.style.fontSize = '22px'; // 挑戰極限大
+        msgBox.style.display = 'flex';
+        msgBox.style.flexDirection = 'column-reverse';
+    }
+})();
 </script>
 
 <div style="height: 50px; text-align: center; color: rgba(255,255,255,0.2); font-size: 10px; margin-top: 20px;">
