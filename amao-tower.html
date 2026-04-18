@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>阿毛之塔 - Amao Tower: Magic Edition</title>
+    <title>阿毛之塔 - Amao Tower: Magic Particle Edition</title>
     <style>
         /* --- 1. 全域視覺定義：莫蘭迪中二色系 --- */
         :root {
             /* 基礎色盤 */
             --bg-deep: #121218;         /* 深邃宇宙底色 */
             --panel-bg: #1F1F2A;        /* 區塊背景 */
-            --magic-purple: #EAC4D5;    /* 魔法粒子粉紫 */
+            --magic-purple: #EAC4D5;    /* 魔法粒子粉紫 (主要粒子色) */
+            --magic-gold: #FFE082;      /* 魔法粒子金色 (次要粒子色) */
             --morandi-green: #B4C6A6;   /* 正面氣息綠 */
             --gold: #D4A017;            /* S級傳說金 */
             --silver: #A3B1C6;          /* A級精銳銀 */
             --bronze: #C49271;          /* B級卓越銅 */
             --wood: #8D7B6D;            /* C級平凡木 */
             --danger: #FF6B6B;          /* 敵人/警示紅 */
-            --fresh-tea: #5D7E62;       /* 鮮茶道墨綠 */
             
             /* 字體與陰影 */
             --font-main: "PingFang TC", "Microsoft JhengHei", sans-serif;
@@ -45,16 +45,19 @@
             height: 100vh; width: 100vw;
             overflow: hidden;
             display: flex; flex-direction: column;
+            position: relative; /* 為了讓 Canvas 絕對定位 */
         }
 
         /* 隱藏捲軸 */
         ::-webkit-scrollbar { display: none; }
 
-        /* --- 3. 魔法粒子背景系統 --- */
+        /* --- 3. 魔法粒子背景系統 (修正重點：確保 Canvas 覆蓋全螢幕且置底) --- */
         #magic-engine {
             position: absolute; top: 0; left: 0;
             width: 100%; height: 100%;
-            z-index: 0; pointer-events: none; opacity: 0.6;
+            z-index: 0; /* 置於最底層 */
+            pointer-events: none; /* 不阻擋點擊 */
+            opacity: 0.5; /* 保持透明度，不干擾視線 */
         }
 
         /* --- 4. 頂部狀態列 (Status Bar) --- */
@@ -65,6 +68,7 @@
             z-index: 100; flex-shrink: 0;
             display: flex; flex-direction: column; justify-content: center;
             box-shadow: 0 4px 30px rgba(0,0,0,0.6);
+            position: relative; /* 確保在 Canvas 之上 */
         }
 
         .header-stats {
@@ -88,7 +92,7 @@
         /* --- 5. 核心舞台區 (Stage) --- */
         main {
             flex: 1; overflow-y: auto; overflow-x: hidden;
-            position: relative; z-index: 1;
+            position: relative; z-index: 1; /* 在 Canvas 之上 */
             display: flex; flex-direction: column;
         }
 
@@ -136,6 +140,7 @@
         /* --- 6. 冒險日誌系統 --- */
         #adventure-logs {
             padding: 15px; display: flex; flex-direction: column-reverse; gap: 12px;
+            position: relative; z-index: 1;
         }
 
         .log-card {
@@ -159,6 +164,7 @@
             border-top: 2px solid rgba(255,255,255,0.1);
             padding: 15px 20px; z-index: 100;
             display: flex; flex-direction: column; gap: 15px;
+            position: relative; /* 確保在 Canvas 之上 */
         }
 
         .main-action-btn {
@@ -262,8 +268,6 @@
             box-shadow: 0 0 40px rgba(255,255,255,0.3);
             pointer-events: none;
         }
-
-        /* 這裡是第一部分的核心樣式結構，已經預留了後續打怪、商人、背包切換的所有 CSS Hooks */
     </style>
 </head>
 <body>
@@ -324,7 +328,7 @@
     </div>
 
     <script>
-        // 初始化視覺引擎與 UI 操作對象
+        // --- 核心 UI 操作對象 ---
         const ui = {
             openModal: (type) => {
                 const modal = document.getElementById('main-modal');
@@ -337,33 +341,127 @@
                 
                 if(type === 'settings') {
                     title.innerText = "⚙️ 冒險設定";
+                    body.className = 'notebook-content'; // 延用舊樣式修正
                     body.innerHTML = `
-                        <div style="grid-column: span 4; display: flex; flex-direction: column; gap: 20px;">
-                            <div class="nav-btn" style="height: 80px;" onclick="game.save()">💾 儲存冒險進度</div>
-                            <div class="nav-btn" style="height: 80px; color: var(--danger); border-color: var(--danger);" onclick="game.backToOne()">⏳ 穿越時空回到 1 樓</div>
-                            <p style="text-align: center; font-size: 0.8em; opacity: 0.5;">「即使回到最初，學到的技能與獲得的寶物是不會消失的。」</p>
+                        <div style="grid-column: span 4; display: flex; flex-direction: column; gap: 20px; padding: 20px;">
+                            <div class="nav-btn unlocked" style="height: 80px; flex:none; background: rgba(255,255,255,0.1);" onclick="game.save()">💾 儲存冒險進度</div>
+                            <div class="nav-btn unlocked" style="height: 80px; flex:none; color: var(--danger); border-color: var(--danger); background: rgba(255,107,107,0.1);" onclick="game.backToOne()">⏳ 穿越時空回到 1 樓</div>
+                            <p style="text-align: center; font-size: 0.8em; opacity: 0.5; margin-top: 20px;">「即使回到最初，學到的技能與獲得的寶物是不會消失的。」</p>
                         </div>
                     `;
                 }
-                // 其他類型預留...
+                // 其他類型由後續區塊實現渲染
             },
             closeModal: () => {
                 document.getElementById('main-modal').style.display = 'none';
             }
         };
 
-        // 預留遊戲核心對象
+        // --- 預留遊戲核心對象 ---
         const game = {
             save: () => {
-                document.getElementById('magic-toast').style.display = 'block';
-                setTimeout(() => document.getElementById('magic-toast').style.display = 'none', 1500);
+                showToast("✨ 魔法儲存成功 ✨");
             },
             backToOne: () => {
                 if(confirm("確定要消耗魔力回到 1 樓嗎？（物品會保留）")) {
-                    // 邏輯將在後續 Script 區塊實現
-                    location.reload(); 
+                    // 此處邏輯將在後續 Scripts 區塊整合，目前先模擬
+                    addGameLog("⏳", "阿毛發動了時間魔法，回到了塔的一樓！");
+                    ui.closeModal();
                 }
             }
+        };
+
+        // --- 輔助功能 ---
+        function showToast(msg) {
+            const t = document.getElementById('magic-toast');
+            t.innerText = msg;
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 1500);
+        }
+
+        function addGameLog(icon, text) {
+            const logs = document.getElementById('adventure-logs');
+            const entry = document.createElement('div');
+            entry.className = 'log-card';
+            entry.innerHTML = `<div>${icon}</div><div>${text}</div>`;
+            logs.appendChild(entry);
+            const main = document.getElementById('main-container');
+            main.scrollTop = main.scrollHeight;
+        }
+
+        // 阿毛點擊互動
+        function amaoReact() {
+            const sprite = document.getElementById('amao-sprite');
+            sprite.style.transform = "scale(1.2) translateY(-20px)";
+            setTimeout(() => sprite.style.transform = "scale(1) translateY(0)", 200);
+            showToast("汪！(🐾)");
+        }
+
+        // --- (修正與整合) 粒子引擎：粉紫金色粒子動畫 ---
+        function initMagicEngine() {
+            const canvas = document.getElementById('magic-engine');
+            const ctx = canvas.getContext('2d');
+            
+            // 讓 Canvas 充滿視窗
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            // 粒子設定
+            const particleCount = 40;
+            const particles = [];
+            // 定義顏色池（粉紫與金色）
+            const colors = ['#EAC4D5', '#FFE082', '#A3B1C6']; 
+
+            // 建立粒子對象
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: Math.random() * 1.5 + 0.5, // 粒子大小
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    velocity: Math.random() * 0.3 + 0.1, // 上升速度
+                    wobble: Math.random() * Math.PI * 2 // 左右晃動相位
+                });
+            }
+
+            // 動畫迴圈
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                particles.forEach(p => {
+                    // 更新位置
+                    p.y -= p.velocity; // 緩慢上升
+                    p.wobble += 0.02;  // 左右晃動
+
+                    // 繪製粒子 (加上一點點發光效果)
+                    ctx.beginPath();
+                    ctx.arc(p.x + Math.sin(p.wobble) * 2, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = p.color;
+                    ctx.fill();
+
+                    // 邊界檢查：重置到螢幕底部
+                    if (p.y < -10) {
+                        p.y = canvas.height + 10;
+                        p.x = Math.random() * canvas.width;
+                    }
+                });
+
+                requestAnimationFrame(animate);
+            }
+
+            animate();
+
+            // 視窗大小改變時重新設定 Canvas
+            window.addEventListener('resize', () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            });
+        }
+
+        // 頁面載入後啟動引擎
+        window.onload = () => {
+            initMagicEngine();
+            addGameLog("🔮", "「阿毛之塔」大門緩緩開啟，空氣中飄著魔法的香氣...");
         };
     </script>
 </body>
