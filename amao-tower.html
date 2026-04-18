@@ -1538,5 +1538,43 @@ if (AmaoGame.stats.floor > 1 && !sessionStorage.getItem('reborn_done')) {
     console.log("偵測到樓層異常，準備執行強制重置...");
 }
 </script>
+    <script>
+/**
+ * 終極手動覆蓋：直接炸毀一切邏輯，強行重寫
+ */
+// 1. 強制讓阿毛的數值變成 1 樓
+if (window.AmaoGame) {
+    AmaoGame.stats.floor = 1;
+    AmaoGame.stats.hp = 100;
+    // 2. 徹底清空原本那個會一直把妳抓回 172 樓的記憶存檔
+    localStorage.clear(); 
+    // 3. 把現在的 1 樓狀態強行寫進去
+    AmaoGame.save();
+    // 4. 強制刷新畫面
+    AmaoGame.refreshUI();
+}
+
+// 5. 修正那個該死的齒輪按鈕，讓它點下去絕對是系統選單
+window.openMenu = function(type) {
+    const ov = document.getElementById('menu-overlay');
+    const ct = document.getElementById('menu-content');
+    const tt = document.getElementById('menu-title');
+    if (!ov || !ct || !tt) return;
+    ov.style.display = 'flex';
+    ct.innerHTML = '';
+
+    if (type === 'system' || type === 'title') { // 就算點錯也讓它出現在這
+        tt.innerText = "⚙️ 系統設定";
+        ct.innerHTML = `
+            <div style="grid-column:span 4; padding:20px; display:flex; flex-direction:column; gap:10px;">
+                <button onclick="localStorage.clear(); location.reload();" style="padding:15px; background:#D4ADCF; color:white; border:none; border-radius:10px;">🧨 徹底重置遊戲 (回歸1樓)</button>
+                <button onclick="AmaoGame.save(); alert('存檔成功');" style="padding:15px; background:#8BAA91; color:white; border:none; border-radius:10px;">💾 存檔</button>
+            </div>`;
+    } else {
+        tt.innerText = "🎒 背包";
+        ct.innerHTML = '<div style="grid-column:span 4; text-align:center; padding:20px;">背包正在重新整理中...</div>';
+    }
+};
+</script>
 </body>
 </html>
