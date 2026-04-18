@@ -1269,6 +1269,99 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 1000);
 })();
+</<style>
+    /* 1. 全域風格純淨化 */
+    :root {
+        --magic: #9b59b6 !important; /* 幻夢紫 */
+        --gold: #f1c40f !important;
+    }
+
+    /* 2. 移除所有 IP 字樣並美化字體 */
+    body { font-family: -apple-system, "Noto Sans TC", sans-serif !important; }
+
+    /* 3. 頂部資訊欄加強 (一目瞭然) */
+    .status-bar { 
+        background: rgba(0,0,0,0.8) !important;
+        border-bottom: 2px solid var(--magic) !important;
+        padding: 10px 5px !important;
+        font-size: 15px !important;
+    }
+
+    /* 4. 阿毛區域與戰鬥區域重整：縮小間距，讓視覺集中 */
+    #amao-sprite { font-size: 80px !important; margin: 10px 0 !important; }
+    #enemy-hp-bar { margin: 5px auto !important; width: 90% !important; }
+
+    /* 5. 核心：日誌文字「太太太太太」大化 */
+    #msg-box {
+        height: 180px !important; /* 固定高度，不讓它亂跑 */
+        font-size: 18px !important; /* 大字體 */
+        font-weight: 500 !important;
+        line-height: 1.5 !important;
+        background: rgba(20, 20, 30, 0.9) !important;
+        border: 1px solid var(--magic) !important;
+        margin: 10px !important;
+        padding: 15px !important;
+        overflow-y: auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    
+    #msg-box div { 
+        margin-bottom: 8px !important; 
+        border-left: 4px solid var(--magic) !important; 
+        padding-left: 10px !important;
+    }
+
+    /* 6. 按鈕區域集中：讓骰子與奧義按鈕不要分太開 */
+    .action-zone { margin-top: 5px !important; }
+    button { font-size: 14px !important; padding: 8px !important; }
+
+    /* 7. 隱藏不必要的 IP 標籤與空元素 */
+    div[style*="font-family: 'Bangers'"] { display: none !important; } /* 隱藏原本的 VS */
+</style>
+
+<script>
+(function() {
+    // A. 暴力替換所有殘留 IP 詞彙
+    const cleanIP = () => {
+        const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+        let node;
+        while(node = walker.nextNode()) {
+            node.nodeValue = node.nodeValue.replace(/史萊哲林/g, '幻夢').replace(/裝逼/g, '高冷');
+        }
+    };
+
+    // B. 修復戰鬥卡死與視覺混亂
+    setInterval(() => {
+        if (typeof state !== 'undefined') {
+            const enemyName = document.getElementById('enemy-name');
+            const enemySprite = document.getElementById('enemy-sprite');
+            
+            // 如果沒在戰鬥，強制清空中間的雜訊
+            if (!state.isBattle) {
+                if (enemyName) enemyName.innerText = "— 休憩中 —";
+                if (enemySprite) enemySprite.innerText = "";
+                const vs = document.querySelector('div[style*="VS"]'); // 嘗試尋找 VS
+                if (vs) vs.style.opacity = "0";
+            } else {
+                if (enemyName && enemyName.innerText.includes("尋找魔法")) {
+                    enemyName.innerText = "⚠️ 遭遇魔法生物！";
+                }
+            }
+        }
+        cleanIP(); // 持續監控並清洗文字
+    }, 1000);
+
+    // C. 點擊優化：讓日誌自動滾動到底部
+    const observer = new MutationObserver(() => {
+        const box = document.getElementById('msg-box');
+        if (box) box.scrollTop = 0; // 讓最新的訊息出現在最上面
+    });
+    const msgBox = document.getElementById('msg-box');
+    if (msgBox) observer.observe(msgBox, { childList: true });
+
+    console.log("🛠️ 阿毛之塔：版面優化與原創化補丁已生效。");
+})();
 </script>
 
 <div style="height: 50px; text-align: center; color: rgba(255,255,255,0.2); font-size: 10px; margin-top: 20px;">
