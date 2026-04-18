@@ -1350,6 +1350,342 @@ setTimeout(() => {
 }, 500);
 
 console.log("阿毛之塔 6.0 自動化傳奇版啟動。阿毛已準備好自動征服全塔！");
+</script><style>
+/* 背包特有樣式 */
+.inventory-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    padding: 10px;
+}
+.item-count {
+    position: absolute;
+    bottom: 2px;
+    right: 5px;
+    background: var(--morandi-green);
+    color: white;
+    font-size: 0.7em;
+    padding: 0 5px;
+    border-radius: 8px;
+}
+.item-desc-popup {
+    font-size: 0.8em;
+    color: var(--text-dark);
+    background: #fdf6e3;
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 10px;
+    border-left: 4px solid var(--morandi-green);
+}
+</style>
+
+<script>
+/**
+ * 阿毛之塔 - 核心擴充 7.0
+ * 功能：背包系統 (Inventory)、動態物品生成器、詞條引擎
+ */
+
+const ItemEngine = {
+    // [1] 詞條數據庫
+    prefixes: {
+        positive: ["媽媽的", "羊的", "南瓜商人的", "滷滷米達的", "鮪魚堡親手做的"],
+        random: ["路邊的", "不知道誰的", "找到的", "密室裡的", "垃圾桶撿來的", "異世界的", "散發香氣的"]
+    },
+    adjectives: ["超級無敵", "軟綿綿的", "生鏽的", "發光的", "莫蘭迪色的", "看起來很貴的", "充滿 BUG 的", "斷更過的"],
+    
+    // [2] 物品原型 (總數會根據隨機組合達到 300+)
+    prototypes: [
+        { name: "掃把", icon: "🧹", type: "equip", desc: "阿毛可以用來清理（或是絆倒）敵人。" },
+        { name: "魔杖", icon: "🪄", type: "equip", desc: "其實是一根塗了顏料的樹枝。" },
+        { name: "毛毯", icon: "🧣", type: "equip", desc: "溫暖度 100%，阿毛躲在裡面就不想出來。" },
+        { name: "超音速鞋鞋", icon: "👟", type: "equip", desc: "穿上後感覺自己跑得比鮪魚堡的 BUG 還快。" },
+        { name: "護手霜", icon: "🧴", type: "consumable", desc: "擦了之後阿毛的肉球變得香香的，幸運值提升！" },
+        { name: "火星機票", icon: "🎫", type: "useless", desc: "只有說明，沒有實際作用（因為火星還沒蓋好）。" },
+        { name: "白袍", icon: "🥼", type: "useless", desc: "上面有阿毛的咬痕，感覺是某個醫學行政人員留下的。" },
+        { name: "襪子", icon: "🧦", type: "weapon", desc: "雖然只能造成 1 點傷害，但味道很驚人。" },
+        { name: "水杯", icon: "🥤", type: "weapon", desc: "裡面裝的是阿毛不想喝的純水。" },
+        { name: "空袋子", icon: "🛍️", type: "useless", desc: "裡面真的什麼都沒有，不要看了。" },
+        { name: "小秘密紙條", icon: "📜", type: "useless", desc: "上面寫著：阿毛其實不喜歡洗澡。" }
+    ],
+
+    // [3] 物品生成邏輯
+    generateItem() {
+        const proto = this.prototypes[Math.floor(Math.random() * this.prototypes.length)];
+        const isPositive = Math.random() > 0.5;
+        const pre = isPositive 
+            ? this.prefixes.positive[Math.floor(Math.random() * this.prefixes.positive.length)]
+            : this.prefixes.random[Math.floor(Math.random() * this.prefixes.random.length)];
+        const adj = this.adjectives[Math.floor(Math.random() * this.adjectives.length)];
+
+        return {
+            id: Date.now() + Math.random(),
+            fullName: `${pre}${adj}${proto.name}`,
+            icon: proto.icon,
+            type: proto.type,
+            desc: proto.desc,
+            isPositive: isPositive,
+            count: 1
+        };
+    }
+};
+
+// [4] 擴展 AmaoGame 的背包與物品邏輯
+Object.assign(AmaoGame, {
+    inventory: [], // 消耗性與裝備背包
+    
+    // 獲得物品 (可能是食物或裝備)
+    receiveItem(itemData) {
+        if (itemData.type === 'food') {
+            // 同步到圖鑑 (永久)
+            let foodInBook = this.foodNotebook.find(f => f.name === itemData.name);
+            if (foodInBook) foodInBook.consumed = true;
+
+            // 同步到背包 (消耗品)
+            let inInv = this.inventory.find(i => i.fullName === itemData.name);
+            if (inInv) {
+                inInv.count++;
+            } else {
+                this.inventory.push({ ...itemData, fullName: itemData.name, count: 1 });
+            }
+        } else {
+            // 一般物品
+            let inInv = this.inventory.find(i => i.fullName === itemData.fullName);
+            if (inInv) {
+                inInv.count++;
+            } else {
+                this.inventory.push(itemData);
+            }
+        }
+        this.addLog("🎁", `獲得了 <span class="highlight-text">${itemData.fullName || itemData.name}</span>！`);
+        this.save();
+    },
+
+    // 使用物品
+    useItem(itemFullName) {
+        const idx = this.inventory.findIndex(i => i.fullName === itemFullName);
+        if (idx === -1) return;
+
+        const item = this.inventory[idx];
+        
+        if (item.type === 'food') {
+            this.stats.hp = Math.min(100, this.stats.hp + 20);
+            this.addLog("🍴", `阿毛吃掉了 ${item.fullName}，體力恢復了！`);
+        } else if (item.type === 'weapon') {
+            this.addLog("💢", `阿毛揮舞著 ${item.fullName}，感覺自己變強了一點點(真的只有一點)。`);
+        } else if (item.type === 'useless') {
+            this.addLog("❓", `阿毛看著 ${item.fullName}... 什麼事也沒發生。`);
+        } else {
+            this.addLog("✨", `使用了 ${item.fullName}，效果發動(大概吧)！`);
+        }
+
+        // 消耗邏輯
+        item.count--;
+        if (item.count <= 0) this.inventory.splice(idx, 1);
+        
+        this.refreshUI();
+        this.save();
+        window.openMenu('inventory'); // 刷新背包介面
+    }
+});
+
+// [5] 覆寫選單系統，加入背包介面
+const originalOpenMenuV7 = window.openMenu;
+window.openMenu = function(type) {
+    if (type !== 'inventory') {
+        originalOpenMenuV7(type);
+        return;
+    }
+
+    const ov = document.getElementById('menu-overlay');
+    const ct = document.getElementById('menu-content');
+    const tt = document.getElementById('menu-title');
+    ct.innerHTML = '';
+    ov.style.display = 'flex';
+    tt.innerText = `🎒 阿毛的時空背包 (${AmaoGame.inventory.length})`;
+
+    if (AmaoGame.inventory.length === 0) {
+        ct.innerHTML = '<div style="grid-column:span 4; text-align:center; padding:20px; color:var(--text-light);">背包空空的，去爬塔撿寶箱吧！</div>';
+        return;
+    }
+
+    AmaoGame.inventory.forEach(item => {
+        let card = document.createElement('div');
+        card.className = 'item-slot unlocked';
+        card.style.position = 'relative';
+        card.innerHTML = `
+            <div style="font-size:1.5em">${item.icon}</div>
+            <div class="item-count">${item.count}</div>
+        `;
+        
+        card.onclick = () => {
+            const action = confirm(`${item.fullName}\n「${item.desc}」\n\n確定要使用它嗎？`) ? AmaoGame.useItem(item.fullName) : null;
+        };
+        ct.appendChild(card);
+    });
+};
+
+// [6] 修改爬塔事件觸發
+const finalRollWithItem = AmaoGame.rollWithBattle;
+AmaoGame.rollWithBattle = function() {
+    finalRollWithItem.apply(this);
+    
+    // 25% 機率在路邊撿到隨機生成的物件
+    if (Math.random() > 0.75) {
+        const newItem = ItemEngine.generateItem();
+        AmaoGame.receiveItem(newItem);
+    }
+};
+
+// 修正：當獲得食物時，調用新的 receiveItem
+// 這裡需要去區塊 3 修改獲得食物的地方，將原本的 consumed 改成調用 AmaoGame.receiveItem(luckyFood)
+</script><style>
+/* 巧克力現身特效 */
+.choco-arrival {
+    position: fixed;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    z-index: 10000;
+    font-size: 6em;
+    filter: drop-shadow(0 0 20px rgba(255, 223, 186, 0.8));
+    animation: choco-fly-in 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes choco-fly-in {
+    0% { transform: translate(-50%, -50%) scale(0) rotate(-45deg); opacity: 0; }
+    50% { transform: translate(-50%, -60%) scale(1.2) rotate(10deg); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
+}
+
+.choco-aura {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(212,173,207,0.4) 0%, rgba(255,255,255,0) 70%);
+    border-radius: 50%;
+    z-index: -1;
+    animation: choco-pulse 2s infinite;
+}
+
+@keyframes choco-pulse {
+    0% { transform: scale(0.8); opacity: 0.5; }
+    50% { transform: scale(1.2); opacity: 0.2; }
+    100% { transform: scale(0.8); opacity: 0.5; }
+}
+</style>
+
+<script>
+/**
+ * 阿毛之塔 - 核心擴充 8.0
+ * 功能：巧克力小天使救援系統、瀕死保護、隨機祝福
+ */
+
+const ChocoAngel = {
+    emoji: '🐕‍🦺👼', // 象徵迷你杜賓與天使翅膀
+    name: '巧克力小天使',
+
+    // [1] 巧克力現身動畫
+    spawn() {
+        const div = document.createElement('div');
+        div.className = 'choco-arrival';
+        div.innerHTML = `<div class="choco-aura"></div>${this.emoji}`;
+        document.body.appendChild(div);
+
+        // 隨機播放祝福音樂 (如果有音效的話) 或純特效
+        EffectEngine.startRain('✨', 30);
+        EffectEngine.startRain('💖', 20);
+
+        setTimeout(() => {
+            div.style.opacity = '0';
+            div.style.transition = '2s';
+            setTimeout(() => div.remove(), 2000);
+        }, 3000);
+    },
+
+    // [2] 救援邏輯：當阿毛被圍毆 (HP 降低) 或沮喪時
+    triggerSupport(reason) {
+        this.spawn();
+        let message = "";
+        
+        switch(reason) {
+            case 'HELP': // 戰鬥支援
+                AmaoGame.stats.hp = Math.min(100, AmaoGame.stats.hp + 50);
+                message = "巧克力小天使揮動翅膀！一道聖光降臨，阿毛感覺傷口全都癒合了！";
+                break;
+            case 'GIFT': // 給予資源
+                const randomGift = ItemEngine.generateItem();
+                AmaoGame.receiveItem(randomGift);
+                message = "巧克力小天使輕輕放下了一個神祕包袱，裡面裝著給阿毛的禮物！";
+                break;
+            case 'BLESS': // 隨機祝福
+                AmaoGame.addLog("🌈", "巧克力小天使舔了舔阿毛的耳朵，阿毛獲得了『幸運加護』！");
+                // 暫時性提升金幣獲取率 (邏輯擴充)
+                AmaoGame.stats.gold += 500;
+                message = "巧克力小天使留下了 500 枚閃亮的金幣！";
+                break;
+        }
+
+        AmaoGame.addLog("💖", `<span style="color:#D4ADCF; font-weight:bold;">[守護天使] ${message}</span>`);
+        AmaoGame.refreshUI();
+    }
+};
+
+// [3] 整合至遊戲戰鬥與投擲邏輯
+const originalBattleWithChoco = AmaoGame.rollWithBattle;
+AmaoGame.rollWithBattle = function() {
+    // 執行原始邏輯
+    originalBattleWithChoco.apply(this);
+
+    const roll = Math.random();
+
+    // 觸發條件 A：體力過低 (低於 20)
+    if (this.stats.hp > 0 && this.stats.hp <= 20 && roll > 0.6) {
+        ChocoAngel.triggerSupport('HELP');
+    }
+    // 觸發條件 B：純隨機幸運 (5% 機率)
+    else if (roll > 0.95) {
+        const subRoll = Math.random();
+        if (subRoll > 0.5) {
+            ChocoAngel.triggerSupport('GIFT');
+        } else {
+            ChocoAngel.triggerSupport('BLESS');
+        }
+    }
+};
+
+// [4] 增加一個「巧克力的小秘密」到紙條系統中
+const secretNoteV8 = document.querySelector('.secret-note');
+if (secretNoteV8) {
+    secretNoteV8.innerText += "\n\n（底下還有一行極小的字：聽說如果妳對著塔大喊『CHOCO_LOVE』，那位巧克力色的小天使就會帶著翅膀降臨喔...）";
+}
+
+// [5] 註冊對應禮包碼
+SecretCodes.codes['CHOCO_LOVE'] = { 
+    type: 'custom', 
+    msg: '巧克力小天使聽到了妳的呼喚！', 
+    icon: '💖',
+    action: () => ChocoAngel.triggerSupport('HELP')
+};
+
+// 修正禮包碼執行邏輯以支援自定義動作
+const originalRedeemV8 = AmaoGame.redeemGift;
+AmaoGame.redeemGift = function() {
+    const input = document.getElementById('gift-code-input');
+    const code = input.value.trim().toUpperCase();
+    const gift = SecretCodes.codes[code];
+
+    if (gift && gift.type === 'custom') {
+        gift.action();
+        input.value = "";
+        this.refreshUI();
+        this.save();
+        alert(gift.msg);
+    } else {
+        originalRedeemV8.apply(this);
+    }
+};
+
+console.log("巧克力小天使系統已就位，她正拍動著翅膀守護著阿毛。");
 </script>
 </body>
 </html>
