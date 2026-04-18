@@ -2,137 +2,206 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>夢幻推幣機 - Coin Pusher</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <title>Ethereal Gacha - 幻紫星辰</title>
     <style>
+        :root {
+            --primary: #a89fbb;
+            --secondary: #efdaff;
+            --bg: #1a1a1c;
+            --card-ssr: linear-gradient(135deg, #ffd700, #ff8c00);
+            --card-sr: linear-gradient(135deg, #c084fc, #6366f1);
+            --card-r: linear-gradient(135deg, #94a3b8, #64748b);
+        }
+
         body {
             margin: 0;
-            background: #f0f0f2;
+            background-color: var(--bg);
+            background-image: radial-gradient(circle at 50% 50%, #2d2d35 0%, #1a1a1c 100%);
             font-family: 'PingFang TC', sans-serif;
+            color: white;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
+            min-height: 100vh;
             overflow: hidden;
         }
-        #game-info {
-            margin-top: 20px;
+
+        /* 頂部資訊欄：毛玻璃效果 */
+        #header {
+            position: fixed;
+            top: 20px;
             padding: 10px 30px;
-            background: white;
-            border-radius: 30px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+        }
+
+        /* 卡片容器 */
+        #result-display {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            max-width: 1000px;
+            perspective: 1000px;
+        }
+
+        /* 精緻卡片設計 */
+        .card {
+            width: 140px;
+            height: 220px;
+            position: relative;
+            transform-style: preserve-3d;
+            animation: card-reveal 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+            opacity: 0;
+        }
+
+        @keyframes card-reveal {
+            0% { transform: translateY(50px) rotateY(90deg); opacity: 0; }
+            100% { transform: translateY(0) rotateY(0deg); opacity: 1; }
+        }
+
+        .card-inner {
+            width: 100%;
+            height: 100%;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card.ssr .card-inner { border: 2px solid #ffd700; box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
+        .card.sr .card-inner { border: 2px solid #c084fc; }
+
+        .tier-label {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: rgba(0,0,0,0.5);
+        }
+
+        .icon { font-size: 3rem; margin-bottom: 15px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.5)); }
+
+        /* 按鈕設計 */
+        .controls {
+            margin-top: 50px;
             display: flex;
             gap: 20px;
-            font-weight: bold;
-            color: #7a7387;
         }
-        canvas {
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            margin-top: 20px;
-            border-radius: 10px;
-            background: #e0e0e4;
+
+        .gacha-btn {
+            padding: 15px 40px;
+            background: transparent;
+            color: white;
+            border: 2px solid var(--primary);
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: 0.4s;
+            text-transform: uppercase;
+            letter-spacing: 3px;
         }
-        .instructions {
-            margin-top: 15px;
-            color: #999;
-            font-size: 0.9rem;
+
+        .gacha-btn:hover {
+            background: var(--primary);
+            box-shadow: 0 0 30px rgba(168, 159, 187, 0.4);
+            transform: scale(1.05);
+        }
+
+        /* 慶祝特效：中大獎時背景閃爍 */
+        .big-win {
+            animation: flash 0.5s ease-out;
+        }
+        @keyframes flash {
+            0% { background-color: rgba(255, 215, 0, 0.2); }
+            100% { background-color: transparent; }
         }
     </style>
 </head>
-<body>
+<body id="body">
 
-<div id="game-info">
-    <div>🪙 剩餘金幣：<span id="coins">50</span></div>
-    <div>✨ 分數：<span id="score">0</span></div>
+<div id="header">
+    ✨ 星辰能量：<span id="energy">10,000</span>
 </div>
 
-<div class="instructions">點擊上方區域投幣，把金幣推下來吧！</div>
+<div id="result-display">
+    </div>
+
+<div class="controls">
+    <button class="gacha-btn" onclick="draw(1)">單次探尋</button>
+    <button class="gacha-btn" style="border-color: #c084fc;" onclick="draw(10)">十連協議</button>
+</div>
 
 <script>
-    const { Engine, Render, Runner, Bodies, Composite, Events, Body } = Matter;
+    let energy = 10000;
+    const pool = [
+        { name: "永恆之星", tier: "SSR", icon: "💎", chance: 3 },
+        { name: "幻紫蝶", tier: "SR", icon: "🦋", chance: 15 },
+        { name: "月光石", tier: "SR", icon: "🌙", chance: 20 },
+        { name: "霧之語", tier: "R", icon: "☁️", chance: 62 }
+    ];
 
-    // 設定
-    let coinCount = 50;
-    let score = 0;
-    const canvasWidth = 400;
-    const canvasHeight = 600;
+    function draw(times) {
+        if (energy < times * 100) return alert("星辰能量不足");
+        
+        energy -= times * 100;
+        document.getElementById('energy').innerText = energy.toLocaleString();
+        
+        const display = document.getElementById('result-display');
+        display.innerHTML = '';
+        
+        let hasSSR = false;
 
-    // 初始化引擎
-    const engine = Engine.create();
-    const render = Render.create({
-        element: document.body,
-        engine: engine,
-        options: {
-            width: canvasWidth,
-            height: canvasHeight,
-            wireframes: false,
-            background: '#dcdce0'
+        for (let i = 0; i < times; i++) {
+            const result = getResult();
+            if (result.tier === 'SSR') hasSSR = true;
+            
+            setTimeout(() => {
+                createCard(result, display);
+            }, i * 100);
         }
-    });
 
-    // 建立邊界
-    const leftWall = Bodies.rectangle(10, 300, 20, 600, { isStatic: true, render: { fillStyle: '#b8b8be' } });
-    const rightWall = Bodies.rectangle(390, 300, 20, 600, { isStatic: true, render: { fillStyle: '#b8b8be' } });
-    const bottomHole = Bodies.rectangle(200, 610, 400, 20, { isStatic: true, isSensor: true, label: 'scoreZone' });
-
-    // 推板 (Pusher)
-    const pusher = Bodies.rectangle(200, 450, 360, 100, { 
-        isStatic: true, 
-        render: { fillStyle: '#a89fbb' } 
-    });
-
-    Composite.add(engine.world, [leftWall, rightWall, bottomHole, pusher]);
-
-    // 推板移動邏輯
-    let pusherDirection = 1;
-    Events.on(engine, 'beforeUpdate', () => {
-        let py = pusher.position.y;
-        if (py > 500) pusherDirection = -1;
-        if (py < 400) pusherDirection = 1;
-        Body.setPosition(pusher, { x: 200, y: py + (0.5 * pusherDirection) });
-    });
-
-    // 投幣功能
-    window.addEventListener('mousedown', (e) => {
-        if (coinCount <= 0) return;
-        if (e.clientY < 200) { // 限制投幣區域
-            dropCoin(e.clientX - window.innerWidth/2 + 200);
+        if (hasSSR) {
+            document.getElementById('body').classList.add('big-win');
+            setTimeout(() => document.getElementById('body').classList.remove('big-win'), 1000);
         }
-    });
-
-    function dropCoin(x) {
-        const coin = Bodies.circle(x, 50, 15, {
-            restitution: 0.5,
-            friction: 0.05,
-            label: 'coin',
-            render: { fillStyle: '#ffcc33', strokeStyle: '#e6b800', lineWidth: 2 }
-        });
-        Composite.add(engine.world, coin);
-        coinCount--;
-        updateDisplay();
     }
 
-    // 偵測得分
-    Events.on(engine, 'collisionStart', (event) => {
-        event.pairs.forEach(pair => {
-            if (pair.bodyA.label === 'scoreZone' || pair.bodyB.label === 'scoreZone') {
-                const coin = pair.bodyA.label === 'coin' ? pair.bodyA : pair.bodyB;
-                if (coin.label === 'coin') {
-                    score += 10;
-                    Composite.remove(engine.world, coin);
-                    updateDisplay();
-                }
-            }
-        });
-    });
-
-    function updateDisplay() {
-        document.getElementById('coins').innerText = coinCount;
-        document.getElementById('score').innerText = score;
+    function getResult() {
+        const rand = Math.random() * 100;
+        let cum = 0;
+        for (const item of pool) {
+            cum += item.chance;
+            if (rand <= cum) return item;
+        }
+        return pool[pool.length - 1];
     }
 
-    Render.run(render);
-    const runner = Runner.create();
-    Runner.run(runner, engine);
+    function createCard(item, container) {
+        const card = document.createElement('div');
+        card.className = `card ${item.tier.toLowerCase()}`;
+        card.innerHTML = `
+            <div class="card-inner">
+                <span class="tier-label">${item.tier}</span>
+                <div class="icon">${item.icon}</div>
+                <div style="font-size: 0.9rem; letter-spacing: 1px;">${item.name}</div>
+            </div>
+        `;
+        container.appendChild(card);
+    }
 </script>
 
 </body>
