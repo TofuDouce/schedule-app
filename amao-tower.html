@@ -3,465 +3,231 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>阿毛之塔 - Amao Tower: Magic Particle Edition</title>
+    <title>阿毛之塔 - Amao Tower: Magic Edition</title>
     <style>
-        /* --- 1. 全域視覺定義：莫蘭迪中二色系 --- */
         :root {
-            /* 基礎色盤 */
-            --bg-deep: #121218;         /* 深邃宇宙底色 */
-            --panel-bg: #1F1F2A;        /* 區塊背景 */
-            --magic-purple: #EAC4D5;    /* 魔法粒子粉紫 (主要粒子色) */
-            --magic-gold: #FFE082;      /* 魔法粒子金色 (次要粒子色) */
-            --morandi-green: #B4C6A6;   /* 正面氣息綠 */
-            --gold: #D4A017;            /* S級傳說金 */
-            --silver: #A3B1C6;          /* A級精銳銀 */
-            --bronze: #C49271;          /* B級卓越銅 */
-            --wood: #8D7B6D;            /* C級平凡木 */
-            --danger: #FF6B6B;          /* 敵人/警示紅 */
-            
-            /* 字體與陰影 */
+            --bg-deep: #121218;
+            --magic-purple: #EAC4D5;
+            --magic-gold: #FFE082;
+            --gold: #D4A017;
+            --danger: #FF6B6B;
             --font-main: "PingFang TC", "Microsoft JhengHei", sans-serif;
-            --shadow-soft: 0 10px 30px rgba(0,0,0,0.5);
-            --glow-magic: 0 0 15px rgba(234, 196, 213, 0.4);
-            
-            /* 佈局高度 */
             --header-h: 90px;
             --footer-h: 160px;
         }
 
-        /* --- 2. 基礎重置與核心樣式 --- */
-        * { 
-            box-sizing: border-box; 
-            -webkit-tap-highlight-color: transparent; 
-            margin: 0; padding: 0;
-            user-select: none;
-            scrollbar-width: none;
-        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; user-select: none; }
 
         body {
-            background-color: var(--bg-deep);
+            background-color: var(--bg-deep); /* 最底層背景色 */
             color: #E0E0E0;
             font-family: var(--font-main);
             height: 100vh; width: 100vw;
             overflow: hidden;
             display: flex; flex-direction: column;
-            position: relative; /* 為了讓 Canvas 絕對定位 */
+            position: relative;
         }
 
-        /* 隱藏捲軸 */
-        ::-webkit-scrollbar { display: none; }
-
-        /* --- 3. 魔法粒子背景系統 (修正重點：確保 Canvas 覆蓋全螢幕且置底) --- */
+        /* --- 核心修正：粒子畫布 --- */
         #magic-engine {
-            position: absolute; top: 0; left: 0;
+            position: absolute;
+            top: 0; left: 0;
             width: 100%; height: 100%;
-            z-index: 0; /* 置於最底層 */
-            pointer-events: none; /* 不阻擋點擊 */
-            opacity: 0.5; /* 保持透明度，不干擾視線 */
+            z-index: 0; /* 確保在最底層 */
+            pointer-events: none;
         }
 
-        /* --- 4. 頂部狀態列 (Status Bar) --- */
+        /* --- 修正：讓所有介面容器透明，否則會擋住粒子 --- */
         header {
             height: var(--header-h);
-            background: linear-gradient(180deg, rgba(31,31,42,0.98) 0%, rgba(18,18,24,0.95) 100%);
-            border-bottom: 2px solid rgba(255,255,255,0.05);
-            z-index: 100; flex-shrink: 0;
+            background: rgba(31, 31, 42, 0.7); /* 半透明 */
+            backdrop-filter: blur(5px); /* 毛玻璃效果，更有質感 */
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            z-index: 10; flex-shrink: 0;
             display: flex; flex-direction: column; justify-content: center;
-            box-shadow: 0 4px 30px rgba(0,0,0,0.6);
-            position: relative; /* 確保在 Canvas 之上 */
         }
 
-        .header-stats {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 0 20px; margin-bottom: 5px;
-        }
-
-        .stat-capsule {
-            background: rgba(0,0,0,0.3);
-            padding: 4px 14px; border-radius: 20px;
-            font-size: 0.85em; display: flex; align-items: center; gap: 6px;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .title-aura {
-            text-align: center; font-size: 1.5em; font-weight: 900;
-            letter-spacing: 4px; color: var(--magic-purple);
-            text-shadow: var(--glow-magic);
-        }
-
-        /* --- 5. 核心舞台區 (Stage) --- */
         main {
-            flex: 1; overflow-y: auto; overflow-x: hidden;
-            position: relative; z-index: 1; /* 在 Canvas 之上 */
+            flex: 1; 
+            background: transparent; /* 必須透明，粒子才看得到 */
+            overflow-y: auto; 
+            position: relative; 
+            z-index: 5;
             display: flex; flex-direction: column;
         }
 
+        footer {
+            height: var(--footer-h);
+            background: rgba(18, 18, 24, 0.85); /* 半透明 */
+            backdrop-filter: blur(8px);
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding: 15px 20px; z-index: 10;
+            display: flex; flex-direction: column; gap: 15px;
+        }
+
+        /* --- 舞台內容 --- */
         #world-stage {
             height: 320px; flex-shrink: 0;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            position: relative; transition: background 1s ease;
+            position: relative;
         }
 
         .floor-giant-text {
             position: absolute; font-size: 8em; font-weight: 900;
-            color: rgba(255, 255, 255, 0.02); z-index: 0;
-            font-style: italic; font-family: 'Arial Black', sans-serif;
-            pointer-events: none;
-        }
-
-        /* 阿毛動態容器 */
-        .amao-hero-unit {
-            position: relative; z-index: 2;
-            display: flex; flex-direction: column; align-items: center;
+            color: rgba(255, 255, 255, 0.03); z-index: 0;
+            font-style: italic; pointer-events: none;
         }
 
         .amao-avatar {
             font-size: 100px; 
-            filter: drop-shadow(0 20px 25px rgba(0,0,0,0.7));
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            cursor: pointer; position: relative;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer; z-index: 2;
         }
 
-        /* 稱號展示標籤 */
         .amao-badge {
             background: linear-gradient(135deg, var(--gold) 0%, #FFE082 100%);
-            color: #2D2D3A; padding: 6px 22px; border-radius: 25px;
-            font-weight: 900; font-size: 0.9em;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            margin-top: -15px; border: 2px solid rgba(255,255,255,0.4);
-            animation: badgeFloat 3s infinite ease-in-out;
+            color: #2D2D3A; padding: 6px 20px; border-radius: 20px;
+            font-weight: 900; font-size: 0.85em; margin-top: -10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 3;
         }
 
-        @keyframes badgeFloat {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
-        }
-
-        /* --- 6. 冒險日誌系統 --- */
-        #adventure-logs {
-            padding: 15px; display: flex; flex-direction: column-reverse; gap: 12px;
-            position: relative; z-index: 1;
-        }
-
-        .log-card {
-            background: rgba(31, 31, 42, 0.7); backdrop-filter: blur(10px);
-            padding: 18px; border-radius: 20px;
-            border-left: 5px solid var(--silver);
-            display: flex; align-items: center; gap: 15px;
-            animation: slideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(30px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        /* --- 7. 底部控制台 (Console) --- */
-        footer {
-            height: var(--footer-h);
-            background: rgba(18, 18, 24, 0.98);
-            border-top: 2px solid rgba(255,255,255,0.1);
-            padding: 15px 20px; z-index: 100;
-            display: flex; flex-direction: column; gap: 15px;
-            position: relative; /* 確保在 Canvas 之上 */
-        }
-
+        /* --- 按鈕與其餘 UI --- */
         .main-action-btn {
             background: linear-gradient(135deg, #FFE082 0%, var(--gold) 100%);
-            color: #333; border: none; border-radius: 22px;
-            width: 100%; height: 75px;
-            font-size: 1.4em; font-weight: 900;
-            box-shadow: 0 6px 0 #8B6B0E, 0 10px 20px rgba(0,0,0,0.4);
-            cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 12px;
-            transition: all 0.1s;
+            color: #333; border: none; border-radius: 20px;
+            width: 100%; height: 70px; font-size: 1.3em; font-weight: 900;
+            box-shadow: 0 5px 0 #8B6B0E; cursor: pointer;
         }
 
-        .main-action-btn:active { 
-            transform: translateY(4px); 
-            box-shadow: 0 2px 0 #8B6B0E, 0 5px 10px rgba(0,0,0,0.4); 
-        }
-
-        .nav-grid { display: flex; justify-content: space-between; gap: 12px; }
-
+        .nav-grid { display: flex; justify-content: space-between; gap: 10px; }
         .nav-btn {
-            flex: 1; background: rgba(255,255,255,0.06);
-            height: 55px; border-radius: 18px;
+            flex: 1; background: rgba(255,255,255,0.1);
+            height: 50px; border-radius: 15px;
             display: flex; justify-content: center; align-items: center;
-            font-size: 1.6em; cursor: pointer; 
-            border: 1px solid rgba(255,255,255,0.08);
-            transition: background 0.2s;
-        }
-        .nav-btn:hover { background: rgba(255,255,255,0.12); }
-
-        /* --- 8. 全螢幕選單系統 --- */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-deep); z-index: 1000;
-            display: none; flex-direction: column;
-            animation: modalUp 0.3s cubic-bezier(0.32, 1, 0.23, 1);
+            font-size: 1.5em; cursor: pointer; border: 1px solid rgba(255,255,255,0.1);
         }
 
-        @keyframes modalUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-
-        .modal-header {
-            height: 80px; padding: 0 25px;
-            display: flex; justify-content: space-between; align-items: center;
-            background: var(--panel-bg); border-bottom: 2px solid rgba(255,255,255,0.05);
+        #adventure-logs { padding: 15px; display: flex; flex-direction: column-reverse; gap: 10px; }
+        .log-card {
+            background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 15px;
+            border-left: 4px solid var(--magic-purple); font-size: 0.9em;
         }
 
-        .modal-title { font-size: 1.3em; font-weight: 800; color: var(--magic-purple); }
-
-        .modal-close { font-size: 2em; cursor: pointer; color: var(--silver); }
-
-        /* --- 9. 背包與稱號卡片設計 --- */
-        .grid-container {
-            flex: 1; overflow-y: auto; padding: 20px;
-            display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
-            align-content: start;
-        }
-
-        .item-card {
-            aspect-ratio: 1 / 1.3; background: rgba(255, 255, 255, 0.03);
-            border-radius: 15px; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; position: relative;
-            border: 1px dashed rgba(255, 255, 255, 0.1); 
-            transition: all 0.3s;
-        }
-
-        .item-card.unlocked { 
-            background: var(--panel-bg); 
-            border: 1.5px solid var(--silver); 
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-
-        .item-card.rank-S { border-color: var(--gold); background: rgba(212, 160, 23, 0.05); }
-        .item-card.rank-A { border-color: var(--silver); }
-        .item-card.rank-B { border-color: var(--bronze); }
-        .item-card.rank-C { border-color: var(--wood); }
-
-        .card-rank { position: absolute; top: 4px; right: 6px; font-size: 0.6em; font-weight: 900; opacity: 0.7; }
-        .card-name { font-size: 0.7em; margin-top: 8px; text-align: center; padding: 0 4px; font-weight: bold; }
-        .card-icon { font-size: 1.6em; }
-
-        /* --- 10. 商人出現特效與對話框 --- */
-        #npc-overlay {
-            position: absolute; bottom: 0; width: 100%; height: 200px;
-            background: linear-gradient(0deg, rgba(0,0,0,0.9) 0%, transparent 100%);
-            display: none; flex-direction: row; align-items: flex-end;
-            padding: 20px; gap: 20px; z-index: 5;
-        }
-
-        .npc-dialog {
-            background: white; color: #333; padding: 15px; border-radius: 15px 15px 15px 0;
-            flex: 1; margin-bottom: 40px; position: relative;
-            font-weight: bold; font-size: 0.9em;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-        }
-
-        /* --- 11. Toast 與通知 --- */
+        /* Toast 通知 */
         #magic-toast {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: rgba(255,255,255,0.95); color: #222; 
-            padding: 15px 40px; border-radius: 30px;
-            z-index: 5000; display: none; font-weight: 900;
-            box-shadow: 0 0 40px rgba(255,255,255,0.3);
-            pointer-events: none;
+            background: rgba(255,255,255,0.9); color: #000; padding: 12px 30px;
+            border-radius: 25px; z-index: 1000; display: none; font-weight: 900;
         }
     </style>
 </head>
 <body>
 
     <canvas id="magic-engine"></canvas>
-    <div id="magic-toast">✨ 魔法儲存成功 ✨</div>
+    
+    <div id="magic-toast">✨ 魔法儲存 ✨</div>
 
     <header>
-        <div class="header-stats">
-            <div class="stat-capsule">🐶 HP: <span style="color:var(--danger)">MAX</span></div>
-            <div class="stat-capsule">💰 <span id="gold-display" style="color:var(--gold)">1,000</span></div>
+        <div style="display:flex; justify-content:space-between; padding:0 20px;">
+            <div style="font-size:0.8em;">🐶 HP: <span style="color:var(--danger)">MAX</span></div>
+            <div style="font-size:0.8em;">💰 <span id="gold-display" style="color:var(--magic-gold)">1,000</span></div>
         </div>
-        <div class="title-aura">阿毛之塔</div>
+        <div style="text-align:center; font-size:1.4em; font-weight:900; color:var(--magic-purple); letter-spacing:3px;">阿毛之塔</div>
     </header>
 
     <main id="main-container">
         <section id="world-stage">
             <div class="floor-giant-text" id="bg-floor-number">0001</div>
-            <div class="amao-hero-unit">
-                <div class="amao-avatar" id="amao-sprite" onclick="amaoReact()">🐶</div>
-                <div class="amao-badge" id="current-title-label">【初出茅廬的小狗】</div>
-            </div>
-            
-            <div id="npc-overlay">
-                <div id="npc-sprite" style="font-size: 80px;">🎃</div>
-                <div class="npc-dialog" id="npc-text">嘶哈嘶哈！阿毛要來點猛的裝備嗎？</div>
-            </div>
+            <div class="amao-avatar" id="amao-sprite" onclick="amaoReact()">🐶</div>
+            <div class="amao-badge" id="current-title-label">【新手爬塔狗】</div>
         </section>
-
-        <section id="adventure-logs"></section>
+        <div id="adventure-logs"></div>
     </main>
 
     <footer>
-        <button class="main-action-btn" id="roll-dice-btn">
-            <span id="dice-icon">🎲</span> 投擲命運之骰
-        </button>
+        <button class="main-action-btn" onclick="amaoJump()">🎲 投擲命運之骰</button>
         <div class="nav-grid">
-            <div class="nav-btn" onclick="ui.openModal('settings')">⚙️</div>
-            <div class="nav-btn" onclick="ui.openModal('notebook')">🏅</div>
-            <div class="nav-btn" onclick="ui.openModal('backpack')">🎒</div>
-            <div class="nav-btn" onclick="ui.openModal('shop')">🛒</div>
+            <div class="nav-btn" onclick="alert('開啟設定')">⚙️</div>
+            <div class="nav-btn">🏅</div>
+            <div class="nav-btn">🎒</div>
+            <div class="nav-btn">🛒</div>
         </div>
     </footer>
 
-    <div id="main-modal" class="modal-overlay">
-        <div class="modal-header">
-            <div class="modal-title" id="modal-title-text">魔法清單</div>
-            <div class="modal-close" onclick="ui.closeModal()">✕</div>
-        </div>
-        
-        <div id="bag-tabs" style="display:none; padding: 10px 20px; gap: 10px;">
-            <button class="nav-btn" style="font-size: 0.9em;" onclick="game.switchTab('food')">🍱 美食</button>
-            <button class="nav-btn" style="font-size: 0.9em;" onclick="game.switchTab('gadget')">🎁 物品</button>
-        </div>
-
-        <div id="modal-body" class="grid-container">
-            </div>
-    </div>
-
     <script>
-        // --- 核心 UI 操作對象 ---
-        const ui = {
-            openModal: (type) => {
-                const modal = document.getElementById('main-modal');
-                const title = document.getElementById('modal-title-text');
-                const body = document.getElementById('modal-body');
-                const tabs = document.getElementById('bag-tabs');
-                
-                modal.style.display = 'flex';
-                tabs.style.display = (type === 'backpack') ? 'flex' : 'none';
-                
-                if(type === 'settings') {
-                    title.innerText = "⚙️ 冒險設定";
-                    body.className = 'notebook-content'; // 延用舊樣式修正
-                    body.innerHTML = `
-                        <div style="grid-column: span 4; display: flex; flex-direction: column; gap: 20px; padding: 20px;">
-                            <div class="nav-btn unlocked" style="height: 80px; flex:none; background: rgba(255,255,255,0.1);" onclick="game.save()">💾 儲存冒險進度</div>
-                            <div class="nav-btn unlocked" style="height: 80px; flex:none; color: var(--danger); border-color: var(--danger); background: rgba(255,107,107,0.1);" onclick="game.backToOne()">⏳ 穿越時空回到 1 樓</div>
-                            <p style="text-align: center; font-size: 0.8em; opacity: 0.5; margin-top: 20px;">「即使回到最初，學到的技能與獲得的寶物是不會消失的。」</p>
-                        </div>
-                    `;
-                }
-                // 其他類型由後續區塊實現渲染
-            },
-            closeModal: () => {
-                document.getElementById('main-modal').style.display = 'none';
-            }
-        };
-
-        // --- 預留遊戲核心對象 ---
-        const game = {
-            save: () => {
-                showToast("✨ 魔法儲存成功 ✨");
-            },
-            backToOne: () => {
-                if(confirm("確定要消耗魔力回到 1 樓嗎？（物品會保留）")) {
-                    // 此處邏輯將在後續 Scripts 區塊整合，目前先模擬
-                    addGameLog("⏳", "阿毛發動了時間魔法，回到了塔的一樓！");
-                    ui.closeModal();
-                }
-            }
-        };
-
-        // --- 輔助功能 ---
-        function showToast(msg) {
-            const t = document.getElementById('magic-toast');
-            t.innerText = msg;
-            t.style.display = 'block';
-            setTimeout(() => t.style.display = 'none', 1500);
-        }
-
-        function addGameLog(icon, text) {
-            const logs = document.getElementById('adventure-logs');
-            const entry = document.createElement('div');
-            entry.className = 'log-card';
-            entry.innerHTML = `<div>${icon}</div><div>${text}</div>`;
-            logs.appendChild(entry);
-            const main = document.getElementById('main-container');
-            main.scrollTop = main.scrollHeight;
-        }
-
-        // 阿毛點擊互動
-        function amaoReact() {
-            const sprite = document.getElementById('amao-sprite');
-            sprite.style.transform = "scale(1.2) translateY(-20px)";
-            setTimeout(() => sprite.style.transform = "scale(1) translateY(0)", 200);
-            showToast("汪！(🐾)");
-        }
-
-        // --- (修正與整合) 粒子引擎：粉紫金色粒子動畫 ---
-        function initMagicEngine() {
+        // --- 粒子引擎邏輯 (確保渲染) ---
+        function initMagicParticles() {
             const canvas = document.getElementById('magic-engine');
             const ctx = canvas.getContext('2d');
             
-            // 讓 Canvas 充滿視窗
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
 
-            // 粒子設定
-            const particleCount = 40;
             const particles = [];
-            // 定義顏色池（粉紫與金色）
-            const colors = ['#EAC4D5', '#FFE082', '#A3B1C6']; 
+            const colors = ['#EAC4D5', '#FFE082', '#FFFFFF']; // 粉紫、金、白
 
-            // 建立粒子對象
-            for (let i = 0; i < particleCount; i++) {
+            for(let i = 0; i < 50; i++) {
                 particles.push({
                     x: Math.random() * canvas.width,
                     y: Math.random() * canvas.height,
-                    radius: Math.random() * 1.5 + 0.5, // 粒子大小
-                    color: colors[Math.floor(Math.random() * colors.length)],
-                    velocity: Math.random() * 0.3 + 0.1, // 上升速度
-                    wobble: Math.random() * Math.PI * 2 // 左右晃動相位
+                    size: Math.random() * 2 + 1,
+                    speed: Math.random() * 0.5 + 0.2,
+                    opacity: Math.random(),
+                    color: colors[Math.floor(Math.random() * colors.length)]
                 });
             }
 
-            // 動畫迴圈
-            function animate() {
+            function draw() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-                
                 particles.forEach(p => {
-                    // 更新位置
-                    p.y -= p.velocity; // 緩慢上升
-                    p.wobble += 0.02;  // 左右晃動
-
-                    // 繪製粒子 (加上一點點發光效果)
-                    ctx.beginPath();
-                    ctx.arc(p.x + Math.sin(p.wobble) * 2, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.globalAlpha = p.opacity;
                     ctx.fillStyle = p.color;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
                     ctx.fill();
 
-                    // 邊界檢查：重置到螢幕底部
-                    if (p.y < -10) {
+                    // 移動邏輯
+                    p.y -= p.speed;
+                    if(p.y < -10) {
                         p.y = canvas.height + 10;
                         p.x = Math.random() * canvas.width;
                     }
+                    
+                    // 閃爍效果
+                    p.opacity += (Math.random() - 0.5) * 0.05;
+                    if(p.opacity < 0.1) p.opacity = 0.1;
+                    if(p.opacity > 0.8) p.opacity = 0.8;
                 });
-
-                requestAnimationFrame(animate);
+                requestAnimationFrame(draw);
             }
-
-            animate();
-
-            // 視窗大小改變時重新設定 Canvas
-            window.addEventListener('resize', () => {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-            });
+            draw();
         }
 
-        // 頁面載入後啟動引擎
-        window.onload = () => {
-            initMagicEngine();
-            addGameLog("🔮", "「阿毛之塔」大門緩緩開啟，空氣中飄著魔法的香氣...");
+        function amaoJump() {
+            const s = document.getElementById('amao-sprite');
+            s.style.transform = "translateY(-40px) scale(1.1)";
+            setTimeout(() => s.style.transform = "translateY(0) scale(1)", 300);
+            
+            const log = document.getElementById('adventure-logs');
+            const entry = document.createElement('div');
+            entry.className = 'log-card';
+            entry.innerText = "阿毛向上跳了一層！";
+            log.appendChild(entry);
+        }
+
+        function amaoReact() {
+            const t = document.getElementById('magic-toast');
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 1000);
+        }
+
+        window.onload = initMagicParticles;
+        window.onresize = () => {
+            const canvas = document.getElementById('magic-engine');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
         };
     </script>
 </body>
