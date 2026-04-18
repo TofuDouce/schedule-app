@@ -1485,6 +1485,35 @@ window.openMenu = function(type) {
         }
     }
 };
+</script><script>
+/**
+ * 萬能重置補丁：徹底炸毀舊存檔，強制回歸 1 樓
+ */
+AmaoGame.rebirth = function() {
+    if (confirm("【終極重置】確定要炸掉 172 層的紀錄回到 1 樓嗎？\n(金幣與背包會嘗試保留，但樓層絕對會變回 1F)")) {
+        // 1. 強制清除瀏覽器的實體存檔紀錄
+        localStorage.removeItem('amao_tower_save'); 
+        
+        // 2. 重新設定核心數值
+        this.stats.floor = 1;
+        this.stats.hp = 100;
+        
+        // 3. 立即進行一次乾淨的存檔
+        this.save();
+        
+        this.addLog("🌀", "時空崩塌！阿毛被強制傳送回 1 樓了...");
+        
+        alert("重置完成！網頁即將重新整理，這次一定是 1 樓。");
+        
+        // 4. 徹底刷新
+        location.replace(location.href); 
+    }
+};
+
+// 額外檢查：如果網頁一打開發現沒回到 1 樓，就再強迫它一次
+if (AmaoGame.stats.floor > 1 && !sessionStorage.getItem('reborn_done')) {
+    console.log("偵測到樓層異常，準備執行強制重置...");
+}
 </script>
 </body>
 </html>
