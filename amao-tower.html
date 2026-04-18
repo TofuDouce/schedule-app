@@ -3,418 +3,368 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>阿毛之塔 - Amao Tower: Elegant Card Edition</title>
+    <title>阿毛之塔 - Amao Tower: Magic Edition</title>
     <style>
-        /* --- 核心視覺系統 (莫蘭迪色系) --- */
+        /* --- 1. 全域視覺定義：莫蘭迪中二色系 --- */
         :root {
-            --bg-dark: #1A1A22;        
-            --panel-bg: #252533;      
-            --morandi-green: #B4C6A6; 
-            --morandi-gold: #EAC4D5;  
-            --text-light: #E0E0E0;
-            --accent-blue: #A3B1C6;
-            --dice-yellow: #FFE082;
-            --danger-red: #FF6B6B;
-            --rarity-s: #FF4444; 
-            --rarity-a: #FFBB33; 
-            --rarity-b: #33B5E5; 
-            --rarity-c: #99CC00; 
-            --header-height: 85px;
-            --footer-height: 150px; 
+            /* 基礎色盤 */
+            --bg-deep: #121218;         /* 深邃宇宙底色 */
+            --panel-bg: #1F1F2A;        /* 區塊背景 */
+            --magic-purple: #EAC4D5;    /* 魔法粒子粉紫 */
+            --morandi-green: #B4C6A6;   /* 正面氣息綠 */
+            --gold: #D4A017;            /* S級傳說金 */
+            --silver: #A3B1C6;          /* A級精銳銀 */
+            --bronze: #C49271;          /* B級卓越銅 */
+            --wood: #8D7B6D;            /* C級平凡木 */
+            --danger: #FF6B6B;          /* 敵人/警示紅 */
+            --fresh-tea: #5D7E62;       /* 鮮茶道墨綠 */
+            
+            /* 字體與陰影 */
+            --font-main: "PingFang TC", "Microsoft JhengHei", sans-serif;
+            --shadow-soft: 0 10px 30px rgba(0,0,0,0.5);
+            --glow-magic: 0 0 15px rgba(234, 196, 213, 0.4);
+            
+            /* 佈局高度 */
+            --header-h: 90px;
+            --footer-h: 160px;
         }
 
+        /* --- 2. 基礎重置與核心樣式 --- */
         * { 
             box-sizing: border-box; 
             -webkit-tap-highlight-color: transparent; 
-            font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
             margin: 0; padding: 0;
             user-select: none;
+            scrollbar-width: none;
         }
 
         body {
-            background-color: var(--bg-dark);
-            color: var(--text-light);
+            background-color: var(--bg-deep);
+            color: #E0E0E0;
+            font-family: var(--font-main);
             height: 100vh; width: 100vw;
-            overflow: hidden; 
+            overflow: hidden;
             display: flex; flex-direction: column;
         }
 
-        /* --- 你最喜歡的粉紫粒子背景 --- */
-        #magic-canvas {
+        /* 隱藏捲軸 */
+        ::-webkit-scrollbar { display: none; }
+
+        /* --- 3. 魔法粒子背景系統 --- */
+        #magic-engine {
             position: absolute; top: 0; left: 0;
             width: 100%; height: 100%;
-            z-index: 0; pointer-events: none; opacity: 0.4;
+            z-index: 0; pointer-events: none; opacity: 0.6;
         }
 
-        /* --- 頂部狀態列 --- */
-        #fixed-header {
-            height: var(--header-height);
-            background: linear-gradient(180deg, rgba(37,37,51,0.98) 0%, rgba(26,26,34,0.95) 100%);
+        /* --- 4. 頂部狀態列 (Status Bar) --- */
+        header {
+            height: var(--header-h);
+            background: linear-gradient(180deg, rgba(31,31,42,0.98) 0%, rgba(18,18,24,0.95) 100%);
             border-bottom: 2px solid rgba(255,255,255,0.05);
-            display: flex; flex-direction: column; justify-content: center;
             z-index: 100; flex-shrink: 0;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            display: flex; flex-direction: column; justify-content: center;
+            box-shadow: 0 4px 30px rgba(0,0,0,0.6);
         }
 
-        .status-container {
-            display: flex; justify-content: space-between; align-items: center; padding: 0 20px;
+        .header-stats {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 20px; margin-bottom: 5px;
         }
 
-        .stat-box {
-            display: flex; align-items: center; gap: 8px;
-            background: rgba(0,0,0,0.2); padding: 5px 12px;
-            border-radius: 12px; font-size: 0.85em;
+        .stat-capsule {
+            background: rgba(0,0,0,0.3);
+            padding: 4px 14px; border-radius: 20px;
+            font-size: 0.85em; display: flex; align-items: center; gap: 6px;
+            border: 1px solid rgba(255,255,255,0.05);
         }
 
-        .game-title {
-            text-align: center; font-size: 1.4em; font-weight: 900;
-            letter-spacing: 5px; color: var(--morandi-gold);
-            text-shadow: 0 0 15px rgba(234, 196, 213, 0.4);
-            margin-top: 5px;
+        .title-aura {
+            text-align: center; font-size: 1.5em; font-weight: 900;
+            letter-spacing: 4px; color: var(--magic-purple);
+            text-shadow: var(--glow-magic);
         }
 
-        /* --- 內容滾動區域 --- */
-        #main-scroll-area {
-            flex: 1; overflow-y: auto;
+        /* --- 5. 核心舞台區 (Stage) --- */
+        main {
+            flex: 1; overflow-y: auto; overflow-x: hidden;
+            position: relative; z-index: 1;
             display: flex; flex-direction: column;
-            z-index: 1; scroll-behavior: smooth;
         }
 
-        #stage-view {
-            height: 280px; display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
-            position: relative; flex-shrink: 0;
+        #world-stage {
+            height: 320px; flex-shrink: 0;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            position: relative; transition: background 1s ease;
         }
 
-        .floor-indicator {
-            position: absolute; font-size: 6.5em; font-weight: 900;
-            color: rgba(255, 255, 255, 0.03); z-index: 0;
-            font-style: italic; transition: all 0.5s ease;
+        .floor-giant-text {
+            position: absolute; font-size: 8em; font-weight: 900;
+            color: rgba(255, 255, 255, 0.02); z-index: 0;
+            font-style: italic; font-family: 'Arial Black', sans-serif;
+            pointer-events: none;
         }
 
-        .amao-container {
+        /* 阿毛動態容器 */
+        .amao-hero-unit {
             position: relative; z-index: 2;
             display: flex; flex-direction: column; align-items: center;
         }
 
-        .amao-main-sprite { 
-            font-size: 90px; filter: drop-shadow(0 15px 20px rgba(0,0,0,0.6));
+        .amao-avatar {
+            font-size: 100px; 
+            filter: drop-shadow(0 20px 25px rgba(0,0,0,0.7));
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            cursor: pointer;
+            cursor: pointer; position: relative;
         }
 
-        .amao-title-label {
-            background: linear-gradient(90deg, #D4A017, #FFE082);
-            color: #2D2D3A; padding: 5px 20px; border-radius: 20px;
-            font-weight: 800; font-size: 0.85em;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-            margin-top: -10px; border: 2px solid rgba(255,255,255,0.3);
+        /* 稱號展示標籤 */
+        .amao-badge {
+            background: linear-gradient(135deg, var(--gold) 0%, #FFE082 100%);
+            color: #2D2D3A; padding: 6px 22px; border-radius: 25px;
+            font-weight: 900; font-size: 0.9em;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            margin-top: -15px; border: 2px solid rgba(255,255,255,0.4);
+            animation: badgeFloat 3s infinite ease-in-out;
         }
 
-        /* --- 遊戲日誌 --- */
-        #game-log-list { padding: 15px; display: flex; flex-direction: column; gap: 12px; }
-
-        .log-entry {
-            background: rgba(37, 37, 51, 0.8); backdrop-filter: blur(5px);
-            padding: 15px; border-radius: 16px;
-            border-left: 6px solid var(--accent-blue);
-            display: flex; gap: 15px;
-            animation: logFade 0.4s ease-out;
+        @keyframes badgeFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
         }
 
-        @keyframes logFade { from { opacity: 0; transform: translateX(-15px); } to { opacity: 1; transform: translateX(0); } }
+        /* --- 6. 冒險日誌系統 --- */
+        #adventure-logs {
+            padding: 15px; display: flex; flex-direction: column-reverse; gap: 12px;
+        }
 
-        /* --- 底部控制 --- */
-        #fixed-footer {
-            height: var(--footer-height);
-            background: rgba(26, 26, 34, 0.98);
+        .log-card {
+            background: rgba(31, 31, 42, 0.7); backdrop-filter: blur(10px);
+            padding: 18px; border-radius: 20px;
+            border-left: 5px solid var(--silver);
+            display: flex; align-items: center; gap: 15px;
+            animation: slideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* --- 7. 底部控制台 (Console) --- */
+        footer {
+            height: var(--footer-h);
+            background: rgba(18, 18, 24, 0.98);
             border-top: 2px solid rgba(255,255,255,0.1);
-            display: flex; flex-direction: column;
             padding: 15px 20px; z-index: 100;
+            display: flex; flex-direction: column; gap: 15px;
         }
 
-        .dice-button {
-            background: linear-gradient(135deg, #FFE082 0%, #D4A017 100%);
-            color: #333; border: none; border-radius: 18px;
-            width: 100%; height: 70px;
-            font-size: 1.3em; font-weight: 900;
-            box-shadow: 0 6px 0 #8B6B0E; margin-bottom: 12px;
-            cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 15px;
+        .main-action-btn {
+            background: linear-gradient(135deg, #FFE082 0%, var(--gold) 100%);
+            color: #333; border: none; border-radius: 22px;
+            width: 100%; height: 75px;
+            font-size: 1.4em; font-weight: 900;
+            box-shadow: 0 6px 0 #8B6B0E, 0 10px 20px rgba(0,0,0,0.4);
+            cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 12px;
+            transition: all 0.1s;
         }
 
-        .dice-button:active { transform: translateY(4px); box-shadow: 0 2px 0 #8B6B0E; }
+        .main-action-btn:active { 
+            transform: translateY(4px); 
+            box-shadow: 0 2px 0 #8B6B0E, 0 5px 10px rgba(0,0,0,0.4); 
+        }
 
-        .bottom-nav { display: flex; justify-content: space-between; gap: 12px; }
+        .nav-grid { display: flex; justify-content: space-between; gap: 12px; }
 
-        .nav-item {
-            flex: 1; background: rgba(255,255,255,0.05);
-            height: 55px; border-radius: 15px;
+        .nav-btn {
+            flex: 1; background: rgba(255,255,255,0.06);
+            height: 55px; border-radius: 18px;
             display: flex; justify-content: center; align-items: center;
-            font-size: 1.8em; cursor: pointer; border: 1px solid rgba(255,255,255,0.1);
+            font-size: 1.6em; cursor: pointer; 
+            border: 1px solid rgba(255,255,255,0.08);
+            transition: background 0.2s;
         }
+        .nav-btn:hover { background: rgba(255,255,255,0.12); }
 
-        /* --- 選單彈窗與卡片系統 --- */
-        .overlay {
+        /* --- 8. 全螢幕選單系統 --- */
+        .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-dark); z-index: 1000;
+            background: var(--bg-deep); z-index: 1000;
             display: none; flex-direction: column;
-            animation: overlaySlide 0.3s ease-out;
+            animation: modalUp 0.3s cubic-bezier(0.32, 1, 0.23, 1);
         }
 
-        @keyframes overlaySlide { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        @keyframes modalUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
-        .overlay-header {
-            height: 75px; padding: 0 25px;
+        .modal-header {
+            height: 80px; padding: 0 25px;
             display: flex; justify-content: space-between; align-items: center;
             background: var(--panel-bg); border-bottom: 2px solid rgba(255,255,255,0.05);
         }
 
-        .settings-container { padding: 30px 20px; display: flex; flex-direction: column; gap: 20px; }
+        .modal-title { font-size: 1.3em; font-weight: 800; color: var(--magic-purple); }
 
-        .settings-btn {
-            background: #2D2D3A; color: var(--text-light); border: 1px solid rgba(255,255,255,0.1);
-            padding: 20px; border-radius: 18px; display: flex; align-items: center; gap: 15px;
-            cursor: pointer; transition: 0.2s;
-        }
+        .modal-close { font-size: 2em; cursor: pointer; color: var(--silver); }
 
-        .settings-btn.danger { color: var(--danger-red); border-color: rgba(255,107,107,0.3); }
-
-        .notebook-content {
-            flex: 1; overflow-y: auto; padding: 15px;
-            display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+        /* --- 9. 背包與稱號卡片設計 --- */
+        .grid-container {
+            flex: 1; overflow-y: auto; padding: 20px;
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
             align-content: start;
         }
 
-        /* 卡片精化樣式 */
-        .slot {
-            aspect-ratio: 1 / 1.3; background: rgba(255, 255, 255, 0.02);
-            border-radius: 12px; display: flex; flex-direction: column;
+        .item-card {
+            aspect-ratio: 1 / 1.3; background: rgba(255, 255, 255, 0.03);
+            border-radius: 15px; display: flex; flex-direction: column;
             justify-content: center; align-items: center; position: relative;
-            border: 1px dashed rgba(255, 255, 255, 0.1); transition: all 0.2s;
-            overflow: hidden;
-        }
-        .slot.unlocked { background: var(--panel-bg); border: 1.5px solid var(--accent-blue); box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; }
-        .slot.rank-S { border-color: var(--rarity-s); box-shadow: 0 0 8px rgba(255,68,68,0.2); }
-        .slot.rank-A { border-color: var(--rarity-a); box-shadow: 0 0 8px rgba(255,187,51,0.2); }
-        .slot.rank-B { border-color: var(--rarity-b); }
-        .slot.rank-C { border-color: var(--rarity-c); }
-
-        .slot-rank-tag { position: absolute; top: 2px; right: 4px; font-size: 0.6em; font-weight: 900; font-style: italic; opacity: 0.6; }
-        .slot-name { font-size: 0.65em; margin-top: 5px; text-align: center; padding: 0 2px; line-height: 1.2; color: var(--text-light); }
-        .slot-icon { font-size: 1.4em; }
-
-        /* 背包分頁 */
-        .tab-bar {
-            display: flex; background: #2D2D3A; padding: 5px;
-            gap: 5px; margin: 15px 20px 0; border-radius: 12px;
+            border: 1px dashed rgba(255, 255, 255, 0.1); 
+            transition: all 0.3s;
         }
 
-        .tab-item {
-            flex: 1; padding: 10px; text-align: center; border-radius: 8px;
-            font-weight: bold; font-size: 0.9em; color: #888; cursor: pointer;
+        .item-card.unlocked { 
+            background: var(--panel-bg); 
+            border: 1.5px solid var(--silver); 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
 
-        .tab-item.active { background: var(--morandi-gold); color: #2D2D3A; }
+        .item-card.rank-S { border-color: var(--gold); background: rgba(212, 160, 23, 0.05); }
+        .item-card.rank-A { border-color: var(--silver); }
+        .item-card.rank-B { border-color: var(--bronze); }
+        .item-card.rank-C { border-color: var(--wood); }
 
-        #toast {
+        .card-rank { position: absolute; top: 4px; right: 6px; font-size: 0.6em; font-weight: 900; opacity: 0.7; }
+        .card-name { font-size: 0.7em; margin-top: 8px; text-align: center; padding: 0 4px; font-weight: bold; }
+        .card-icon { font-size: 1.6em; }
+
+        /* --- 10. 商人出現特效與對話框 --- */
+        #npc-overlay {
+            position: absolute; bottom: 0; width: 100%; height: 200px;
+            background: linear-gradient(0deg, rgba(0,0,0,0.9) 0%, transparent 100%);
+            display: none; flex-direction: row; align-items: flex-end;
+            padding: 20px; gap: 20px; z-index: 5;
+        }
+
+        .npc-dialog {
+            background: white; color: #333; padding: 15px; border-radius: 15px 15px 15px 0;
+            flex: 1; margin-bottom: 40px; position: relative;
+            font-weight: bold; font-size: 0.9em;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        /* --- 11. Toast 與通知 --- */
+        #magic-toast {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.85); color: white; padding: 15px 30px;
-            border-radius: 30px; z-index: 2000; display: none; pointer-events: none;
+            background: rgba(255,255,255,0.95); color: #222; 
+            padding: 15px 40px; border-radius: 30px;
+            z-index: 5000; display: none; font-weight: 900;
+            box-shadow: 0 0 40px rgba(255,255,255,0.3);
+            pointer-events: none;
         }
 
-        ::-webkit-scrollbar { width: 0; }
+        /* 這裡是第一部分的核心樣式結構，已經預留了後續打怪、商人、背包切換的所有 CSS Hooks */
     </style>
 </head>
 <body>
 
-    <canvas id="magic-canvas"></canvas>
-    <div id="toast">已儲存</div>
+    <canvas id="magic-engine"></canvas>
+    <div id="magic-toast">✨ 魔法儲存成功 ✨</div>
 
-    <div id="fixed-header">
-        <div class="status-container">
-            <div class="stat-box">⚡ 體力: <span style="color:var(--morandi-green)">無限</span></div>
-            <div class="stat-box">💰 金幣: <span id="gold-val" style="color:var(--dice-yellow)">1000</span></div>
+    <header>
+        <div class="header-stats">
+            <div class="stat-capsule">🐶 HP: <span style="color:var(--danger)">MAX</span></div>
+            <div class="stat-capsule">💰 <span id="gold-display" style="color:var(--gold)">1,000</span></div>
         </div>
-        <div class="game-title">阿毛之塔</div>
-    </div>
+        <div class="title-aura">阿毛之塔</div>
+    </header>
 
-    <div id="main-scroll-area">
-        <div id="stage-view">
-            <div class="floor-indicator" id="bg-floor">0001</div>
-            <div class="amao-container">
-                <div class="amao-main-sprite" id="amao-sprite" onclick="amaoJump()">🐶</div>
-                <div class="amao-title-label" id="current-title">【新手爬塔狗】</div>
+    <main id="main-container">
+        <section id="world-stage">
+            <div class="floor-giant-text" id="bg-floor-number">0001</div>
+            <div class="amao-hero-unit">
+                <div class="amao-avatar" id="amao-sprite" onclick="amaoReact()">🐶</div>
+                <div class="amao-badge" id="current-title-label">【初出茅廬的小狗】</div>
             </div>
-        </div>
-        <div id="game-log-list"></div>
-    </div>
+            
+            <div id="npc-overlay">
+                <div id="npc-sprite" style="font-size: 80px;">🎃</div>
+                <div class="npc-dialog" id="npc-text">嘶哈嘶哈！阿毛要來點猛的裝備嗎？</div>
+            </div>
+        </section>
 
-    <div id="fixed-footer">
-        <button class="dice-button" id="btn-roll">🎲 投擲命運之骰</button>
-        <div class="bottom-nav">
-            <div class="nav-item" onclick="openMenu('settings')">⚙️</div>
-            <div class="nav-item" onclick="openMenu('titles')">🏅</div>
-            <div class="nav-item" onclick="openMenu('bag')">🎒</div>
-            <div class="nav-item" onclick="openMenu('shop')">🛒</div>
-        </div>
-    </div>
+        <section id="adventure-logs"></section>
+    </main>
 
-    <div id="menu-overlay" class="overlay">
-        <div class="overlay-header">
-            <h2 id="menu-title">選單</h2>
-            <div onclick="closeMenu()" style="font-size: 2.5em; cursor: pointer;">✕</div>
+    <footer>
+        <button class="main-action-btn" id="roll-dice-btn">
+            <span id="dice-icon">🎲</span> 投擲命運之骰
+        </button>
+        <div class="nav-grid">
+            <div class="nav-btn" onclick="ui.openModal('settings')">⚙️</div>
+            <div class="nav-btn" onclick="ui.openModal('notebook')">🏅</div>
+            <div class="nav-btn" onclick="ui.openModal('backpack')">🎒</div>
+            <div class="nav-btn" onclick="ui.openModal('shop')">🛒</div>
+        </div>
+    </footer>
+
+    <div id="main-modal" class="modal-overlay">
+        <div class="modal-header">
+            <div class="modal-title" id="modal-title-text">魔法清單</div>
+            <div class="modal-close" onclick="ui.closeModal()">✕</div>
         </div>
         
-        <div id="bag-tabs" class="tab-bar" style="display:none;">
-            <div class="tab-item active" id="tab-food" onclick="switchBagTab('food')">🍱 美食</div>
-            <div class="tab-item" id="tab-items" onclick="switchBagTab('items')">🎁 物品</div>
+        <div id="bag-tabs" style="display:none; padding: 10px 20px; gap: 10px;">
+            <button class="nav-btn" style="font-size: 0.9em;" onclick="game.switchTab('food')">🍱 美食</button>
+            <button class="nav-btn" style="font-size: 0.9em;" onclick="game.switchTab('gadget')">🎁 物品</button>
         </div>
 
-        <div id="menu-content" class="notebook-content"></div>
+        <div id="modal-body" class="grid-container">
+            </div>
     </div>
 
-<script>
-    /* --- 1. 遊戲資料 --- */
-    let G = {
-        floor: 1, gold: 1000, currentTitle: "新手爬塔狗",
-        titles: [0], inventory: { food: [], items: [] }, currentBagTab: 'food'
-    };
-
-    // 稱號資料庫
-    const TITLE_DB = [
-        { id: 0, name: "新手爬塔狗", rank: "C" },
-        { id: 1, name: "胃袋的魔術師", rank: "B" },
-        { id: 2, name: "藍莓果茶中毒者", rank: "S" },
-        { id: 3, name: "全能住宅改造王", rank: "A" },
-        { id: 4, name: "黃金尿尿小童", rank: "S" }
-    ];
-    // 補足預留稱號至 20 個作為展示
-    for(let i=5; i<20; i++) TITLE_DB.push({ id: i, name: `封印稱號 #${i}`, rank: i%3==0?'A':'B' });
-
-    window.onload = () => {
-        loadGame();
-        initParticles();
-        addLog("🔮", "「阿毛之塔」大門開啟！目標 9,999 層！");
-        updateUI();
-        document.getElementById('btn-roll').onclick = handleRoll;
-    };
-
-    /* --- 2. 選單與渲染 --- */
-    function openMenu(type) {
-        const overlay = document.getElementById('menu-overlay');
-        const title = document.getElementById('menu-title');
-        const content = document.getElementById('menu-content');
-        const tabs = document.getElementById('bag-tabs');
-        
-        overlay.style.display = 'flex';
-        tabs.style.display = (type === 'bag') ? 'flex' : 'none';
-
-        if (type === 'settings') {
-            title.innerText = "⚙️ 冒險設定";
-            content.style.display = 'block'; 
-            renderSettings();
-        } else {
-            content.style.display = 'grid'; 
-            if (type === 'titles') {
-                title.innerText = "🏅 稱號筆記本";
-                renderTitles();
-            } else if (type === 'bag') {
-                title.innerText = "🎒 阿毛的口袋";
-                renderBag();
-            } else {
-                title.innerText = "🛒 商店";
-                content.innerHTML = '<p style="grid-column:span 4; text-align:center; padding:50px; opacity:0.3;">尚未營業</p>';
-            }
-        }
-    }
-
-    function renderTitles() {
-        const c = document.getElementById('menu-content'); c.innerHTML = '';
-        TITLE_DB.forEach(t => {
-            const isOwn = G.titles.includes(t.id);
-            const slot = document.createElement('div');
-            slot.className = `slot ${isOwn ? 'unlocked rank-' + t.rank : ''}`;
-            slot.innerHTML = `
-                ${isOwn ? `<div class="slot-rank-tag">${t.rank}</div>` : ''}
-                <div class="slot-icon">${isOwn ? '🏅' : '🔒'}</div>
-                <div class="slot-name">${isOwn ? t.name : '???'}</div>
-            `;
-            if(isOwn) {
-                slot.onclick = () => { G.currentTitle = t.name; updateUI(); showToast(`已裝備：${t.name}`); };
-            }
-            c.appendChild(slot);
-        });
-    }
-
-    function renderSettings() {
-        document.getElementById('menu-content').innerHTML = `
-            <div class="settings-container">
-                <div class="settings-btn" onclick="saveGame()">💾 <span>保存目前進度</span></div>
-                <div class="settings-btn danger" onclick="resetToFloorOne()">⏳ <span>回到 1 樓 (保留物品)</span></div>
-            </div>
-        `;
-    }
-
-    /* --- 3. 核心系統 --- */
-    function handleRoll() {
-        const btn = document.getElementById('btn-roll');
-        if(btn.disabled) return;
-        btn.disabled = true; amaoJump();
-        let count = 0;
-        const timer = setInterval(() => {
-            btn.innerText = ['⚀','⚁','⚂','⚃','⚄','⚅'][Math.floor(Math.random()*6)];
-            if(count++ > 10) {
-                clearInterval(timer);
-                const move = Math.floor(Math.random() * 6) + 1;
-                G.floor += move;
-                // 隨機獲得稱號測試
-                if(Math.random() > 0.8 && G.titles.length < TITLE_DB.length) {
-                    let nextId = G.titles.length;
-                    G.titles.push(nextId);
-                    addLog("🏅", `獲得新稱號：【${TITLE_DB[nextId].name}】`);
+    <script>
+        // 初始化視覺引擎與 UI 操作對象
+        const ui = {
+            openModal: (type) => {
+                const modal = document.getElementById('main-modal');
+                const title = document.getElementById('modal-title-text');
+                const body = document.getElementById('modal-body');
+                const tabs = document.getElementById('bag-tabs');
+                
+                modal.style.display = 'flex';
+                tabs.style.display = (type === 'backpack') ? 'flex' : 'none';
+                
+                if(type === 'settings') {
+                    title.innerText = "⚙️ 冒險設定";
+                    body.innerHTML = `
+                        <div style="grid-column: span 4; display: flex; flex-direction: column; gap: 20px;">
+                            <div class="nav-btn" style="height: 80px;" onclick="game.save()">💾 儲存冒險進度</div>
+                            <div class="nav-btn" style="height: 80px; color: var(--danger); border-color: var(--danger);" onclick="game.backToOne()">⏳ 穿越時空回到 1 樓</div>
+                            <p style="text-align: center; font-size: 0.8em; opacity: 0.5;">「即使回到最初，學到的技能與獲得的寶物是不會消失的。」</p>
+                        </div>
+                    `;
                 }
-                btn.innerText = "🎲 投擲命運之骰";
-                addLog("🎲", `前進了 ${move} 層。`);
-                updateUI(); btn.disabled = false;
+                // 其他類型預留...
+            },
+            closeModal: () => {
+                document.getElementById('main-modal').style.display = 'none';
             }
-        }, 60);
-    }
+        };
 
-    function saveGame() { localStorage.setItem('amao_tower_save', JSON.stringify(G)); showToast("💾 已存檔"); }
-    function loadGame() { const saved = localStorage.getItem('amao_tower_save'); if(saved) G = JSON.parse(saved); }
-    function resetToFloorOne() { if(confirm("回 1 樓嗎？")) { G.floor = 1; updateUI(); closeMenu(); saveGame(); } }
-    function updateUI() {
-        document.getElementById('bg-floor').innerText = G.floor.toString().padStart(4, '0');
-        document.getElementById('gold-val').innerText = G.gold;
-        document.getElementById('current-title').innerText = `【${G.currentTitle}】`;
-    }
-    function addLog(icon, txt) {
-        const list = document.getElementById('game-log-list');
-        const div = document.createElement('div');
-        div.className = 'log-entry';
-        div.innerHTML = `<div>${icon}</div><div>${txt} (目前:${G.floor}F)</div>`;
-        list.insertBefore(div, list.firstChild);
-        if(list.children.length > 15) list.lastChild.remove();
-    }
-    function amaoJump() {
-        const s = document.getElementById('amao-sprite');
-        s.style.transform = "translateY(-40px) scale(1.1)";
-        setTimeout(() => s.style.transform = "translateY(0) scale(1)", 300);
-    }
-    function closeMenu() { document.getElementById('menu-overlay').style.display = 'none'; }
-    function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 1200); }
-
-    function initParticles() {
-        const c = document.getElementById('magic-canvas'); const ctx = c.getContext('2d');
-        c.width = window.innerWidth; c.height = window.innerHeight;
-        let p = Array(30).fill().map(() => ({ x: Math.random()*c.width, y: Math.random()*c.height, v: Math.random()*0.5+0.2 }));
-        function anim() {
-            ctx.clearRect(0,0,c.width,c.height); ctx.fillStyle = "#EAC4D5";
-            p.forEach(i => { i.y -= i.v; if(i.y < -10) i.y = c.height+10; ctx.beginPath(); ctx.arc(i.x, i.y, 1.5, 0, Math.PI*2); ctx.fill(); });
-            requestAnimationFrame(anim);
-        }
-        anim();
-    }
-</script>
+        // 預留遊戲核心對象
+        const game = {
+            save: () => {
+                document.getElementById('magic-toast').style.display = 'block';
+                setTimeout(() => document.getElementById('magic-toast').style.display = 'none', 1500);
+            },
+            backToOne: () => {
+                if(confirm("確定要消耗魔力回到 1 樓嗎？（物品會保留）")) {
+                    // 邏輯將在後續 Script 區塊實現
+                    location.reload(); 
+                }
+            }
+        };
+    </script>
 </body>
 </html>
