@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>阿毛之塔 - Amao Tower: Elegant Edition</title>
+    <title>阿毛之塔 - Amao Tower: Elegant Card Edition</title>
     <style>
         /* --- 核心視覺系統 (莫蘭迪色系) --- */
         :root {
@@ -39,7 +39,7 @@
             display: flex; flex-direction: column;
         }
 
-        /* --- 你最喜歡的粒子背景 --- */
+        /* --- 你最喜歡的粉紫粒子背景 --- */
         #magic-canvas {
             position: absolute; top: 0; left: 0;
             width: 100%; height: 100%;
@@ -106,7 +106,7 @@
         .amao-title-label {
             background: linear-gradient(90deg, #D4A017, #FFE082);
             color: #2D2D3A; padding: 5px 20px; border-radius: 20px;
-            font-weight: 800; font-size: 0.9em;
+            font-weight: 800; font-size: 0.85em;
             box-shadow: 0 4px 15px rgba(0,0,0,0.4);
             margin-top: -10px; border: 2px solid rgba(255,255,255,0.3);
         }
@@ -153,7 +153,7 @@
             font-size: 1.8em; cursor: pointer; border: 1px solid rgba(255,255,255,0.1);
         }
 
-        /* --- 選單彈窗與設定系統 --- */
+        /* --- 選單彈窗與卡片系統 --- */
         .overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--bg-dark); z-index: 1000;
@@ -180,9 +180,28 @@
         .settings-btn.danger { color: var(--danger-red); border-color: rgba(255,107,107,0.3); }
 
         .notebook-content {
-            flex: 1; overflow-y: auto; padding: 20px;
-            display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+            flex: 1; overflow-y: auto; padding: 15px;
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+            align-content: start;
         }
+
+        /* 卡片精化樣式 */
+        .slot {
+            aspect-ratio: 1 / 1.3; background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; position: relative;
+            border: 1px dashed rgba(255, 255, 255, 0.1); transition: all 0.2s;
+            overflow: hidden;
+        }
+        .slot.unlocked { background: var(--panel-bg); border: 1.5px solid var(--accent-blue); box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; }
+        .slot.rank-S { border-color: var(--rarity-s); box-shadow: 0 0 8px rgba(255,68,68,0.2); }
+        .slot.rank-A { border-color: var(--rarity-a); box-shadow: 0 0 8px rgba(255,187,51,0.2); }
+        .slot.rank-B { border-color: var(--rarity-b); }
+        .slot.rank-C { border-color: var(--rarity-c); }
+
+        .slot-rank-tag { position: absolute; top: 2px; right: 4px; font-size: 0.6em; font-weight: 900; font-style: italic; opacity: 0.6; }
+        .slot-name { font-size: 0.65em; margin-top: 5px; text-align: center; padding: 0 2px; line-height: 1.2; color: var(--text-light); }
+        .slot-icon { font-size: 1.4em; }
 
         /* 背包分頁 */
         .tab-bar {
@@ -196,14 +215,6 @@
         }
 
         .tab-item.active { background: var(--morandi-gold); color: #2D2D3A; }
-
-        .slot {
-            aspect-ratio: 1; background: rgba(255,255,255,0.03);
-            border-radius: 15px; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; font-size: 0.7em;
-            color: #555; border: 1px dashed rgba(255,255,255,0.1);
-        }
-        .slot.unlocked { background: var(--panel-bg); border: 1px solid var(--accent-blue); color: var(--text-light); }
 
         #toast {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -263,17 +274,22 @@
     </div>
 
 <script>
-    /* --- 1. 遊戲核心資料 --- */
+    /* --- 1. 遊戲資料 --- */
     let G = {
         floor: 1, gold: 1000, currentTitle: "新手爬塔狗",
         titles: [0], inventory: { food: [], items: [] }, currentBagTab: 'food'
     };
 
+    // 稱號資料庫
     const TITLE_DB = [
-        { id: 0, name: "新手爬塔狗", rank: "C", desc: "剛踏入塔內，對一切充滿好奇。", effect: "無" },
-        { id: 1, name: "胃袋的魔術師", rank: "B", desc: "擁有能裝下整個鮮茶道菜單的胃。", effect: "進食強效" },
-        { id: 2, name: "藍莓果茶中毒者", rank: "S", desc: "血管裡流著鮮茶道。", effect: "MP 回復" }
+        { id: 0, name: "新手爬塔狗", rank: "C" },
+        { id: 1, name: "胃袋的魔術師", rank: "B" },
+        { id: 2, name: "藍莓果茶中毒者", rank: "S" },
+        { id: 3, name: "全能住宅改造王", rank: "A" },
+        { id: 4, name: "黃金尿尿小童", rank: "S" }
     ];
+    // 補足預留稱號至 20 個作為展示
+    for(let i=5; i<20; i++) TITLE_DB.push({ id: i, name: `封印稱號 #${i}`, rank: i%3==0?'A':'B' });
 
     window.onload = () => {
         loadGame();
@@ -283,7 +299,7 @@
         document.getElementById('btn-roll').onclick = handleRoll;
     };
 
-    /* --- 2. 選單與設定功能 --- */
+    /* --- 2. 選單與渲染 --- */
     function openMenu(type) {
         const overlay = document.getElementById('menu-overlay');
         const title = document.getElementById('menu-title');
@@ -305,50 +321,10 @@
             } else if (type === 'bag') {
                 title.innerText = "🎒 阿毛的口袋";
                 renderBag();
-            } else if (type === 'shop') {
-                title.innerText = "🛒 正在進貨中...";
-                content.innerHTML = '<p style="grid-column:span 4; text-align:center; padding:50px; opacity:0.3;">商人正在趕路中...</p>';
+            } else {
+                title.innerText = "🛒 商店";
+                content.innerHTML = '<p style="grid-column:span 4; text-align:center; padding:50px; opacity:0.3;">尚未營業</p>';
             }
-        }
-    }
-
-    function renderSettings() {
-        const content = document.getElementById('menu-content');
-        content.innerHTML = `
-            <div class="settings-container">
-                <div class="settings-btn" onclick="saveGame()">
-                    <span style="font-size:1.8em">💾</span>
-                    <div style="flex:1">
-                        <div style="font-size:1.1em; color:var(--morandi-gold)">手動存檔</div>
-                        <div style="font-size:0.75em; opacity:0.6">將目前的冒險進度保存至魔法時空。</div>
-                    </div>
-                </div>
-                <div class="settings-btn danger" onclick="resetToFloorOne()">
-                    <span style="font-size:1.8em">⏳</span>
-                    <div style="flex:1">
-                        <div style="font-size:1.1em">回到 1 樓</div>
-                        <div style="font-size:0.75em; opacity:0.8">保留所有已收集的物品，從頭開始爬塔。</div>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    function saveGame() {
-        localStorage.setItem('amao_tower_save', JSON.stringify(G));
-        showToast("💾 進度已保存！");
-    }
-
-    function loadGame() {
-        const saved = localStorage.getItem('amao_tower_save');
-        if(saved) { G = JSON.parse(saved); addLog("📖", "成功讀取記憶。"); }
-    }
-
-    function resetToFloorOne() {
-        if(confirm("確定要回到 1 樓嗎？(物品將會保留)")) {
-            G.floor = 1; updateUI(); closeMenu();
-            addLog("⏳", "時間倒流！阿毛回到了塔底。");
-            saveGame();
         }
     }
 
@@ -357,31 +333,33 @@
         TITLE_DB.forEach(t => {
             const isOwn = G.titles.includes(t.id);
             const slot = document.createElement('div');
-            slot.className = `slot ${isOwn?'unlocked':''}`;
-            slot.innerHTML = `<div style="font-size:1.5em">${isOwn?'🏅':'🔒'}</div><div>${isOwn?t.name:'???'}</div>`;
+            slot.className = `slot ${isOwn ? 'unlocked rank-' + t.rank : ''}`;
+            slot.innerHTML = `
+                ${isOwn ? `<div class="slot-rank-tag">${t.rank}</div>` : ''}
+                <div class="slot-icon">${isOwn ? '🏅' : '🔒'}</div>
+                <div class="slot-name">${isOwn ? t.name : '???'}</div>
+            `;
+            if(isOwn) {
+                slot.onclick = () => { G.currentTitle = t.name; updateUI(); showToast(`已裝備：${t.name}`); };
+            }
             c.appendChild(slot);
         });
     }
 
-    function renderBag() {
-        document.getElementById('menu-content').innerHTML = `<p style="grid-column:span 4; text-align:center; padding:50px; opacity:0.3;">口袋裡空空如也...</p>`;
+    function renderSettings() {
+        document.getElementById('menu-content').innerHTML = `
+            <div class="settings-container">
+                <div class="settings-btn" onclick="saveGame()">💾 <span>保存目前進度</span></div>
+                <div class="settings-btn danger" onclick="resetToFloorOne()">⏳ <span>回到 1 樓 (保留物品)</span></div>
+            </div>
+        `;
     }
 
-    function switchBagTab(tab) {
-        G.currentBagTab = tab;
-        document.getElementById('tab-food').className = `tab-item ${tab==='food'?'active':''}`;
-        document.getElementById('tab-items').className = `tab-item ${tab==='items'?'active':''}`;
-        renderBag();
-    }
-
-    function closeMenu() { document.getElementById('menu-overlay').style.display = 'none'; }
-
-    /* --- 3. 核心遊戲邏輯 --- */
+    /* --- 3. 核心系統 --- */
     function handleRoll() {
         const btn = document.getElementById('btn-roll');
         if(btn.disabled) return;
-        btn.disabled = true;
-        amaoJump();
+        btn.disabled = true; amaoJump();
         let count = 0;
         const timer = setInterval(() => {
             btn.innerText = ['⚀','⚁','⚂','⚃','⚄','⚅'][Math.floor(Math.random()*6)];
@@ -389,64 +367,53 @@
                 clearInterval(timer);
                 const move = Math.floor(Math.random() * 6) + 1;
                 G.floor += move;
+                // 隨機獲得稱號測試
+                if(Math.random() > 0.8 && G.titles.length < TITLE_DB.length) {
+                    let nextId = G.titles.length;
+                    G.titles.push(nextId);
+                    addLog("🏅", `獲得新稱號：【${TITLE_DB[nextId].name}】`);
+                }
                 btn.innerText = "🎲 投擲命運之骰";
-                addLog("🎲", `阿毛前進了 <span style="color:var(--morandi-gold)">${move}</span> 層。`);
-                updateUI();
-                btn.disabled = false;
+                addLog("🎲", `前進了 ${move} 層。`);
+                updateUI(); btn.disabled = false;
             }
         }, 60);
     }
 
+    function saveGame() { localStorage.setItem('amao_tower_save', JSON.stringify(G)); showToast("💾 已存檔"); }
+    function loadGame() { const saved = localStorage.getItem('amao_tower_save'); if(saved) G = JSON.parse(saved); }
+    function resetToFloorOne() { if(confirm("回 1 樓嗎？")) { G.floor = 1; updateUI(); closeMenu(); saveGame(); } }
     function updateUI() {
         document.getElementById('bg-floor').innerText = G.floor.toString().padStart(4, '0');
         document.getElementById('gold-val').innerText = G.gold;
         document.getElementById('current-title').innerText = `【${G.currentTitle}】`;
     }
-
     function addLog(icon, txt) {
         const list = document.getElementById('game-log-list');
         const div = document.createElement('div');
         div.className = 'log-entry';
-        div.innerHTML = `<div>${icon}</div><div style="font-size:0.95em">${txt}</div>`;
+        div.innerHTML = `<div>${icon}</div><div>${txt} (目前:${G.floor}F)</div>`;
         list.insertBefore(div, list.firstChild);
-        if(list.children.length > 20) list.lastChild.remove();
+        if(list.children.length > 15) list.lastChild.remove();
     }
-
     function amaoJump() {
         const s = document.getElementById('amao-sprite');
-        s.style.transform = "translateY(-40px) scale(1.1) rotate(5deg)";
-        setTimeout(() => s.style.transform = "translateY(0) scale(1) rotate(0deg)", 300);
+        s.style.transform = "translateY(-40px) scale(1.1)";
+        setTimeout(() => s.style.transform = "translateY(0) scale(1)", 300);
     }
+    function closeMenu() { document.getElementById('menu-overlay').style.display = 'none'; }
+    function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 1200); }
 
-    function showToast(msg) {
-        const t = document.getElementById('toast');
-        t.innerText = msg; t.style.display = 'block';
-        setTimeout(() => t.style.display = 'none', 1500);
-    }
-
-    /* --- 4. 粒子背景特效 --- */
     function initParticles() {
-        const canvas = document.getElementById('magic-canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        let particles = Array(30).fill().map(() => ({
-            x: Math.random() * canvas.width,
-            y: Math.random() * canvas.height,
-            size: Math.random() * 2 + 1,
-            speed: Math.random() * 0.5 + 0.2
-        }));
-        function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "#EAC4D5";
-            particles.forEach(p => {
-                p.y -= p.speed;
-                if(p.y < -10) p.y = canvas.height + 10;
-                ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
-            });
-            requestAnimationFrame(animate);
+        const c = document.getElementById('magic-canvas'); const ctx = c.getContext('2d');
+        c.width = window.innerWidth; c.height = window.innerHeight;
+        let p = Array(30).fill().map(() => ({ x: Math.random()*c.width, y: Math.random()*c.height, v: Math.random()*0.5+0.2 }));
+        function anim() {
+            ctx.clearRect(0,0,c.width,c.height); ctx.fillStyle = "#EAC4D5";
+            p.forEach(i => { i.y -= i.v; if(i.y < -10) i.y = c.height+10; ctx.beginPath(); ctx.arc(i.x, i.y, 1.5, 0, Math.PI*2); ctx.fill(); });
+            requestAnimationFrame(anim);
         }
-        animate();
+        anim();
     }
 </script>
 </body>
