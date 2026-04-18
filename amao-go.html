@@ -1362,10 +1362,82 @@ document.addEventListener('DOMContentLoaded', () => {
 
     console.log("🛠️ 阿毛之塔：版面優化與原創化補丁已生效。");
 })();
+</<style>
+    /* 重啟按鈕的樣式：優雅的紅色小圖標 */
+    #reset-btn {
+        position: fixed;
+        top: 15px;
+        right: 15px;
+        background: rgba(192, 57, 43, 0.8) !important;
+        color: white !important;
+        border: 1px solid #fff;
+        border-radius: 50%;
+        width: 35px;
+        height: 35px;
+        font-size: 18px;
+        cursor: pointer;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+</style>
+
+<script>
+(function() {
+    // 1. 建立並插入「重新爬塔」按鈕
+    const resetBtn = document.createElement('button');
+    resetBtn.id = 'reset-btn';
+    resetBtn.innerHTML = '🔄';
+    resetBtn.title = '重新開始冒險';
+    document.body.appendChild(resetBtn);
+
+    // 2. 重新開始的魔法邏輯
+    resetBtn.onclick = function() {
+        if (confirm("🚨 創世警告：確定要清空所有紀錄，讓阿毛回到第 1 層嗎？\n(這會刪除所有金幣、裝備與層數紀錄)")) {
+            // 清空本地儲存
+            localStorage.removeItem('amao_tower_save');
+            
+            // 如果 state 物件存在，強制重置數值
+            if (typeof state !== 'undefined') {
+                state.lvl = 1;
+                state.gold = 100;
+                state.nrg = 60;
+                state.mood = 100;
+                state.atk = 10;
+                state.def = 10;
+                state.spd = 10;
+                state.luk = 10;
+                state.int = 10;
+                state.inv = [];
+                state.equips = { head: null, body: null, hand: null, feet: null };
+                state.isBattle = false;
+                window.currentEnemy = null;
+                
+                // 存入空檔並重新整理
+                localStorage.setItem('amao_tower_save', JSON.stringify(state));
+                alert("✨ 時空已重置，阿毛回到起點了！");
+                location.reload(); // 強制重新載入頁面，確保所有 UI 同步
+            } else {
+                // 如果抓不到 state，直接暴力重整
+                location.reload();
+            }
+        }
+    };
+
+    // 3. 修補字體太太太太大後的排版微調
+    // 確保最新的訊息在最上方，且捲軸始終固定
+    const msgBox = document.getElementById('msg-box');
+    if (msgBox) {
+        msgBox.style.display = 'flex';
+        msgBox.style.flexDirection = 'column-reverse';
+    }
+})();
 </script>
 
 <div style="height: 50px; text-align: center; color: rgba(255,255,255,0.2); font-size: 10px; margin-top: 20px;">
-    &copy; 2026 阿毛之塔 · 鮪魚堡創世委員會 · 史萊哲林美學部
+    &copy; 2026 阿毛之塔· 慵懶夢境委員會
 </div>
 
 </div> </body>
