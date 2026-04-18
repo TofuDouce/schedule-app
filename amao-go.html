@@ -1444,6 +1444,104 @@ document.addEventListener('DOMContentLoaded', () => {
  * 製作人，這份代碼是專屬於妳的純粹空間。
  * 祝阿毛在雲端與妳的夢境中，永遠優雅前行。
  */
+<//**
+ * 【核心修正：存檔與重啟系統】
+ */
+
+// 1. 強化自動存檔邏輯
+const SaveSystem = {
+    saveKey: "AmaoTower_Production_Save",
+
+    // 強制存檔
+    save: function() {
+        const data = {
+            lvl: state.lvl,
+            nrg: state.nrg,
+            gold: state.gold,
+            title: state.title,
+            inv: state.inv,
+            cards: state.cards,
+            unlockedTitles: state.unlockedTitles,
+            stats: state.stats
+        };
+        localStorage.setItem(this.saveKey, JSON.stringify(data));
+        console.log("阿毛已自動存檔至雲端... (層數: " + state.lvl + ")");
+    },
+
+    // 讀取存檔
+    load: function() {
+        const savedData = localStorage.getItem(this.saveKey);
+        if (savedData) {
+            const parsed = JSON.parse(savedData);
+            // 逐一恢復數據
+            state.lvl = parsed.lvl || 1;
+            state.nrg = parsed.nrg || 60;
+            state.gold = parsed.gold || 0;
+            state.title = parsed.title || "【新生的阿毛】";
+            state.inv = parsed.inv || [];
+            state.cards = parsed.cards || [];
+            state.unlockedTitles = parsed.unlockedTitles || ["【新生的阿毛】"];
+            state.stats = parsed.stats || { luk: 10, history: { totalSteps: 0, totalEaten: 0, angelRescue: 0, totalSpent: 0 }};
+            
+            AmaoApp.addLog("💾 記憶讀取成功！歡迎回到第 " + state.lvl + " 層。", "#55efc4");
+            AmaoApp.updateUI();
+        }
+    },
+
+    // 2. 手動重新開始 (重置功能)
+    manualReset: function() {
+        if (confirm("🚨 製作人確定要讓阿毛重新開始嗎？\n這會清除所有層數、稱號與家具，讓一切回到夢境起點。")) {
+            localStorage.removeItem(this.saveKey);
+            AmaoApp.addLog("🌌 時空重置中...即將回到起點。", "#ff7675");
+            setTimeout(() => {
+                location.reload(); // 重新整理頁面以重置所有變數
+            }, 800);
+        }
+    }
+};
+
+// 3. 確保所有關鍵動作都會觸發自動存檔
+// 複寫原本的 updateUI，確保每次狀態更新都存檔一次
+const finalAutoSave = AmaoApp.updateUI;
+AmaoApp.updateUI = function() {
+    finalAutoSave.apply(this);
+    SaveSystem.save(); 
+};
+
+// 4. 在 UI 面板中加入「重新開始」按鈕
+// 我們將它放在「榮譽牆 (Collection)」的最下方
+const originalRenderCollection = UI.renderDrawer;
+UI.renderDrawer = function(type) {
+    originalRenderCollection.apply(this, arguments);
+    if (type === 'collection') {
+        const content = document.getElementById('drawer-content');
+        const resetBtn = document.createElement('div');
+        resetBtn.innerHTML = `
+            <div style="margin-top: 40px; padding: 20px; border-top: 1px dashed #555;">
+                <p style="font-size:14px; color:#888; text-align:center;">如果想體驗最初的驚喜：</p>
+                <button onclick="SaveSystem.manualReset()" style="
+                    width:100%; background:transparent; border:1px solid #ff7675; 
+                    color:#ff7675; padding:12px; border-radius:10px; cursor:pointer;
+                    transition: 0.3s;
+                ">重新開始新冒險</button>
+            </div>
+        `;
+        content.appendChild(resetBtn);
+    }
+};
+
+// 頁面開啟時立即讀檔
+window.onload = function() {
+    SaveSystem.load();
+};
+// --- 最終防護結尾標籤 ---
+
+// 啟動最後檢查
+console.log("阿毛之塔核心防護已啟動：自動存檔與重置機制就緒。");
+
 </script>
+</body>
+</html>
+      
 </body>
 </html>
