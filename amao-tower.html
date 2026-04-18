@@ -4,6 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>阿毛之塔</title>
+    <script>
+/**
+ * 終極暴力補丁：只要打開網頁，就強制把樓層改成 1
+ * 這是為了對抗那些關不掉的自動存檔
+ */
+window.addEventListener('load', function() {
+    // 1. 強制修改記憶體裡的數值
+    if (typeof AmaoGame !== 'undefined') {
+        AmaoGame.stats.floor = 1;
+        
+        // 2. 為了防止它又存回去 172，我們直接把存檔函數暫時「閹割」掉
+        const realSave = AmaoGame.save;
+        AmaoGame.save = function() {
+            this.stats.floor = 1; // 就算要存，也給我存 1 樓
+            realSave.call(this);
+        };
+        
+        // 3. 刷新畫面
+        AmaoGame.refreshUI();
+        console.log("🛠️ 暴力重置成功：已強制鎖定為 1 樓。");
+    }
+});
+</script>
     <style>
         /* --- 莫蘭迪深色調系統 --- */
         :root {
