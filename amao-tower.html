@@ -651,7 +651,41 @@ document.head.appendChild(style);
 
 // 重新綁定骰子按鈕
 window.handleRoll = () => AmaoGame.rollWithBattle();
+// --- 稱號成就檢查員 (新增於區塊 3) ---
+AmaoGame.checkTitleUnlocks = function() {
+    let newlyUnlocked = "";
 
+    // 條件 1：樓層成就
+    if (this.floor >= 50 && !this.titleNotebook[4].unlocked) { // 假設第5個是莫蘭迪美學家
+        this.titleNotebook[4].unlocked = true;
+        newlyUnlocked = this.titleNotebook[4].name;
+    }
+    
+    // 條件 2：美食收藏成就 (吃過 5 種以上)
+    const foodCount = this.foodNotebook.filter(f => f.consumed).length;
+    if (foodCount >= 5 && !this.titleNotebook[2].unlocked) { // 胃袋魔術師
+        this.titleNotebook[2].unlocked = true;
+        newlyUnlocked = this.titleNotebook[2].name;
+    }
+
+    // 條件 3：暴發戶成就 (金幣超過 2000)
+    if (this.stats.gold >= 2000 && !this.titleNotebook[1].unlocked) {
+        this.titleNotebook[1].unlocked = true;
+        newlyUnlocked = this.titleNotebook[1].name;
+    }
+
+    if (newlyUnlocked) {
+        this.addLog("🎊", `恭喜！獲得新稱號：<span class="highlight-text">【${newlyUnlocked}】</span>`);
+        this.save();
+    }
+};
+
+// 修改 rollWithBattle，讓它每次走完路都檢查一下稱號
+const originalRoll = AmaoGame.rollWithBattle;
+AmaoGame.rollWithBattle = function() {
+    originalRoll.apply(this);
+    this.checkTitleUnlocks(); // 檢查有沒有達成新稱號
+};
 // 讓 UI 每秒更新一次血量顯示
 setInterval(() => AmaoGame.refreshBattleUI(), 500);
 
