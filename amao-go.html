@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>阿毛之塔：鮪魚堡的魔法奇境</title>
+    <title>阿毛之塔：阿毛奇幻旅行</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Cinzel:wght@700&family=Bungee+Shade&display=swap" rel="stylesheet">
     <style>
         /* 預先定義全域變數，確保第 3 區塊能順利對接 */
@@ -1148,6 +1148,57 @@ window.onbeforeunload = function() {
 };
 
 console.log("阿毛之塔：第 11 區塊封頂完成。所有魔法迴路已接通。");
+</script>
+<script>
+/**
+ * 創世神緊急修復補丁：自動排除「尋找魔法中」卡死問題
+ */
+setInterval(() => {
+    // 檢查點 1：邏輯與顯示不一致修復
+    // 如果系統認為在戰鬥，但其實沒有敵人對象，強制回歸正常模式
+    if (typeof state !== 'undefined' && state.isBattle && !window.currentEnemy) {
+        state.isBattle = false;
+        
+        // 隱藏那個礙眼的 VS 和怪物區域
+        const enemyBar = document.getElementById('enemy-hp-bar');
+        if (enemyBar) enemyBar.style.display = 'none';
+        
+        const enemyName = document.getElementById('enemy-name');
+        if (enemyName) enemyName.innerText = "已恢復時空穩定";
+        
+        // 刷新介面讓骰子恢復「走路」功能
+        if (typeof update === 'function') update();
+        
+        console.log("🛡️ 補丁：已自動修復阿毛的卡死狀態！");
+    }
+
+    // 檢查點 2：介面刷新保險
+    // 確保「尋找魔法中...」這幾個字不會在沒戰鬥時出現
+    if (typeof state !== 'undefined' && !state.isBattle) {
+        const enemyName = document.getElementById('enemy-name');
+        if (enemyName && enemyName.innerText === "尋找魔法中...") {
+            enemyName.innerText = "休息中...";
+        }
+    }
+}, 1000); // 每秒自動巡邏一次
+
+// 加入一個「暴力重置」小功能
+// 萬一真的動不了，你在手機上長按骰子 2 秒，也會強制重置
+document.addEventListener('DOMContentLoaded', () => {
+    const dice = document.getElementById('dice-container');
+    if (dice) {
+        let timer;
+        dice.addEventListener('touchstart', () => {
+            timer = setTimeout(() => {
+                state.isBattle = false;
+                window.currentEnemy = null;
+                update();
+                alert("🔮 創世神力介入：阿毛已重置！");
+            }, 2000);
+        });
+        dice.addEventListener('touchend', () => clearTimeout(timer));
+    }
+});
 </script>
 
 <div style="height: 50px; text-align: center; color: rgba(255,255,255,0.2); font-size: 10px; margin-top: 20px;">
