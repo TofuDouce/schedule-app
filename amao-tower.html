@@ -343,24 +343,29 @@
 </script>
 <script>
 /**
- * 阿毛之塔 - 核心引擎 2.1 (圖鑑強化版)
+ * 阿毛之塔 - 核心引擎 2.2
+ * 修正 undefined 錯誤並強制清理舊快取
  */
+
+// [強制清理] 如果發現舊資料導致錯誤，自動重置
+if (localStorage.getItem('AmaoSave') && !localStorage.getItem('AmaoSave').includes('emoji')) {
+    localStorage.removeItem('AmaoSave');
+}
 
 const GameDB = {
     foodPrefix: ["香氣四溢的", "極致濃郁的", "灑滿蔥花的", "黃金比例的", "來自地獄的", "媽媽特製的", "滷滷米達嫌棄過的", "南瓜老闆激推的", "充滿魔法氣息的", "散發銀紫光芒的", "路邊撿到的", "奶奶特傳的", "夢幻莫蘭迪色的", "超音速生成的", "罪惡感爆表的", "蒜泥狠的", "讓人流口水的", "焦糖琥珀色的", "苦中帶甜的", "冰鎮極品的"],
     foodMiddle: ["爆發性", "口感滑順", "現炸酥脆", "慢火細熬", "七彩噴發", "Q彈有勁", "香煎熟成", "外酥內嫩", "鮮甜多汁", "微苦甘醇", "冰封後的", "剛出爐的", "文火慢燉", "大火快炒", "魔法加持", "中二魂注入", "極致壓縮", "層層堆疊", "五味雜陳", "鮮味濃縮"],
-    foodSuffix: ["豬排大餐", "伯爵紅茶", "藍莓果茶", "炒飯", "鹹稀飯", "現包水餃", "能量飲料", "大骨棒", "手作肉餅", "厚片土司", "義大利麵", "濃厚拉麵", "脆皮泡芙", "舒芙蕾", "雞腿堡", "布丁", "三明治", "夏威夷披薩", "關東煮", "絲襪奶茶"],
+    foodSuffix: ["豬排大餐", "伯爵紅茶", "藍莓果茶", "炒飯", "鹹稀飯", "現包水餃", "能量飲料", "烤肉拼盤", "牛奶火鍋", "厚片土司", "義大利麵", "濃厚拉麵", "脆皮泡芙", "舒芙蕾", "雞腿堡", "布丁", "三明治", "夏威夷披薩", "關東煮", "炸魚薯條"],
     
-    // Emoji 自動配對邏輯
     getEmoji(name) {
         if (name.includes("茶") || name.includes("奶")) return "🍵";
         if (name.includes("飯") || name.includes("粥")) return "🍚";
         if (name.includes("麵")) return "🍜";
         if (name.includes("排") || name.includes("肉") || name.includes("骨")) return "🍖";
         if (name.includes("水餃") || name.includes("煮")) return "🥟";
-        if (name.includes("甜") || name.includes("堡") || name.includes("餅") || name.includes("堡") || name.includes("芙")) return "🍰";
+        if (name.includes("甜") || name.includes("堡") || name.includes("餅") || name.includes("芙")) return "🍰";
         if (name.includes("飲")) return "🥤";
-        return "🍱"; // 預設
+        return "🍱";
     }
 };
 
@@ -375,6 +380,12 @@ const AmaoGame = {
         this.generateTitles();
         this.load();
         this.refreshUI();
+        
+        // 強制移除畫面上可能殘留的「測試」字眼
+        const btn = document.querySelector('.dice-button');
+        if(btn) btn.innerHTML = '<span>🎲</span> 投擲命運之骰';
+        const titleLabel = document.getElementById('current-title');
+        if(titleLabel && titleLabel.innerText.includes('測試')) titleLabel.innerText = '【新手爬塔狗】';
     },
 
     generateFood() {
@@ -415,7 +426,7 @@ const AmaoGame = {
         let logIcon = "✨";
         let logText = `擲出 ${step} 點！來到 <span class="highlight-text">${this.floor}F</span>。`;
         
-        if(Math.random() > 0.7) { // 提高一點獲得機率方便測試
+        if(Math.random() > 0.6) {
             let fIdx = Math.floor(Math.random()*300);
             this.foodNotebook[fIdx].consumed = true;
             logIcon = this.foodNotebook[fIdx].emoji;
@@ -435,9 +446,12 @@ const AmaoGame = {
     },
 
     refreshUI() {
-        document.getElementById('bg-floor').innerText = this.floor.toString().padStart(4, '0');
-        document.getElementById('gold-val').innerText = this.stats.gold;
-        document.getElementById('current-title').innerText = `【${this.stats.title}】`;
+        const floorEl = document.getElementById('bg-floor');
+        if(floorEl) floorEl.innerText = this.floor.toString().padStart(4, '0');
+        const goldEl = document.getElementById('gold-val');
+        if(goldEl) goldEl.innerText = this.stats.gold;
+        const titleEl = document.getElementById('current-title');
+        if(titleEl) titleEl.innerText = `【${this.stats.title}】`;
     },
 
     save() {
@@ -449,17 +463,22 @@ const AmaoGame = {
     load() {
         const s = localStorage.getItem('AmaoSave');
         if(s) {
-            const d = JSON.parse(s);
-            this.floor = d.floor || 1;
-            this.foodNotebook = d.food;
-            this.titleNotebook = d.titles;
-            this.stats = d.stats;
+            try {
+                const d = JSON.parse(s);
+                if(d.food && d.food[0].emoji) { // 確保有 Emoji 才載入
+                    this.floor = d.floor || 1;
+                    this.foodNotebook = d.food;
+                    this.titleNotebook = d.titles;
+                    this.stats = d.stats;
+                }
+            } catch(e) { console.error("載入失敗，重置資料"); }
         }
     }
 };
 
+// 重新綁定所有視窗函數，確保覆蓋舊版
 window.handleRoll = () => AmaoGame.roll();
-
+window.closeMenu = () => { document.getElementById('menu-overlay').style.display = 'none'; };
 window.openMenu = (type) => {
     const ov = document.getElementById('menu-overlay');
     const ct = document.getElementById('menu-content');
@@ -476,8 +495,8 @@ window.openMenu = (type) => {
             if(f.consumed) {
                 s.style.background = 'var(--panel-bg)';
                 s.style.border = '1px solid var(--morandi-green)';
-                s.innerHTML = `<div style="font-size:1.5em">${f.emoji}</div><div style="font-size:0.6em;color:var(--text-light)">${f.name.substring(0,2)}</div>`;
-                s.onclick = () => alert(`${f.emoji} 【${f.name}】\n${f.desc}`);
+                s.innerHTML = `<div style="font-size:1.5em">${f.emoji || '🍱'}</div><div style="font-size:0.6em;color:var(--text-light)">${f.name.substring(0,2)}</div>`;
+                s.onclick = () => alert(`${f.emoji || '🍱'} 【${f.name}】\n${f.desc}`);
             } else {
                 s.innerText = i + 1;
             }
@@ -492,15 +511,13 @@ window.openMenu = (type) => {
             ct.appendChild(s);
         });
     } else {
-        tt.innerText = '功能選單';
-        ct.innerHTML = '<p style="grid-column: span 4; text-align:center; padding: 20px;">施工中...</p>';
+        tt.innerText = '背包系統';
+        ct.innerHTML = '<p style="grid-column: span 4; text-align:center; padding: 20px;">目前背包內尚無物品。</p>';
     }
 };
 
-window.closeMenu = () => { document.getElementById('menu-overlay').style.display = 'none'; };
-
+// 啟動引擎
 AmaoGame.init();
 </script>
-
 </body>
 </html>
