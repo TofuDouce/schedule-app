@@ -1348,6 +1348,164 @@ AmaoGame.redeemGift = function() {
 };
 
 console.log("巧克力小天使系統已就位，她正拍動著翅膀守護著阿毛。");
+</script><script>
+    // --- 1. 粒子魔法引擎 (保持原樣) ---
+    function initParticles() {
+        const canvas = document.getElementById('magic-engine');
+        if(!canvas) return;
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const particles = [];
+        const colors = ['#EAC4D5', '#FFE082', '#FFFFFF'];
+        for(let i=0; i<60; i++) {
+            particles.push({
+                x: Math.random()*canvas.width, y: Math.random()*canvas.height,
+                size: Math.random()*2+0.5, speed: Math.random()*0.3+0.1,
+                opacity: Math.random(), color: colors[Math.floor(Math.random()*colors.length)]
+            });
+        }
+        function draw() {
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            particles.forEach(p => {
+                ctx.globalAlpha = p.opacity; ctx.fillStyle = p.color;
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
+                p.y -= p.speed; if(p.y < -10) p.y = canvas.height+10;
+                p.opacity += (Math.random()-0.5)*0.01;
+                p.opacity = Math.max(0.1, Math.min(0.6, p.opacity));
+            });
+            requestAnimationFrame(draw);
+        }
+        draw();
+    }
+
+    // --- 2. 核心遊戲物件 (強力鎖定版) ---
+    // 使用 window.AmaoGame 確保全域唯一性，不再受作用域干擾
+    window.AmaoGame = {
+        stats: { floor: 1, gold: 500, hp: 100, title: '新手爬塔狗' },
+        inventory: [], // 物品陣列
+        
+        init() {
+            initParticles();
+            this.addLog("🔮", "「阿毛之塔」開啟，魔法粒子正在飄動...");
+            // 系統預送：確保妳一開始背包就有東西，測試渲染是否正常
+            this.receiveItem({name: "測試用肉骨頭", icon: "🦴", desc: "系統送妳的禮物"});
+            this.refreshUI();
+        },
+
+        refreshUI() {
+            const floorEl = document.getElementById('bg-floor');
+            const goldEl = document.getElementById('gold-val');
+            const hpEl = document.getElementById('hp-val');
+            const titleEl = document.getElementById('title-label');
+            
+            if(floorEl) floorEl.innerText = this.stats.floor.toString().padStart(4, '0');
+            if(goldEl) goldEl.innerText = this.stats.gold.toLocaleString();
+            if(hpEl) hpEl.innerText = this.stats.hp;
+            if(titleEl) titleEl.innerText = `【${this.stats.title}】`;
+        },
+
+        addLog(icon, text) {
+            const logs = document.getElementById('adventure-logs');
+            if(!logs) return;
+            const entry = document.createElement('div');
+            entry.className = 'log-card';
+            entry.innerHTML = `<span>${icon}</span><span>${text}</span>`;
+            logs.appendChild(entry);
+            // 自動滾動到最下方
+            logs.scrollTop = logs.scrollHeight;
+        },
+
+        // 【核心修正】強力接收物品函式
+        receiveItem(item) {
+            console.log("嘗試加入物品:", item);
+            if(!item || !item.name) return;
+
+            // 檢查是否已存在
+            let existing = this.inventory.find(i => i.name === item.name);
+            if (existing) {
+                existing.count = (existing.count || 0) + 1;
+            } else {
+                // 強制賦予所有必要欄位，防止渲染時報錯
+                this.inventory.push({ 
+                    name: item.name, 
+                    icon: item.icon || "📦", 
+                    desc: item.desc || "神秘的物品",
+                    count: 1 
+                });
+            }
+            this.addLog("🎁", `獲得了 <span style="color:#EAC4D5; font-weight:bold;">${item.name}</span>`);
+            
+            // 如果背包選單正開著，即時更新內容
+            if(document.getElementById('main-modal').style.display === 'flex') {
+                this.openMenu('bag');
+            }
+        },
+
+        roll() {
+            this.stats.floor++;
+            const s = document.getElementById('amao-sprite');
+            if(s) {
+                s.style.transform = "translateY(-40px) scale(1.1)";
+                setTimeout(() => s.style.transform = "translateY(0) scale(1)", 200);
+            }
+            
+            // 提高獲得機率到 60%，讓妳好測試
+            if(Math.random() < 0.6) {
+                const lootList = [
+                    {name: "路邊的水餃", icon: "🥟", desc: "阿毛的最愛。"},
+                    {name: "莫蘭迪小花", icon: "🌸", desc: "散發著優雅的香氣。"},
+                    {name: "閃亮的硬幣", icon: "🪙", desc: "可以用來買東西。"}
+                ];
+                const randomLoot = lootList[Math.floor(Math.random() * lootList.length)];
+                this.receiveItem(randomLoot);
+            }
+            this.refreshUI();
+        },
+
+        openMenu(type) {
+            const m = document.getElementById('main-modal');
+            const b = document.getElementById('modal-body');
+            const t = document.getElementById('modal-title');
+            if(!m || !b || !t) return;
+
+            m.style.display = 'flex';
+            b.innerHTML = '';
+
+            if(type === 'bag') {
+                t.innerText = "🎒 阿毛的背包";
+                if(this.inventory.length === 0) {
+                    b.innerHTML = '<div style="grid-column:span 4; text-align:center; padding:40px; color:#666;">背包空空的...</div>';
+                } else {
+                    this.inventory.forEach(item => {
+                        let slot = document.createElement('div');
+                        slot.className = 'item-slot unlocked';
+                        slot.style = "position:relative; cursor:pointer;";
+                        slot.innerHTML = `
+                            <div style="font-size:1.8em">${item.icon}</div>
+                            <div style="font-size:0.65em; font-weight:bold; margin-top:5px;">${item.name}</div>
+                            <div style="position:absolute; top:-5px; right:-5px; background:#EAC4D5; color:#333; font-size:0.7em; padding:2px 6px; border-radius:10px; font-weight:900; box-shadow:0 2px 5px rgba(0,0,0,0.3);">x${item.count}</div>
+                        `;
+                        // 點擊可以看說明，順便確認它真的存在
+                        slot.onclick = () => alert(`【${item.name}】\n${item.desc}\n數量：${item.count}`);
+                        b.appendChild(slot);
+                    });
+                }
+            } else if(type === 'system') {
+                t.innerText = "⚙️ 系統設定";
+                b.innerHTML = `<div style="grid-column:span 4; padding:10px;"><button onclick="location.reload()" style="width:100%; padding:15px; border-radius:10px; background:#EAC4D5; border:none; font-weight:bold; color:#333;">重新開始遊戲</button></div>`;
+            }
+        },
+
+        closeMenu() { 
+            const m = document.getElementById('main-modal');
+            if(m) m.style.display = 'none'; 
+        }
+    };
+
+    // 啟動
+    window.onload = () => AmaoGame.init();
 </script>
+
 </body>
 </html>
