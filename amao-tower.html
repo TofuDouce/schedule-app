@@ -1221,6 +1221,135 @@ setInterval(() => {
 }, 300000);
 
 console.log("阿毛之塔 5.0 終極心情版：阿毛現在更有個性了。");
+</script><style>
+/* 自動模式按鈕與面板 */
+#auto-panel {
+    background: var(--panel-bg);
+    border: 2px solid var(--morandi-green);
+    border-radius: 20px;
+    padding: 15px;
+    margin-top: 20px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.auto-btn {
+    background: #EAC4D5; /* 莫蘭迪粉 */
+    color: white;
+    border: none;
+    padding: 10px 30px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.auto-btn.active {
+    background: var(--morandi-green);
+    box-shadow: 0 0 10px var(--morandi-green);
+}
+
+.achievement-badge {
+    display: inline-block;
+    padding: 5px 15px;
+    background: rgba(255,255,255,0.5);
+    border-radius: 12px;
+    font-size: 0.75em;
+    margin: 5px;
+    color: var(--text-dark);
+    border: 1px solid #ddd;
+}
+</style>
+
+<script>
+/**
+ * 阿毛之塔 - 核心擴充 6.0
+ * 功能：自動投骰模式、無限體力優化、傳奇里程碑紀錄
+ */
+
+Object.assign(AmaoGame, {
+    autoMode: false,
+    autoTimer: null,
+
+    // [1] 切換自動爬塔模式
+    toggleAutoMode() {
+        this.autoMode = !this.autoMode;
+        const btn = document.getElementById('auto-run-btn');
+        
+        if (this.autoMode) {
+            btn.innerText = "🛑 停止自動冒險";
+            btn.classList.add('active');
+            this.addLog("⚙️", "<span style='color:var(--morandi-green)'>阿毛進入自動導航模式... 目標：塔頂！</span>");
+            this.runAutoStep();
+        } else {
+            btn.innerText = "🚀 啟動自動冒險";
+            btn.classList.remove('active');
+            clearTimeout(this.autoTimer);
+            this.addLog("🛑", "自動模式已關閉，阿毛停下來休息了。");
+        }
+    },
+
+    // [2] 自動執行步進
+    runAutoStep() {
+        if (!this.autoMode) return;
+
+        // 模擬投擲骰子
+        this.rollWithBattle();
+        
+        // 隨機間隔 1.5 ~ 3 秒投擲一次，模擬真實感
+        const nextDelay = Math.floor(Math.random() * 1500) + 1500;
+        this.autoTimer = setTimeout(() => this.runAutoStep(), nextDelay);
+    },
+
+    // [3] 傳奇紀錄系統
+    checkLegendaryStatus() {
+        const statusArea = document.getElementById('legendary-status');
+        if (!statusArea) return;
+
+        let badges = "";
+        if (this.stats.hp > 1000) badges += `<span class="achievement-badge">♾️ 體力覺醒者</span>`;
+        if (this.floor >= 100) badges += `<span class="achievement-badge">🏰 百層領主</span>`;
+        if (this.stats.gold >= 10000) badges += `<span class="achievement-badge">💎 塔之富豪</span>`;
+        
+        statusArea.innerHTML = badges;
+    }
+});
+
+// 在介面注入自動面板
+const injectAutoUI = () => {
+    const mainContainer = document.querySelector('.container');
+    const autoDiv = document.createElement('div');
+    autoDiv.id = 'auto-panel';
+    autoDiv.innerHTML = `
+        <div style="font-size:0.85em; margin-bottom:10px; color:var(--text-light);">阿毛傳奇紀錄</div>
+        <div id="legendary-status" style="margin-bottom:15px;"></div>
+        <button id="auto-run-btn" class="auto-btn" onclick="AmaoGame.toggleAutoMode()">🚀 啟動自動冒險</button>
+        <div style="font-size:0.7em; margin-top:10px; color:#A9BA9D; opacity:0.8;">※ 已檢測到無限體力，阿毛將無視傷害持續攀爬。</div>
+    `;
+    // 將面板放在遊戲日誌下方
+    mainContainer.appendChild(autoDiv);
+};
+
+// 確保無限體力在每次更新 UI 時都被正確處理
+const baseRefreshUI = AmaoGame.refreshUI;
+AmaoGame.refreshUI = function() {
+    baseRefreshUI.apply(this);
+    this.checkLegendaryStatus();
+    
+    // 強制維持無限體力顯示 (如果已啟動)
+    const hpLabel = document.querySelector('.status-row span:first-child');
+    if (this.stats.hp > 1000 && hpLabel) {
+        hpLabel.innerHTML = `⚡ 體力: <span style="color:#D4ADCF; font-weight:bold;">∞ 覺醒</span>`;
+    }
+};
+
+// 啟動 UI 注入
+setTimeout(() => {
+    injectAutoUI();
+    AmaoGame.checkLegendaryStatus();
+}, 500);
+
+console.log("阿毛之塔 6.0 自動化傳奇版啟動。阿毛已準備好自動征服全塔！");
 </script>
 </body>
 </html>
