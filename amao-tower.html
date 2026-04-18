@@ -5,296 +5,321 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>阿毛之塔</title>
     <style>
-        /* --- 莫蘭迪深色調系統 (手機優化) --- */
+        /* --- 莫蘭迪深色調系統 --- */
         :root {
-            --bg-dark: #2D2D3A;        /* 深色背景 */
-            --panel-bg: #1F1F28;      /* 更深的面板色 */
-            --morandi-green: #B4C6A6; /* 莫蘭迪綠 (按鈕) */
-            --morandi-gold: #EAC4D5;  /* 莫蘭迪柔粉金 (稱號) */
-            --text-light: #E0E0E0;    /* 亮色文字 */
-            --text-dim: #A0A0A0;      /* 暗色文字 */
-            --accent-blue: #A3B1C6;   /* 莫蘭迪藍 (魔法感) */
+            --bg-dark: #1A1A22;        /* 極深色背景 */
+            --panel-bg: #252533;      /* 面板背景 */
+            --morandi-green: #B4C6A6; /* 莫蘭迪綠 */
+            --morandi-gold: #EAC4D5;  /* 莫蘭迪柔粉金 */
+            --text-light: #E0E0E0;
+            --accent-blue: #A3B1C6;
+            --dice-yellow: #FFE082;
+            --header-height: 80px;
+            --footer-height: 160px; /* 包含按鈕與導航列的高度 */
         }
 
         * { 
             box-sizing: border-box; 
             -webkit-tap-highlight-color: transparent; 
             font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
+            margin: 0; padding: 0;
         }
 
         body {
             background-color: var(--bg-dark);
             color: var(--text-light);
-            margin: 0;
-            display: flex;
-            justify-content: center;
             height: 100vh;
-            overflow: hidden; /* 防止全域滾動，由日誌控制 */
-        }
-
-        /* --- 手機主容器 --- */
-        #game-phone-container {
-            width: 100%;
-            max-width: 500px;
-            height: 100%;
+            width: 100vw;
+            overflow: hidden; /* 禁止全體捲動 */
             display: flex;
             flex-direction: column;
-            position: relative;
         }
 
-        /* --- 頂部狀態列 --- */
-        header {
-            padding: 15px 20px;
+        /* --- 1. 固定頂部 (固定在最上方) --- */
+        #fixed-header {
+            height: var(--header-height);
+            background: rgba(26, 26, 34, 0.95);
+            border-bottom: 1px solid #333;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.9em;
+            flex-direction: column;
+            justify-content: center;
+            z-index: 100;
+            flex-shrink: 0;
         }
 
-        .status-item { display: flex; align-items: center; gap: 5px; }
+        .status-row {
+            display: flex;
+            justify-content: space-around;
+            padding: 5px 10px;
+            font-size: 0.85em;
+        }
 
-        /* --- 標題區 --- */
         .game-title {
             text-align: center;
-            font-size: 1.5em;
+            font-size: 1.2em;
             font-weight: bold;
-            padding: 10px 0;
             letter-spacing: 2px;
+            color: var(--morandi-gold);
         }
 
-        /* --- 主視角 (阿毛展示區) --- */
+        /* --- 2. 中間可捲動區 (阿毛與日誌) --- */
+        #main-scroll-area {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 20px;
+        }
+
         #stage-view {
-            flex: 1.2;
+            height: 220px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             position: relative;
+            flex-shrink: 0;
         }
 
         .floor-indicator {
             position: absolute;
             font-size: 5em;
             font-weight: 900;
-            color: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.03);
             z-index: 0;
         }
 
-        .amao-main-sprite {
-            font-size: 80px;
-            z-index: 1;
-            filter: drop-shadow(0 0 10px rgba(163, 177, 198, 0.3));
-            margin-bottom: 10px;
-        }
-
+        .amao-main-sprite { font-size: 70px; z-index: 1; margin-bottom: 8px; }
         .amao-title-label {
             background: var(--morandi-gold);
             color: #4A4A4A;
-            padding: 4px 15px;
-            border-radius: 20px;
+            padding: 2px 12px;
+            border-radius: 15px;
             font-weight: bold;
-            font-size: 0.9em;
+            font-size: 0.85em;
             z-index: 1;
-            box-shadow: 0 4px 0 rgba(0,0,0,0.2);
         }
 
-        /* --- 日誌列表 (1.0 風格) --- */
         #game-log-list {
-            flex: 2;
-            background: var(--panel-bg);
-            margin: 10px 15px;
-            border-radius: 15px;
-            padding: 15px;
-            overflow-y: auto;
-            border-left: 4px solid var(--accent-blue);
+            padding: 10px 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
         .log-entry {
-            margin-bottom: 12px;
+            background: var(--panel-bg);
+            padding: 12px;
+            border-radius: 10px;
+            border-left: 4px solid var(--accent-blue);
             display: flex;
-            align-items: flex-start;
             gap: 10px;
-            font-size: 1em;
             animation: slideIn 0.3s ease-out;
         }
 
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-10px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .log-icon { font-size: 1.2em; }
-        .log-text { line-height: 1.4; color: var(--text-light); }
-        .log-highlight { color: #81D4FA; font-weight: bold; }
-
-        /* --- 操作區 --- */
-        .controls {
-            padding: 10px 15px 30px 15px;
+        /* --- 3. 固定底部 (鎖定在最下方) --- */
+        #fixed-footer {
+            height: var(--footer-height);
+            background: var(--bg-dark);
+            border-top: 1px solid #333;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            padding: 10px 15px;
+            z-index: 100;
+            flex-shrink: 0;
         }
 
         .dice-button {
-            background-color: #FFE082; /* 淺金黃色，1.0測試模式風格 */
+            background-color: var(--dice-yellow);
             color: #333;
             border: none;
-            border-radius: 15px;
-            padding: 18px;
-            font-size: 1.2em;
+            border-radius: 12px;
+            width: 100%;
+            height: 60px;
+            font-size: 1.1em;
             font-weight: bold;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 6px 0 #D4A017;
+            box-shadow: 0 4px 0 #D4A017;
+            margin-bottom: 15px;
             cursor: pointer;
-            transition: 0.1s;
         }
 
-        .dice-button:active {
-            transform: translateY(4px);
-            box-shadow: 0 2px 0 #D4A017;
-        }
+        .dice-button:active { transform: translateY(2px); box-shadow: 0 2px 0 #D4A017; }
 
         .bottom-nav {
             display: flex;
-            justify-content: space-around;
-            padding-top: 5px;
+            justify-content: space-between;
+            gap: 10px;
         }
 
         .nav-item {
-            background: rgba(255,255,255,0.1);
-            width: 60px;
-            height: 60px;
-            border-radius: 12px;
+            flex: 1;
+            background: #333344;
+            height: 50px;
+            border-radius: 10px;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 1.5em;
+            font-size: 1.4em;
             cursor: pointer;
+            transition: 0.2s;
         }
+        .nav-item:active { background: var(--morandi-green); }
 
-        /* --- 彈窗優化 --- */
+        /* --- 彈窗全屏優化 --- */
         .overlay {
-            position: absolute;
+            position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: var(--bg-dark);
-            z-index: 100;
+            z-index: 200;
             display: none;
             flex-direction: column;
         }
 
         .overlay-header {
-            padding: 20px;
+            height: 60px;
+            padding: 0 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid #444;
         }
 
-        /* 隱藏滾動條但保持功能 */
-        ::-webkit-scrollbar { width: 0; background: transparent; }
+        .notebook-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .item-slot {
+            aspect-ratio: 1;
+            background: #252533;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.8em;
+            color: #666;
+            border: 1px solid #333;
+        }
+        .item-slot.unlocked { color: var(--text-light); border-color: var(--morandi-green); }
 
     </style>
 </head>
 <body>
 
-<div id="game-phone-container">
-    <header>
-        <div class="status-item">⚡ 體力：<span id="stamina">無限</span></div>
-        <div class="status-item">💰 金幣：<span id="gold">1000</span></div>
-    </header>
-
-    <div class="game-title">阿毛之塔</div>
-
-    <div id="stage-view">
-        <div class="floor-indicator" id="bg-floor">0001</div>
-        <div class="amao-main-sprite" id="amao-sprite">🐶</div>
-        <div class="amao-title-label" id="current-title">【新手爬塔狗】</div>
+    <div id="fixed-header">
+        <div class="status-row">
+            <span>⚡ 體力: 無限</span>
+            <span>💰 金幣: <span id="gold-val">1000</span></span>
+        </div>
+        <div class="game-title">阿毛之塔</div>
     </div>
 
-    <div id="game-log-list">
-        <div class="log-entry">
-            <div class="log-icon">🚀</div>
-            <div class="log-text">遊戲初始化完成，阿毛準備好出發了！</div>
+    <div id="main-scroll-area">
+        <div id="stage-view">
+            <div class="floor-indicator" id="bg-floor">0001</div>
+            <div class="amao-main-sprite">🐶</div>
+            <div class="amao-title-label" id="current-title">【新手爬塔狗】</div>
+        </div>
+
+        <div id="game-log-list">
+            <div class="log-entry">
+                <div>🦴</div>
+                <div>歡迎來到阿毛之塔！點擊下方骰子開始爬塔。</div>
+            </div>
         </div>
     </div>
 
-    <div class="controls">
+    <div id="fixed-footer">
         <button class="dice-button" onclick="handleRoll()">
             🎲 投擲命運 (測試模式)
         </button>
         
         <div class="bottom-nav">
-            <div class="nav-item" onclick="toggleMenu('food')">🍱</div>
-            <div class="nav-item" onclick="toggleMenu('titles')">🏅</div>
-            <div class="nav-item" onclick="toggleMenu('bag')">🎒</div>
-            <div class="nav-item" onclick="toggleMenu('shop')">🛒</div>
+            <div class="nav-item" onclick="openMenu('food')">🍱</div>
+            <div class="nav-item" onclick="openMenu('title')">🏅</div>
+            <div class="nav-item" onclick="openMenu('bag')">🎒</div>
+            <div class="nav-item" onclick="openMenu('shop')">🛒</div>
         </div>
     </div>
 
     <div id="menu-overlay" class="overlay">
         <div class="overlay-header">
-            <h2 id="menu-title">選單</h2>
-            <div class="nav-item" style="width:40px;height:40px" onclick="closeMenu()">✕</div>
+            <h2 id="menu-title">筆記本</h2>
+            <div onclick="closeMenu()" style="font-size: 1.5em; padding: 10px;">✕</div>
         </div>
-        <div id="menu-content" style="padding: 20px; overflow-y: auto;"></div>
+        <div id="menu-content" class="notebook-content">
+            </div>
     </div>
-</div>
 
 <script>
     let floor = 1;
 
     function handleRoll() {
-        const btn = document.querySelector('.dice-button');
-        btn.disabled = true;
-
-        // 模擬骰子
         const step = Math.floor(Math.random() * 6) + 1;
+        floor += step;
         
-        // 增加一點點晃動感
-        const amao = document.getElementById('amao-sprite');
-        amao.style.transform = "scale(1.2) rotate(10deg)";
-
-        setTimeout(() => {
-            floor += step;
-            amao.style.transform = "scale(1) rotate(0deg)";
-            
-            // 更新畫面
-            document.getElementById('bg-floor').innerText = floor.toString().padStart(4, '0');
-            
-            // 新增日誌 (最上面)
-            addLog("🎲", `測試投骰：<span class="log-highlight">${step}</span> 點！來到 <span class="log-highlight">${floor}F</span>`);
-            
-            // 隨機獎勵模擬
-            if(Math.random() > 0.7) {
-                addLog("🎁", `獲得測試獎勵：<span style="color:var(--morandi-green)">香噴噴烤雞</span>`);
-            }
-
-            btn.disabled = false;
-        }, 300);
-    }
-
-    function addLog(icon, text) {
+        // 更新顯示
+        document.getElementById('bg-floor').innerText = floor.toString().padStart(4, '0');
+        
+        // 新增日誌
         const logList = document.getElementById('game-log-list');
         const entry = document.createElement('div');
         entry.className = 'log-entry';
         entry.innerHTML = `
-            <div class="log-icon">${icon}</div>
-            <div class="log-text">${text}</div>
+            <div>🎲</div>
+            <div>投擲出 ${step} 點！來到 <span style="color:var(--morandi-gold)">${floor}F</span></div>
         `;
+        logList.insertBefore(entry, logList.firstChild);
+
+        // 隨機觸發小驚喜
+        if(Math.random() > 0.8) {
+            addRewardLog();
+        }
+    }
+
+    function addRewardLog() {
+        const logList = document.getElementById('game-log-list');
+        const entry = document.createElement('div');
+        entry.className = 'log-entry';
+        entry.style.borderLeftColor = 'var(--morandi-gold)';
+        entry.innerHTML = `<div>🎁</div><div>發現路邊的<span style="color:var(--morandi-green)">美味香煎豬排</span>！</div>`;
         logList.insertBefore(entry, logList.firstChild);
     }
 
-    function toggleMenu(type) {
+    function openMenu(type) {
         const overlay = document.getElementById('menu-overlay');
+        const content = document.getElementById('menu-content');
         const title = document.getElementById('menu-title');
+        
+        content.innerHTML = ''; // 清空
         overlay.style.display = 'flex';
-        if(type === 'food') title.innerText = '美食筆記本';
-        if(type === 'titles') title.innerText = '稱號與頭銜';
-        if(type === 'bag') title.innerText = '阿毛的背包';
-        if(type === 'shop') title.innerText = '神祕商店';
+
+        if(type === 'food') {
+            title.innerText = '🍱 美食筆記本 (300)';
+            for(let i=1; i<=300; i++) {
+                let slot = document.createElement('div');
+                slot.className = 'item-slot';
+                slot.innerText = i;
+                content.appendChild(slot);
+            }
+        } else if(type === 'title') {
+            title.innerText = '🏅 稱號筆記本 (150)';
+            for(let i=1; i<=150; i++) {
+                let slot = document.createElement('div');
+                slot.className = 'item-slot';
+                slot.innerText = '鎖定';
+                content.appendChild(slot);
+            }
+        } else {
+            title.innerText = '尚未解鎖';
+            content.innerHTML = '<p style="grid-column: span 4; text-align:center; padding: 20px;">此功能正在由滷滷米達開發中...</p>';
+        }
     }
 
     function closeMenu() {
