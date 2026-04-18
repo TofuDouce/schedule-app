@@ -2,142 +2,154 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>文字解謎遊戲</title>
+    <title>TERMINAL - PROTOCOL ERROR</title>
     <style>
+        :root {
+            --primary-color: #a89fbb; /* 莫蘭迪紫灰 */
+            --bg-color: #1a1a1e;
+            --text-color: #dcdcdc;
+            --border-color: #444;
+        }
         body {
-            background-color: #1a1a1a;
-            color: #dcdcdc;
-            font-family: "Microsoft JhengHei", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Consolas', 'Courier New', monospace;
+            padding: 20px;
             display: flex;
             justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
         }
-        #game-container {
-            width: 80%;
-            max-width: 600px;
-            background: #2a2a2a;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            border: 1px solid #444;
+        #terminal {
+            width: 100%;
+            max-width: 800px;
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            background: #232328;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
         }
-        #text {
-            font-size: 1.2rem;
-            line-height: 1.6;
+        #output {
+            height: 400px;
+            overflow-y: auto;
             margin-bottom: 20px;
-            min-height: 100px;
+            white-space: pre-wrap;
+            border-bottom: 1px solid #333;
         }
-        .options {
-            display: grid;
-            gap: 10px;
+        #input-line {
+            display: flex;
         }
-        button {
-            padding: 12px;
-            background: #4a4a6a;
-            color: white;
+        #prompt { color: var(--primary-color); margin-right: 10px; }
+        input {
+            background: transparent;
             border: none;
-            border-radius: 6px;
-            cursor: pointer;
+            color: #fff;
+            outline: none;
+            width: 100%;
             font-size: 1rem;
-            transition: background 0.3s;
         }
-        button:hover {
-            background: #6a6a8a;
-        }
+        .highlight { color: #f0e68c; }
+        .error { color: #ff6b6b; }
     </style>
 </head>
 <body>
 
-<div id="game-container">
-    <div id="text">正在讀取場景...</div>
-    <div id="options" class="options"></div>
+<div id="terminal">
+    <div id="output">=== 系統重啟中... 權限層級：GUEST ===
+輸入 <span class="highlight">"help"</span> 查看可用指令。
+系統偵測到環境中存在 1 個未知的邏輯鎖定。</div>
+    <div id="input-line">
+        <span id="prompt">></span>
+        <input type="text" id="command-input" autofocus autocomplete="off">
+    </div>
 </div>
 
 <script>
-    const textElement = document.getElementById('text');
-    const optionsElement = document.getElementById('options');
+    const output = document.getElementById('output');
+    const input = document.getElementById('command-input');
 
-    let state = {}; // 用於記錄玩家是否拿到了關鍵道具
+    let state = {
+        location: 'corridor',
+        inventory: [],
+        power: false,
+        decrypted: false,
+        attempts: 0
+    };
 
-    const scenes = [
-        {
-            id: 1,
-            text: "你猛然醒來，發現自己躺在走廊的長椅上。四周一片漆黑，只有遠處的護理站閃爍著詭異的藍光。前方有門，右邊是昏暗的茶水間。",
-            options: [
-                { text: "走向護理站", nextScene: 2 },
-                { text: "進入茶水間", nextScene: 3 }
-            ]
+    const world = {
+        corridor: {
+            desc: "你身處於昏暗的走廊。北邊有一扇 [重裝甲門]，牆上有一個 [控制箱]。",
+            items: ["絲線"]
         },
-        {
-            id: 2,
-            text: "護理站的電腦還開著，螢幕上不斷跳出『錯誤碼：404』。你在櫃檯下發現了一把【生鏽的鑰匙】。",
-            options: [
-                { 
-                    text: "拿起鑰匙並回到走廊", 
-                    setState: { hasKey: true }, 
-                    nextScene: 1 
-                },
-                { text: "嘗試操作電腦", nextScene: 4 }
-            ]
-        },
-        {
-            id: 3,
-            text: "茶水間裡有一股淡淡的咖啡味，但牆角坐著一個低頭不語的身影。你想上前搭話嗎？",
-            options: [
-                { text: "「請問有人在嗎？」", nextScene: 5 },
-                { text: "感覺不妙，趕快離開", nextScene: 1 }
-            ]
-        },
-        {
-            id: 4,
-            text: "電腦突然發出刺耳的尖叫聲！螢幕上出現你的名字...這不是你該待的地方。你感到一陣暈眩。",
-            options: [
-                { text: "重新開始", nextScene: 1 }
-            ]
-        },
-        {
-            id: 5,
-            text: "那個人緩緩抬頭，竟然沒有臉！他遞給你一杯冒煙的液體。這是解脫，還是陷阱？",
-            options: [
-                { text: "逃跑", nextScene: 1 },
-                { text: "喝下它", nextScene: 6 }
-            ]
-        },
-        {
-            id: 6,
-            text: "你感覺身體變得很輕，牆壁開始透明。你穿過了醫院的大門，回到了現實世界。恭喜你逃脫了！",
-            options: [
-                { text: "再玩一次", nextScene: 1 }
-            ]
+        control_box: {
+            desc: "控制箱面板需要 4 位數密碼。提示：二進位 1011 的十進位值。",
+            locked: true
         }
-    ];
+    };
 
-    function startLevel(sceneId) {
-        const scene = scenes.find(s => s.id === sceneId);
-        textElement.innerText = scene.text;
-        
-        while (optionsElement.firstChild) {
-            optionsElement.removeChild(optionsElement.firstChild);
-        }
-
-        scene.options.forEach(option => {
-            const button = document.createElement('button');
-            button.innerText = option.text;
-            button.onclick = () => {
-                if (option.setState) {
-                    state = { ...state, ...option.setState };
-                }
-                startLevel(option.nextScene);
-            };
-            optionsElement.appendChild(button);
-        });
+    function log(msg, type = '') {
+        const div = document.createElement('div');
+        div.className = type;
+        div.innerHTML = msg;
+        output.appendChild(div);
+        output.scrollTop = output.scrollHeight;
     }
 
-    startLevel(1);
-</script>
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            const cmd = input.value.trim().toLowerCase();
+            processCommand(cmd);
+            input.value = '';
+        }
+    });
 
+    function processCommand(cmd) {
+        log(`<span style="color: #a89fbb">> ${cmd}</span>`);
+        
+        const args = cmd.split(' ');
+        const action = args[0];
+
+        switch(action) {
+            case 'help':
+                log("可用指令: look (查看), go [目標], use [物品], inspect [對象], inv (背包)");
+                break;
+            case 'look':
+                log(world[state.location].desc);
+                break;
+            case 'inv':
+                log("背包內容: " + (state.inventory.length ? state.inventory.join(', ') : "空無一物"));
+                break;
+            case 'go':
+                if (args[1] === '控制箱' || args[1] === 'box') {
+                    state.location = 'control_box';
+                    log("已移動至 控制箱 前。");
+                } else if (args[1] === '走廊') {
+                    state.location = 'corridor';
+                    log("回到走廊。");
+                } else {
+                    log("無法到達該位置。", "error");
+                }
+                break;
+            case 'use':
+                handleUse(args[1]);
+                break;
+            case '11': // 二進位解謎
+                if (state.location === 'control_box') {
+                    state.power = true;
+                    log("【系統提示】密碼正確。電力系統已強行重啟。甲門鎖定解除。", "highlight");
+                } else {
+                    log("無效的指令或位置。", "error");
+                }
+                break;
+            default:
+                log("未知指令。請嘗試更精確的動作。", "error");
+        }
+    }
+
+    function handleUse(item) {
+        if (item === '11' && state.location === 'control_box') {
+            log("你直接輸入了數值...");
+        } else {
+            log("目前無法使用該物品。");
+        }
+    }
+</script>
 </body>
 </html>
