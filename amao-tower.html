@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>阿毛之塔 - Amao Tower: Magic Edition</title>
+    <title>阿毛之塔 - 粒子魔法版</title>
     <style>
         :root {
             --bg-deep: #121218;
+            --panel-bg: rgba(31, 31, 42, 0.85);
             --magic-purple: #EAC4D5;
             --magic-gold: #FFE082;
+            --morandi-green: #A9BA9D;
             --gold: #D4A017;
             --danger: #FF6B6B;
             --font-main: "PingFang TC", "Microsoft JhengHei", sans-serif;
@@ -19,7 +21,7 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; user-select: none; }
 
         body {
-            background-color: var(--bg-deep); /* 最底層背景色 */
+            background-color: var(--bg-deep);
             color: #E0E0E0;
             font-family: var(--font-main);
             height: 100vh; width: 100vw;
@@ -28,46 +30,37 @@
             position: relative;
         }
 
-        /* --- 核心修正：粒子畫布 --- */
+        /* 粒子畫布 */
         #magic-engine {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 0; /* 確保在最底層 */
-            pointer-events: none;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; pointer-events: none;
         }
 
-        /* --- 修正：讓所有介面容器透明，否則會擋住粒子 --- */
         header {
             height: var(--header-h);
-            background: rgba(31, 31, 42, 0.7); /* 半透明 */
-            backdrop-filter: blur(5px); /* 毛玻璃效果，更有質感 */
+            background: rgba(31, 31, 42, 0.7);
+            backdrop-filter: blur(5px);
             border-bottom: 1px solid rgba(255,255,255,0.1);
             z-index: 10; flex-shrink: 0;
             display: flex; flex-direction: column; justify-content: center;
         }
 
         main {
-            flex: 1; 
-            background: transparent; /* 必須透明，粒子才看得到 */
-            overflow-y: auto; 
-            position: relative; 
-            z-index: 5;
-            display: flex; flex-direction: column;
+            flex: 1; background: transparent; overflow-y: auto;
+            position: relative; z-index: 5; display: flex; flex-direction: column;
         }
 
         footer {
             height: var(--footer-h);
-            background: rgba(18, 18, 24, 0.85); /* 半透明 */
+            background: rgba(18, 18, 24, 0.85);
             backdrop-filter: blur(8px);
             border-top: 1px solid rgba(255,255,255,0.1);
             padding: 15px 20px; z-index: 10;
             display: flex; flex-direction: column; gap: 15px;
         }
 
-        /* --- 舞台內容 --- */
         #world-stage {
-            height: 320px; flex-shrink: 0;
+            height: 280px; flex-shrink: 0;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             position: relative;
         }
@@ -79,27 +72,25 @@
         }
 
         .amao-avatar {
-            font-size: 100px; 
-            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+            font-size: 100px; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
             transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            cursor: pointer; z-index: 2;
+            z-index: 2;
         }
 
         .amao-badge {
-            background: linear-gradient(135deg, var(--gold) 0%, #FFE082 100%);
+            background: linear-gradient(135deg, var(--magic-purple) 0%, #d4adcf 100%);
             color: #2D2D3A; padding: 6px 20px; border-radius: 20px;
             font-weight: 900; font-size: 0.85em; margin-top: -10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            z-index: 3;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 3;
         }
 
-        /* --- 按鈕與其餘 UI --- */
         .main-action-btn {
             background: linear-gradient(135deg, #FFE082 0%, var(--gold) 100%);
             color: #333; border: none; border-radius: 20px;
             width: 100%; height: 70px; font-size: 1.3em; font-weight: 900;
             box-shadow: 0 5px 0 #8B6B0E; cursor: pointer;
         }
+        .main-action-btn:active { transform: translateY(4px); box-shadow: 0 1px 0 #8B6B0E; }
 
         .nav-grid { display: flex; justify-content: space-between; gap: 10px; }
         .nav-btn {
@@ -111,289 +102,54 @@
 
         #adventure-logs { padding: 15px; display: flex; flex-direction: column-reverse; gap: 10px; }
         .log-card {
-            background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 15px;
-            border-left: 4px solid var(--magic-purple); font-size: 0.9em;
+            background: rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 15px;
+            border-left: 4px solid var(--magic-purple); font-size: 0.85em;
+            display: flex; gap: 10px; align-items: center; animation: slideIn 0.3s ease-out;
         }
 
-        /* Toast 通知 */
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+
+        /* 彈窗 */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(18, 18, 24, 0.95); z-index: 1000;
+            display: none; flex-direction: column;
+        }
+        .modal-header { height: 70px; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; }
+        .grid-container { flex: 1; overflow-y: auto; padding: 15px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; align-content: start; }
+
+        .item-slot { aspect-ratio: 1/1; background: rgba(255,255,255,0.05); border-radius: 12px; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 1px solid rgba(255,255,255,0.1); }
+        .item-slot.unlocked { border-color: var(--magic-purple); }
+
         #magic-toast {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: rgba(255,255,255,0.9); color: #000; padding: 12px 30px;
-            border-radius: 25px; z-index: 1000; display: none; font-weight: 900;
+            background: #fff; color: #000; padding: 10px 30px; border-radius: 20px;
+            z-index: 2000; display: none; font-weight: 900; box-shadow: 0 0 20px rgba(255,255,255,0.5);
         }
     </style>
 </head>
 <body>
 
     <canvas id="magic-engine"></canvas>
-    
-    <div id="magic-toast">✨ 魔法儲存 ✨</div>
+    <div id="magic-toast"></div>
 
     <header>
         <div style="display:flex; justify-content:space-between; padding:0 20px;">
-            <div style="font-size:0.8em;">🐶 HP: <span style="color:var(--danger)">MAX</span></div>
-            <div style="font-size:0.8em;">💰 <span id="gold-display" style="color:var(--magic-gold)">1,000</span></div>
+            <div style="font-size:0.8em;">❤️ HP: <span id="hp-val" style="color:var(--danger)">100</span></div>
+            <div style="font-size:0.8em;">💰 <span id="gold-val" style="color:var(--magic-gold)">500</span></div>
         </div>
         <div style="text-align:center; font-size:1.4em; font-weight:900; color:var(--magic-purple); letter-spacing:3px;">阿毛之塔</div>
     </header>
 
-    <main id="main-container">
+    <main>
         <section id="world-stage">
-            <div class="floor-giant-text" id="bg-floor-number">0001</div>
-            <div class="amao-avatar" id="amao-sprite" onclick="amaoReact()">🐶</div>
-            <div class="amao-badge" id="current-title-label">【新手爬塔狗】</div>
+            <div class="floor-giant-text" id="bg-floor">0001</div>
+            <div class="amao-avatar" id="amao-sprite">🐶</div>
+            <div class="amao-badge" id="title-label">【新手爬塔狗】</div>
         </section>
         <div id="adventure-logs"></div>
     </main>
 
     <footer>
-        <button class="main-action-btn" onclick="amaoJump()">🎲 投擲命運之骰</button>
+        <button class="main-action-btn" onclick="AmaoGame.roll()">🎲 投擲命運之骰</button>
         <div class="nav-grid">
-            <div class="nav-btn" onclick="alert('開啟設定')">⚙️</div>
-            <div class="nav-btn">🏅</div>
-            <div class="nav-btn">🎒</div>
-            <div class="nav-btn">🛒</div>
-        </div>
-    </footer>
-
-    <script>
-        // --- 粒子引擎邏輯 (確保渲染) ---
-        function initMagicParticles() {
-            const canvas = document.getElementById('magic-engine');
-            const ctx = canvas.getContext('2d');
-            
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-
-            const particles = [];
-            const colors = ['#EAC4D5', '#FFE082', '#FFFFFF']; // 粉紫、金、白
-
-            for(let i = 0; i < 50; i++) {
-                particles.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    size: Math.random() * 2 + 1,
-                    speed: Math.random() * 0.5 + 0.2,
-                    opacity: Math.random(),
-                    color: colors[Math.floor(Math.random() * colors.length)]
-                });
-            }
-
-            function draw() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                particles.forEach(p => {
-                    ctx.globalAlpha = p.opacity;
-                    ctx.fillStyle = p.color;
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    // 移動邏輯
-                    p.y -= p.speed;
-                    if(p.y < -10) {
-                        p.y = canvas.height + 10;
-                        p.x = Math.random() * canvas.width;
-                    }
-                    
-                    // 閃爍效果
-                    p.opacity += (Math.random() - 0.5) * 0.05;
-                    if(p.opacity < 0.1) p.opacity = 0.1;
-                    if(p.opacity > 0.8) p.opacity = 0.8;
-                });
-                requestAnimationFrame(draw);
-            }
-            draw();
-        }
-
-        function amaoJump() {
-            const s = document.getElementById('amao-sprite');
-            s.style.transform = "translateY(-40px) scale(1.1)";
-            setTimeout(() => s.style.transform = "translateY(0) scale(1)", 300);
-            
-            const log = document.getElementById('adventure-logs');
-            const entry = document.createElement('div');
-            entry.className = 'log-card';
-            entry.innerText = "阿毛向上跳了一層！";
-            log.appendChild(entry);
-        }
-
-        function amaoReact() {
-            const t = document.getElementById('magic-toast');
-            t.style.display = 'block';
-            setTimeout(() => t.style.display = 'none', 1000);
-        }
-
-        window.onload = initMagicParticles;
-        window.onresize = () => {
-            const canvas = document.getElementById('magic-engine');
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        };
-    </script><script>
-// --- 基礎物件定義 ---
-const ui = {
-    openModal: (type) => {
-        const modal = document.getElementById('main-modal');
-        modal.style.display = 'flex';
-        // 這裡會被下面的 originalOpenModal 擴充功能
-    },
-    closeModal: () => {
-        document.getElementById('main-modal').style.display = 'none';
-    }
-};
-
-const game = {};
-
-// --- (1) 美食與稱號資料庫 (你提供的內容) ---
-const FoodA = ["蜂蜜香", "灑滿香菜", "神級入味", "散發金光的", "外酥內軟的", "阿毛咬過的", "阿嬤覺得你餓的", "極致濃縮的", "冰火五重天的", "地獄級辛辣"];
-const FoodB = ["黃金比例", "滷滷米達特製", "南瓜老闆強力推薦", "隱藏版", "充滿魔力氣息", "碳烤風味", "鮮茶道風味", "口感彈牙", "充滿愛心的", "吃了會流淚的"];
-const FoodC = ["香煎豬排", "全熟肉大餐", "伯爵紅茶", "藍莓果茶", "奶奶的炒飯", "爺爺的鹹稀飯", "週三的水餃", "熔岩巧克力", "特濃奶茶", "噴汁和牛棒棒糖"];
-
-let FOOD_DB = [];
-let foodCount = 0;
-for (let a of FoodA) {
-    for (let b of FoodB) {
-        for (let c of FoodC) {
-            if (foodCount >= 300) break;
-            FOOD_DB.push({
-                id: foodCount,
-                name: `${a}${b}${c}`,
-                desc: `這道料理看起來${a}，且帶有${b}，是不可多得的美味。`,
-                effect: `體力恢復 ${Math.floor(Math.random()*50)+10}`,
-                rarity: foodCount % 5 === 0 ? 'S' : (foodCount % 3 === 0 ? 'A' : 'B')
-            });
-            foodCount++;
-        }
-    }
-}
-
-const SPECIAL_FOOD = [
-    { id: 1001, name: "奶奶煮的炒飯", desc: "記憶中最強的炒飯，每一口都是愛。", effect: "HP 全滿且永久增加 1 點攻擊力", rarity: "S" },
-    { id: 1002, name: "爺爺煮的鹹稀飯", desc: "暖心又暖胃，生病時的救贖。", effect: "防禦力暫時提升 5 回合", rarity: "S" },
-    { id: 1004, name: "鮮茶道伯爵紅茶", desc: "佛手柑的香氣，中二魔法必備。", effect: "魔力恢復", rarity: "B" }
-];
-FOOD_DB = [...SPECIAL_FOOD, ...FOOD_DB];
-
-const TITLE_DB = [
-    { id: 0, name: "新手爬塔狗", rank: "C", desc: "剛踏入塔內的菜鳥。", effect: "無" },
-    { id: 4, name: "黃金尿尿小童", rank: "S", desc: "留下深刻印記。", effect: "敵人遇到你會滑倒" },
-    { id: 6, name: "魔法少女阿毛", rank: "S", desc: "穿上粉紅斗篷後力量湧現！", effect: "全屬性提升 10%" }
-];
-// ... 這裡可以補完你剩下的 150 個稱號迴圈
-
-let Player = {
-    gold: 1000, floor: 1,
-    unlockedTitles: [0, 4, 6],
-    currentTitleId: 0,
-    inventory: { food: [1001, 1004, 5, 10], items: [] },
-    eatenHistory: new Set(),
-    currentTab: 'food'
-};
-
-// --- (2) 渲染邏輯 ---
-function renderTitles() {
-    const body = document.getElementById('modal-body');
-    body.innerHTML = '';
-    TITLE_DB.forEach(t => {
-        const isUnlocked = Player.unlockedTitles.includes(t.id);
-        const card = document.createElement('div');
-        card.className = `item-card ${isUnlocked ? 'unlocked rank-' + t.rank : ''}`;
-        card.innerHTML = `<div class="card-icon">${isUnlocked ? '🏅' : '🔒'}</div><div class="card-name">${isUnlocked ? t.name : '???'}</div>`;
-        if (isUnlocked) {
-            card.onclick = () => {
-                Player.currentTitleId = t.id;
-                updateMainUI();
-                alert(`稱號變更：${t.name}`);
-            };
-        }
-        body.appendChild(card);
-    });
-}
-
-function renderBackpack() {
-    const body = document.getElementById('modal-body');
-    body.innerHTML = '';
-    if (Player.currentTab === 'food') {
-        Player.inventory.food.forEach(fid => {
-            const food = FOOD_DB.find(f => f.id === fid);
-            if (!food) return;
-            const card = document.createElement('div');
-            const eaten = Player.eatenHistory.has(fid);
-            card.className = `item-card unlocked rank-${food.rarity}`;
-            card.innerHTML = `<div class="card-icon">🍱</div><div class="card-name" style="${eaten ? 'color: #FFE082; font-weight:900;' : ''}">${food.name}</div>`;
-            card.onclick = () => {
-                if (confirm(`食用 ${food.name}？`)) eatFood(fid);
-            };
-            body.appendChild(card);
-        });
-    }
-}
-
-function eatFood(fid) {
-    Player.eatenHistory.add(fid);
-    addGameLog("🍴", `阿毛吃了【${FOOD_DB.find(f=>f.id===fid).name}】！`);
-    renderBackpack();
-}
-
-game.switchTab = (tabName) => {
-    Player.currentTab = tabName;
-    renderBackpack();
-};
-
-function updateMainUI() {
-    const titleObj = TITLE_DB.find(t => t.id === Player.currentTitleId) || TITLE_DB[0];
-    document.getElementById('current-title-label').innerText = `【${titleObj.name}】`;
-    document.getElementById('gold-display').innerText = Player.gold.toLocaleString();
-    document.getElementById('bg-floor-number').innerText = Player.floor.toString().padStart(4, '0');
-}
-
-function addGameLog(icon, text) {
-    const logs = document.getElementById('adventure-logs');
-    const entry = document.createElement('div');
-    entry.className = 'log-card';
-    entry.innerHTML = `<div>${icon}</div><div>${text} <small>(${Player.floor}F)</small></div>`;
-    logs.appendChild(entry);
-}
-
-// 魔法對接：擴充原本的 Modal 功能
-const originalOpenModal = ui.openModal;
-ui.openModal = (type) => {
-    originalOpenModal(type);
-    if (type === 'notebook') renderTitles();
-    if (type === 'backpack') renderBackpack();
-};
-
-// --- (3) 粒子引擎啟動 ---
-function initParticles() {
-    const canvas = document.getElementById('magic-engine');
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    const particles = [];
-    for(let i=0; i<50; i++) {
-        particles.push({
-            x: Math.random()*canvas.width, y: Math.random()*canvas.height,
-            size: Math.random()*2+1, speed: Math.random()*0.3+0.1,
-            opacity: Math.random(), color: i%2===0 ? '#EAC4D5' : '#FFE082'
-        });
-    }
-    function draw() {
-        ctx.clearRect(0,0,canvas.width,canvas.height);
-        particles.forEach(p => {
-            ctx.globalAlpha = p.opacity; ctx.fillStyle = p.color;
-            ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
-            p.y -= p.speed; if(p.y < -10) p.y = canvas.height+10;
-        });
-        requestAnimationFrame(draw);
-    }
-    draw();
-}
-
-window.addEventListener('load', () => {
-    initParticles();
-    updateMainUI();
-    addGameLog("🔮", "「阿毛之塔」大門開啟，背景魔法粒子已啟動！");
-});
-</script>
-</body>
-</html>
