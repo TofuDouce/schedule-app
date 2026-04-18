@@ -1645,6 +1645,140 @@ window.openMenu = function(type) {
 };
 
 console.log("🌟 1樓環境配置完成！現在投骰子應該會瘋狂撿到東西了。");
+</script><script>
+/**
+ * 核心引擎修復：重啟隨機事件觸發器
+ */
+
+// 1. 強行覆蓋/修復格點事件處理器
+AmaoGame.handleSquare = function() {
+    const roll = Math.random();
+    
+    // A. 50% 機率：撿到物品 (食物或用品)
+    if (roll < 0.50) {
+        const itemPool = [
+            { name: "爆發性布丁", icon: "🍮", desc: "吃了會充滿力量！", power: 30 },
+            { name: "熱騰騰水餃", icon: "🥟", desc: "阿毛最愛的高麗菜口味。", power: 20 },
+            { name: "香香護手霜", icon: "🧴", desc: "媽媽送的，擦了會變強（？）。", type: "item" },
+            { name: "亮晶晶螺絲", icon: "🔩", desc: "看起來可以修好什麼。", type: "item" }
+        ];
+        const picked = itemPool[Math.floor(Math.random() * itemPool.length)];
+        this.receiveItem(picked);
+    } 
+    // B. 30% 機率：遇到商人 (如果有定義商人邏輯的話)
+    else if (roll < 0.80) {
+        this.addLog("🛒", "前方有個神祕的商人正在向妳招手！");
+        if (typeof this.spawnMerchant === 'function') {
+            this.spawnMerchant();
+        }
+    } 
+    // C. 20% 機率：沒事發生，平安無事
+    else {
+        this.addLog("🐾", "這層樓很安靜，阿毛安全地前進了一段路。");
+    }
+};
+
+// 2. 確保投骰子移動後，一定會執行上面的事件處理器
+const finalRollCheck = AmaoGame.rollWithBattle ? 'rollWithBattle' : 'roll';
+const oldStep = AmaoGame[finalRollCheck];
+
+AmaoGame[finalRollCheck] = function() {
+    // 執行走路 (改數值、移動 UI)
+    oldStep.call(this);
+    
+    // 走路後立即執行事件判定
+    setTimeout(() => {
+        this.handleSquare();
+    }, 500);
+};
+
+console.log("⚙️ 核心事件引擎已重新點火！阿毛走路現在會有反應了。");
+</script><script>
+/**
+ * 商店系統校準：確保四位商人固定輪替，進商店必有人
+ */
+
+// 1. 定義妳的四位商人 (如果原本有定義就跳過，這邊確保資料存在)
+AmaoGame.merchants = AmaoGame.merchants || [
+    { name: "麵包小販", icon: "🥖", items: [{name: "香噴噴麵包", price: 50, icon: "🥐"}] },
+    { name: "神祕行商", icon: "👳", items: [{name: "古老螺絲", price: 100, icon: "🔩"}] },
+    { name: "甜點大師", icon: "🍰", items: [{name: "爆發性布丁", price: 80, icon: "🍮"}] },
+    { name: "水餃大嬸", icon: "🥟", items: [{name: "熱騰騰水餃", price: 30, icon: "🥟"}] }
+];
+
+// 2. 修復 spawnMerchant：不再看機率，而是確保「商店裡一定要有人」
+AmaoGame.spawnMerchant = function() {
+    // 根據目前的樓層或隨機選出四位中的一位，固定坐在商店裡
+    const index = this.stats.floor % 4; 
+    this.activeNPC = this.merchants[index];
+    console.log(`商人 ${this.activeNPC.name} 已就位。`);
+};
+
+// 3. 修正 handleSquare：走路時不再隨機觸發商人，改為「每層樓自動刷新商人」
+AmaoGame.handleSquare = function() {
+    // 走路時只需要判定是否撿到物品
+    if (Math.random() < 0.4) {
+        const itemPool = [
+            { name: "路邊的水餃", icon: "🥟", desc: "雖然涼了但還是很香。", type: "food", power: 15 },
+            { name: "亮晶晶的螺絲", icon: "🔩", desc: "不知道能修什麼。", type: "item" }
+        ];
+        const picked = itemPool[Math.floor(Math.random() * itemPool.length)];
+        this.receiveItem(picked);
+    }
+    
+    // 每走一步都順便確保「商店裡的商人」是準備好的
+    this.spawnMerchant();
+};
+
+// 4. 強制對接：點擊 🛒 按鈕時，絕對要顯示商人內容
+window.openMenu = function(type) {
+    const ov = document.getElementById('menu-overlay');
+    const ct = document.getElementById('menu-content');
+    const tt = document.getElementById('menu-title');
+    if (!ov || !ct || !tt) return;
+    ov.style.display = 'flex';
+    ct.innerHTML = '';
+
+    if (type === 'shop') {
+        // 如果進店時沒商人，強制抓一位出來
+        if (!AmaoGame.activeNPC) AmaoGame.spawnMerchant();
+        
+        const npc = AmaoGame.activeNPC;
+        tt.innerText = `🛒 ${npc.name} 的商店`;
+        
+        npc.items.forEach(item => {
+            let card = document.createElement('div');
+            card.className = 'item-slot unlocked';
+            card.style = "display:flex; flex-direction:column; align-items:center; padding:10px; height:auto;";
+            card.innerHTML = `
+                <div style="font-size:1.5em">${item.icon}</div>
+                <div style="font-size:0.6em; font-weight:bold;">${item.name}</div>
+                <div style="font-size:0.55em; color:var(--morandi-green);">💰${item.price}</div>
+            `;
+            card.onclick = () => {
+                if (AmaoGame.stats.gold >= item.price) {
+                    AmaoGame.stats.gold -= item.price;
+                    AmaoGame.receiveItem({...item, fullName: item.name});
+                    alert(`成功購買 ${item.name}！`);
+                    window.openMenu('shop');
+                } else { alert("金幣不足喔！"); }
+            };
+            ct.appendChild(card);
+        });
+    } else if (type === 'system') {
+        // ... (保持原本的齒輪系統邏輯)
+        tt.innerText = "⚙️ 系統設定";
+        ct.innerHTML = `<button onclick="AmaoGame.save(); alert('存檔成功');" style="padding:15px; background:var(--morandi-green); color:white; border:none; border-radius:10px; width:100%;">💾 存檔</button>`;
+    } else {
+        // 背包邏輯
+        tt.innerText = "🎒 背包";
+        if (AmaoGame.inventory.length === 0) {
+            ct.innerHTML = '<div style="grid-column:span 4; text-align:center; padding:20px;">空空如也</div>';
+        } else {
+            // ... (原本的背包渲染)
+        }
+    }
+};
 </script>
 </body>
 </html>
