@@ -990,102 +990,237 @@ AmaoGame.buyItem = function(itemId) {
 // 啟動頭銜加成
 AmaoGame.applyTitleStats();
 
-</script><script>
+</script><style>
+/* 核心粒子動畫 */
+.particle { position: fixed; top: -50px; pointer-events: none; z-index: 9999; animation: fall linear forwards; }
+@keyframes fall { 
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; } 
+    100% { transform: translateY(100vh) rotate(360deg); opacity: 0; } 
+}
+
+/* 禮包碼輸入框樣式 - 莫蘭迪風格 */
+#redeem-box {
+    background: var(--panel-bg);
+    border: 2px dashed var(--morandi-green);
+    border-radius: 15px;
+    padding: 15px;
+    margin-top: 15px;
+    text-align: center;
+}
+#gift-code-input {
+    width: 80%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    outline: none;
+    text-align: center;
+    color: var(--text-dark);
+}
+.redeem-btn {
+    background: var(--morandi-green);
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+
+/* 紙條裝飾 */
+.secret-note {
+    background: #fdf6e3;
+    color: #586e75;
+    padding: 10px;
+    font-size: 0.75em;
+    border-radius: 4px;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+    font-style: italic;
+    margin-top: 15px;
+    position: relative;
+    line-height: 1.6;
+}
+</style>
+
+<script>
 /**
- * 阿毛之塔 - 核心引擎 5.0 (最終章)
- * 功能：環境連動、阿毛心情、資料持久化、彩蛋觸發
+ * 阿毛之塔 - 核心擴充 5.0 (終極版)
+ * 包含：禮包碼、無限體力、紙條、阿毛深度心情
  */
 
-const WorldEngine = {
-    // [1] 莫蘭迪時鐘：根據現實時間改變遊戲氣氛
-    updateEnvironment() {
-        const hour = new Date().getHours();
-        const root = document.documentElement;
-        const logTitle = document.querySelector('.log-header span');
-        
-        if (hour >= 18 || hour < 6) {
-            // 夜間模式：莫蘭迪深藍調
-            root.style.setProperty('--panel-bg', '#F2F2F2');
-            root.style.setProperty('--morandi-green', '#778899'); // 切換為灰藍
-            if(logTitle) logTitle.innerText = "🌙 阿毛的深夜冒險";
-        } else {
-            // 日間模式：經典莫蘭迪綠
-            root.style.setProperty('--morandi-green', '#A9BA9D');
-            if(logTitle) logTitle.innerText = "☀️ 阿毛的白日登山";
-        }
-    },
+const SecretCodes = {
+    codes: {
+        'AMAO_INFINITY': { type: 'infinity_hp', msg: '阿毛覺醒！獲得無限體力！', icon: '♾️' },
+        'TUNA_GIFT': { type: 'gold', val: 9999, msg: '鮪魚堡的銀行帳戶密碼...啊，是送錢！', icon: '💰' },
+        'SHEEP_LUCKY': { type: 'food_unlock', msg: '羊的斷更補償：隨機解鎖 10 種美食！', icon: '🌸' },
+        'LEGEND_DOG': { type: 'title', val: '未知的傳說', msg: '獲得隱藏稱號：未知的傳說！', icon: '🏅' },
+        'PUMPKIN_POWER': { type: 'hp_fill', val: 999, msg: '南瓜老闆灌入肌肉力量：體力全滿！', icon: '🎃' }
+    }
+};
 
-    // [2] 阿毛心情隨機語句
-    generateAmaoMood() {
+const EffectEngine = {
+    createParticle(emoji) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.innerText = emoji;
+        p.style.left = Math.random() * 100 + 'vw';
+        p.style.fontSize = (Math.random() * 25 + 15) + 'px';
+        const duration = Math.random() * 3 + 2;
+        p.style.animationDuration = duration + 's';
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), duration * 1000);
+    },
+    startRain(emoji, count = 40) {
+        let i = 0;
+        const interval = setInterval(() => {
+            this.createParticle(emoji);
+            i++;
+            if (i >= count) clearInterval(interval);
+        }, 120);
+    }
+};
+
+const NoteContent = `
+【一張邊角發黃的紙條】
+上面寫著一些潦草的字跡：
+「鮪魚堡把後門密碼藏在代碼裡了... 
+好像叫什麼 AMAO_... 還有 TUNA_...
+滷滷米達叫我不要亂說，但我快斷更了沒錢買筆芯...
+對了，如果你想要錢，可以試試看那個建造者的名字...」
+— 羊 留
+`;
+
+const originalOpenMenuV5 = window.openMenu;
+window.openMenu = function(type) {
+    originalOpenMenuV5(type);
+    if (type === 'shop') {
+        const ct = document.getElementById('menu-content');
+        let note = document.createElement('div');
+        note.className = 'secret-note';
+        note.style.gridColumn = 'span 4';
+        note.innerText = NoteContent;
+        ct.appendChild(note);
+
+        let redeemBox = document.createElement('div');
+        redeemBox.id = 'redeem-box';
+        redeemBox.style.gridColumn = 'span 4';
+        redeemBox.innerHTML = `
+            <div style="font-size:0.8em; margin-bottom:5px; color:var(--morandi-green);">— 神祕代碼兌換處 —</div>
+            <input type="text" id="gift-code-input" placeholder="輸入通關密語...">
+            <br>
+            <button class="redeem-btn" onclick="AmaoGame.redeemGift()">啟動密法</button>
+        `;
+        ct.appendChild(redeemBox);
+    }
+};
+
+AmaoGame.redeemGift = function() {
+    const input = document.getElementById('gift-code-input');
+    const code = input.value.trim().toUpperCase();
+    const gift = SecretCodes.codes[code];
+    if (!gift) {
+        alert("代碼錯誤！滷滷米達對妳投以輕蔑的眼神。");
+        return;
+    }
+    this.addLog(gift.icon, `<span style="color:#D4ADCF; font-weight:bold;">[秘笈啟動] ${gift.msg}</span>`);
+    switch(gift.type) {
+        case 'infinity_hp':
+            this.stats.hp = 999999;
+            this.addLog("⚡", "阿毛的呼吸變得深長...體力不再流失。");
+            EffectEngine.startRain('🌸', 100);
+            break;
+        case 'gold':
+            this.stats.gold += gift.val;
+            EffectEngine.startRain('💰', 50);
+            break;
+        case 'title':
+            this.switchTitle(gift.val);
+            EffectEngine.startRain('🏅', 30);
+            break;
+        case 'food_unlock':
+            for(let j=0; j<10; j++) {
+                let un = this.foodNotebook.find(f => !f.consumed);
+                if(un) un.consumed = true;
+            }
+            EffectEngine.startRain('🍱', 40);
+            break;
+        case 'hp_fill':
+            this.stats.hp = 100;
+            EffectEngine.startRain('🥛', 20);
+            break;
+    }
+    input.value = "";
+    this.refreshUI();
+    this.save();
+    alert(`成功兌換：${gift.msg}`);
+};
+
+AmaoGame.triggerSpecialEvents = function() {
+    const roll = Math.random();
+    if (roll > 0.98) {
+        EffectEngine.startRain('🌸', 60);
+        this.addLog("🌸", "忽然，一陣帶著淡香的櫻花雨落下...");
+    } else if (roll > 0.95) {
+        EffectEngine.startRain('🐟', 50);
+        this.addLog("🐟", "天空下起了鮪魚雨！鮪魚堡：『哇哈哈，接好囉！』");
+    }
+
+    // 隨機心情系統 (包含妳指定的心情元素與吐槽)
+    if (roll < 0.15) {
         const moods = [
             "阿毛覺得這層的空氣有淡淡的藍莓茶味。",
             "阿毛在想，鮪魚堡是不是又在偷改地圖了？",
             "阿毛的肉球感覺到地板涼涼的，很舒服。",
-            "阿毛突然好想念奶奶煮的炒飯喔...",
-            "阿毛發現牆角有一朵莫蘭迪色的花。",
+            "阿毛突然好想念巧克力喔...",
+            "阿毛發現牆角有一朵藍色的花。",
             "阿毛覺得南瓜老闆的嘶哈聲有點太吵了。",
             "阿毛在想，滷滷米達的眼鏡到底有沒有度數？",
-            "阿毛覺得羊畫的小狗跟自己有點像。"
+            "阿毛覺得羊畫的小狗跟自己有點像。",
+            "阿毛想起南瓜老闆剛才偷偷在吃炸雞...",
+            "阿毛感覺鮪魚堡正在背後對著程式碼壞笑。",
+            "羊似乎又躲起來畫圖了，阿毛聞到了墨水味。",
+            "滷滷米達剛才擦了一下眼鏡，那是嫌棄的眼神嗎？",
+            "阿毛發現這層樓的莫蘭迪粉色特別飽滿。",
+            "塔的震動...難道是南瓜老闆在地下室做硬舉？"
         ];
-        return moods[Math.floor(Math.random() * moods.length)];
+        this.addLog("🐾", `<span style='color:var(--text-light); font-style:italic;'>${moods[Math.floor(Math.random()*moods.length)]}</span>`);
     }
 };
 
-// 擴充 AmaoGame
-Object.assign(AmaoGame, {
-    // [3] 終極成就檢查
-    checkGrandAchievement() {
-        if (this.floor >= 500 && !localStorage.getItem('GrandAchieve')) {
-            localStorage.setItem('GrandAchieve', 'true');
-            this.addLog("🌌", "<span style='color:#EAC4D5; font-weight:bold;'>【傳說】阿毛抵達了塔的頂端，看見了純淨的莫蘭迪星空！</span>");
-            alert("🎉 恭喜妳！妳陪著阿毛爬到了 500 層！這是屬於妳們的紀念時刻。");
-        }
-    },
-
-    // [4] 自動存檔強化版
-    autoBackup() {
-        this.save();
-        console.log("[系統] 冒險紀錄已安全存儲至阿毛的時空膠囊。");
-    }
-});
-
-// 覆寫 roll 邏輯，加入心情與彩蛋
-const finalRoll = AmaoGame.rollWithBattle;
+const finalAction = AmaoGame.rollWithBattle;
 AmaoGame.rollWithBattle = function() {
-    finalRoll.apply(this);
-    
-    // 20% 機率跳出阿毛的小碎念
-    if (Math.random() > 0.8) {
-        this.addLog("🐾", `<span style='color:var(--text-light); font-style:italic;'>${WorldEngine.generateAmaoMood()}</span>`);
+    finalAction.apply(this);
+    this.triggerSpecialEvents();
+    if (this.stats.hp < 0) this.stats.hp = 0;
+    const hpLabel = document.querySelector('.status-row span:first-child');
+    if (this.stats.hp > 1000) {
+        hpLabel.innerHTML = `⚡ 體力: <span style="color:#D4ADCF">∞ (覺醒)</span>`;
+    } else {
+        hpLabel.innerHTML = `⚡ 體力: ${this.stats.hp}`;
     }
-    
-    this.checkGrandAchievement();
-    this.autoBackup();
 };
 
-// [5] 啟動世界引擎
-WorldEngine.updateEnvironment();
-setInterval(() => WorldEngine.updateEnvironment(), 60000); // 每分鐘檢查一次時間
-
-// 點擊阿毛會有驚喜
-const amaoImg = document.getElementById('amao-sprite');
-if (amaoImg) {
-    amaoImg.style.cursor = "pointer";
-    amaoImg.onclick = () => {
-        const lines = [
-            "汪！(不要一直戳我啦～)",
-            "汪汪！(肚子餓了，有水餃嗎？)",
-            "嗷嗚～(鮪魚堡說點我一百次會有 BUG 喔！)",
-            "汪！(妳今天也辛苦了，休息一下吧！)"
+const amaoSprite = document.getElementById('amao-sprite');
+if (amaoSprite) {
+    amaoSprite.onclick = () => {
+        const amaoLines = [
+            "汪！(獲得了 10 金幣！)",
+            "汪汪！(阿毛很開心地搖了尾巴。)",
+            "嗷嗚！(妳發現了阿毛領口的小驚喜。)",
+            "汪！(這座塔的風景，有妳在真好。)"
         ];
-        alert(lines[Math.floor(Math.random() * lines.length)]);
+        AmaoGame.stats.gold += 10;
+        AmaoGame.addLog("🐾", amaoLines[Math.floor(Math.random()*amaoLines.length)]);
+        AmaoGame.refreshUI();
+        EffectEngine.startRain('✨', 5);
     };
 }
 
-// 修正原本的一個顯示 Bug：確保體力不會顯示成「無限」
-document.querySelector('.status-row span:first-child').innerHTML = `⚡ 體力: ${AmaoGame.stats.hp}`;
+setInterval(() => {
+    console.log("[阿毛之塔] 記憶體對齊中... 資料已同步至 LocalStorage。");
+}, 300000);
 
-console.log("阿毛之塔 5.0 啟動成功。這是一個充滿溫度的世界。");
+console.log("阿毛之塔 5.0 終極心情版：阿毛現在更有個性了。");
 </script>
 </body>
 </html>
