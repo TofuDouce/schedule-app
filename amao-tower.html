@@ -648,6 +648,150 @@ window.openMenu = (type) => {
 
 // 初始化啟動
 AmaoGame.init();
+</script><script>
+/**
+ * 阿毛之塔 - 戰鬥引擎與成就系統 (整合版)
+ */
+
+const MonsterDB = {
+    prefix: ["兇猛的", "中二的", "閃閃發光的", "莫蘭迪色的", "來自深淵的", "愛生氣的", "看起來很香的"],
+    names: ["加班小精靈", "香菜惡魔", "低飽和史萊姆", "減肥失敗的幽靈", "BUG魔王", "咖啡因怪獸"],
+    
+    getMonster(floor) {
+        const p = this.prefix[Math.floor(Math.random() * this.prefix.length)];
+        const n = this.names[Math.floor(Math.random() * this.names.length)];
+        const level = Math.ceil(floor / 10);
+        return {
+            name: `${p}${n}`,
+            hp: 20 + (level * 10),
+            maxHp: 20 + (level * 10),
+            atk: 5 + (level * 2),
+            gold: 10 + (level * 5),
+            icon: "👾"
+        };
+    }
+};
+
+// 注入戰鬥邏輯到 AmaoGame
+Object.assign(AmaoGame, {
+    isFighting: false,
+
+    // 觸發戰鬥
+    triggerBattle(monster) {
+        this.isFighting = true;
+        const btn = document.querySelector('.dice-button');
+        if(btn) btn.disabled = true; // 戰鬥中不能丟骰子
+
+        this.addLog("⚔️", `遇到了 <span style="color:#FF6B6B">${monster.name}</span>！`);
+        
+        const battleInterval = setInterval(() => {
+            // 阿毛攻擊 (基於樓層給一點點加成)
+            const damageToMonster = 10 + Math.floor(Math.random() * 5) + Math.floor(this.floor/20);
+            monster.hp -= damageToMonster;
+            
+            // 怪物攻擊
+            const damageToAmao = monster.atk + Math.floor(Math.random() * 3);
+            if(!this.stats.hp) this.stats.hp = 100; // 確保有 HP
+            this.stats.hp -= damageToAmao;
+            
+            this.addLog("💢", `${monster.name} 剩餘 HP: ${Math.max(0, monster.hp)} (阿毛受傷 -${damageToAmao})`);
+            
+            // 判斷勝負
+            if (monster.hp <= 0) {
+                clearInterval(battleInterval);
+                this.isFighting = false;
+                this.stats.gold += monster.gold;
+                if(btn) btn.disabled = false;
+                this.addLog("🏆", `擊敗了 ${monster.name}！獲得了 <span style="color:var(--morandi-gold)">${monster.gold}</span> 金幣。`);
+                this.save();
+            } else if (this.stats.hp <= 0) {
+                clearInterval(battleInterval);
+                this.isFighting = false;
+                this.stats.hp = 20; // 戰敗保底
+                if(btn) btn.disabled = false;
+                this.addLog("💀", `阿毛體力不支... 被傳送回安全區休息。`);
+                this.save();
+            }
+            this.refreshUI();
+        }, 1000);
+    },
+
+    // 擴展原有的 Roll 功能
+    rollWithBattle() {
+        if (this.isFighting) return;
+
+        // 呼叫原本的骰子動畫
+        this.roll();
+
+        // 在骰子停下來後 (約 1 秒) 判定隨機事件
+        setTimeout(() => {
+            const eventRoll = Math.random();
+            if (eventRoll > 0.7) {
+                const monster = MonsterDB.getMonster(this.floor);
+                this.triggerBattle(monster);
+            }
+            this.checkTitleUnlocks(); // 每次移動完檢查成就
+        }, 1200);
+    },
+
+    // 稱號成就檢查員
+    checkTitleUnlocks() {
+        let unlockedName = "";
+        // 樓層成就：第 10 格 (ID: 9)
+        if (this.floor >= 50 && !this.titleNotebook[9].unlocked) {
+            this.titleNotebook[9].unlocked = true;
+            this.titleNotebook[9].name = "莫蘭迪美學家";
+            unlockedName = this.titleNotebook[9].name;
+        }
+        // 金幣成就：第 5 格 (ID: 4)
+        if (this.stats.gold >= 2000 && !this.titleNotebook[4].unlocked) {
+            this.titleNotebook[4].unlocked = true;
+            this.titleNotebook[4].name = "黃金尿尿小童";
+            unlockedName = this.titleNotebook[4].name;
+        }
+
+        if (unlockedName) {
+            this.addLog("🎊", `獲得新稱號：<span style="color:var(--morandi-gold)">【${unlockedName}】</span>`);
+            this.save();
+        }
+    }
+});
+
+// 修正原本的 UI 顯示，加入血條
+const originalRefresh = AmaoGame.refreshUI;
+AmaoGame.refreshUI = function() {
+    originalRefresh.apply(this);
+    if(!this.stats.hp) this.stats.hp = 100;
+    
+    // 更新頂部體力文字
+    const hpBox = document.querySelector('.stat-box:first-child span');
+    if(hpBox) {
+        hpBox.innerText = this.stats.hp;
+        hpBox.style.color = this.stats.hp < 30 ? '#FF6B6B' : 'var(--morandi-green)';
+    }
+
+    // 阿毛受傷震動效果
+    const amao = document.getElementById('amao-sprite');
+    if (this.isFighting && amao) {
+        amao.style.animation = "shake 0.2s infinite";
+    } else if (amao) {
+        amao.style.animation = "";
+    }
+};
+
+// 插入震動動畫 CSS
+const battleStyle = document.createElement('style');
+battleStyle.innerHTML = `
+    @keyframes shake {
+        0% { transform: translate(1px, 1px); }
+        50% { transform: translate(-2px, -1px); }
+        100% { transform: translate(1px, 1px); }
+    }
+`;
+document.head.appendChild(battleStyle);
+
+// 重新綁定骰子點擊事件
+window.handleRoll = () => AmaoGame.rollWithBattle();
 </script>
 </body>
 </html>
