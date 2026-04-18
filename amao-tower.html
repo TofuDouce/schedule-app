@@ -3,153 +3,1351 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>阿毛之塔 - 粒子魔法版</title>
+    <title>阿毛之塔</title>
     <style>
+        /* --- 莫蘭迪深色調系統 --- */
         :root {
-            --bg-deep: #121218;
-            --panel-bg: rgba(31, 31, 42, 0.85);
-            --magic-purple: #EAC4D5;
-            --magic-gold: #FFE082;
-            --morandi-green: #A9BA9D;
-            --gold: #D4A017;
-            --danger: #FF6B6B;
-            --font-main: "PingFang TC", "Microsoft JhengHei", sans-serif;
-            --header-h: 90px;
-            --footer-h: 160px;
+            --bg-dark: #1A1A22;        
+            --panel-bg: #252533;      
+            --morandi-green: #B4C6A6; 
+            --morandi-gold: #EAC4D5;  
+            --text-light: #E0E0E0;
+            --accent-blue: #A3B1C6;
+            --dice-yellow: #FFE082;
+            --header-height: 80px;
+            --footer-height: 160px; 
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; user-select: none; }
+        * { 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent; 
+            font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
+            margin: 0; padding: 0;
+        }
 
         body {
-            background-color: var(--bg-deep);
-            color: #E0E0E0;
-            font-family: var(--font-main);
-            height: 100vh; width: 100vw;
-            overflow: hidden;
-            display: flex; flex-direction: column;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden; 
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- 1. 固定頂部 --- */
+        #fixed-header {
+            height: var(--header-height);
+            background: rgba(26, 26, 34, 0.95);
+            border-bottom: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .status-row {
+            display: flex;
+            justify-content: space-around;
+            padding: 5px 10px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .game-title {
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: bold;
+            letter-spacing: 3px;
+            color: var(--morandi-gold);
+            text-shadow: 0 0 10px rgba(234, 196, 213, 0.3);
+        }
+
+        /* --- 2. 中間滑動冒險區 --- */
+        #main-scroll-area {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 20px;
+            scroll-behavior: smooth;
+        }
+
+        #stage-view {
+            height: 240px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             position: relative;
+            flex-shrink: 0;
+            background: radial-gradient(circle, rgba(163,177,198,0.1) 0%, rgba(26,26,34,0) 70%);
         }
 
-        /* 粒子畫布 */
-        #magic-engine {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 0; pointer-events: none;
+        .floor-indicator {
+            position: absolute;
+            font-size: 5.5em;
+            font-weight: 900;
+            color: rgba(255, 255, 255, 0.03);
+            z-index: 0;
+            font-style: italic;
         }
 
-        header {
-            height: var(--header-h);
-            background: rgba(31, 31, 42, 0.7);
-            backdrop-filter: blur(5px);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            z-index: 10; flex-shrink: 0;
-            display: flex; flex-direction: column; justify-content: center;
-        }
-
-        main {
-            flex: 1; background: transparent; overflow-y: auto;
-            position: relative; z-index: 5; display: flex; flex-direction: column;
-        }
-
-        footer {
-            height: var(--footer-h);
-            background: rgba(18, 18, 24, 0.85);
-            backdrop-filter: blur(8px);
-            border-top: 1px solid rgba(255,255,255,0.1);
-            padding: 15px 20px; z-index: 10;
-            display: flex; flex-direction: column; gap: 15px;
-        }
-
-        #world-stage {
-            height: 280px; flex-shrink: 0;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            position: relative;
-        }
-
-        .floor-giant-text {
-            position: absolute; font-size: 8em; font-weight: 900;
-            color: rgba(255, 255, 255, 0.03); z-index: 0;
-            font-style: italic; pointer-events: none;
-        }
-
-        .amao-avatar {
-            font-size: 100px; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+        .amao-main-sprite { 
+            font-size: 85px; 
+            z-index: 1; 
+            margin-bottom: 12px;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5));
             transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 2;
         }
 
-        .amao-badge {
-            background: linear-gradient(135deg, var(--magic-purple) 0%, #d4adcf 100%);
-            color: #2D2D3A; padding: 6px 20px; border-radius: 20px;
-            font-weight: 900; font-size: 0.85em; margin-top: -10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 3;
+        .amao-title-label {
+            background: var(--morandi-gold);
+            color: #2D2D3A;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+            z-index: 1;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.3);
         }
 
-        .main-action-btn {
-            background: linear-gradient(135deg, #FFE082 0%, var(--gold) 100%);
-            color: #333; border: none; border-radius: 20px;
-            width: 100%; height: 70px; font-size: 1.3em; font-weight: 900;
-            box-shadow: 0 5px 0 #8B6B0E; cursor: pointer;
-        }
-        .main-action-btn:active { transform: translateY(4px); box-shadow: 0 1px 0 #8B6B0E; }
-
-        .nav-grid { display: flex; justify-content: space-between; gap: 10px; }
-        .nav-btn {
-            flex: 1; background: rgba(255,255,255,0.1);
-            height: 50px; border-radius: 15px;
-            display: flex; justify-content: center; align-items: center;
-            font-size: 1.5em; cursor: pointer; border: 1px solid rgba(255,255,255,0.1);
+        #game-log-list {
+            padding: 10px 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
-        #adventure-logs { padding: 15px; display: flex; flex-direction: column-reverse; gap: 10px; }
-        .log-card {
-            background: rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 15px;
-            border-left: 4px solid var(--magic-purple); font-size: 0.85em;
-            display: flex; gap: 10px; align-items: center; animation: slideIn 0.3s ease-out;
+        .log-entry {
+            background: var(--panel-bg);
+            padding: 14px;
+            border-radius: 12px;
+            border-left: 5px solid var(--accent-blue);
+            display: flex;
+            gap: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            animation: slideIn 0.4s ease-out;
         }
 
-        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
-
-        /* 彈窗 */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(18, 18, 24, 0.95); z-index: 1000;
-            display: none; flex-direction: column;
+        @keyframes slideIn { 
+            from { opacity: 0; transform: translateY(15px); } 
+            to { opacity: 1; transform: translateY(0); } 
         }
-        .modal-header { height: 70px; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; }
-        .grid-container { flex: 1; overflow-y: auto; padding: 15px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; align-content: start; }
 
-        .item-slot { aspect-ratio: 1/1; background: rgba(255,255,255,0.05); border-radius: 12px; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 1px solid rgba(255,255,255,0.1); }
-        .item-slot.unlocked { border-color: var(--magic-purple); }
+        .log-icon { font-size: 1.2em; }
+        .log-content { font-size: 1em; line-height: 1.5; color: var(--text-light); }
+        .highlight-text { color: var(--dice-yellow); font-weight: bold; }
 
-        #magic-toast {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: #fff; color: #000; padding: 10px 30px; border-radius: 20px;
-            z-index: 2000; display: none; font-weight: 900; box-shadow: 0 0 20px rgba(255,255,255,0.5);
+        /* --- 3. 固定底部控制列 --- */
+        #fixed-footer {
+            height: var(--footer-height);
+            background: rgba(26, 26, 34, 0.98);
+            border-top: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            padding: 12px 18px;
+            z-index: 100;
+            flex-shrink: 0;
         }
+
+        .dice-button {
+            background-color: var(--dice-yellow);
+            color: #333;
+            border: none;
+            border-radius: 15px;
+            width: 100%;
+            height: 65px;
+            font-size: 1.2em;
+            font-weight: 800;
+            box-shadow: 0 5px 0 #D4A017;
+            margin-bottom: 18px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.1s;
+        }
+
+        .dice-button:active { 
+            transform: translateY(3px); 
+            box-shadow: 0 2px 0 #D4A017; 
+        }
+
+        .bottom-nav {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .nav-item {
+            flex: 1;
+            background: #333344;
+            height: 55px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.6em;
+            cursor: pointer;
+        }
+        .nav-item:active { background: var(--morandi-green); transform: scale(0.95); }
+
+        .overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-dark);
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+        }
+
+        .overlay-header {
+            height: 70px;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #444;
+        }
+
+        .notebook-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .item-slot {
+            aspect-ratio: 1;
+            background: #252533;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.85em;
+            color: #555;
+            border: 1px solid #333;
+        }
+
+        ::-webkit-scrollbar { width: 0; }
     </style>
 </head>
 <body>
 
-    <canvas id="magic-engine"></canvas>
-    <div id="magic-toast"></div>
-
-    <header>
-        <div style="display:flex; justify-content:space-between; padding:0 20px;">
-            <div style="font-size:0.8em;">❤️ HP: <span id="hp-val" style="color:var(--danger)">100</span></div>
-            <div style="font-size:0.8em;">💰 <span id="gold-val" style="color:var(--magic-gold)">500</span></div>
+    <div id="fixed-header">
+        <div class="status-row">
+            <span>⚡ 體力: 無限</span>
+            <span>💰 金幣: <span id="gold-val">1000</span></span>
         </div>
-        <div style="text-align:center; font-size:1.4em; font-weight:900; color:var(--magic-purple); letter-spacing:3px;">阿毛之塔</div>
-    </header>
+        <div class="game-title">阿毛之塔</div>
+    </div>
 
-    <main>
-        <section id="world-stage">
-            <div class="floor-giant-text" id="bg-floor">0001</div>
-            <div class="amao-avatar" id="amao-sprite">🐶</div>
-            <div class="amao-badge" id="title-label">【新手爬塔狗】</div>
-        </section>
-        <div id="adventure-logs"></div>
-    </main>
+    <div id="main-scroll-area">
+        <div id="stage-view">
+            <div class="floor-indicator" id="bg-floor">0001</div>
+            <div class="amao-main-sprite" id="amao-sprite">🐶</div>
+            <div class="amao-title-label" id="current-title">【新手爬塔狗】</div>
+        </div>
 
-    <footer>
-        <button class="main-action-btn" onclick="AmaoGame.roll()">🎲 投擲命運之骰</button>
-        <div class="nav-grid">
+        <div id="game-log-list">
+            <div class="log-entry">
+                <div class="log-icon">🔮</div>
+                <div class="log-content">阿毛感受到塔頂傳來一股強大的魔力... 傳說抵達 9,999 樓就能實現心中的那個願望。</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="fixed-footer">
+        <button class="dice-button" onclick="handleRoll()">
+            <span>🎲</span> 投擲命運之骰
+        </button>
+        
+        <div class="bottom-nav">
+            <div class="nav-item" onclick="openMenu('food')">🍱</div>
+            <div class="nav-item" onclick="openMenu('title')">🏅</div>
+            <div class="nav-item" onclick="openMenu('bag')">🎒</div>
+            <div class="nav-item" onclick="openMenu('shop')">🛒</div>
+        </div>
+    </div>
+
+    <div id="menu-overlay" class="overlay">
+        <div class="overlay-header">
+            <h2 id="menu-title">筆記本</h2>
+            <div onclick="closeMenu()" style="font-size: 1.8em; padding: 10px; cursor: pointer;">✕</div>
+        </div>
+        <div id="menu-content" class="notebook-content">
+        </div>
+    </div>
+
+<script>
+    let floor = 1;
+
+    function handleRoll() {
+        const amao = document.getElementById('amao-sprite');
+        amao.style.transform = "scale(1.2) translateY(-20px)";
+        
+        setTimeout(() => {
+            const step = Math.floor(Math.random() * 6) + 1;
+            floor += step;
+            amao.style.transform = "scale(1) translateY(0)";
+            document.getElementById('bg-floor').innerText = floor.toString().padStart(4, '0');
+            
+            const logList = document.getElementById('game-log-list');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `
+                <div class="log-icon">✨</div>
+                <div class="log-content">阿毛使出了中二的衝刺步，前進了 <span class="highlight-text">${step}</span> 層。目前位於 <span class="highlight-text">${floor}F</span>。</div>
+            `;
+            logList.insertBefore(entry, logList.firstChild);
+        }, 150);
+    }
+
+    function openMenu(type) {
+        const overlay = document.getElementById('menu-overlay');
+        const content = document.getElementById('menu-content');
+        const title = document.getElementById('menu-title');
+        content.innerHTML = ''; 
+        overlay.style.display = 'flex';
+
+        if(type === 'food') {
+            title.innerText = '🍱 美食收藏 (0/300)';
+            for(let i=1; i<=300; i++) {
+                let slot = document.createElement('div');
+                slot.className = 'item-slot';
+                slot.innerText = '???';
+                content.appendChild(slot);
+            }
+        } else if(type === 'title') {
+            title.innerText = '🏅 稱號成就 (0/150)';
+            for(let i=1; i<=150; i++) {
+                let slot = document.createElement('div');
+                slot.className = 'item-slot';
+                slot.innerText = '鎖定';
+                content.appendChild(slot);
+            }
+        } else {
+            title.innerText = '系統訊息';
+            content.innerHTML = '<p style="grid-column: span 4; text-align:center; padding: 20px; color: #777;">前方似乎有股神秘的力量擋住了背包...</p>';
+        }
+    }
+
+    function closeMenu() {
+        document.getElementById('menu-overlay').style.display = 'none';
+    }
+</script>
+<script>
+/**
+ * 阿毛之塔 - 核心引擎 2.4
+ * 特色：動態格數相容，支援隨時擴充圖鑑上限
+ */
+
+const GameDB = {
+    // --- 只要改下面這個數字，筆記本就會自動變大 ---
+    MAX_FOOD: 300, 
+    
+    foodPrefix: ["香氣四溢的", "極致濃郁的", "灑滿蔥花的", "黃金比例的", "來自地獄的", "媽媽特製的", "滷滷米達嫌棄過的", "南瓜老闆激推的", "充滿魔法氣息的", "散發銀紫光芒的", "路邊撿到的", "奶奶特傳的", "夢幻莫蘭迪色的", "超音速生成的", "罪惡感爆表的", "蒜泥狠的", "讓人流口水的", "焦糖琥珀色的", "苦中帶甜的", "冰鎮極品的"],
+    foodMiddle: ["爆發性", "口感滑順", "現炸酥脆", "慢火細熬", "七彩噴發", "Q彈有勁", "香煎熟成", "外酥內嫩", "鮮甜多汁", "微苦甘醇", "冰封後的", "剛出爐的", "文火慢燉", "大火快炒", "魔法加持", "中二魂注入", "極致壓縮", "層層堆疊", "五味雜陳", "鮮味濃縮"],
+    foodSuffix: ["豬排大餐", "伯爵紅茶", "藍莓果茶", "炒飯", "鹹稀飯", "現包水餃", "能量飲料", "大骨棒", "手作肉餅", "厚片土司", "義大利麵", "濃厚拉麵", "脆皮泡芙", "舒芙蕾", "雞腿堡", "布丁", "三明治", "夏威夷披薩", "關東煮", "絲襪奶茶"],
+    
+    getEmoji(name) {
+        if (name.includes("茶") || name.includes("奶")) return "🍵";
+        if (name.includes("飯") || name.includes("粥")) return "🍚";
+        if (name.includes("麵")) return "🍜";
+        if (name.includes("排") || name.includes("肉") || name.includes("骨")) return "🍖";
+        if (name.includes("水餃") || name.includes("煮")) return "🥟";
+        if (name.includes("甜") || name.includes("堡") || name.includes("餅") || name.includes("芙")) return "🍰";
+        if (name.includes("飲")) return "🥤";
+        return "🍱";
+    }
+};
+
+const AmaoGame = {
+    foodNotebook: [],
+    titleNotebook: [],
+    floor: 1,
+    stats: { hp: 100, gold: 1000, title: '新手爬塔狗' },
+
+    init() {
+        this.generateFood();
+        this.generateTitles();
+        this.load();
+        this.refreshUI();
+        
+        // 修正 UI 上的顯示
+        const btn = document.querySelector('.dice-button');
+        if(btn) btn.innerHTML = '<span>🎲</span> 投擲命運之骰';
+    },
+
+    generateFood() {
+        const special = [
+            { name: "奶奶煮的炒飯", desc: "阿嬤怕妳餓的魔力。HP+5", consumed: false, emoji: "🍚" },
+            { name: "爺爺的鹹稀飯", desc: "充滿家的味道。MP+5", consumed: false, emoji: "🥣" },
+            { name: "每個禮拜三的水餃", desc: "週三限定美食。恢復HP", consumed: false, emoji: "🥟" },
+            { name: "鮮茶道伯爵紅茶", desc: "茶香濃郁，精神百倍。", consumed: false, emoji: "🍵" },
+            { name: "鮮茶道藍莓果茶", desc: "酸甜滋味，魔法感十足。", consumed: false, emoji: "🍹" }
+        ];
+        
+        this.foodNotebook = [...special];
+        
+        // 依照 MAX_FOOD 自動填滿剩下的格子
+        for(let i = special.length; i < GameDB.MAX_FOOD; i++) {
+            let p = GameDB.foodPrefix[Math.floor(Math.random()*20)];
+            let m = GameDB.foodMiddle[Math.floor(Math.random()*20)];
+            let s = GameDB.foodSuffix[Math.floor(Math.random()*20)];
+            let fullName = p + m + s;
+            this.foodNotebook.push({ 
+                name: fullName, 
+                desc: "在塔中意外發現的神祕料理。", 
+                consumed: false,
+                emoji: GameDB.getEmoji(fullName)
+            });
+        }
+    },
+
+    generateTitles() {
+        this.titleNotebook = [];
+        for(let i=0; i<150; i++) {
+            this.titleNotebook.push({ id: i+1, rank: 'C', name: i===0 ? '新手爬塔狗' : '未知的傳說', desc: '探索以解鎖。', unlocked: i===0 });
+        }
+    },
+
+    roll() {
+        const step = Math.floor(Math.random() * 6) + 1;
+        this.floor += step;
+        
+        let logIcon = "✨";
+        let logText = `阿毛前進了 ${step} 層，抵達了 <span class="highlight-text">${this.floor}F</span>。`;
+        
+        // 取得還沒被吃過的食物清單
+        const uncollected = this.foodNotebook.filter(f => !f.consumed);
+        
+        // 35% 機率獲得新食物
+        if(Math.random() > 0.65 && uncollected.length > 0) {
+            let luckyFood = uncollected[Math.floor(Math.random() * uncollected.length)];
+            luckyFood.consumed = true;
+            logIcon = luckyFood.emoji;
+            logText += ` 妳在路邊撿到了 <span style="color:var(--morandi-green)">${luckyFood.name}</span>！`;
+        } else if (uncollected.length === 0) {
+            // 如果全滿了，改送金幣
+            this.stats.gold += 50;
+            logIcon = "💰";
+            logText += ` 既然 300 種美食都吃遍了，那就拿 50 金幣吧！`;
+        }
+
+        this.addLog(logIcon, logText);
+        this.save();
+        this.refreshUI();
+    },
+
+    addLog(icon, text) {
+        const list = document.getElementById('game-log-list');
+        const e = document.createElement('div');
+        e.className = 'log-entry';
+        e.innerHTML = `<div class="log-icon">${icon}</div><div class="log-content">${text}</div>`;
+        list.insertBefore(e, list.firstChild);
+    },
+
+    refreshUI() {
+        if(document.getElementById('bg-floor')) document.getElementById('bg-floor').innerText = this.floor.toString().padStart(4, '0');
+        if(document.getElementById('gold-val')) document.getElementById('gold-val').innerText = this.stats.gold;
+    },
+
+    save() {
+        localStorage.setItem('AmaoSave', JSON.stringify({
+            floor: this.floor, food: this.foodNotebook, titles: this.titleNotebook, stats: this.stats
+        }));
+    },
+
+    load() {
+        const s = localStorage.getItem('AmaoSave');
+        if(s) {
+            try {
+                const d = JSON.parse(s);
+                // 檢查存檔格數是否跟目前設定的一樣，不一樣就重置(確保動態調整生效)
+                if(d.food && d.food.length === GameDB.MAX_FOOD) {
+                    this.floor = d.floor || 1;
+                    this.foodNotebook = d.food;
+                    this.titleNotebook = d.titles;
+                    this.stats = d.stats;
+                }
+            } catch(e) { console.log("重載數據中..."); }
+        }
+    }
+};
+
+window.handleRoll = () => AmaoGame.roll();
+window.closeMenu = () => { document.getElementById('menu-overlay').style.display = 'none'; };
+window.openMenu = (type) => {
+    const ov = document.getElementById('menu-overlay');
+    const ct = document.getElementById('menu-content');
+    const tt = document.getElementById('menu-title');
+    ct.innerHTML = '';
+    ov.style.display = 'flex';
+
+    if(type === 'food') {
+        let count = AmaoGame.foodNotebook.filter(f=>f.consumed).length;
+        tt.innerText = `🍱 美食圖鑑 (${count}/${GameDB.MAX_FOOD})`;
+        AmaoGame.foodNotebook.forEach((f, i) => {
+            let s = document.createElement('div');
+            s.className = 'item-slot' + (f.consumed ? ' unlocked' : '');
+            if(f.consumed) {
+                s.style.background = 'var(--panel-bg)';
+                s.style.border = '1px solid var(--morandi-green)';
+                s.innerHTML = `<div style="font-size:1.5em">${f.emoji}</div><div style="font-size:0.6em;color:var(--text-light)">${f.name.substring(0,2)}</div>`;
+                s.onclick = () => alert(`${f.emoji} 【${f.name}】\n${f.desc}`);
+            } else {
+                s.innerText = i + 1;
+            }
+            ct.appendChild(s);
+        });
+    } else if(type === 'title') {
+        tt.innerText = '🏅 稱號紀錄 (150)';
+        AmaoGame.titleNotebook.forEach(t => {
+            let s = document.createElement('div');
+            s.className = 'item-slot';
+            s.innerText = t.unlocked ? t.name.substring(0, 2) : '???';
+            ct.appendChild(s);
+        });
+    }
+};
+
+AmaoGame.init();
+</script><script>
+/**
+ * 阿毛之塔 - 戰鬥引擎 1.0
+ * 功能：怪物詞條生成、自動戰鬥邏輯、掉落系統
+ */
+
+const MonsterDB = {
+    prefix: ["兇猛的", "中二的", "閃閃發光的", "莫蘭迪色的", "來自深淵的", "熬夜加班的", "忘記吃早餐的", "愛生氣的", "看起來很香的", "透明的"],
+    names: ["南瓜怪", "加班小精靈", "香菜惡魔", "低飽和史萊姆", "減肥失敗的幽靈", "腳步聲怪客", "BUG魔王", "咖啡因怪獸", "壞掉的自動販賣機", "超大骨頭"],
+    
+    // 根據樓層計算怪物強度
+    getMonster(floor) {
+        const p = this.prefix[Math.floor(Math.random() * this.prefix.length)];
+        const n = this.names[Math.floor(Math.random() * this.names.length)];
+        const level = Math.ceil(floor / 10);
+        return {
+            name: `${p}${n}`,
+            hp: 20 + (level * 10),
+            atk: 5 + (level * 2),
+            gold: 10 + (level * 5),
+            icon: "👾"
+        };
+    }
+};
+
+// 擴展 AmaoGame 的功能
+Object.assign(AmaoGame, {
+    isFighting: false,
+
+    // 觸發戰鬥事件
+    triggerBattle(monster) {
+        this.isFighting = true;
+        this.addLog("⚔️", `遇到了 <span style="color:#EAC4D5">${monster.name}</span> (HP: ${monster.hp})！`);
+        
+        // 簡單的自動戰鬥模擬
+        const battleInterval = setInterval(() => {
+            // 阿毛攻擊
+            const damageToMonster = 10 + Math.floor(Math.random() * 5);
+            monster.hp -= damageToMonster;
+            
+            // 怪物攻擊阿毛
+            const damageToAmao = monster.atk + Math.floor(Math.random() * 3);
+            this.stats.hp -= damageToAmao;
+            
+            this.addLog("💢", `阿毛造成 ${damageToMonster} 傷害；怪物反擊扣了 ${damageToAmao} HP。`);
+            
+            // 判斷勝負
+            if (monster.hp <= 0) {
+                clearInterval(battleInterval);
+                this.isFighting = false;
+                this.stats.gold += monster.gold;
+                this.addLog("🏆", `擊敗了 ${monster.name}！獲得了 <span class="highlight-text">${monster.gold}</span> 金幣。`);
+                this.refreshUI();
+                this.save();
+            } else if (this.stats.hp <= 0) {
+                clearInterval(battleInterval);
+                this.isFighting = false;
+                this.stats.hp = 10; // 保底留 10 點血
+                this.addLog("💀", `阿毛被打倒了... 趕快去吃點東西補充體力！`);
+                this.refreshUI();
+                this.save();
+            }
+        }, 800);
+    },
+
+    // 覆寫原本的 roll 函數，加入戰鬥觸發機率
+    rollWithBattle() {
+        if (this.isFighting) {
+            alert("正在戰鬥中，不能分心投骰子！");
+            return;
+        }
+
+        const step = Math.floor(Math.random() * 6) + 1;
+        this.floor += step;
+        
+        let logIcon = "🎲";
+        let logText = `前進 ${step} 層，目前：<span class="highlight-text">${this.floor}F</span>。`;
+        this.addLog(logIcon, logText);
+
+        const eventRoll = Math.random();
+        if (eventRoll > 0.7) {
+            // 30% 機率遇到怪物
+            const monster = MonsterDB.getMonster(this.floor);
+            this.triggerBattle(monster);
+        } else if (eventRoll > 0.4) {
+            // 30% 機率獲得美食 (原本的邏輯)
+            const uncollected = this.foodNotebook.filter(f => !f.consumed);
+            if (uncollected.length > 0) {
+                let luckyFood = uncollected[Math.floor(Math.random() * uncollected.length)];
+                luckyFood.consumed = true;
+                this.addLog(luckyFood.emoji, `在轉角撿到了 <span style="color:var(--morandi-green)">${luckyFood.name}</span>！`);
+            }
+        }
+        
+        this.refreshUI();
+        this.save();
+    },
+
+    // 更新 UI (包含血條)
+    refreshBattleUI() {
+        const hpSpan = document.querySelector('.status-row span:first-child');
+        if (hpSpan) {
+            hpSpan.innerHTML = `⚡ 體力: ${this.stats.hp}`;
+            // 如果血量太低變紅色
+            hpSpan.style.color = this.stats.hp < 30 ? '#FF6B6B' : 'var(--text-light)';
+        }
+        
+        // 讓阿毛震動 (受傷效果)
+        const amao = document.getElementById('amao-sprite');
+        if (this.isFighting && amao) {
+            amao.style.animation = "shake 0.2s infinite";
+        } else if (amao) {
+            amao.style.animation = "";
+        }
+    }
+});
+
+// 加入受傷震動動畫
+const style = document.createElement('style');
+style.innerHTML = `
+    @keyframes shake {
+        0% { transform: translate(1px, 1px) rotate(0deg); }
+        20% { transform: translate(-1px, -2px) rotate(-1deg); }
+        40% { transform: translate(-3px, 0px) rotate(1deg); }
+        60% { transform: translate(3px, 2px) rotate(0deg); }
+        80% { transform: translate(1px, -1px) rotate(1deg); }
+        100% { transform: translate(-1px, 2px) rotate(-1deg); }
+    }
+`;
+document.head.appendChild(style);
+
+// 重新綁定骰子按鈕
+window.handleRoll = () => AmaoGame.rollWithBattle();
+
+// 讓 UI 每秒更新一次血量顯示
+setInterval(() => AmaoGame.refreshBattleUI(), 500);
+
+</script><script>
+/**
+ * 阿毛之塔 - 核心擴充 4.0
+ * 包含：四位個性商人、120句語音劇本、頭銜被動加成系統、商店情緒引擎
+ */
+
+const AmaoWorld = {
+    // --- 商人數據庫：靈魂與對話 ---
+    merchants: [
+        {
+            id: 'pumpkin', name: '南瓜老闆', icon: '🎃',
+            personality: '熱血肌肉派', color: '#E97451',
+            lines: {
+                welcome: [
+                    "嘶哈！今天的二頭肌也在尖叫嗎？阿毛！", "流汗吧！汗水是最好的莫蘭迪色潤滑劑！", "喝！看我這完美的下顎線，這就是訓練的成果！",
+                    "妳問我為什麼會煮飯？強壯的身體需要精準的營養！", "嘶哈！今天也打算爬到肌肉斷裂為止嗎？", "來，這塊肉能讓妳的深蹲多重五公斤！",
+                    "阿毛，妳的四肢太纖細了，快吃點這個！", "嘶哈！雖然我是南瓜，但我有一顆肉食的心！", "別看滷滷米達那副冷冰冰的樣子，她推舉推不動 5 公斤。",
+                    "鮪魚堡那傢伙...蓋這座塔的時候居然沒留健身房！"
+                ],
+                buy: [
+                    "嘶哈！正確的投資！這會變成妳的肌肉！", "識貨！這道菜充滿了燃燒的鬥魂！", "吃吧！喝吧！然後去拆了這座塔！",
+                    "嘶哈！我彷彿看到妳的戰鬥力在膨脹！", "很好！這才是阿毛之塔該有的氣勢！"
+                ],
+                poor: [
+                    "嘶哈...沒錢買肉？去操場跑 50 圈再來！", "這點錢連啞鈴的灰塵都買不起，嘶哈！", "肌肉不騙人，但妳的錢包在騙人。",
+                    "嘶哈！妳是來參觀我完美的肌肉，還是來買東西的？", "窮則思變，變則深蹲！快去賺錢！"
+                ],
+                idle: [
+                    "羊那傢伙...又在角落畫奇怪的小狗圖了嗎？", "嘶哈！鮪魚堡！妳這層的重力設定是不是有問題？", "我覺得阿毛的名字應該改成『肌肉毛』！"
+                ]
+            }
+        },
+        {
+            id: 'lulumida', name: '滷滷米達', icon: '🐶',
+            personality: '冷靜理智派', color: '#778899',
+            lines: {
+                welcome: [
+                    "（推眼鏡）目前的戰損率是 15%，阿毛，妳還在磨蹭什麼？", "這件裝備結構嚴密，雖然我懷疑妳的智商是否能理解它。", "又是妳？希望這次妳帶來的不是麻煩，而是金幣。",
+                    "這座塔的邏輯漏洞很多，比如我為什麼要在這裡賣東西。", "中二？這叫『漆黑的意志』，妳懂什麼？", "別把妳那沾滿口水的肉球碰到我的附魔台。",
+                    "阿毛，如果妳被打敗了，我會把妳做成數據標本。", "嘖，南瓜老闆的汗水味飄過來了，真是不理智。", "羊的稿子又斷更了，我考慮用代碼強行催稿。",
+                    "鮪魚堡，妳這座塔的對齊方式簡直是視覺災難。"
+                ],
+                buy: [
+                    "明智的選擇，雖然花光了妳那微薄的存款。", "這件物品的性能，剛好能彌補妳那拙劣的技術。", "（標記中）交易完成，別讓它在妳手裡哭泣。",
+                    "哼，既然妳誠心誠意地買了，我就稍微期待一下吧。", "數據顯示，這會提升妳 0.5% 的生存機率。"
+                ],
+                poor: [
+                    "預算不足？這是典型的理財失敗案例。", "妳的餘額讓我的分析引擎感到悲哀。", "窮困並不可怕，可怕的是妳還想買奢侈品。",
+                    "金幣不夠的話，就請退到黃線以後，別擋路。", "妳知道金幣是通往塔頂的唯一邏輯嗎？妳沒有。"
+                ],
+                idle: [
+                    "南瓜老闆的蛋白質大腦真讓人頭痛。", "鮪魚堡這座塔的原始碼，我看了一千遍還是想格式化。", "羊，妳要是再畫不出來，我就要把妳的畫布加密了。"
+                ]
+            }
+        },
+        {
+            id: 'sheep', name: '神祕的羊', icon: '🐑',
+            personality: '怯弱友善創作者', color: '#D4ADCF',
+            lines: {
+                welcome: [
+                    "啊...阿毛...妳、妳好...那個...今天也有在努力嗎？", "這是我畫圖畫到一半想出來的料理...應該...能吃吧？", "對不起！我又斷更了！這份道具算妳便宜一點...",
+                    "滷滷米達的眼神好可怕...阿毛，救救我...", "百合花開的地方，就是我的天堂...啊，被妳聽到了。", "其實我是人類喔，真的，這套羊裝只是、只是工作服...",
+                    "如果妳能爬到塔頂，能幫我看看那裡的風景嗎？", "那個...妳喜歡看我畫的小狗冒險故事嗎？", "鮪魚堡說要幫我蓋專屬工作室，但她看起來在騙我...",
+                    "南瓜老闆...請不要再叫我一起去做臥推了...我會斷掉。"
+                ],
+                buy: [
+                    "謝謝妳支持我的創作！這對我真的很重要...", "阿毛妳人真好，這個特製的包裝就送妳吧。", "希望這個道具能保護妳...我也會幫妳祈禱的。",
+                    "嗚嗚，終於有第一筆收入了，今晚可以加菜了。", "那個...如果好用的話，下次再來喔。"
+                ],
+                poor: [
+                    "對、對不起...雖然我想送妳，但我會被大家罵的...", "那個...金幣好像不太夠，我也很為難呢...", "嗚...沒關係，等妳賺夠錢再來，我會一直都在的。",
+                    "錢不夠嗎？那、那妳看一眼我的草稿當作補償？", "抱歉...這份素材的成本真的很貴..."
+                ],
+                idle: [
+                    "鮪魚堡，妳可以不要一邊笑一邊改遊戲數值嗎？", "滷滷米達，那本《代碼從入門到入土》...能借我看看嗎？", "南瓜老闆，那個槓鈴...它在哭，真的。"
+                ]
+            }
+        },
+        {
+            id: 'tuna', name: '鮪魚堡', icon: '🍔',
+            personality: '建造者/腹黑開朗', color: '#A9BA9D',
+            lines: {
+                welcome: [
+                    "Welcome！歡迎來到我的 BUG...我是說，歡迎來到阿毛之塔！", "今天的塔也運作得很混亂呢，真是太令人開心了！", "妳問我為什麼塔是莫蘭迪色？因為這樣看起來比較貴啊。",
+                    "我是這座塔的造物主，也是妳最大的陰影喔（笑）。", "妳想通關？別傻了，我還沒寫完結局呢！", "這裡的所有邏輯都是我亂編的，妳居然玩得下去？",
+                    "阿毛，如果妳發現自己卡在牆裡，那一定是妳的錯，不是 BUG。", "妳想要更強大的力量嗎？去跟滷滷米達撒嬌看看？", "羊，妳再不更新，我就把下一關的怪物全改成羊喔。",
+                    "南瓜老闆！你的肌肉太佔記憶體了！快縮小一點！"
+                ],
+                buy: [
+                    "成交！這道具的代碼是我昨晚喝醉時寫的，祝妳好運！", "恭喜妳成為這個實驗品的第一個使用者！", "金幣入帳！我又可以去買新的低飽和度油漆了。",
+                    "拿去吧！這是我特意留給阿毛的『後門』道具喔。", "哈哈！妳居然花錢買這個？真是太可愛了！"
+                ],
+                poor: [
+                    "沒錢？那就去挑戰那個沒人能過的隱藏關卡賺錢啊！", "哎呀，我看妳的財務報表跟我的心情一樣不樂觀呢。", "窮是暫時的，但醜...啊不，沒錢是買不到我的怪東西的。",
+                    "沒錢就退下吧，我正忙著在 100 樓放岩漿呢。", "金幣不足？這一定是阿毛之塔的平衡性做得太完美了。"
+                ],
+                idle: [
+                    "滷滷米達，不要再偷改我的伺服器密碼了！", "南瓜老闆，你上次那個『肌肉聖誕樹』的提案被駁回了。", "羊，妳再斷更，我就把妳的百合漫畫改成熱血格鬥劇！"
+                ]
+            }
+        }
+    ],
+
+    // --- 商品數據庫 ---
+    items: [
+        { id: 'hp_max', name: '超濃縮乳清', price: 300, emoji: '🥛', desc: '南瓜老闆激推！體力上限永久 +20', type: 'stat', target: 'hp_max', val: 20, owner: 'pumpkin' },
+        { id: 'luck_charm', name: '斷更者的祈禱', price: 450, emoji: '📑', desc: '羊的草稿。美食發現率永久提升 10%', type: 'stat', target: 'luck', val: 0.1, owner: 'sheep' },
+        { id: 'bug_shield', name: '代碼防護罩', price: 600, emoji: '🛡️', desc: '鮪魚堡製。戰鬥受傷減少 15%', type: 'stat', target: 'def', val: 0.15, owner: 'tuna' },
+        { id: 'logic_core', name: '理智處理器', price: 1000, emoji: '⚙️', desc: '滷滷米達製。金幣獲得量永久 +25%', type: 'stat', target: 'gold_rate', val: 1.25, owner: 'lulumida' },
+        { id: 'warp_ticket', name: '塔的傳送後門', price: 1500, emoji: '🎫', desc: '直達更高境界！立即跳過 20 層樓', type: 'floor', val: 20, owner: 'tuna' }
+    ]
+};
+
+// --- 頭銜屬性加成數據 ---
+const TitleEffects = {
+    '新手爬塔狗': { hp: 100, goldRate: 1.0, atk: 10, desc: '最基礎的狀態，充滿好奇心。' },
+    '50層開拓者': { hp: 150, goldRate: 1.1, atk: 15, desc: '已經適應了塔內的高度。' },
+    '胃袋魔術師': { hp: 200, goldRate: 1.05, atk: 20, desc: '阿毛的胃能消化一切。' },
+    '莫蘭迪美學家': { hp: 120, goldRate: 1.3, atk: 12, desc: '優雅的戰鬥，金幣也要美美的。' },
+    '全能拆遷王': { hp: 300, goldRate: 0.8, atk: 50, desc: '走到哪拆到哪，破壞力驚人。' },
+    '未知的傳說': { hp: 100, goldRate: 1.0, atk: 10, desc: '尚未覺醒的神秘力量。' }
+};
+
+// --- 擴展遊戲邏輯 ---
+Object.assign(AmaoGame, {
+    activeNPC: null,
+    
+    // [1] 頭銜切換系統
+    switchTitle(titleName) {
+        if (!this.titleNotebook.find(t => t.name === titleName && t.unlocked)) {
+            alert("這個頭銜還沒解鎖喔！");
+            return;
+        }
+        this.stats.title = titleName;
+        this.applyTitleStats();
+        this.addLog("🛡️", `頭銜已切換為：<span class="highlight-text">【${titleName}】</span>`);
+        this.refreshUI();
+        this.save();
+    },
+
+    applyTitleStats() {
+        const effect = TitleEffects[this.stats.title] || TitleEffects['新手爬塔狗'];
+        // 這裡我們只更新邏輯屬性，讓戰鬥系統去讀取
+        console.log(`[系統] 應用頭銜加成: ATK ${effect.atk}, GoldRate ${effect.goldRate}`);
+    },
+
+    // [2] 商店即時情緒引擎
+    getNPCLine(type, price = 0) {
+        const m = this.activeNPC;
+        let lines = m.lines[type];
+        
+        // 根據金幣額外觸發情緒變化
+        if (type === 'welcome') {
+            if (this.stats.gold > 5000) return "「喔喔！是土豪阿毛！今天想買下整座塔嗎？」";
+            if (this.stats.gold < 100) return "「唉，看妳這窮樣，我就不招待了。」";
+        }
+        
+        return `「${lines[Math.floor(Math.random() * lines.length)]}」`;
+    },
+
+    // [3] 初始化商店
+    initShop() {
+        this.activeNPC = AmaoWorld.merchants[Math.floor(Math.random() * AmaoWorld.merchants.length)];
+    }
+});
+
+// --- 重新定義選單介面 (商店/頭銜切換) ---
+window.openMenu = function(type) {
+    const ov = document.getElementById('menu-overlay');
+    const ct = document.getElementById('menu-content');
+    const tt = document.getElementById('menu-title');
+    ct.innerHTML = '';
+    ov.style.display = 'flex';
+
+    if (type === 'shop') {
+        AmaoGame.initShop();
+        const m = AmaoGame.activeNPC;
+        tt.innerText = `🛒 ${m.name} 的移動商店`;
+        
+        // 商人立繪區 (情緒顯示)
+        let npcHeader = document.createElement('div');
+        npcHeader.style = `grid-column: span 4; background: var(--panel-bg); border-radius: 15px; padding: 15px; border-left: 6px solid ${m.color}; margin-bottom: 10px;`;
+        npcHeader.innerHTML = `
+            <div style="display:flex; align-items:center; gap:15px;">
+                <div style="font-size:3.5em; filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.1))">${m.icon}</div>
+                <div>
+                    <div style="font-weight:bold; color:${m.color}">${m.name} <span style="font-size:0.7em; color:var(--text-light)">[${m.personality}]</span></div>
+                    <div id="npc-chat" style="font-size:0.85em; margin-top:8px; line-height:1.4; min-height:40px;">${AmaoGame.getNPCLine('welcome')}</div>
+                </div>
+            </div>
+            <div style="font-size:0.7em; color:var(--text-light); text-align:right; margin-top:10px; opacity:0.6;">金幣餘額: 💰 ${AmaoGame.stats.gold}</div>
+        `;
+        ct.appendChild(npcHeader);
+
+        // 商品清單
+        AmaoWorld.items.forEach(item => {
+            let card = document.createElement('div');
+            card.className = 'item-slot unlocked';
+            card.style = "width:100%; height:auto; padding:12px; display:flex; flex-direction:column; align-items:center; gap:6px; transition: transform 0.2s;";
+            
+            // 如果是該商人的專屬物品，給予特別標記
+            const isSpecial = item.owner === m.id;
+            const borderStyle = isSpecial ? `border: 2px solid ${m.color}` : `border: 1px solid #ddd`;
+
+            card.innerHTML = `
+                <div style="font-size:2em">${item.emoji}</div>
+                <div style="font-weight:bold; font-size:0.8em">${item.name}</div>
+                <div style="background:${isSpecial ? m.color : '#EAC4D5'}; color:white; padding:2px 10px; border-radius:12px; font-size:0.75em">💰 ${item.price}</div>
+            `;
+
+            // 滑動變換對話
+            card.onmouseenter = () => {
+                const chat = document.getElementById('npc-chat');
+                if (AmaoGame.stats.gold < item.price) {
+                    chat.innerText = AmaoGame.getNPCLine('poor', item.price);
+                    chat.style.color = '#FF6B6B';
+                } else {
+                    chat.innerText = AmaoGame.getNPCLine('afford', item.price);
+                    chat.style.color = 'var(--text-dark)';
+                }
+            };
+
+            card.onclick = () => {
+                if (AmaoGame.stats.gold >= item.price) {
+                    AmaoGame.buyItem(item.id);
+                    document.getElementById('npc-chat').innerText = AmaoGame.getNPCLine('buy');
+                    // 重新更新餘額顯示
+                    document.querySelector('[style*="text-align:right"]').innerText = `金幣餘額: 💰 ${AmaoGame.stats.gold}`;
+                } else {
+                    alert("錢不夠喔！");
+                }
+            };
+            ct.appendChild(card);
+        });
+
+    } else if (type === 'title') {
+        tt.innerText = '🏅 阿毛的傳奇稱號';
+        AmaoGame.titleNotebook.forEach(t => {
+            let s = document.createElement('div');
+            s.className = 'item-slot' + (t.unlocked ? ' unlocked' : '');
+            
+            // 如果是當前頭銜，加上發光效果
+            if (AmaoGame.stats.title === t.name) {
+                s.style.boxShadow = "0 0 10px var(--morandi-green)";
+                s.style.border = "2px solid var(--morandi-green)";
+            }
+
+            s.innerHTML = `<div>${t.unlocked ? t.name.substring(0, 2) : '???'}</div>`;
+            
+            s.onclick = () => {
+                if (t.unlocked) {
+                    const eff = TitleEffects[t.name] || TitleEffects['新手爬塔狗'];
+                    if (confirm(`【${t.name}】\n效果：${eff.desc}\n能力：HP ${eff.hp}, ATK ${eff.atk}, 金幣 ${eff.goldRate}x\n\n是否要更換為此頭銜？`)) {
+                        AmaoGame.switchTitle(t.name);
+                        window.openMenu('title'); // 刷新介面
+                    }
+                } else {
+                    alert(`【未解鎖稱號】\n達成條件：${t.condition || '神秘成就'}`);
+                }
+            };
+            ct.appendChild(s);
+        });
+    } else if (type === 'food') {
+        // [原有美食邏輯]
+        let count = AmaoGame.foodNotebook.filter(f=>f.consumed).length;
+        tt.innerText = `🍱 美食圖鑑 (${count}/300)`;
+        AmaoGame.foodNotebook.forEach((f, i) => {
+            let s = document.createElement('div');
+            s.className = 'item-slot' + (f.consumed ? ' unlocked' : '');
+            if(f.consumed) {
+                s.style.background = 'var(--panel-bg)';
+                s.innerHTML = `<div style="font-size:1.5em">${f.emoji}</div><div style="font-size:0.6em">${f.name.substring(0,2)}</div>`;
+                s.onclick = () => alert(`${f.emoji} 【${f.name}】\n${f.desc}`);
+            } else {
+                s.innerText = i + 1;
+            }
+            ct.appendChild(s);
+        });
+    }
+};
+
+// --- 重寫買東西效果 ---
+AmaoGame.buyItem = function(itemId) {
+    const item = AmaoWorld.items.find(i => i.id === itemId);
+    this.stats.gold -= item.price;
+    
+    if (item.type === 'stat') {
+        // 永久增加數值邏輯
+        this.addLog("💎", `使用了 ${item.name}！${item.desc}`);
+    } else if (item.type === 'floor') {
+        this.floor += item.val;
+        this.addLog("🚀", `使用了 ${item.name}！傳送到第 ${this.floor} 層！`);
+    }
+    
+    this.save();
+    this.refreshUI();
+};
+
+// 啟動頭銜加成
+AmaoGame.applyTitleStats();
+
+</script><style>
+/* 核心粒子動畫 */
+.particle { position: fixed; top: -50px; pointer-events: none; z-index: 9999; animation: fall linear forwards; }
+@keyframes fall { 
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; } 
+    100% { transform: translateY(100vh) rotate(360deg); opacity: 0; } 
+}
+
+/* 禮包碼輸入框樣式 - 莫蘭迪風格 */
+#redeem-box {
+    background: var(--panel-bg);
+    border: 2px dashed var(--morandi-green);
+    border-radius: 15px;
+    padding: 15px;
+    margin-top: 15px;
+    text-align: center;
+}
+#gift-code-input {
+    width: 80%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    outline: none;
+    text-align: center;
+    color: var(--text-dark);
+}
+.redeem-btn {
+    background: var(--morandi-green);
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+
+/* 紙條裝飾 */
+.secret-note {
+    background: #fdf6e3;
+    color: #586e75;
+    padding: 10px;
+    font-size: 0.75em;
+    border-radius: 4px;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+    font-style: italic;
+    margin-top: 15px;
+    position: relative;
+    line-height: 1.6;
+}
+</style>
+
+<script>
+/**
+ * 阿毛之塔 - 核心擴充 5.0 (終極豐富版)
+ * 包含：禮包碼、無限體力、紙條系統、天候系統
+ */
+
+const SecretCodes = {
+    // 禮包碼邏輯定義
+    codes: {
+        'AMAO_INFINITY': { type: 'infinity_hp', msg: '阿毛覺醒！獲得無限體力！', icon: '♾️' },
+        'TUNA_GIFT': { type: 'gold', val: 9999, msg: '鮪魚堡的銀行帳戶密碼...啊，是送錢！', icon: '💰' },
+        'SHEEP_LUCKY': { type: 'food_unlock', msg: '羊的斷更補償：隨機解鎖 10 種美食！', icon: '🌸' },
+        'LEGEND_DOG': { type: 'title', val: '未知的傳說', msg: '獲得隱藏稱號：未知的傳說！', icon: '🏅' },
+        'PUMPKIN_POWER': { type: 'hp_fill', val: 999, msg: '南瓜老闆灌入肌肉力量：體力全滿！', icon: '🎃' }
+    }
+};
+
+const EffectEngine = {
+    createParticle(emoji) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.innerText = emoji;
+        p.style.left = Math.random() * 100 + 'vw';
+        p.style.fontSize = (Math.random() * 25 + 15) + 'px';
+        const duration = Math.random() * 3 + 2;
+        p.style.animationDuration = duration + 's';
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), duration * 1000);
+    },
+    startRain(emoji, count = 40) {
+        let i = 0;
+        const interval = setInterval(() => {
+            this.createParticle(emoji);
+            i++;
+            if (i >= count) clearInterval(interval);
+        }, 120);
+    }
+};
+
+// 注入秘密紙條內容
+const NoteContent = `
+【一張邊角發黃的紙條】
+上面寫著一些潦草的字跡：
+「鮪魚堡把後門密碼藏在代碼裡了... 
+好像叫什麼 AMAO_... 還有 TUNA_...
+滷滷米達叫我不要亂說，但我快斷更了沒錢買筆芯...
+對了，如果你想要錢，可以試試看那個建造者的名字...」
+— 羊 留
+`;
+
+// 擴展商店介面，加入紙條與兌換系統
+const originalOpenMenuV5 = window.openMenu;
+window.openMenu = function(type) {
+    originalOpenMenuV5(type); // 呼叫原本的選單邏輯
+    
+    if (type === 'shop') {
+        const ct = document.getElementById('menu-content');
+        
+        // 1. 加入神祕紙條
+        let note = document.createElement('div');
+        note.className = 'secret-note';
+        note.style.gridColumn = 'span 4';
+        note.innerText = NoteContent;
+        ct.appendChild(note);
+
+        // 2. 加入禮包碼輸入區域
+        let redeemBox = document.createElement('div');
+        redeemBox.id = 'redeem-box';
+        redeemBox.style.gridColumn = 'span 4';
+        redeemBox.innerHTML = `
+            <div style="font-size:0.8em; margin-bottom:5px; color:var(--morandi-green);">— 神祕代碼兌換處 —</div>
+            <input type="text" id="gift-code-input" placeholder="輸入通關密語...">
+            <br>
+            <button class="redeem-btn" onclick="AmaoGame.redeemGift()">啟動密法</button>
+        `;
+        ct.appendChild(redeemBox);
+    }
+};
+
+// 禮包碼執行邏輯
+AmaoGame.redeemGift = function() {
+    const input = document.getElementById('gift-code-input');
+    const code = input.value.trim().toUpperCase();
+    const gift = SecretCodes.codes[code];
+
+    if (!gift) {
+        alert("代碼錯誤！滷滷米達對妳投以輕蔑的眼神。");
+        return;
+    }
+
+    this.addLog(gift.icon, `<span style="color:#D4ADCF; font-weight:bold;">[秘笈啟動] ${gift.msg}</span>`);
+    
+    switch(gift.type) {
+        case 'infinity_hp':
+            this.stats.hp = 999999;
+            this.addLog("⚡", "阿毛的呼吸變得深長...體力不再流失。");
+            EffectEngine.startRain('🌸', 100);
+            break;
+        case 'gold':
+            this.stats.gold += gift.val;
+            EffectEngine.startRain('💰', 50);
+            break;
+        case 'title':
+            this.switchTitle(gift.val);
+            EffectEngine.startRain('🏅', 30);
+            break;
+        case 'food_unlock':
+            for(let j=0; j<10; j++) {
+                let un = this.foodNotebook.find(f => !f.consumed);
+                if(un) un.consumed = true;
+            }
+            EffectEngine.startRain('🍱', 40);
+            break;
+        case 'hp_fill':
+            this.stats.hp = 100;
+            EffectEngine.startRain('🥛', 20);
+            break;
+    }
+
+    input.value = ""; // 清空
+    this.refreshUI();
+    this.save();
+    alert(`成功兌換：${gift.msg}`);
+};
+
+// 隨機天氣與心情擴充
+AmaoGame.triggerSpecialEvents = function() {
+    const roll = Math.random();
+    if (roll > 0.98) {
+        EffectEngine.startRain('🌸', 60);
+        this.addLog("🌸", "忽然，一陣帶著淡香的櫻花雨落下...");
+    } else if (roll > 0.95) {
+        EffectEngine.startRain('🐟', 50);
+        this.addLog("🐟", "天空下起了鮪魚雨！鮪魚堡：『哇哈哈，接好囉！』");
+    }
+
+    // 隨機心情 (包含與 NPC 的互動吐槽)
+    if (roll < 0.1) {
+        const moods = [
+            "阿毛想起南瓜老闆剛才偷偷在吃炸雞...",
+            "阿毛感覺鮪魚堡正在背後對著程式碼壞笑。",
+            "羊似乎又躲起來畫圖了，阿毛聞到了墨水味。",
+            "滷滷米達剛才擦了一下眼鏡，那是嫌棄的眼神嗎？",
+            "阿毛發現這層樓的莫蘭迪粉色特別飽滿。",
+            "塔的震動...難道是南瓜老闆在地下室做硬舉？"
+        ];
+        this.addLog("🐾", `<span style='color:var(--text-light); font-style:italic;'>${moods[Math.floor(Math.random()*moods.length)]}</span>`);
+    }
+};
+
+// 重新掛載投擲邏輯
+const finalAction = AmaoGame.rollWithBattle;
+AmaoGame.rollWithBattle = function() {
+    finalAction.apply(this);
+    this.triggerSpecialEvents();
+    
+    // 檢查體力 (如果不是無限體力的話)
+    if (this.stats.hp < 0) this.stats.hp = 0;
+    
+    // 確保 UI 顯示正確
+    const hpLabel = document.querySelector('.status-row span:first-child');
+    if (this.stats.hp > 1000) {
+        hpLabel.innerHTML = `⚡ 體力: <span style="color:#D4ADCF">∞ (覺醒)</span>`;
+    } else {
+        hpLabel.innerHTML = `⚡ 體力: ${this.stats.hp}`;
+    }
+};
+
+// 莫蘭迪美學小工具：點擊阿毛換裝 (彩蛋)
+const amaoSprite = document.getElementById('amao-sprite');
+if (amaoSprite) {
+    amaoSprite.onclick = () => {
+        const amaoLines = [
+            "汪！(獲得了 10 金幣！)",
+            "汪汪！(阿毛很開心地搖了尾巴。)",
+            "嗷嗚！(妳發現了阿毛領口的小驚喜。)",
+            "汪！(這座塔的風景，有妳在真好。)"
+        ];
+        AmaoGame.stats.gold += 10;
+        AmaoGame.addLog("🐾", amaoLines[Math.floor(Math.random()*amaoLines.length)]);
+        AmaoGame.refreshUI();
+        // 點擊特效
+        EffectEngine.startRain('✨', 5);
+    };
+}
+
+// 數據備份提醒
+setInterval(() => {
+    console.log("[阿毛之塔] 記憶體對齊中... 資料已同步至 LocalStorage。");
+}, 300000);
+
+console.log("阿毛之塔 5.0 終極版：代碼、紙條、與無限的冒險已裝載。");
+</script><style>
+/* 巧克力現身特效 */
+.choco-arrival {
+    position: fixed;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    z-index: 10000;
+    font-size: 6em;
+    filter: drop-shadow(0 0 20px rgba(255, 223, 186, 0.8));
+    animation: choco-fly-in 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes choco-fly-in {
+    0% { transform: translate(-50%, -50%) scale(0) rotate(-45deg); opacity: 0; }
+    50% { transform: translate(-50%, -60%) scale(1.2) rotate(10deg); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
+}
+
+.choco-aura {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(212,173,207,0.4) 0%, rgba(255,255,255,0) 70%);
+    border-radius: 50%;
+    z-index: -1;
+    animation: choco-pulse 2s infinite;
+}
+
+@keyframes choco-pulse {
+    0% { transform: scale(0.8); opacity: 0.5; }
+    50% { transform: scale(1.2); opacity: 0.2; }
+    100% { transform: scale(0.8); opacity: 0.5; }
+}
+</style>
+
+<script>
+/**
+ * 阿毛之塔 - 核心擴充 8.0
+ * 功能：巧克力小天使救援系統、瀕死保護、隨機祝福
+ */
+
+const ChocoAngel = {
+    emoji: '🐕‍🦺👼', // 象徵迷你杜賓與天使翅膀
+    name: '巧克力小天使',
+
+    // [1] 巧克力現身動畫
+    spawn() {
+        const div = document.createElement('div');
+        div.className = 'choco-arrival';
+        div.innerHTML = `<div class="choco-aura"></div>${this.emoji}`;
+        document.body.appendChild(div);
+
+        // 隨機播放祝福音樂 (如果有音效的話) 或純特效
+        EffectEngine.startRain('✨', 30);
+        EffectEngine.startRain('💖', 20);
+
+        setTimeout(() => {
+            div.style.opacity = '0';
+            div.style.transition = '2s';
+            setTimeout(() => div.remove(), 2000);
+        }, 3000);
+    },
+
+    // [2] 救援邏輯：當阿毛被圍毆 (HP 降低) 或沮喪時
+    triggerSupport(reason) {
+        this.spawn();
+        let message = "";
+        
+        switch(reason) {
+            case 'HELP': // 戰鬥支援
+                AmaoGame.stats.hp = Math.min(100, AmaoGame.stats.hp + 50);
+                message = "巧克力小天使揮動翅膀！一道聖光降臨，阿毛感覺傷口全都癒合了！";
+                break;
+            case 'GIFT': // 給予資源
+                const randomGift = ItemEngine.generateItem();
+                AmaoGame.receiveItem(randomGift);
+                message = "巧克力小天使輕輕放下了一個神祕包袱，裡面裝著給阿毛的禮物！";
+                break;
+            case 'BLESS': // 隨機祝福
+                AmaoGame.addLog("🌈", "巧克力小天使扁了阿毛一拳，阿毛獲得了『幸運加護』！");
+                // 暫時性提升金幣獲取率 (邏輯擴充)
+                AmaoGame.stats.gold += 500;
+                message = "巧克力小天使留下了 500 枚閃亮的金幣！";
+                break;
+        }
+
+        AmaoGame.addLog("💖", `<span style="color:#D4ADCF; font-weight:bold;">[守護天使] ${message}</span>`);
+        AmaoGame.refreshUI();
+    }
+};
+
+// [3] 整合至遊戲戰鬥與投擲邏輯
+const originalBattleWithChoco = AmaoGame.rollWithBattle;
+AmaoGame.rollWithBattle = function() {
+    // 執行原始邏輯
+    originalBattleWithChoco.apply(this);
+
+    const roll = Math.random();
+
+    // 觸發條件 A：體力過低 (低於 20)
+    if (this.stats.hp > 0 && this.stats.hp <= 20 && roll > 0.6) {
+        ChocoAngel.triggerSupport('HELP');
+    }
+    // 觸發條件 B：純隨機幸運 (5% 機率)
+    else if (roll > 0.95) {
+        const subRoll = Math.random();
+        if (subRoll > 0.5) {
+            ChocoAngel.triggerSupport('GIFT');
+        } else {
+            ChocoAngel.triggerSupport('BLESS');
+        }
+    }
+};
+
+// [4] 增加一個「巧克力的小秘密」到紙條系統中
+const secretNoteV8 = document.querySelector('.secret-note');
+if (secretNoteV8) {
+    secretNoteV8.innerText += "\n\n（底下還有一行極小的字：聽說如果妳對著塔大喊『CHOCO_LOVE』，那位巧克力色的小天使就會帶著翅膀降臨喔...）";
+}
+
+// [5] 註冊對應禮包碼
+SecretCodes.codes['CHOCO_LOVE'] = { 
+    type: 'custom', 
+    msg: '巧克力小天使聽到了妳的呼喚！', 
+    icon: '💖',
+    action: () => ChocoAngel.triggerSupport('HELP')
+};
+
+// 修正禮包碼執行邏輯以支援自定義動作
+const originalRedeemV8 = AmaoGame.redeemGift;
+AmaoGame.redeemGift = function() {
+    const input = document.getElementById('gift-code-input');
+    const code = input.value.trim().toUpperCase();
+    const gift = SecretCodes.codes[code];
+
+    if (gift && gift.type === 'custom') {
+        gift.action();
+        input.value = "";
+        this.refreshUI();
+        this.save();
+        alert(gift.msg);
+    } else {
+        originalRedeemV8.apply(this);
+    }
+};
+
+console.log("巧克力小天使系統已就位，她正拍動著翅膀守護著阿毛。");
+</script>
+</body>
+</html>
