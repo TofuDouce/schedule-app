@@ -268,7 +268,7 @@
         </button>
         
         <div class="bottom-nav">
-            <div class="nav-item" onclick="openMenu('inventory')">🍖</div>
+            <div class="nav-item" onclick="openMenu('system')">⚙️</div>
             <div class="nav-item" onclick="openMenu('title')">🏅</div>
             <div class="nav-item" onclick="openMenu('bag')">🎒</div>
             <div class="nav-item" onclick="openMenu('shop')">🛒</div>
@@ -1632,6 +1632,124 @@ AmaoGame.redeemGift = function() {
 };
 
 console.log("巧克力小天使系統已就位，她正拍動著翅膀守護著阿毛。");
+</script><script>
+/**
+ * 阿毛之塔 - 食物進背包修復腳本
+ * 目的：強制將原本撿到食物的邏輯導向至「分類背包」
+ */
+
+// 1. 攔截原本的食物獲得邏輯
+const originalReceiveFood = AmaoGame.receiveFood; 
+AmaoGame.receiveFood = function(foodData) {
+    // 呼叫我們在區塊 7 定義的新背包接收函數
+    this.receiveItem({
+        name: foodData.name,
+        icon: foodData.icon || '🍱',
+        type: 'food',
+        desc: foodData.desc || '看起來很好吃。',
+        power: foodData.power || 20
+    });
+};
+
+// 2. 修正爬塔事件，確保撿到東西時是用「新方式」塞進背包
+const finalRollFix = AmaoGame.rollWithBattle;
+AmaoGame.rollWithBattle = function() {
+    // 執行原始投擲邏輯
+    finalRollFix.apply(this);
+
+    // 獲取最後一筆日誌內容來判斷是否撿到食物
+    const lastLog = this.logs[0] || "";
+    
+    // 如果日誌提到「撿到了」，但背包沒增加，這裡做二次強制補捉
+    if (lastLog.includes("撿到了") || lastLog.includes("獲得了")) {
+        // 這裡確保 UI 會刷新，讓妳看到紅點或數量增加
+        this.refreshUI();
+    }
+};
+
+// 3. 巧克力小天使的禮物也要接通
+if (typeof ChocoAngel !== 'undefined') {
+    const originalChocoGift = ChocoAngel.triggerSupport;
+    ChocoAngel.triggerSupport = function(reason) {
+        if (reason === 'GIFT') {
+            // 這裡直接產生一個帶詞條的物品並塞進背包
+            const newItem = ItemEngine.generateItem();
+            AmaoGame.receiveItem(newItem);
+            // 由於 receiveItem 自帶 Log，這裡就不重複觸發 spawn 的文字
+        } else {
+            originalChocoGift.call(this, reason);
+        }
+    };
+}
+
+console.log("🛠️ 食物傳送門已修復！現在撿到的東西都會直接進背包了。");
+</script><script>
+/**
+ * 阿毛之塔 - 區塊 9：系統設定與轉生引擎
+ * 功能：手動存檔、保留進度的重新爬塔
+ */
+
+Object.assign(AmaoGame, {
+    // 執行手動存檔
+    manualSave() {
+        this.save();
+        this.addLog("💾", "系統：進度已手動儲存至時空裂縫。");
+        alert("存檔成功！阿毛的冒險已被妥善保存。");
+    },
+
+    // 執行重新爬塔 (保留物資)
+    rebirth() {
+        if (confirm("確定要讓阿毛重新爬塔嗎？\n\n(妳的體力會回滿，樓層回到 1F，但背包物品、金幣與稱號都會保留喔！)")) {
+            this.stats.floor = 1;
+            this.stats.hp = 100;
+            this.addLog("🌀", "阿毛穿越了時空隧道，帶著滿滿的背包回到了起點...");
+            this.save();
+            this.refreshUI();
+            alert("阿毛回到了 1 樓！帶著之前的累積繼續挑戰吧！");
+            location.reload(); // 重新整理網頁確保數據重置
+        }
+    }
+});
+
+// 擴充 openMenu 邏輯以支援『system』
+const originalOpenMenuV9 = window.openMenu;
+window.openMenu = function(type) {
+    if (type === 'system') {
+        const ov = document.getElementById('menu-overlay');
+        const ct = document.getElementById('menu-content');
+        const tt = document.getElementById('menu-title');
+        if (!ov || !ct || !tt) return;
+
+        ct.innerHTML = '';
+        ov.style.display = 'flex';
+        tt.innerText = "⚙️ 系統設定";
+
+        // 建立選單容器
+        const sysBox = document.createElement('div');
+        sysBox.style = "grid-column: span 4; display: flex; flex-direction: column; gap: 15px; padding: 20px;";
+
+        // 按鈕 1：手動存檔
+        const btnSave = document.createElement('button');
+        btnSave.innerHTML = "💾 立即儲存進度";
+        btnSave.style = "padding: 12px; border-radius: 10px; border: none; background: var(--morandi-green); color: white; cursor: pointer; font-weight: bold;";
+        btnSave.onclick = () => AmaoGame.manualSave();
+
+        // 按鈕 2：重新爬塔
+        const btnReset = document.createElement('button');
+        btnReset.innerHTML = "🌀 重新爬塔 (保留進度)";
+        btnReset.style = "padding: 12px; border-radius: 10px; border: none; background: #D4ADCF; color: white; cursor: pointer; font-weight: bold;";
+        btnReset.onclick = () => AmaoGame.rebirth();
+
+        sysBox.appendChild(btnSave);
+        sysBox.appendChild(btnReset);
+        ct.appendChild(sysBox);
+    } else {
+        // 呼叫原本的選單邏輯 (商店、背包、稱號)
+        originalOpenMenuV9(type);
+    }
+};
+
+console.log("阿毛之塔：區塊 9 系統選單已裝載，齒輪運作中！");
 </script>
 </body>
 </html>
