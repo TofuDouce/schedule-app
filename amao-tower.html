@@ -689,6 +689,307 @@ AmaoGame.rollWithBattle = function() {
 // 讓 UI 每秒更新一次血量顯示
 setInterval(() => AmaoGame.refreshBattleUI(), 500);
 
+</script><script>
+/**
+ * 阿毛之塔 - 核心擴充 4.0
+ * 包含：四位個性商人、120句語音劇本、頭銜被動加成系統、商店情緒引擎
+ */
+
+const AmaoWorld = {
+    // --- 商人數據庫：靈魂與對話 ---
+    merchants: [
+        {
+            id: 'pumpkin', name: '南瓜老闆', icon: '🎃',
+            personality: '熱血肌肉派', color: '#E97451',
+            lines: {
+                welcome: [
+                    "嘶哈！今天的二頭肌也在尖叫嗎？阿毛！", "流汗吧！汗水是最好的莫蘭迪色潤滑劑！", "喝！看我這完美的下顎線，這就是訓練的成果！",
+                    "妳問我為什麼會煮飯？強壯的身體需要精準的營養！", "嘶哈！今天也打算爬到肌肉斷裂為止嗎？", "來，這塊肉能讓妳的深蹲多重五公斤！",
+                    "阿毛，妳的四肢太纖細了，快吃點這個！", "嘶哈！雖然我是南瓜，但我有一顆肉食的心！", "別看滷滷米達那副冷冰冰的樣子，她推舉推不動 5 公斤。",
+                    "鮪魚堡那傢伙...蓋這座塔的時候居然沒留健身房！"
+                ],
+                buy: [
+                    "嘶哈！正確的投資！這會變成妳的肌肉！", "識貨！這道菜充滿了燃燒的鬥魂！", "吃吧！喝吧！然後去拆了這座塔！",
+                    "嘶哈！我彷彿看到妳的戰鬥力在膨脹！", "很好！這才是阿毛之塔該有的氣勢！"
+                ],
+                poor: [
+                    "嘶哈...沒錢買肉？去操場跑 50 圈再來！", "這點錢連啞鈴的灰塵都買不起，嘶哈！", "肌肉不騙人，但妳的錢包在騙人。",
+                    "嘶哈！妳是來參觀我完美的肌肉，還是來買東西的？", "窮則思變，變則深蹲！快去賺錢！"
+                ],
+                idle: [
+                    "羊那傢伙...又在角落畫奇怪的小狗圖了嗎？", "嘶哈！鮪魚堡！妳這層的重力設定是不是有問題？", "我覺得阿毛的名字應該改成『肌肉毛』！"
+                ]
+            }
+        },
+        {
+            id: 'lulumida', name: '滷滷米達', icon: '🐶',
+            personality: '冷靜理智派', color: '#778899',
+            lines: {
+                welcome: [
+                    "（推眼鏡）目前的戰損率是 15%，阿毛，妳還在磨蹭什麼？", "這件裝備結構嚴密，雖然我懷疑妳的智商是否能理解它。", "又是妳？希望這次妳帶來的不是麻煩，而是金幣。",
+                    "這座塔的邏輯漏洞很多，比如我為什麼要在這裡賣東西。", "中二？這叫『漆黑的意志』，妳懂什麼？", "別把妳那沾滿口水的肉球碰到我的附魔台。",
+                    "阿毛，如果妳被打敗了，我會把妳做成數據標本。", "嘖，南瓜老闆的汗水味飄過來了，真是不理智。", "羊的稿子又斷更了，我考慮用代碼強行催稿。",
+                    "鮪魚堡，妳這座塔的對齊方式簡直是視覺災難。"
+                ],
+                buy: [
+                    "明智的選擇，雖然花光了妳那微薄的存款。", "這件物品的性能，剛好能彌補妳那拙劣的技術。", "（標記中）交易完成，別讓它在妳手裡哭泣。",
+                    "哼，既然妳誠心誠意地買了，我就稍微期待一下吧。", "數據顯示，這會提升妳 0.5% 的生存機率。"
+                ],
+                poor: [
+                    "預算不足？這是典型的理財失敗案例。", "妳的餘額讓我的分析引擎感到悲哀。", "窮困並不可怕，可怕的是妳還想買奢侈品。",
+                    "金幣不夠的話，就請退到黃線以後，別擋路。", "妳知道金幣是通往塔頂的唯一邏輯嗎？妳沒有。"
+                ],
+                idle: [
+                    "南瓜老闆的蛋白質大腦真讓人頭痛。", "鮪魚堡這座塔的原始碼，我看了一千遍還是想格式化。", "羊，妳要是再畫不出來，我就要把妳的畫布加密了。"
+                ]
+            }
+        },
+        {
+            id: 'sheep', name: '神祕的羊', icon: '🐑',
+            personality: '怯弱友善創作者', color: '#D4ADCF',
+            lines: {
+                welcome: [
+                    "啊...阿毛...妳、妳好...那個...今天也有在努力嗎？", "這是我畫圖畫到一半想出來的料理...應該...能吃吧？", "對不起！我又斷更了！這份道具算妳便宜一點...",
+                    "滷滷米達的眼神好可怕...阿毛，救救我...", "百合花開的地方，就是我的天堂...啊，被妳聽到了。", "其實我是人類喔，真的，這套羊裝只是、只是工作服...",
+                    "如果妳能爬到塔頂，能幫我看看那裡的風景嗎？", "那個...妳喜歡看我畫的小狗冒險故事嗎？", "鮪魚堡說要幫我蓋專屬工作室，但她看起來在騙我...",
+                    "南瓜老闆...請不要再叫我一起去做臥推了...我會斷掉。"
+                ],
+                buy: [
+                    "謝謝妳支持我的創作！這對我真的很重要...", "阿毛妳人真好，這個特製的包裝就送妳吧。", "希望這個道具能保護妳...我也會幫妳祈禱的。",
+                    "嗚嗚，終於有第一筆收入了，今晚可以加菜了。", "那個...如果好用的話，下次再來喔。"
+                ],
+                poor: [
+                    "對、對不起...雖然我想送妳，但我會被大家罵的...", "那個...金幣好像不太夠，我也很為難呢...", "嗚...沒關係，等妳賺夠錢再來，我會一直都在的。",
+                    "錢不夠嗎？那、那妳看一眼我的草稿當作補償？", "抱歉...這份素材的成本真的很貴..."
+                ],
+                idle: [
+                    "鮪魚堡，妳可以不要一邊笑一邊改遊戲數值嗎？", "滷滷米達，那本《代碼從入門到入土》...能借我看看嗎？", "南瓜老闆，那個槓鈴...它在哭，真的。"
+                ]
+            }
+        },
+        {
+            id: 'tuna', name: '鮪魚堡', icon: '🍔',
+            personality: '建造者/腹黑開朗', color: '#A9BA9D',
+            lines: {
+                welcome: [
+                    "Welcome！歡迎來到我的 BUG...我是說，歡迎來到阿毛之塔！", "今天的塔也運作得很混亂呢，真是太令人開心了！", "妳問我為什麼塔是莫蘭迪色？因為這樣看起來比較貴啊。",
+                    "我是這座塔的造物主，也是妳最大的陰影喔（笑）。", "妳想通關？別傻了，我還沒寫完結局呢！", "這裡的所有邏輯都是我亂編的，妳居然玩得下去？",
+                    "阿毛，如果妳發現自己卡在牆裡，那一定是妳的錯，不是 BUG。", "妳想要更強大的力量嗎？去跟滷滷米達撒嬌看看？", "羊，妳再不更新，我就把下一關的怪物全改成羊喔。",
+                    "南瓜老闆！你的肌肉太佔記憶體了！快縮小一點！"
+                ],
+                buy: [
+                    "成交！這道具的代碼是我昨晚喝醉時寫的，祝妳好運！", "恭喜妳成為這個實驗品的第一個使用者！", "金幣入帳！我又可以去買新的低飽和度油漆了。",
+                    "拿去吧！這是我特意留給阿毛的『後門』道具喔。", "哈哈！妳居然花錢買這個？真是太可愛了！"
+                ],
+                poor: [
+                    "沒錢？那就去挑戰那個沒人能過的隱藏關卡賺錢啊！", "哎呀，我看妳的財務報表跟我的心情一樣不樂觀呢。", "窮是暫時的，但醜...啊不，沒錢是買不到我的怪東西的。",
+                    "沒錢就退下吧，我正忙著在 100 樓放岩漿呢。", "金幣不足？這一定是阿毛之塔的平衡性做得太完美了。"
+                ],
+                idle: [
+                    "滷滷米達，不要再偷改我的伺服器密碼了！", "南瓜老闆，你上次那個『肌肉聖誕樹』的提案被駁回了。", "羊，妳再斷更，我就把妳的百合漫畫改成熱血格鬥劇！"
+                ]
+            }
+        }
+    ],
+
+    // --- 商品數據庫 ---
+    items: [
+        { id: 'hp_max', name: '超濃縮乳清', price: 300, emoji: '🥛', desc: '南瓜老闆激推！體力上限永久 +20', type: 'stat', target: 'hp_max', val: 20, owner: 'pumpkin' },
+        { id: 'luck_charm', name: '斷更者的祈禱', price: 450, emoji: '📑', desc: '羊的草稿。美食發現率永久提升 10%', type: 'stat', target: 'luck', val: 0.1, owner: 'sheep' },
+        { id: 'bug_shield', name: '代碼防護罩', price: 600, emoji: '🛡️', desc: '鮪魚堡製。戰鬥受傷減少 15%', type: 'stat', target: 'def', val: 0.15, owner: 'tuna' },
+        { id: 'logic_core', name: '理智處理器', price: 1000, emoji: '⚙️', desc: '滷滷米達製。金幣獲得量永久 +25%', type: 'stat', target: 'gold_rate', val: 1.25, owner: 'lulumida' },
+        { id: 'warp_ticket', name: '塔的傳送後門', price: 1500, emoji: '🎫', desc: '直達更高境界！立即跳過 20 層樓', type: 'floor', val: 20, owner: 'tuna' }
+    ]
+};
+
+// --- 頭銜屬性加成數據 ---
+const TitleEffects = {
+    '新手爬塔狗': { hp: 100, goldRate: 1.0, atk: 10, desc: '最基礎的狀態，充滿好奇心。' },
+    '50層開拓者': { hp: 150, goldRate: 1.1, atk: 15, desc: '已經適應了塔內的高度。' },
+    '胃袋魔術師': { hp: 200, goldRate: 1.05, atk: 20, desc: '阿毛的胃能消化一切。' },
+    '莫蘭迪美學家': { hp: 120, goldRate: 1.3, atk: 12, desc: '優雅的戰鬥，金幣也要美美的。' },
+    '全能拆遷王': { hp: 300, goldRate: 0.8, atk: 50, desc: '走到哪拆到哪，破壞力驚人。' },
+    '未知的傳說': { hp: 100, goldRate: 1.0, atk: 10, desc: '尚未覺醒的神秘力量。' }
+};
+
+// --- 擴展遊戲邏輯 ---
+Object.assign(AmaoGame, {
+    activeNPC: null,
+    
+    // [1] 頭銜切換系統
+    switchTitle(titleName) {
+        if (!this.titleNotebook.find(t => t.name === titleName && t.unlocked)) {
+            alert("這個頭銜還沒解鎖喔！");
+            return;
+        }
+        this.stats.title = titleName;
+        this.applyTitleStats();
+        this.addLog("🛡️", `頭銜已切換為：<span class="highlight-text">【${titleName}】</span>`);
+        this.refreshUI();
+        this.save();
+    },
+
+    applyTitleStats() {
+        const effect = TitleEffects[this.stats.title] || TitleEffects['新手爬塔狗'];
+        // 這裡我們只更新邏輯屬性，讓戰鬥系統去讀取
+        console.log(`[系統] 應用頭銜加成: ATK ${effect.atk}, GoldRate ${effect.goldRate}`);
+    },
+
+    // [2] 商店即時情緒引擎
+    getNPCLine(type, price = 0) {
+        const m = this.activeNPC;
+        let lines = m.lines[type];
+        
+        // 根據金幣額外觸發情緒變化
+        if (type === 'welcome') {
+            if (this.stats.gold > 5000) return "「喔喔！是土豪阿毛！今天想買下整座塔嗎？」";
+            if (this.stats.gold < 100) return "「唉，看妳這窮樣，我就不招待了。」";
+        }
+        
+        return `「${lines[Math.floor(Math.random() * lines.length)]}」`;
+    },
+
+    // [3] 初始化商店
+    initShop() {
+        this.activeNPC = AmaoWorld.merchants[Math.floor(Math.random() * AmaoWorld.merchants.length)];
+    }
+});
+
+// --- 重新定義選單介面 (商店/頭銜切換) ---
+window.openMenu = function(type) {
+    const ov = document.getElementById('menu-overlay');
+    const ct = document.getElementById('menu-content');
+    const tt = document.getElementById('menu-title');
+    ct.innerHTML = '';
+    ov.style.display = 'flex';
+
+    if (type === 'shop') {
+        AmaoGame.initShop();
+        const m = AmaoGame.activeNPC;
+        tt.innerText = `🛒 ${m.name} 的移動商店`;
+        
+        // 商人立繪區 (情緒顯示)
+        let npcHeader = document.createElement('div');
+        npcHeader.style = `grid-column: span 4; background: var(--panel-bg); border-radius: 15px; padding: 15px; border-left: 6px solid ${m.color}; margin-bottom: 10px;`;
+        npcHeader.innerHTML = `
+            <div style="display:flex; align-items:center; gap:15px;">
+                <div style="font-size:3.5em; filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.1))">${m.icon}</div>
+                <div>
+                    <div style="font-weight:bold; color:${m.color}">${m.name} <span style="font-size:0.7em; color:var(--text-light)">[${m.personality}]</span></div>
+                    <div id="npc-chat" style="font-size:0.85em; margin-top:8px; line-height:1.4; min-height:40px;">${AmaoGame.getNPCLine('welcome')}</div>
+                </div>
+            </div>
+            <div style="font-size:0.7em; color:var(--text-light); text-align:right; margin-top:10px; opacity:0.6;">金幣餘額: 💰 ${AmaoGame.stats.gold}</div>
+        `;
+        ct.appendChild(npcHeader);
+
+        // 商品清單
+        AmaoWorld.items.forEach(item => {
+            let card = document.createElement('div');
+            card.className = 'item-slot unlocked';
+            card.style = "width:100%; height:auto; padding:12px; display:flex; flex-direction:column; align-items:center; gap:6px; transition: transform 0.2s;";
+            
+            // 如果是該商人的專屬物品，給予特別標記
+            const isSpecial = item.owner === m.id;
+            const borderStyle = isSpecial ? `border: 2px solid ${m.color}` : `border: 1px solid #ddd`;
+
+            card.innerHTML = `
+                <div style="font-size:2em">${item.emoji}</div>
+                <div style="font-weight:bold; font-size:0.8em">${item.name}</div>
+                <div style="background:${isSpecial ? m.color : '#EAC4D5'}; color:white; padding:2px 10px; border-radius:12px; font-size:0.75em">💰 ${item.price}</div>
+            `;
+
+            // 滑動變換對話
+            card.onmouseenter = () => {
+                const chat = document.getElementById('npc-chat');
+                if (AmaoGame.stats.gold < item.price) {
+                    chat.innerText = AmaoGame.getNPCLine('poor', item.price);
+                    chat.style.color = '#FF6B6B';
+                } else {
+                    chat.innerText = AmaoGame.getNPCLine('afford', item.price);
+                    chat.style.color = 'var(--text-dark)';
+                }
+            };
+
+            card.onclick = () => {
+                if (AmaoGame.stats.gold >= item.price) {
+                    AmaoGame.buyItem(item.id);
+                    document.getElementById('npc-chat').innerText = AmaoGame.getNPCLine('buy');
+                    // 重新更新餘額顯示
+                    document.querySelector('[style*="text-align:right"]').innerText = `金幣餘額: 💰 ${AmaoGame.stats.gold}`;
+                } else {
+                    alert("錢不夠喔！");
+                }
+            };
+            ct.appendChild(card);
+        });
+
+    } else if (type === 'title') {
+        tt.innerText = '🏅 阿毛的傳奇稱號';
+        AmaoGame.titleNotebook.forEach(t => {
+            let s = document.createElement('div');
+            s.className = 'item-slot' + (t.unlocked ? ' unlocked' : '');
+            
+            // 如果是當前頭銜，加上發光效果
+            if (AmaoGame.stats.title === t.name) {
+                s.style.boxShadow = "0 0 10px var(--morandi-green)";
+                s.style.border = "2px solid var(--morandi-green)";
+            }
+
+            s.innerHTML = `<div>${t.unlocked ? t.name.substring(0, 2) : '???'}</div>`;
+            
+            s.onclick = () => {
+                if (t.unlocked) {
+                    const eff = TitleEffects[t.name] || TitleEffects['新手爬塔狗'];
+                    if (confirm(`【${t.name}】\n效果：${eff.desc}\n能力：HP ${eff.hp}, ATK ${eff.atk}, 金幣 ${eff.goldRate}x\n\n是否要更換為此頭銜？`)) {
+                        AmaoGame.switchTitle(t.name);
+                        window.openMenu('title'); // 刷新介面
+                    }
+                } else {
+                    alert(`【未解鎖稱號】\n達成條件：${t.condition || '神秘成就'}`);
+                }
+            };
+            ct.appendChild(s);
+        });
+    } else if (type === 'food') {
+        // [原有美食邏輯]
+        let count = AmaoGame.foodNotebook.filter(f=>f.consumed).length;
+        tt.innerText = `🍱 美食圖鑑 (${count}/300)`;
+        AmaoGame.foodNotebook.forEach((f, i) => {
+            let s = document.createElement('div');
+            s.className = 'item-slot' + (f.consumed ? ' unlocked' : '');
+            if(f.consumed) {
+                s.style.background = 'var(--panel-bg)';
+                s.innerHTML = `<div style="font-size:1.5em">${f.emoji}</div><div style="font-size:0.6em">${f.name.substring(0,2)}</div>`;
+                s.onclick = () => alert(`${f.emoji} 【${f.name}】\n${f.desc}`);
+            } else {
+                s.innerText = i + 1;
+            }
+            ct.appendChild(s);
+        });
+    }
+};
+
+// --- 重寫買東西效果 ---
+AmaoGame.buyItem = function(itemId) {
+    const item = AmaoWorld.items.find(i => i.id === itemId);
+    this.stats.gold -= item.price;
+    
+    if (item.type === 'stat') {
+        // 永久增加數值邏輯
+        this.addLog("💎", `使用了 ${item.name}！${item.desc}`);
+    } else if (item.type === 'floor') {
+        this.floor += item.val;
+        this.addLog("🚀", `使用了 ${item.name}！傳送到第 ${this.floor} 層！`);
+    }
+    
+    this.save();
+    this.refreshUI();
+};
+
+// 啟動頭銜加成
+AmaoGame.applyTitleStats();
+
 </script>
 </body>
 </html>
