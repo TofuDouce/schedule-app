@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>阿毛之塔：魔法與萬種美食</title>
+    <style>
+        :root { --gold: #f1c40f; --pink: #ff99cc; --bg: #05050a; --card: #161625; --equip: #00f2ff; --monster: #e74c3c; --rare: #a55eea; --epic: #eb3b5a; --legend: #fed330; }
+        body { margin:0; font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background: var(--bg); color: #fff; user-select: none; overflow-x: hidden; }
+        .status-bar { display: flex; justify-content: space-around; background: rgba(0,0,0,0.95); padding: 10px 0; border-bottom: 2px solid var(--gold); font-size: 13px; backdrop-filter: blur(5px); position: sticky; top: 0; z-index: 500; }
+        .status-item { text-align: center; }
+        .status-item b { display: block; font-size: 16px; color: var(--gold); }
+        .tower-header { padding: 15px 0; text-align: center; background: linear-gradient(to bottom, #111, var(--bg)); }
+        .tower-title { font-size: 1.8rem; color: var(--gold); text-shadow: 0 0 10px var(--gold); margin: 0; }
+        #amao-full-title { font-size: 14px; color: var(--equip); margin-top: 5px; font-weight: bold; }
+    </style>
+    <style>
+        .stats-row { display: flex; justify-content: center; gap: 10px; background: #111; padding: 10px; border-radius: 20px; margin: 10px 15px; border: 1px solid #333; }
+        .stat-box { font-size: 11px; color: #888; text-align: center; min-width: 75px; }
+        .stat-val { display: block; color: var(--pink); font-weight: bold; font-size: 15px; }
+        .adventure-zone { height: 50vh; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+        .battle-stage { width: 95%; display: flex; justify-content: space-between; align-items: center; position: relative; height: 200px; }
+        .unit { width: 120px; display: flex; flex-direction: column; align-items: center; position: relative; }
+        .unit-sprite { font-size: 70px; position: relative; z-index: 10; cursor: pointer; transition: 0.2s; }
+        .hp-bar { width: 80px; height: 8px; background: #333; border-radius: 4px; margin-top: 10px; overflow: hidden; border: 1px solid #000; }
+        .hp-fill { height: 100%; background: #2ecc71; transition: 0.3s; width: 100%; }
+        .speech-bubble { position: absolute; background: white; color: black; padding: 6px 12px; border-radius: 12px; font-size: 12px; font-weight: bold; bottom: 100%; width: 130px; text-align: center; opacity: 0; transition: 0.3s; pointer-events: none; border: 2px solid #333; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .layer { position: absolute; pointer-events: none; opacity: 0; transform: scale(0); transition: 0.3s; }
+        .layer.active { opacity: 1; transform: scale(1); }
+        .layer-head { top: -10px; left: 50%; transform: translateX(-50%); font-size: 45px; z-index: 20; }
+        .layer-body { top: 30px; left: 50%; transform: translateX(-50%); font-size: 55px; opacity: 0.8; z-index: 5; }
+        .layer-hand { right: -25px; top: 40px; font-size: 35px; z-index: 25; }
+        .layer-feet { bottom: -5px; left: 50%; transform: translateX(-50%); font-size: 35px; z-index: 2; }
+    </style>
+    <style>
+        .side-ctrl { position: fixed; right: 15px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 15px; z-index: 600; }
+        .ctrl-btn { width: 60px; height: 60px; background: rgba(30,30,40,0.9); border: 2px solid var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; box-shadow: 0 4px 15px rgba(0,0,0,0.6); }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 1000; padding: 20px; overflow-y: auto; border: 2px solid var(--gold); margin: 10px; border-radius: 20px; }
+        .tabs { display: flex; gap: 5px; margin-bottom: 15px; }
+        .tab-btn { flex: 1; padding: 10px; background: #222; border: none; color: #fff; border-radius: 10px; font-size: 12px; }
+        .tab-btn.active { background: var(--gold); color: #000; font-weight: bold; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .item-card { background: var(--card); border: 1px solid #333; padding: 10px; border-radius: 15px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .dice-area { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 500; }
+        .dice { width: 90px; height: 90px; background: #fff; color: #000; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 45px; box-shadow: 0 6px 0 #bbb; cursor: pointer; }
+        .title-sub { display: block; font-size: 10px; color: #aaa; margin-top: 5px; font-style: italic; line-height: 1.2; }
+    </style>
+</head>
+<body>
+    <div class="status-bar">
+        <div class="status-item">🏰 層數<b id="lvl">0</b></div>
+        <div class="status-item">⚡ 體力<b id="nrg">60</b></div>
+        <div class="status-item">💰 金幣<b id="gold">100</b></div>
+        <div class="status-item">😊 快樂<b id="st-hp">100</b></div>
+    </div>
+    <div class="tower-header">
+        <h1 class="tower-title">阿毛之魔法塔</h1>
+        <div id="amao-full-title">[創世者觀測中]</div>
+    </div>
+    <div class="stats-row">
+        <div class="stat-box">⚔️ 攻擊<span id="st-atk" class="stat-val">0</span></div>
+        <div class="stat-box">🛡️ 防禦<span id="st-def" class="stat-val">0</span></div>
+        <div class="stat-box">👟 速度<span id="st-spd" class="stat-val">0</span></div>
+    </div>
+    <div class="adventure-zone">
+        <div class="battle-stage">
+            <div class="unit" id="am-unit">
+                <div id="am-bubble" class="speech-bubble">汪！</div>
+                <div class="unit-sprite" onclick="petAmao()">
+                    <div id="layer-head" class="layer layer-head"></div>
+                    <div id="layer-body" class="layer layer-body"></div>
+                    <span id="amao-face">🐶</span>
+                    <div id="layer-hand" class="layer layer-hand"></div>
+                    <div id="layer-feet" class="layer layer-feet"></div>
+                </div>
+                <div class="hp-bar"><div id="am-hp-fill" class="hp-fill"></div></div>
+            </div>
+            <div id="vs-box" style="font-size:30px; opacity:0; color:var(--monster); font-weight:900;">VS</div>
+            <div class="unit" id="en-unit" style="opacity:0">
+                <div id="en-bubble" class="speech-bubble">喵！</div>
+                <div id="en-sprite" class="unit-sprite">🐱</div>
+                <div class="hp-bar"><div id="en-hp-fill" class="hp-fill"></div></div>
+                <div id="en-name" style="font-size:11px; margin-top:5px; font-weight:bold; color:var(--monster);">惡貓</div>
+            </div>
+        </div>
+        <div id="info-msg" style="margin-top:15px; padding:0 20px; text-align:center; color:var(--gold); font-size:14px; min-height:40px;">歡迎來到魔法塔，創世者正在看著你。</div>
+        <div id="stage" style="display:flex; gap:10px; margin-top:5px;"></div>
+    </div>
+    <div class="side-ctrl">
+        <div class="ctrl-btn" onclick="openInv()">🎒</div>
+        <div class="ctrl-btn" onclick="openStore()">🏪</div>
+    </div>
+    <div class="dice-area"><div class="dice" onclick="roll()">🎲</div></div>
+
+    <div id="inv-modal" class="modal">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h3 style="margin:0;">🎒 魔法口袋</h3>
+            <button onclick="closeModal('inv-modal')">關閉</button>
+        </div>
+        <div class="tabs">
+            <button class="tab-btn active" id="tab-food" onclick="switchTab('food')">萬種美食</button>
+            <button class="tab-btn" id="tab-equip" onclick="switchTab('equip')">魔法武裝</button>
+            <button class="tab-btn" id="tab-title" onclick="switchTab('title')">冒險頭銜</button>
+        </div>
+        <div id="inv-grid" class="grid"></div>
+    </div>
+
+    <div id="store-modal" class="modal">
+        <div style="display:flex; justify-content:space-between; align-items:center;"><h3>🏪 神祕交易所</h3><button onclick="closeModal('store-modal')">離開</button></div>
+        <div style="background:#222; padding:10px; border-radius:10px; margin:10px 0; text-align:center;">
+            <input type="text" id="serial-input" placeholder="輸入創世暗號" style="width:120px; background:#000; color:var(--gold); border:1px solid #444; padding:5px;">
+            <button onclick="useSerial()">兌換</button>
+        </div>
+        <div id="store-grid" class="grid"></div>
+    </div>
+<script>
+const DB = {
+    f_dims: {
+        口感: ["酥脆的","黏糊糊的","彈牙的","巷口","沒洗手老板做的","阿嬤怕你餓的","焦香的","神祕的","極致的","深夜限定","爆漿的","充滿魔力的","冷掉也划算的","在地老饕推的","被火球術燒焦的","魔法震盪過的"],
+        魔法狀態: ["量子糾纏的","異次元的","魔力暴走的","被封印在微波爐的","五星占卜出的","絕對零度的","煉金術失敗產出的","平行時空的","充滿聖光的","剛從火球術生還的","時空裂縫掉出來的"],
+        做法: ["碳烤","油炸","清燉","加了魔法粉末的","三色豆地獄","東泉辣椒醬","爆炒","勾芡","現萃","加辣不加蒜","慢火熬煮七七四十九天的","用愛發電做的","微量放射性的"],
+        主食: ["滷肉飯","甜不辣","肉圓","大腸麵線","科學麵","維力炸醬麵","臭豆腐","地瓜球","蚵仔煎","雞排","排骨酥","豬血糕","潤餅","小籠包","阿毛營養餅乾"],
+        加料: ["配大腸","加貢丸","佐魔法露水","附贈阿毛的口水","淋上神祕汁液","搭配香菜地獄","加兩顆蛋","不要香菜","加了致死量的蒜泥"]
+    },
+    titles: [
+        {p:"空間的", s:"魔術師", d:"註解：把原本堆滿雜物的客廳變成了無法進入的迷宮。", atk:20, def:150, spd:10},
+        {p:"奇蹟的", s:"匠人", d:"註解：僅僅利用廢材，就蓋出了會漏水的豪宅。", atk:35, def:100, spd:5},
+        {p:"光與風的", s:"引導者", d:"註解：其實就是把承重牆打掉一個大洞，採光超棒。", atk:70, def:-20, spd:40},
+        {p:"被沒收手機的", s:"國中生", d:"註解：因為憤怒而覺醒了原始的奔跑本能。", spd:150, atk:40, def:10},
+        {p:"幻獸級的", s:"看板娘", d:"註解：坐在營地吃貓飯就能讓怪物感到恐懼的存在。", atk:120, def:80, spd:20},
+        {p:"火龍的", s:"逆鱗者", d:"註解：每天都要摸一下龍屁股的勇者。", atk:180, def:20, spd:60},
+        {p:"廢棄物", s:"再生大師", d:"註解：把垃圾堆疊成藝術品，鄰居都很困擾。", atk:30, def:120, spd:10},
+        {p:"巷口", s:"早餐店阿姨", d:"註解：不論阿毛長怎樣，都會叫他一聲『帥哥』。", atk:50, def:50, spd:50},
+        {p:"半夜大聲公的", s:"修理紗窗", d:"註解：其音頻足以干擾魔法塔內所有的邪惡法陣。", atk:100, def:30, spd:10},
+        {p:"機車擋泥板的", s:"初代女神", d:"註解：承載著一個時代的審美，防禦力是靈魂等級的。", atk:20, def:200, spd:5},
+        {p:"絕對零度的", s:"冷場王", d:"註解：講出來的笑話能讓全塔的惡貓集體感冒。", atk:40, def:110, spd:20},
+        {p:"忘記施法咒語的", s:"賢者", d:"註解：危急時刻只能用物理攻擊（魔杖敲頭）。", atk:220, def:20, spd:10},
+        {p:"量子糾纏的", s:"薪水小偷", d:"註解：處於一種『有在工作』與『沒在工作』的疊加狀態。", atk:10, def:10, spd:200},
+        {p:"大膽的", s:"減法大師", d:"註解：把阿毛的狗窩拆到剩下一根柱子，通風極佳。", atk:40, def:130, spd:40},
+        {p:"垂直空間的", s:"魔術師", d:"註解：強迫阿毛睡在天花板上，活用每一吋地板。", atk:60, def:100, spd:30},
+        {p:"與狗對話的", s:"邊緣人", d:"註解：除了阿毛，沒人想聽他講話，但他很溫暖。", atk:60, def:60, spd:60},
+        {p:"米其林", s:"拾荒者", d:"註解：在廚餘桶中尋找被浪費的高級食材。", atk:80, def:40, spd:40},
+        {p:"忘記帶錢的", s:"大魔王", d:"註解：雖然戰鬥力爆表，但結帳時只能尷尬地笑。", atk:250, def:50, spd:30},
+        {p:"不小心踢到", s:"腳趾的人", d:"註解：因為極度的劇痛而進入了無我境界。", atk:300, def:-100, spd:100},
+        {p:"會走動的", s:"三色豆", d:"註解：邪惡的存在，路過的貓看到都會反胃吐掉。", atk:100, def:150, spd:20}
+    ],
+    monsters: [
+        {n: "量子惡貓", i: "🐱", hp: 60, atk: 18, talk:["喵！此路不通喵！", "沒看過火球術嗎？", "罐頭交出來喵！", "我現在同時處於揍你與不揍你的狀態。"]},
+        {n: "改造王喵", i: "😾", hp: 130, atk: 35, talk:["我要把你的狗窩改成貓砂盆！", "這根承重牆我不滿意喵！", "這座塔需要大改造喵！", "全能貓宅改造王，參上！"]},
+        {n: "黑貓獵人", i: "🐈", hp: 220, atk: 60, talk:["見識貓爪的極意喵！", "你的動作慢得像沒喝茶。", "這招是為了罐頭喵！", "在肉球面前顫抖吧！"]}
+    ],
+    am_talk: ["魔法咆哮！", "肉球連擊！", "汪！咬你喔！", "創世者在看著我們喔！", "這不是三色豆吧？"],
+    e_pre: ["創世者的","神祕的","阿姨的","媽媽的","姊姊的","附魔的","亮晶晶的","阿毛咬過的","發光的"],
+    e_name: {
+        head: ["大法師帽","遮陽墨鏡","安全帽","全能耳機","兔耳朵","平底鍋"],
+        body: ["賢者長袍","附魔皮甲","魔法雨衣","破爛睡衣","改造王圍裙","紙箱罩衫"],
+        hand: ["斷掉魔杖","神聖法杖","附魔藍白拖","木製攪拌棒","屠龍大劍","折凳"],
+        feet: ["飛行掃帚","魔法涼鞋","傳送短靴","破洞襪子","阿毛專用鞋","溜冰鞋"]
+    }
+};
+let state = { lvl: 0, nrg: 60, gold: 100, mood: 100, inv: [], equips: {head:null, body:null, hand:null, feet:null}, titles: [{p:"平凡的", s:"冒險者", d:"註解：最普通的存在。", atk:1, def:1, spd:1}], unlockedTitles: new Set(["平凡的冒險者"]), curTitleIdx: 0, curTab: 'food', isBattle: false };
+</script>
+<script>
+function generateFood() {
+    const d = DB.f_dims;
+    const name = d.口感[Math.floor(Math.random()*d.口感.length)] + d.魔法狀態[Math.floor(Math.random()*d.魔法狀態.length)] + d.做法[Math.floor(Math.random()*d.做法.length)] + d.主食[Math.floor(Math.random()*d.主食.length)] + d.加料[Math.floor(Math.random()*d.加料.length)];
+    const isTea = name.includes("現萃") || name.includes("辣");
+    const val = Math.floor(Math.random()*30)+35;
+    return { n: name, i: isTea ? "🥤" : "🍲", v: val, type: 'food', isTea, d: isTea ? `補 ${val} 心情。` : `補 ${val} 體力。` };
+}
+
+function generateEquip() {
+    const slot = ["head", "body", "hand", "feet"][Math.floor(Math.random()*4)];
+    const name = DB.e_pre[Math.floor(Math.random()*DB.e_pre.length)] + DB.e_name[slot][Math.floor(Math.random()*DB.e_name[slot].length)];
+    const icons = {head:"🧙‍♂️", body:"👘", hand:"🪄", feet:"⛸️"};
+    const atk = slot==='hand'? Math.floor(Math.random()*30)+20 : 5;
+    const def = slot==='body'? Math.floor(Math.random()*30)+20 : 5;
+    const spd = slot==='feet'? Math.floor(Math.random()*40)+25 : 5;
+    const color = (atk+def+spd) > 80 ? "var(--legend)" : "var(--equip)";
+    return { n: name, i: icons[slot], t: slot, type: 'equip', atk, def, spd, color, d: `魔法波動劇烈。` };
+}
+
+function unlockTitle() {
+    if (Math.random() > 0.15) return;
+    const pool = DB.titles.filter(t => !state.unlockedTitles.has(t.p + t.s));
+    if (pool.length === 0) return;
+    const newT = pool[Math.floor(Math.random()*pool.length)];
+    state.titles.push(newT);
+    state.unlockedTitles.add(newT.p + newT.s);
+    document.getElementById('info-msg').innerHTML = `<span style="color:var(--legend)">🏆 獲得頭銜：【${newT.p}${newT.s}】</span>`;
+}
+</script>
+<script>
+function showBubble(id, text) {
+    const b = document.getElementById(id); b.innerText = text;
+    b.style.opacity = 1; setTimeout(() => b.style.opacity = 0, 1500);
+}
+
+async function startBattle() {
+    state.isBattle = true;
+    const base = DB.monsters[Math.min(DB.monsters.length-1, Math.floor(state.lvl/25))];
+    const diff = state.lvl <= 10 ? 1 : 1 + (Math.sqrt(state.lvl - 10) * 0.3);
+    const enemy = {
+        n: base.n, i: base.i, hp: Math.floor(base.hp * diff),
+        atk: Math.floor(base.atk * (1 + state.lvl * 0.05)),
+        talks: base.talk, tIdx: 0
+    };
+    document.getElementById('en-sprite').innerText = enemy.i;
+    document.getElementById('en-name').innerText = `${enemy.n} (Lv.${state.lvl})`;
+    document.getElementById('en-unit').style.opacity = "1";
+    document.getElementById('vs-box').style.opacity = "1";
+
+    let eHP = enemy.hp, aHP = 100;
+    while(eHP > 0 && aHP > 0) {
+        await new Promise(r => setTimeout(r, 900));
+        showBubble('am-bubble', DB.am_talk[Math.floor(Math.random()*DB.am_talk.length)]);
+        let amDmg = (parseInt(document.getElementById('st-atk').innerText) + 15) * (0.9 + Math.random()*0.3);
+        eHP -= amDmg;
+        document.getElementById('en-hp-fill').style.width = Math.max(0, (eHP/enemy.hp)*100) + "%";
+        
+        if(eHP <= 0) break;
+        await new Promise(r => setTimeout(r, 900));
+        showBubble('en-bubble', enemy.talks[enemy.tIdx % enemy.talks.length]);
+        enemy.tIdx++;
+        let enDmg = Math.max(5, enemy.atk - parseInt(document.getElementById('st-def').innerText));
+        aHP -= enDmg;
+        document.getElementById('am-hp-fill').style.width = Math.max(0, aHP) + "%";
+    }
+
+    if(eHP <= 0) { 
+        state.gold += 70 + (state.lvl*4); unlockTitle();
+        document.getElementById('info-msg').innerText = `✨ 淨化成功！`; 
+    } else { 
+        state.nrg -= 10; state.mood -= 20;
+        document.getElementById('info-msg').innerText = `🌑 戰鬥失敗，阿毛先撤退了。`; 
+    }
+    setTimeout(() => { document.getElementById('en-unit').style.opacity = "0"; document.getElementById('vs-box').style.opacity = "0"; state.isBattle = false; update(); }, 1000);
+}
+</script>
+<script>
+function roll() {
+    if(state.isBattle || state.nrg <= 0) return;
+    state.nrg--; state.mood -= 2;
+    const step = Math.floor(Math.random()*6)+1;
+    state.lvl += step;
+    document.querySelector('.dice').innerText = step;
+    const r = Math.random();
+    if(r < 0.45) startBattle();
+    else if(r < 0.75) findTreasure();
+    else document.getElementById('info-msg').innerText = "空氣中飄著淡淡的臭豆腐香...";
+    update();
+}
+
+function findTreasure() {
+    const s = document.getElementById('stage'); s.innerHTML = "";
+    document.getElementById('info-msg').innerText = "🎁 撿到了神祕包裹！";
+    for(let i=0; i<2; i++) {
+        let it = (Math.random()<0.4) ? generateEquip() : generateFood();
+        state.inv.push(it);
+        s.innerHTML += `<div style="background:var(--card); padding:5px; border-radius:10px;"><div style="font-size:20px">${it.i}</div></div>`;
+    }
+}
+
+function openStore() {
+    document.getElementById('store-modal').style.display='block';
+    const g = document.getElementById('store-grid'); g.innerHTML = "";
+    [generateEquip(), generateEquip(), generateFood(), generateFood()].forEach(it => {
+        const p = it.type === 'equip' ? 180 : 75;
+        g.innerHTML += `<div class="item-card"><div style="font-size:25px">${it.i}</div><b style="font-size:10px">${it.n}</b><button onclick="buy('${it.n}', ${p})">💰 ${p}</button></div>`;
+    });
+}
+function buy(n, p) { if(state.gold >= p) { state.gold -= p; state.inv.push(generateEquip()); update(); } else { alert("金幣不足。"); } }
+function useSerial() {
+    const c = document.getElementById('serial-input').value;
+    if(c === "鮮茶道現萃茶") { state.nrg = 60; state.mood = 100; alert("阿毛喝了茶，全屬性回滿！"); }
+    else if(c === "創世者的加冕") { state.gold += 3000; alert("創世者鮪魚堡發獎金了。"); }
+    update();
+}
+</script>
+<script>
+function update() {
+    let t = state.titles[state.curTitleIdx];
+    let s = {atk:t.atk||0, def:t.def||0, spd:t.spd||0};
+    // 總結裝備屬性
+    Object.values(state.equips).forEach(e => { if(e){ s.atk+=e.atk; s.def+=e.def; s.spd+=e.spd; }});
+    
+    // 更新介面數值
+    document.getElementById('st-atk').innerText = s.atk;
+    document.getElementById('st-def').innerText = s.def;
+    document.getElementById('st-spd').innerText = s.spd;
+    document.getElementById('st-hp').innerText = state.mood;
+    document.getElementById('lvl').innerText = state.lvl;
+    document.getElementById('nrg').innerText = state.nrg;
+    document.getElementById('gold').innerText = state.gold;
+    document.getElementById('amao-full-title').innerText = `[${t.p}${t.s}] 阿毛`;
+
+    // 更新紙娃娃外觀
+    ['head','body','hand','feet'].forEach(slot => {
+        const el = document.getElementById(`layer-${slot}`);
+        if(state.equips[slot]) { 
+            el.innerText = state.equips[slot].i; 
+            el.classList.add('active'); 
+        } else { 
+            el.classList.remove('active'); 
+        }
+    });
+
+    // 阿毛永遠是咖啡色的，只改變表情 (開心 😃 / 平常 🙂 / 累了 😵)
+    let face = "🐕"; // 基本咖啡色狗狗
+    if (state.mood > 80) face = "🐕✨"; 
+    else if (state.mood < 30) face = "🐕💦";
+    document.getElementById('amao-face').innerText = face;
+}
+
+function switchTab(t) { state.curTab = t; renderInv(); }
+
+function renderInv() {
+    const g = document.getElementById('inv-grid'); 
+    g.innerHTML = "";
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-'+state.curTab).classList.add('active');
+    
+    if(state.curTab === 'title') {
+        state.titles.forEach((t, i) => { 
+            g.innerHTML += `<div class="item-card"><b style="color:var(--gold)">${t.p}${t.s}</b><span class="title-sub">${t.d}</span><button onclick="setT(${i})" style="margin-top:8px">配戴</button></div>`; 
+        });
+    } else {
+        state.inv.filter(it => it.type === state.curTab).forEach((it) => {
+            const idx = state.inv.indexOf(it);
+            g.innerHTML += `<div class="item-card"><div style="font-size:25px">${it.i}</div><b style="font-size:10px; color:${it.color||'#fff'}">${it.n}</b><button onclick="use(${idx})" style="margin-top:5px">使用</button></div>`;
+        });
+    }
+}
+
+function use(i) {
+    const it = state.inv[i];
+    if(it.type==='food') { 
+        if(it.isTea) state.mood = Math.min(100, state.mood+it.v); 
+        else state.nrg = Math.min(60, state.nrg+it.v); 
+    } else { 
+        let old = state.equips[it.t]; 
+        if(old) state.inv.push(old); 
+        state.equips[it.t] = it; 
+    }
+    state.inv.splice(i, 1); 
+    update(); 
+    renderInv();
+}
+
+function setT(i) { state.curTitleIdx = i; update(); renderInv(); }
+function openInv() { document.getElementById('inv-modal').style.display='block'; renderInv(); }
+function closeModal(id) { document.getElementById(id).style.display='none'; }
+function petAmao() { state.mood = Math.min(100, state.mood + 5); showBubble('am-bubble', '嘿嘿，好癢喔汪！'); update(); }
+
+window.onload = update;
+</script>
+</body>
+</html>
+
+  
