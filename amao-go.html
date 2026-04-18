@@ -1,1040 +1,1162 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>阿毛之塔：究極奧義版</title>
+    <title>阿毛之塔：鮪魚堡的魔法奇境</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Cinzel:wght@700&family=Bungee+Shade&display=swap" rel="stylesheet">
     <style>
-        /* --- 全域變數與極致配色 --- */
-        :root { 
-            --gold: #f1c40f; 
-            --pink: #ff99cc; 
-            --bg: #05050a; 
-            --card: #161625; 
-            --equip: #00f2ff; 
-            --monster: #e74c3c; 
-            --rare: #a55eea; 
-            --legend: #fed330; 
-            --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
-        }
-
-        /* --- 基礎佈局 --- */
-        body { 
-            margin: 0; 
-            padding: 0;
-            font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; 
-            background: var(--bg); 
-            color: #fff; 
-            user-select: none; 
-            overflow-x: hidden;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        /* --- 頂部狀態欄：極大化資訊密度 --- */
-        .status-bar { 
-            display: flex; 
-            justify-content: space-around; 
-            background: rgba(0,0,0,0.95); 
-            padding: 12px 0; 
-            border-bottom: 2px solid var(--gold); 
-            font-size: 13px; 
-            backdrop-filter: blur(15px); 
-            position: sticky; 
-            top: 0; 
-            z-index: 500; 
-            box-shadow: 0 4px 25px rgba(0,0,0,0.9); 
-        }
-
-        .status-item { 
-            text-align: center; 
-            transition: transform 0.2s;
-        }
-        
-        .status-item:active {
-            transform: scale(1.1);
-        }
-
-        .status-item b { 
-            display: block; 
-            font-size: 18px; 
-            color: var(--gold); 
-            text-shadow: 0 0 5px rgba(241, 196, 15, 0.5);
-        }
-
-        /* --- 塔頭設計 --- */
-        .tower-header { 
-            padding: 25px 0; 
-            text-align: center; 
-            background: linear-gradient(to bottom, #1a1a2e, var(--bg)); 
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .tower-title { 
-            font-size: 2.5rem; 
-            color: var(--gold); 
-            text-shadow: 0 0 20px var(--gold); 
-            margin: 0; 
-            letter-spacing: 4px; 
-            font-weight: 900;
-        }
-
-        #amao-full-title { 
-            font-size: 14px; 
-            color: var(--equip); 
-            margin-top: 10px; 
-            font-weight: bold; 
-            background: rgba(0,242,255,0.15); 
-            display: inline-block; 
-            padding: 4px 16px; 
-            border-radius: 20px; 
-            border: 1px solid rgba(0,242,255,0.3);
-            letter-spacing: 1px;
-        }
-
-        /* --- 滾動條美化 --- */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: var(--bg); }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
-    </style>
-    <style>
-        /* --- 屬性面板：磨砂玻璃與霓虹邊框 --- */
-        .stats-row { 
-            display: flex; 
-            justify-content: center; 
-            gap: 15px; 
-            background: rgba(255, 255, 255, 0.05); 
-            padding: 15px; 
-            border-radius: 30px; 
-            margin: 15px; 
-            border: 1px solid rgba(255, 255, 255, 0.1); 
-            backdrop-filter: blur(5px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        }
-        
-        .stat-val { 
-            display: block; 
-            color: var(--pink); 
-            font-weight: 800; 
-            font-size: 20px; 
-            text-shadow: 0 0 10px rgba(255, 153, 204, 0.6);
-            transition: all 0.3s ease;
-        }
-
-        /* --- 冒險核心區域：動態背景粒子感 --- */
-        .adventure-zone { 
-            height: 48vh; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            position: relative; 
-            overflow: hidden; 
-            background: radial-gradient(circle at center, #1e1e3f 0%, #05050a 100%);
-        }
-
-        /* 呼吸動畫 */
-        @keyframes idleBreath {
-            0%, 100% { transform: translateY(0) scale(1); }
-            50% { transform: translateY(-5px) scale(1.02); }
-        }
-
-        /* 受擊震動 */
-        @keyframes hurtShake {
-            0% { transform: translateX(0); }
-            25% { transform: translateX(-10px) rotate(-5deg); }
-            75% { transform: translateX(10px) rotate(5deg); }
-            100% { transform: translateX(0); }
-        }
-
-        .unit-sprite { 
-            font-size: 85px; 
-            position: relative; 
-            z-index: 10; 
-            filter: drop-shadow(0 0 20px rgba(0,0,0,0.8)); 
-            animation: idleBreath 3s ease-in-out infinite;
-            transition: 0.2s;
-        }
-
-        .unit.hurt { animation: hurtShake 0.3s ease-in-out; }
-
-        /* --- 進階血量條：殘影設計 --- */
-        .hp-bar { 
-            width: 110px; 
-            height: 14px; 
-            background: #111; 
-            border-radius: 7px; 
-            margin-top: 15px; 
-            position: relative;
-            overflow: hidden; 
-            border: 2px solid #333; 
-        }
-        
-        /* 殘影層 (底色) */
-        .hp-ghost {
-            position: absolute;
-            top: 0; left: 0; height: 100%;
-            background: #e74c3c;
-            width: 100%;
-            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 1;
-        }
-
-        .hp-fill { 
-            position: absolute;
-            top: 0; left: 0; height: 100%;
-            background: linear-gradient(90deg, #2ecc71, #27ae60); 
-            width: 100%; 
-            z-index: 2;
-            transition: width 0.3s ease;
-        }
-
-        /* --- 紙娃娃系統：光效強化 --- */
-        .layer { 
-            position: absolute; 
-            pointer-events: none; 
-            opacity: 0; 
-            transform: scale(0); 
-            transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            filter: drop-shadow(0 0 8px rgba(255,255,255,0.4));
-        }
-        
-        .layer.active { 
-            opacity: 1; 
-            transform: scale(1); 
-        }
-
-        /* 裝備光澤動畫 */
-        @keyframes gearGlow {
-            0%, 100% { filter: drop-shadow(0 0 5px var(--equip)); }
-            50% { filter: drop-shadow(0 0 15px var(--equip)); }
-        }
-        .layer-hand.active { animation: gearGlow 2s infinite; }
-        
-        .layer-head { top: -28px; left: 50%; transform: translateX(-50%); font-size: 58px; z-index: 20; }
-        .layer-body { top: 42px; left: 50%; transform: translateX(-50%); font-size: 72px; z-index: 5; }
-        .layer-hand { right: -38px; top: 52px; font-size: 48px; z-index: 25; }
-        .layer-feet { bottom: -18px; left: 50%; transform: translateX(-50%); font-size: 48px; z-index: 2; }
-    </style>
-    <style>
-        /* --- 側邊功能列：懸浮感設計 --- */
-        .side-ctrl { 
-            position: fixed; 
-            right: 20px; 
-            top: 50%; 
-            transform: translateY(-50%); 
-            display: flex; 
-            flex-direction: column; 
-            gap: 22px; 
-            z-index: 600; 
-        }
-
-        .ctrl-btn { 
-            width: 68px; 
-            height: 68px; 
-            background: rgba(20, 20, 35, 0.85); 
-            border: 2.5px solid var(--gold); 
-            border-radius: 50%; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-size: 34px; 
-            box-shadow: 0 8px 25px rgba(0,0,0,0.6); 
-            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            backdrop-filter: blur(10px);
-            cursor: pointer;
-        }
-
-        .ctrl-btn:hover { transform: scale(1.1); background: rgba(30, 30, 50, 0.9); }
-        .ctrl-btn:active { transform: scale(0.9); box-shadow: 0 2px 10px rgba(0,0,0,0.8); }
-
-        /* --- 彈窗系統：毛玻璃全屏覆蓋 --- */
-        .modal { 
-            display: none; 
-            position: fixed; 
-            inset: 0; 
-            background: rgba(5, 5, 10, 0.9); 
-            z-index: 1000; 
-            padding: 25px; 
-            overflow-y: auto; 
-            border: 2px solid var(--gold); 
-            margin: 15px; 
-            border-radius: 30px; 
-            backdrop-filter: blur(15px); 
-            box-shadow: 0 0 50px rgba(241, 196, 15, 0.2);
-            animation: modalFadeIn 0.3s ease-out;
-        }
-
-        @keyframes modalFadeIn {
-            from { opacity: 0; transform: scale(0.9) translateY(20px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
-        }
-
-        /* --- 網格佈局：物品與技能展示 --- */
-        .grid { 
-            display: grid; 
-            grid-template-columns: repeat(2, 1fr); 
-            gap: 15px; 
-            padding-bottom: 50px;
-        }
-
-        .item-card { 
-            background: rgba(255, 255, 255, 0.05); 
-            border: 1.5px solid rgba(255, 255, 255, 0.1); 
-            padding: 18px; 
-            border-radius: 22px; 
-            text-align: center; 
-            position: relative; 
-            transition: 0.2s;
-        }
-        
-        .item-card:active { background: rgba(255, 255, 255, 0.1); transform: translateY(2px); }
-
-        .count-badge { 
-            position: absolute; 
-            top: -10px; 
-            right: -10px; 
-            background: var(--monster); 
-            color: #fff; 
-            font-size: 12px; 
-            padding: 4px 12px; 
-            border-radius: 15px; 
-            font-weight: 900; 
-            border: 2px solid #fff; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
-
-        /* --- 核心骰子區域 --- */
-        .dice-area { 
-            position: fixed; 
-            bottom: 40px; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            z-index: 500; 
-        }
-
-        .dice { 
-            width: 110px; 
-            height: 110px; 
-            background: radial-gradient(circle at 30% 30%, #fff, #ddd); 
-            color: #222; 
-            border-radius: 28px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-size: 55px; 
-            box-shadow: 0 10px 0 #999, 0 15px 30px rgba(0,0,0,0.5); 
-            cursor: pointer; 
-            transition: 0.1s;
-        }
-
-        .dice:active { 
-            transform: translateY(6px); 
-            box-shadow: 0 4px 0 #999, 0 5px 15px rgba(0,0,0,0.5); 
-        }
-
-        /* --- 底部訊息面板 --- */
-        .info-panel { 
-            margin: 15px 30px; 
-            padding: 20px; 
-            background: rgba(0, 0, 0, 0.4); 
-            border-radius: 22px; 
-            text-align: center; 
-            color: var(--gold); 
-            font-size: 16px; 
-            min-height: 60px; 
-            border: 1.5px dashed rgba(241, 196, 15, 0.4); 
-            line-height: 1.5; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
+        /* 預先定義全域變數，確保第 3 區塊能順利對接 */
+        :root {
+            --bg: #0d0a1a;
+            --panel: rgba(30, 25, 50, 0.9);
+            --gold: #f1c40f;
+            --magic: #9d50bb;
+            --silver: #bdc3c7;
+            --legend: #ff007f;
+            --equip: #00d4ff;
         }
     </style>
 </head>
-<body>
-    <div class="status-bar">
-        <div class="status-item">🏰 塔層<b id="lvl">0</b></div>
-        <div class="status-item">⚡ 能量<b id="nrg">60</b>/60</div>
-        <div class="status-item">💰 金幣<b id="gold">100</b></div>
-        <div class="status-item">😊 快樂<b id="st-hp">100</b></div>
-    </div>
+<body style="background: var(--bg); margin: 0; overflow-x: hidden; font-family: 'Noto Sans TC', sans-serif; color: white;">
 
-    <div class="tower-header">
-        <h1 class="tower-title">阿毛之塔</h1>
-        <div id="amao-full-title">[創世者觀測中]</div>
-    </div>
-
-    <div class="stats-row">
-        <div class="stat-box">⚔️ 攻擊<span id="st-atk" class="stat-val">0</span></div>
-        <div class="stat-box">🛡️ 防禦<span id="st-def" class="stat-val">0</span></div>
-        <div class="stat-box">👟 速度<span id="st-spd" class="stat-val">0</span></div>
-    </div>
-
-    <div class="adventure-zone">
-        <div class="battle-stage">
-            <div class="unit" id="am-unit">
-                <div id="am-bubble" class="speech-bubble">汪！</div>
-                <div class="unit-sprite" onclick="petAmao()">
-                    <div id="layer-head" class="layer layer-head"></div>
-                    <div id="layer-body" class="layer layer-body"></div>
-                    <span id="amao-face">🐶</span>
-                    <div id="layer-hand" class="layer layer-hand"></div>
-                    <div id="layer-feet" class="layer layer-feet"></div>
-                </div>
-                <div class="hp-bar">
-                    <div id="am-hp-ghost" class="hp-ghost"></div>
-                    <div id="am-hp-fill" class="hp-fill"></div>
-                </div>
-            </div>
-
-            <div id="vs-box" style="font-size:42px; opacity:0; color:var(--monster); font-weight:900; font-style:italic; text-shadow: 0 0 10px rgba(231, 76, 60, 0.5);">VS</div>
-
-            <div class="unit" id="en-unit" style="opacity:0">
-                <div id="en-bubble" class="speech-bubble">！</div>
-                <div id="en-sprite" class="unit-sprite">🐱</div>
-                <div class="hp-bar">
-                    <div id="en-hp-ghost" class="hp-ghost"></div>
-                    <div id="en-hp-fill" class="hp-fill"></div>
-                </div>
-                <div id="en-name" style="font-size:12px; margin-top:8px; font-weight:bold; color:var(--monster); letter-spacing:1px;">惡貓</div>
-            </div>
-        </div>
-
-        <div id="info-msg" class="info-panel">阿毛正在暖身，準備好出發了嗎？</div>
-    </div>
-    <div class="side-ctrl">
-        <div class="ctrl-btn" onclick="openInv()" style="box-shadow: 0 0 15px rgba(241, 196, 15, 0.3);">🎒</div>
-        <div class="ctrl-btn" onclick="openStore()" style="box-shadow: 0 0 15px rgba(0, 242, 255, 0.3);">🏪</div>
-    </div>
-
-    <div class="dice-area">
-        <div class="dice" onclick="roll()">🎲</div>
-        <div style="text-align:center; margin-top:10px; font-size:12px; color:rgba(255,255,255,0.5); letter-spacing:2px;">命運投擲</div>
-    </div>
-
-    <div id="inv-modal" class="modal">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <div>
-                <h2 style="margin:0; color:var(--gold); font-size: 26px; text-shadow: 2px 2px 0 #000;">🎒 魔法背包</h2>
-                <small style="color:#888;">收納了阿毛所有的戰利品</small>
-            </div>
-            <button onclick="closeModal('inv-modal')" style="padding:10px 20px; border-radius:15px; background:rgba(231, 76, 60, 0.2); color:var(--monster); border:1px solid var(--monster); cursor:pointer; font-weight:bold;">關閉</button>
-        </div>
-        
-        <div style="display:flex; justify-content:space-around; background:rgba(0,0,0,0.3); padding:10px; border-radius:15px; margin-bottom:20px; border:1px solid rgba(255,255,255,0.05);">
-            <div style="font-size:12px;">⚔️ <span id="inv-atk">0</span></div>
-            <div style="font-size:12px;">🛡️ <span id="inv-def">0</span></div>
-            <div style="font-size:12px;">👟 <span id="inv-spd">0</span></div>
-        </div>
-        
-        <div style="display:flex; gap:10px; margin-bottom:20px;">
-            <button onclick="switchTab('food')" id="t-food" style="flex:1; padding:12px; border-radius:15px; background:var(--gold); color:#000; font-weight:bold; border:none; cursor:pointer;">🍱 美食</button>
-            <button onclick="switchTab('equip')" id="t-equip" style="flex:1; padding:12px; border-radius:15px; background:rgba(255,255,255,0.1); color:#fff; font-weight:bold; border:none; cursor:pointer;">⚔️ 裝備</button>
-        </div>
-        
-        <div id="inv-grid" class="grid">
-            </div>
-    </div>
-
-    <div id="store-modal" class="modal">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <h2 style="margin:0; color:var(--gold); font-size: 26px;">🏪 交易所</h2>
-            <div style="background:rgba(241, 196, 15, 0.1); padding:5px 15px; border-radius:20px; border:1px solid var(--gold);">
-                <span style="color:var(--gold); font-weight:bold;">💰 <span id="store-gold">0</span></span>
-            </div>
-        </div>
-
-        <div id="npc-stage" style="background:linear-gradient(135deg, rgba(26,26,46,0.9), rgba(5,5,10,0.9)); border-radius:20px; padding:20px; margin:15px 0; border:1px solid rgba(241, 196, 15, 0.3); position:relative; overflow:hidden;">
-            <div id="npc-avatar" style="font-size:50px; margin-bottom:10px; filter:drop-shadow(0 0 10px var(--gold));"></div>
-            <div id="npc-name" style="color:var(--gold); font-weight:bold; font-size:18px; margin-bottom:5px;">神祕商人</div>
-            <div id="npc-dialogue" style="color:#ddd; font-style:italic; line-height:1.6; font-size:14px; min-height:45px;">
-                「喔呀？阿毛又來照顧生意了嗎？」
-            </div>
-        </div>
-        
-        <div id="store-grid" class="grid">
-            </div>
-
-        <div style="text-align:center; margin-top:20px;">
-            <button onclick="closeModal('store-modal')" style="background:transparent; border:none; color:#666; text-decoration:underline; cursor:pointer;">下次再說，汪！</button>
-        </div>
-    </div>
 <script>
-// --- 核心資料庫：定義世界的規則 ---
+/**
+ * 【阿毛之塔：鮪魚堡的創世數據核心】
+ * 此為開放式架構，請勿在此區塊後方加入結束標籤。
+ */
+
 const DB = {
-    // 五維度食物生成矩陣
+    // 1-A. 魔法怪物矩陣：豐富且充滿趣味
+    m_pre: ["星光熠熠的", "七彩噴發的", "時空跳躍的", "充滿肉泥香氣的", "銀色長髮飄飄的", "百合花盛開的", "史萊哲林優雅的", "南瓜式熱血的", "夢幻聯動的", "發出貓鈴聲的", "量子疊加態的", "被魔法親吻過的", "鮪魚堡眷顧的"],
+    m_names: ["幻獸惡貓", "彩虹史萊姆", "鍵盤魔法師", "正在寫輕小說的羊", "守護南瓜魂", "邏輯大師", "金幣領主", "代碼幻影", "極光獨角獸", "加班中的精靈", "滿電量的喜悅", "社交之星"],
+    m_suf: ["(SSR形態)", "(覺醒女神)", "(傳奇英雄)", "(神話化身)", "(星塵微粒)", "(時空旅者)", "(次元唯一版)"],
+
+    // 1-B. 五維幻想美食：極致組合
     f_dims: {
-        口感: ["酥脆的","黏糊糊的","彈牙的","阿嬤怕你餓的","焦香的","神祕的","極致的","深夜限定","爆漿的","充滿魔力的","冷掉也划算的","在地老饕推的","被火球術燒過的","量子糾纏的","異次元的","五星占卜的"],
-        魔法狀態: ["閃著聖光的","魔力暴走的","絕對零度的","煉金術失敗產出的","平行時空的","剛從火球術生還的","時空裂縫掉出來的","製作人加持過的","充滿多巴胺的","高階法術附魔的"],
-        做法: ["碳烤","油炸","清燉","加了魔法粉末的","三色豆地獄","東泉辣椒醬","爆炒","勾芡","加辣不加蒜","慢火熬煮七七四十九天的","用愛發電做的","微量放射性的"],
-        主食: ["滷肉飯","甜不辣","肉圓","大腸麵線","科學麵","維力炸醬麵","臭豆腐","地瓜球","蚵仔煎","雞排","排骨酥","豬血糕","潤餅","小籠包","碗粿","筒仔米糕"],
-        加料: ["配大腸","加貢丸","佐魔法露水","附贈阿毛的口水","淋上神祕汁液","搭配香菜地獄","加兩顆蛋","不要香菜","加了致死量的蒜泥"]
+        temp: ["發光恆溫的", "如晨露般清涼的", "溫暖心靈的", "充滿活力的", "星辰溫度的"],
+        texture: ["爆裂漿果感的", "Q彈如跳跳糖的", "像羽毛般輕盈的", "香脆如魔法碎片的", "絲滑如高級緞面的"],
+        method: ["魔法粒子加速料理", "星光萃取烘烤", "深海珍珠慢燉", "史萊哲林幻影煮法", "南瓜式爆裂油炸"],
+        main: ["頂級鮪魚堡", "黃金滷肉飯", "銀河拉麵", "草莓百合舒芙蕾", "爆汁魔力雞排"],
+        extra: ["灑了璀璨星塵", "淋了人造極光糖漿", "搭配一杯不老泉珍珠奶茶", "混入了瞬間勇氣精華", "附贈一顆發光的魔法種子"]
     },
-    // 隨機環境描寫：增強沉浸感
-    env: [
-        "空氣中傳來淡淡的花香。","遠處傳來悠揚的豎琴聲。","有一隻蝴蝶停在阿毛鼻尖上。","陽光灑在塔內的石磚上。","這裡的地板擦得亮晶晶的。","感覺有股溫暖的力量包圍著你。","阿毛發現了一朵會發光的小花。","牆上的火把閃爍著柔和的光。","空氣中充滿了冒險的味道。","這裡的風吹起來涼涼的很舒服。","聽到一聲輕微的貓叫。","地板上有一道彩虹。","這裡的魔法波動非常平穩。","阿毛拍了拍身上的灰塵。","空氣中飄過一陣剛出爐的麵包香。","遠處有噴水池的聲音。","這裡安靜得能聽到心跳。","阿毛的尾巴搖得很輕快。","雲塊在塔外的窗邊飄過。","有一隻魔法松鼠跑了過去。"
-    ],
-    // 頭銜系統：數值與註解
-    titles: [
-        {p:"平凡的", s:"冒險者", d:"註解：最普通的存在。", atk:20, def:20, spd:15},
-        {p:"空間的", s:"魔術師", d:"註解：客廳變成了無法進入的迷宮。", atk:20, def:150, spd:10},
-        {p:"奇蹟的", s:"匠人", d:"註解：蓋出了會漏水的豪宅。", atk:35, def:100, spd:5},
-        {p:"光與風的", s:"引導者", d:"註解：把承重牆打掉一個洞，採光超棒。", atk:70, def:-20, spd:40},
-        {p:"火龍的", s:"逆鱗者", d:"註解：每天都要摸一下龍屁股。", atk:180, def:20, spd:60},
-        {p:"忘記帶錢的", s:"大魔王", d:"註解：結帳時只能尷尬地笑。", atk:250, def:50, spd:30}
-    ],
-    // 怪物圖鑑
-    monsters: [
-        {n: "量子惡貓", i: "🐱", hp: 40, atk: 12, talk:["喵！此路不通！","沒看過火球術？","你是那隻傻狗？"]},
-        {n: "改造王喵", i: "😾", hp: 110, atk: 28, talk:["我要改造你的狗窩！","全能改造王參上！","承重牆我拆啦！"]},
-        {n: "黑貓獵人", i: "🐈‍⬛", hp: 200, atk: 55, talk:["見識貓爪極意！","肉球面前顫抖吧！","影分身之術！"]},
-        {n: "阿羊的夢魘", i: "🖋️", hp: 450, atk: 85, talk:["為什麼稿子還沒寫完？","這是編輯的怨念！","拖稿的人沒飯吃！"]}
-    ],
-    // 裝備詞綴
-    e_pre: ["創世者的","神祕的","阿姨的","附魔的","亮晶晶的","發光的","羊親手縫製的"],
+
+    // 1-C. 史萊哲林式華麗裝備詞綴
+    e_pre: ["史萊哲林的隱傲", "南瓜噴汗熱血", "羊的百合瑰麗", "滷滷米達精算", "鮪魚堡的絕對意志", "神聖銀色長髮", "時空交織的", "深淵秘辛的", "璀璨奪目的", "無視地心引力的"],
     e_name: {
-        head: ["大法師帽","安全帽","耳機","兔耳朵","思考者圓規"],
-        body: ["賢者長袍","附魔皮甲","魔法雨衣","改造王圍裙","史萊哲林制服"],
-        hand: ["斷掉魔杖","附魔藍白拖","屠龍大劍","折凳","簽名原稿"],
-        feet: ["飛行掃帚","傳送短靴","阿毛專用鞋","溜冰鞋","黃金拖鞋"]
-    }
-};
+        head: ["智慧之冠", "貓耳神經共鳴器", "邏輯之眼單眼鏡", "史萊哲林純銀髮箍", "星塵斗笠"],
+        body: ["極光防護披風", "黃金比例訓練服", "百合蕾絲戰袍", "史萊哲林長袍", "次元摺疊套裝"],
+        hand: ["聖光斷罪劍", "星軌修正法杖", "雷霆重量啞鈴", "夢幻百合原稿", "鮪魚堡的創世筆"],
+        feet: ["疾風掠影戰靴", "拓撲空間漫步鞋", "粉紅絲帶輕舞鞋", "噴射星火靴", "銀蛇巡遊靴"]
+    },
 
-// --- 初始化狀態 (State) ---
-let state = { 
-    lvl: 0, 
-    nrg: 60, 
-    gold: 100, 
-    mood: 100, 
-    inv: [], 
-    equips: {head:null, body:null, hand:null, feet:null}, 
-    titles: [DB.titles[0]], 
-    unlockedTitles: new Set(["平凡的冒險者"]),
-    curTitleIdx: 0, 
-    curTab: 'food', 
-    isBattle: false,
-    learnedSkills: ["強力啃咬"] 
-};
-</script>
-<script>
-// --- 核心渲染引擎 ---
-function update() {
-    // 1. 基礎數值刷新與縮放特效
-    updateValue('lvl', state.lvl);
-    updateValue('nrg', state.nrg);
-    updateValue('gold', state.gold);
-    updateValue('st-hp', state.mood);
-    
-    // 2. 商店金幣與介面同步
-    if(document.getElementById('store-gold')) 
-        document.getElementById('store-gold').innerText = state.gold;
-
-    // 3. 計算並更新最終戰鬥力
-    const finalStats = calculateFinalStats();
-    const statMap = { 'st-atk': 'atk', 'st-def': 'def', 'st-spd': 'spd', 'inv-atk': 'atk', 'inv-def': 'def', 'inv-spd': 'spd' };
-    for (let id in statMap) {
-        let el = document.getElementById(id);
-        if (el) {
-            let newVal = finalStats[statMap[id]];
-            if (el.innerText != newVal) {
-                el.innerText = newVal;
-                el.style.transform = "scale(1.3)";
-                el.style.color = "var(--gold)";
-                setTimeout(() => { el.style.transform = "scale(1)"; el.style.color = "var(--pink)"; }, 300);
-            }
-        }
-    }
-
-    // 4. 阿毛頭銜與環境氣氛渲染
-    let t = state.titles[state.curTitleIdx];
-    document.getElementById('amao-full-title').innerText = `[${t.p}${t.s}]`;
-    
-    // 根據心情切換阿毛表情
-    let face = document.getElementById('amao-face');
-    if (state.mood > 80) face.innerText = "🐶";
-    else if (state.mood > 30) face.innerText = "🐕";
-    else face.innerText = "🤢";
-    if (state.isBattle) face.innerText = "💢";
-
-    // 5. 紙娃娃系統：Layer 渲染
-    renderPaperDoll();
-}
-
-// --- 數值變動輔助函式 ---
-function updateValue(id, val) {
-    const el = document.getElementById(id);
-    if (el && el.innerText != val) {
-        el.innerText = val;
-        el.classList.add('pulse'); // 假設 CSS 有定義縮放動畫
-        setTimeout(() => el.classList.remove('pulse'), 400);
-    }
-}
-
-// --- 戰鬥力合成器 (精確計算) ---
-function calculateFinalStats() {
-    let t = state.titles[state.curTitleIdx];
-    let base = { atk: t.atk, def: t.def, spd: t.spd };
-    Object.values(state.equips).forEach(item => {
-        if (item) {
-            base.atk += (item.atk || 0);
-            base.def += (item.def || 0);
-            base.spd += (item.spd || 0);
-        }
-    });
-    return base;
-}
-
-// --- 紙娃娃渲染 (帶有發光邏輯) ---
-function renderPaperDoll() {
-    const slots = ['head', 'body', 'hand', 'feet'];
-    slots.forEach(slot => {
-        let el = document.getElementById(`layer-${slot}`);
-        let item = state.equips[slot];
-        if (item) {
-            el.innerText = item.icon;
-            el.classList.add('active');
-            // 如果是稀有裝備則增加額外光暈
-            if (item.rare) el.style.filter = "drop-shadow(0 0 10px var(--legend))";
-        } else {
-            el.classList.remove('active');
-        }
-    });
-}
-
-// --- 進階訊息面板：帶有打字機感 ---
-function updateMsg(msg) {
-    let panel = document.getElementById('info-msg');
-    panel.style.opacity = "0";
-    setTimeout(() => {
-        panel.innerHTML = msg;
-        panel.style.opacity = "1";
-        // 隨機觸發環境描寫
-        if (Math.random() > 0.8) {
-            let envText = DB.env[Math.floor(Math.random() * DB.env.length)];
-            panel.innerHTML += `<br><small style="color:#666; font-size:10px;"><i>${envText}</i></small>`;
-        }
-    }, 150);
-}
-
-// --- 氣泡顯示 ---
-function showBubble(id, text) {
-    let b = document.getElementById(id);
-    b.innerText = text;
-    b.style.opacity = "1";
-    b.style.transform = "translateY(-10px) scale(1.1)";
-    setTimeout(() => {
-        b.style.opacity = "0";
-        b.style.transform = "translateY(0) scale(1)";
-    }, 2000);
-}
-
-// --- 介面控制 ---
-function closeModal(id) {
-    document.getElementById(id).style.display = 'none';
-}
-</script>
-<script>
-// --- 8-1. 增強版命運投擲：帶有連擊與震動效果 ---
-let rollCombo = 0; // 連擊計數
-
-async function roll() {
-    if (state.isBattle || state.nrg < 5) {
-        if (state.nrg < 5) updateMsg("<span style='color:var(--monster)'>❌ 阿毛肚子餓到走不動了...</span>");
-        return;
-    }
-
-    // 消耗與連擊邏輯
-    state.nrg -= 5;
-    const point = Math.floor(Math.random() * 6) + 1;
-    if (point >= 5) rollCombo++; else rollCombo = 0;
-
-    // 觸發螢幕震動 (視覺反饋)
-    document.body.style.animation = "hurtShake 0.2s ease-in-out";
-    setTimeout(() => document.body.style.animation = "", 200);
-
-    const diceEl = document.querySelector('.dice');
-    diceEl.style.transform = "translateY(-50px) rotate(720deg)";
-    diceEl.style.opacity = "0.7";
-    
-    await new Promise(r => setTimeout(r, 400));
-    
-    diceEl.innerText = ["⚀","⚁","⚂","⚃","⚄","⚅"][point-1];
-    diceEl.style.transform = "translateY(0) rotate(0deg)";
-    diceEl.style.opacity = "1";
-
-    // 點數判定與豐富事件流
-    if (point === 6) {
-        updateMsg(`<b style="color:var(--legend)">🔥 狂暴連擊！</b><br>阿毛像火箭一樣衝過三層樓！`);
-        state.lvl += 3;
-        setTimeout(startBattle, 600); // 衝太快撞到怪了
-    } else if (point === 1) {
-        triggerBadEvent();
-    } else {
-        triggerRandomEvent(point);
-    }
-    
-    update();
-}
-
-// --- 8-2. 豐富的隨機事件池 ---
-function triggerRandomEvent(p) {
-    state.lvl++;
-    const r = Math.random();
-    
-    // 根據層數與點數給予不同的劇情描述
-    const events = [
-        { 
-            name: "羊的草稿紙", 
-            check: () => r > 0.85, 
-            act: () => { state.gold += 50; return "撿到了羊遺失的草稿，拿去賣給出版社換了 50 金幣！"; } 
-        },
-        { 
-            name: "南瓜的特訓", 
-            check: () => r > 0.7 && p > 3, 
-            act: () => { state.mood -= 10; return "遇到了正在重訓的南瓜，被拉去強迫特訓，雖然很累但感覺變強了！"; } 
-        },
-        { 
-            name: "滷滷米達的冷笑話", 
-            check: () => r > 0.5, 
-            act: () => { state.mood = Math.min(100, state.mood + 15); return "聽了滷滷米達的冷笑話，雖然聽不懂但被冷到清醒了。"; } 
-        },
-        { 
-            name: "神祕補給盒", 
-            check: () => r > 0.3, 
-            act: () => { 
-                const f = generateFood(); 
-                state.inv.push(f); 
-                return `在路邊發現一個寫著「阿毛專用」的箱子，獲得 <b>${f.name}</b>！`; 
-            } 
-        }
-    ];
-
-    const ev = events.find(e => e.check());
-    if (ev) {
-        updateMsg(`<b>【${ev.name}】</b><br>${ev.act()}`);
-    } else {
-        updateMsg(`阿毛悠閒地爬到了第 ${state.lvl} 層，<br>${DB.env[Math.floor(Math.random()*DB.env.length)]}`);
-    }
-}
-
-// --- 8-3. 倒楣事件（增加策略挑戰） ---
-function triggerBadEvent() {
-    const r = Math.random();
-    if (r > 0.5) {
-        state.gold = Math.max(0, state.gold - 20);
-        updateMsg("<span style='color:#aaa'>💸 糟糕！金幣從破掉的口袋掉出來了... (-20 金幣)</span>");
-    } else {
-        state.nrg = Math.max(0, state.nrg - 10);
-        updateMsg("<span style='color:#aaa'>🐾 踩到香蕉皮摔了一跤，體力流失了。</span>");
-    }
-}
-
-// --- 8-4. 戰鬥邏輯：支援多重對話與技能前置 ---
-async function startBattle() {
-    state.isBattle = true;
-    const mData = DB.monsters[Math.min(DB.monsters.length-1, Math.floor(state.lvl/20))];
-    const difficulty = 1 + (state.lvl * 0.05);
-    
-    const enemy = {
-        n: mData.n, i: mData.i,
-        hp: Math.floor(mData.hp * difficulty),
-        maxHp: Math.floor(mData.hp * difficulty),
-        atk: Math.floor(mData.atk * difficulty),
-        talks: mData.talk
-    };
-
-    // 戰鬥入場特效
-    document.getElementById('vs-box').style.opacity = "1";
-    document.getElementById('en-unit').style.opacity = "1";
-    document.getElementById('en-sprite').innerText = enemy.i;
-    document.getElementById('en-name').innerText = `${enemy.n} (Lv.${state.lvl})`;
-
-    updateMsg(`⚔️ <b>BOSS 戰開始</b> ⚔️<br>面對來自 ${enemy.n} 的威壓！`);
-    
-    // 此處將引導至第 11 區塊的技能戰鬥邏輯
-    setTimeout(() => {
-        if(typeof startSkillBattle === "function") startSkillBattle(enemy);
-        else battleLoop(enemy); // 降級方案
-    }, 1000);
-}
-</script>
-<script>
-// --- 9-1. 極致美食生成器：五維矩陣演算法 ---
-function generateFood() {
-    const d = DB.f_dims;
-    const parts = [
-        d.口感[Math.floor(Math.random() * d.口感.length)],
-        d.魔法狀態[Math.floor(Math.random() * d.魔法狀態.length)],
-        d.做法[Math.floor(Math.random() * d.做法.length)],
-        d.主食[Math.floor(Math.random() * d.主食.length)],
-        d.加料[Math.floor(Math.random() * d.加料.length)]
-    ];
-    
-    // 根據做法判定這道菜的「危險程度」
-    const isDangerous = parts[2].includes("微量放射性") || parts[2].includes("地獄");
-    
-    return {
-        type: 'food',
-        name: parts.join(" "),
-        icon: "🍱",
-        nrg: isDangerous ? -10 : (15 + Math.floor(Math.random() * 20)),
-        mood: isDangerous ? 50 : (10 + Math.floor(Math.random() * 15)),
-        desc: isDangerous ? "這東西真的能吃嗎？吃了感覺會看到創世者..." : "聞起來超香的，阿毛流口水了！"
-    };
-}
-
-// --- 9-2. 背包介面切換與渲染 ---
-function openInv() {
-    document.getElementById('inv-modal').style.display = 'block';
-    state.curTab = 'food'; // 預設開啟美食頁面
-    renderInv();
-    update();
-}
-
-function switchTab(tab) {
-    state.curTab = tab;
-    document.getElementById('t-food').style.background = tab === 'food' ? 'var(--gold)' : 'rgba(255,255,255,0.1)';
-    document.getElementById('t-food').style.color = tab === 'food' ? '#000' : '#fff';
-    document.getElementById('t-equip').style.background = tab === 'equip' ? 'var(--gold)' : 'rgba(255,255,255,0.1)';
-    document.getElementById('t-equip').style.color = tab === 'equip' ? '#000' : '#fff';
-    renderInv();
-}
-
-function renderInv() {
-    const grid = document.getElementById('inv-grid');
-    grid.innerHTML = "";
-    
-    // 過濾出目前分頁的物品
-    const items = state.inv.filter(i => i.type === state.curTab);
-    
-    if (items.length === 0) {
-        grid.innerHTML = `<div style="grid-column:1/3; padding:40px; color:#666;">空間空空的，汪...</div>`;
-        return;
-    }
-
-    items.forEach((item, idx) => {
-        const card = document.createElement('div');
-        card.className = 'item-card';
-        
-        if (state.curTab === 'food') {
-            card.innerHTML = `
-                <div style="font-size:30px; margin-bottom:10px;">${item.icon}</div>
-                <b style="font-size:13px; color:var(--gold);">${item.name}</b><br>
-                <small style="font-size:10px; color:#aaa;">${item.desc}</small><br>
-                <div style="margin-top:10px; font-size:11px; color:var(--pink);">⚡+${item.nrg} 😊+${item.mood}</div>
-                <button onclick="useFood(${state.inv.indexOf(item)})" style="margin-top:10px; width:100%; padding:5px; border-radius:8px; background:var(--gold); border:none; font-weight:bold;">品嚐</button>
-            `;
-        } else {
-            const isEquipped = Object.values(state.equips).some(e => e && e.name === item.name);
-            card.innerHTML = `
-                <div style="font-size:30px; margin-bottom:10px;">${item.icon}</div>
-                <b style="font-size:13px; color:var(--equip);">${item.name}</b><br>
-                <div style="font-size:10px; color:#888; margin:5px 0;">⚔️${item.atk} 🛡️${item.def} 👟${item.spd}</div>
-                <button onclick="equipItem(${state.inv.indexOf(item)})" style="width:100%; padding:5px; border-radius:8px; background:${isEquipped ? '#555' : 'var(--equip)'}; border:none; color:${isEquipped ? '#aaa' : '#000'}; font-weight:bold;">
-                    ${isEquipped ? '卸下' : '裝備'}
-                </button>
-            `;
-        }
-        grid.appendChild(card);
-    });
-}
-
-// --- 9-3. 食物與裝備的使用邏輯 ---
-function useFood(idx) {
-    const item = state.inv[idx];
-    state.nrg = Math.min(60, state.nrg + item.nrg);
-    state.mood = Math.min(100, state.mood + item.mood);
-    state.inv.splice(idx, 1);
-    
-    // 播放一個簡單的飽足特效
-    showBubble('am-bubble', "好飽！汪嗚！");
-    updateMsg(`阿毛吃掉了 <b>${item.name}</b>，<br>感覺精神百倍！`);
-    renderInv();
-    update();
-}
-
-function equipItem(idx) {
-    const item = state.inv[idx];
-    const slot = item.slot;
-    
-    if (state.equips[slot] && state.equips[slot].name === item.name) {
-        state.equips[slot] = null; // 卸下
-        updateMsg(`卸下了 ${item.name}。`);
-    } else {
-        state.equips[slot] = item; // 裝備
-        updateMsg(`阿毛裝備了 <b style="color:var(--equip)">${item.name}</b>！`);
-    }
-    
-    renderInv();
-    update();
-}
-</script>
-<script>
-// --- 10-1. 互損修正版：30x3 深度台詞 ---
-const NPC_TALKS = {
-    pumpkin: [
-        "阿毛，剛才滷滷米達說你的動作像史萊姆，要不要過來跟我練深蹲？", "這護具是我打磨的，滷滷米達那種細胳膊根本舉不起來。", "羊又在看那些百合小說了？嘖，戰鬥才是最高強度的熱血！", "阿毛，別學羊那樣縮著，拿出一點像我這樣的氣勢來！", "汪！聽說惡貓最近被這座塔的主人改強了？真有那傢伙的風格。", "今天的目標：爬五十層！這是對肌肉的基本尊重！", "這劍重兩百斤，羊上次想拿它當書架，差點把自己壓扁。", "阿毛，要是滷滷米達用那些複雜公式煩你，你就直接吠她。", "雖然這座塔的人心眼都挺壞的，但拳頭硬才是真道理。", "嘶哈！南瓜之魂燃燒吧！阿毛，跟我做五十組開合跳！", "你是要當一輩子的小狗，還是當像我一樣的純爺們？", "滷滷米達說這裝備不科學，我說這叫『肌肉科學』！", "力量！那些算計在絕對的拳頭面前都是紙糊的。", "阿毛，別像羊那樣整天躲著，來跟我流點汗！", "滷滷米達剛才在計算我的肌肉含水量，被我一記重擊嚇跑了。", "羊說我煮的飯太硬？那是因為她的牙齒缺乏鍛鍊！", "這雙鞋能跑很快，方便你追上那些逃跑的貓。", "裝備雖然重，但這才是紮實的安全感，懂嗎？", "阿毛，別聽羊亂說什麼命運，你的命運掌握在你的二頭肌裡。", "聽說這座塔的設計者最討厭三色豆？難怪這裡沒賣那種垃圾。", "汗水是變強的門票，不准逃票，汪！", "這鋼板硬度是我測過的，滷滷米達的魔法都打不穿。", "去吧阿毛！去讓那些玩腦袋的人看看物理衝擊的厲害！", "羊說想把我寫進小說當反派？我建議她先能搬動我的槓鈴再說。", "目標五十層，達不到就加練一百組波比跳！", "汪汪！大聲點！別讓隔壁店的人覺得我們這組沒體力！", "身體要顧好，這座塔裡怪人很多，你要強壯一點。", "滷滷米達的邏輯、羊的幻想，加上我的拳頭，這就是這座塔。", "惡貓再兇，也沒我發火時兇，阿毛你要記住這一點。", "加油吧，別讓我等太久，我還要趕著去重訓呢。"
-    ],
-    lulu: [
-        "誤差範圍內，你被南瓜那種肌肉腦帶壞的機率是 99%。", "南瓜說你的勇氣像戰神，但我計算後覺得那是『魯莽』。", "別碰儀器，羊剛才差點把她的百合小說原稿掉進冷卻液裡。", "南瓜分析過你的路徑，他說直接撞牆，請千萬別聽他的。", "這裝備被我重新校準過，比南瓜那種原始打磨法精準多了。", "羊想看你跟惡貓發展出什麼劇情，我建議你直接給它一發魔法。", "阿毛，大腦是個好東西，別像南瓜那樣只把它當作平衡重心的器官。", "分析結果顯示，羊的小說邏輯漏洞比這座塔的 Bug 還多。", "性價比？那是給窮人算的，我只算極致的效能輸出。", "如果你崩潰了，南瓜會負責背你，我會負責記錄你的失敗參數。", "這長袍的符文是我手工校準的，南瓜竟然問我能不能拿來擦汗。", "邏輯悖論很有趣，但看南瓜試圖思考複雜問題更有趣。", "數值不穩定？估計是剛才被南瓜的吼聲震到了。", "三色豆的存在是這座塔最不符合邏輯的原始設定。", "別談感情，南瓜會被它搞哭，羊會把它寫成爛俗小說。", "這把劍的重心偏移了，南瓜說這叫手感？簡直是胡扯。", "魔法波動異常...羊是不是又在偷偷連塔裡的 WiFi 打電動？", "效率，是衡量一個冒險者唯一的指標，雖然你都沒有。", "根據熱力學第二定律，南瓜那種消耗體力的方式非常愚蠢。", "你的審美深受羊的影響，這種花邊裝飾完全沒有防禦邏輯。", "分析結束，你今天能活下來純粹是因為南瓜在前面坦傷害。", "汪？別發出那種頻率，南瓜會以為你在跟他撒嬌。", "這是從南瓜弄壞的廢鐵裡回收的，比他原來的設計強多了。", "這藥水成分很純，南瓜喝完後說像在喝汽油，真沒品味。", "知識很貴，你可以試著用南瓜那種暴力打折法，但我會報警。", "別試圖理解南瓜的腦袋，那裡面只有蛋白質跟汗水。", "塔正在老化，設計者似乎故意留了一些不穩定的區域。", "我的時間很寶貴，除非南瓜又把我的店門拆了需要我去修。", "結論：這座塔的運作全靠我的腦袋在撐，他們兩個負責鬧事。", "下次帶點有研究價值的東西回來，別只會帶骨頭。"
-    ],
-    sheep: [
-        "（躲在門後）阿毛...南瓜剛才在那邊大吼大叫，好吵喔...", "滷滷米達剛才說我的小說不符合邏輯...嗚，她懂什麼是愛嗎！", "我、我才沒有偷懶，我是在思考主角該怎麼表白...", "這裝備的顏色...滷滷米達說很刺眼，但我覺得很有戀愛感。", "（小聲）阿毛，你覺不覺南瓜跟滷滷米達其實挺配的？", "這雞排分你一半，千萬別被滷滷米達發現，她會說這不健康。", "汪！不、不准給滷滷米達看我的手稿！她會用紅筆幫我改邏輯...", "如果世界能像百合小說一樣充滿粉紅泡泡就好了...", "這披風是我躲在南瓜背後縫的，那裡比較有安全感。", "要是能像主角一樣...有個強壯的女生保護我就好了，像南瓜那樣？", "我、我雖然怯弱，但我可是這座塔裡最懂少女心的人！", "這把劍...我繫了絲帶，南瓜說會影響揮劍，但他還是收下了。", "阿毛，你不覺得這座塔的設計者，品味其實挺古怪的嗎？", "別、別問結局，滷滷米達說我寫的結局機率太低，我好想哭...", "這裝備有 10% 機率...讓敵人的心跳稍微快一點點。", "要是滷滷米達能別再算我的字數效率就好了...", "這個世界，一定要充滿溫暖的百合來抵消南瓜的汗味！", "汪汪！別學我，萬一被滷滷米達當作研究對象怎麼辦！", "這咖啡是滷滷米達泡的，味道精準到讓人害怕。", "我看見了你的未來，希望是那種充滿粉紅色背景的結局。", "這名字是我取的，滷滷米達說這叫『語意不明』，討厭！", "三色豆是這座塔的禁忌，聽說是設計者留下的唯一弱點。", "如果你看到可愛的女生，記得帶她來跟我一起打電動...", "靈感這種東西，通常只會在南瓜拆牆的時候嚇跑。", "這座塔的牆紙...滷滷米達說太舊了，想拿我的廢稿去貼，哼。", "世界很美，如果南瓜能安靜一點，滷滷米達能感性一點。", "汪嗚...我想穿越到一個只有女孩子的冒險遊戲裡。", "這、這是滷滷米達鑑定過、南瓜保證結實的裝備！", "保持好奇，這可是小說主角必備的特質喔。", "好了，買完快走，滷滷米達好像帶著計算機走過來了！"
+    // 1-D. 進化頭銜：帶有華麗色彩與描述
+    titles: [
+        { p: "塔之", s: "幸運兒", d: "剛進塔就被魔法包圍的阿毛，看來會有一段奇遇。", color: "#00d4ff" },
+        { p: "燃燒", s: "鬥士", d: "南瓜教練的熱血注入！你的拳頭現在帶有南瓜火花。", color: "#ff8c00" },
+        { p: "瑰麗", s: "夢想家", d: "羊的百合故事讓你覺醒了魔法，心情永遠不低落。", color: "#ff69b4" },
+        { p: "真理", s: "探求者", d: "滷滷米達認可了你的智慧，你能看穿所有魔法流動。", color: "#00f2fe" },
+        { p: "史萊哲林", s: "繼承者", d: "繼承了優雅與野心，這座塔開始向你低頭。", color: "#2ecc71" },
+        { p: "奇蹟", s: "創造神", d: "你與鮪魚堡大人的意志共鳴，世界就在你指尖。", color: "#f1c40f" }
     ]
 };
 
-// --- 10-2. 幕後觀察者（鮪魚堡）的隨機干預 ---
-function tunaBlessing() {
-    const r = Math.random();
-    if (r > 0.94) {
-        state.gold += 300;
-        state.nrg = 60;
-        updateMsg(`<b style="color:var(--legend)">🌀 塔的底層邏輯重寫</b><br>系統發生了一次優雅的擾動，阿毛獲得了大量的資源加持。`);
-    } else if (r > 0.88) {
-        state.mood = 100;
-        updateMsg(`<b style="color:var(--equip)">🐍 幕後者的凝視</b><br>一股神祕的冷靜氣息席捲而來，阿毛的心情瞬間平復了。`);
+// --- 1-2. 遊戲初始狀態 (完全體) ---
+let state = {
+    lvl: 1,
+    nrg: 60,
+    gold: 200,
+    mood: 100,
+    atk: 25, // 魔法初始強化
+    def: 25,
+    spd: 15,
+    luk: 30, // 幸運值設定
+    int: 20,
+    inv: [],
+    equips: { head: null, body: null, hand: null, feet: null },
+    unlockedSkills: ['blood', 'light', 'heal', 'rage'],
+    titles: [DB.titles[0]],
+    curTitleIdx: 0,
+    unlockedTitles: new Set(["塔之幸運兒"]),
+    isBattle: false,
+    curTab: 'food',
+    atkBuff: 1,
+    isProcessing: false
+};
+</script>
+<div id="top-bar" style="position: fixed; top: 0; width: 100%; height: 60px; background: rgba(10,10,25,0.95); border-bottom: 2px solid var(--magic); display: flex; justify-content: space-around; align-items: center; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+    <div class="top-stat">🏰 塔層: <span id="stat-lvl" style="color:var(--gold); font-weight:900;">1</span></div>
+    <div class="top-stat">⚡ 能量: <span id="stat-nrg" style="color:var(--equip);">60</span>/60</div>
+    <div class="top-stat">💰 金幣: <span id="stat-gold" style="color:var(--gold);">200</span></div>
+    <div class="top-stat">😊 心情: <span id="stat-mood" style="color:#ff69b4;">100</span>%</div>
+</div>
+
+<div class="game-container" style="margin-top: 80px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding-bottom: 100px;">
+    
+    <div id="amao-panel" style="width: 90%; max-width: 400px; background: var(--panel); border-radius: 20px; border: 1px solid var(--silver); padding: 15px; position: relative; margin-bottom: 20px;">
+        <div id="amao-title" style="font-family: 'Cinzel', serif; font-size: 20px; text-align: center; color: var(--gold); text-shadow: 0 0 10px var(--gold); margin-bottom: 10px;">塔之幸運兒</div>
+        
+        <div style="display: flex; justify-content: space-around; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
+            <div class="v-stat">⚔️ 攻擊 <br> <span id="val-atk" style="color:var(--legend);">25</span></div>
+            <div class="v-stat">🛡️ 防禦 <br> <span id="val-def" style="color:var(--equip);">25</span></div>
+            <div class="v-stat">👟 速度 <br> <span id="val-spd" style="color:var(--silver);">15</span></div>
+            <div class="v-stat">🍀 幸運 <br> <span id="val-luk" style="color:#2ecc71;">30</span></div>
+            <div class="v-stat">🧠 智力 <br> <span id="val-int" style="color:var(--magic);">20</span></div>
+        </div>
+    </div>
+
+    <div class="battle-area" style="width: 90%; max-width: 400px; min-height: 250px; background: rgba(0,0,0,0.3); border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; border: 1px dashed var(--magic); margin-bottom: 20px;">
+        
+        <div id="amao-sprite" style="font-size: 80px; transition: all 0.3s; filter: drop-shadow(0 0 10px white);">🐶</div>
+        <div id="amao-hp-bar" style="width: 150px; height: 10px; background: #333; border-radius: 5px; margin-top: 10px; overflow: hidden; border: 1px solid #fff;">
+            <div id="amao-hp-fill" style="width: 100%; height: 100%; background: linear-gradient(90deg, #ff007f, #ff69b4); transition: width 0.3s;"></div>
+        </div>
+
+        <div id="vs-text" style="font-family: 'Bungee Shade', cursive; font-size: 30px; color: var(--legend); margin: 10px 0; opacity: 0.8;">VS</div>
+
+        <div id="enemy-sprite" style="font-size: 60px; transition: all 0.3s;">✨</div>
+        <div id="enemy-name" style="font-size: 14px; color: var(--silver); margin-top: 5px;">尋找魔法中...</div>
+        <div id="enemy-hp-bar" style="width: 120px; height: 8px; background: #333; border-radius: 4px; margin-top: 5px; overflow: hidden; display: none;">
+            <div id="en-hp-fill" style="width: 100%; height: 100%; background: #2ecc71;"></div>
+        </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 15px;">
+        <div id="dice-container" onclick="rollDice()" style="width: 100px; height: 100px; background: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 50px; cursor: pointer; box-shadow: 0 10px 30px rgba(255,255,255,0.2); transition: transform 0.1s;">
+            🎲
+        </div>
+        <div style="color: var(--silver); font-size: 12px; letter-spacing: 2px;">「 命 運 投 擲 」</div>
+
+        <div id="skill-panel" style="display: flex; gap: 10px; margin-top: 10px;">
+            <button class="skill-btn" onclick="castSkill('blood')">🩸血崩</button>
+            <button class="skill-btn" onclick="castSkill('light')">✨聖光</button>
+            <button class="skill-btn" onclick="castSkill('heal')">💖治癒</button>
+            <button class="skill-btn" onclick="castSkill('rage')">🔥狂暴</button>
+        </div>
+    </div>
+
+    <div style="position: fixed; right: 15px; bottom: 100px; display: flex; flex-direction: column; gap: 15px;">
+        <button onclick="openInv()" style="width: 60px; height: 60px; border-radius: 30px; border: 2px solid var(--gold); background: var(--panel); font-size: 25px;">🎒</button>
+        <button onclick="openStore()" style="width: 60px; height: 60px; border-radius: 30px; border: 2px solid var(--equip); background: var(--panel); font-size: 25px;">🏪</button>
+    </div>
+
+    <div id="msg-box" style="width: 90%; max-width: 400px; height: 80px; background: rgba(0,0,0,0.5); border: 1px solid var(--magic); margin-top: 20px; border-radius: 10px; padding: 10px; font-size: 13px; overflow-y: auto; line-height: 1.6; color: #eee;">
+        歡迎進入阿毛之塔，創世神鮪魚堡正在幕後注視著你...
+    </div>
+</div>
+<style>
+    /* 3-1. 全域美學與滾動條優化 */
+    * {
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    body {
+        background-attachment: fixed;
+        background-image: radial-gradient(circle at 50% 50%, #1a1535 0%, #0d0a1a 100%);
+    }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--magic); border-radius: 10px; }
+
+    /* 3-2. 數值與標題字體細節 */
+    .v-stat {
+        text-align: center;
+        font-size: 11px;
+        color: var(--silver);
+        font-weight: bold;
+    }
+    .v-stat span {
+        font-size: 16px;
+        font-family: 'Cinzel', serif;
+        display: block;
+        margin-top: 4px;
+    }
+
+    /* 3-3. 史萊哲林式發光邊框 */
+    #amao-panel, .battle-area, #msg-box {
+        box-shadow: 0 0 15px rgba(157, 80, 187, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    /* 3-4. 奧義技能按鈕美化 (最好最滿版) */
+    .skill-btn {
+        background: rgba(30, 20, 60, 0.8);
+        border: 1px solid var(--magic);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 4px 0 var(--magic);
+    }
+    .skill-btn:active {
+        transform: translateY(4px);
+        box-shadow: 0 0px 0 var(--magic);
+    }
+    .skill-btn:hover {
+        background: var(--magic);
+        box-shadow: 0 0 10px var(--magic);
+    }
+
+    /* 3-5. 動畫庫：震動、發光、浮動 */
+    
+    /* 受到傷害的震動 */
+    @keyframes hurtShake {
+        0% { transform: translate(1px, 1px) rotate(0deg); }
+        10% { transform: translate(-1px, -2px) rotate(-1deg); }
+        30% { transform: translate(3px, 2px) rotate(0deg); }
+        50% { transform: translate(-1px, 2px) rotate(1deg); }
+        70% { transform: translate(3px, 1px) rotate(-1deg); }
+        90% { transform: translate(-1px, 1px) rotate(0deg); }
+        100% { transform: translate(1px, -2px) rotate(-1deg); }
+    }
+
+    /* 創世神降臨的閃爍 */
+    @keyframes magicGlow {
+        0% { filter: drop-shadow(0 0 5px var(--gold)); }
+        50% { filter: drop-shadow(0 0 20px var(--gold)); }
+        100% { filter: drop-shadow(0 0 5px var(--gold)); }
+    }
+
+    /* 骰子旋轉動畫 */
+    @keyframes diceRoll {
+        0% { transform: rotate(0deg) scale(1); }
+        25% { transform: rotate(90deg) scale(1.1); }
+        50% { transform: rotate(180deg) scale(0.9); }
+        75% { transform: rotate(270deg) scale(1.1); }
+        100% { transform: rotate(360deg) scale(1); }
+    }
+
+    .rolling { animation: diceRoll 0.4s infinite linear; }
+    .hurt { animation: hurtShake 0.4s infinite linear; }
+    .blessed { animation: magicGlow 1.5s infinite alternate; }
+
+    /* 3-6. 背包與彈窗容器 (為第 5, 8 區塊預留) */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 85%;
+        max-width: 450px;
+        height: 70vh;
+        background: #151025;
+        border: 2px solid var(--gold);
+        border-radius: 25px;
+        z-index: 2000;
+        padding: 20px;
+        overflow: hidden;
+    }
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.8);
+        z-index: 1999;
+    }
+
+    /* 3-7. 物品卡片細節 */
+    .item-card {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 12px;
+        padding: 10px;
+        text-align: center;
+        transition: transform 0.2s;
+    }
+    .item-card:hover {
+        border-color: var(--gold);
+        background: rgba(255,255,255,0.1);
+        transform: scale(1.05);
+    }
+</style>
+
+<div id="modal-overlay" class="modal-overlay" onclick="closeAllModals()"></div>
+
+<div id="inv-modal" class="modal">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+        <h2 style="margin:0; font-family:'Cinzel'; color:var(--gold);">🎒 背包</h2>
+        <button onclick="closeAllModals()" style="background:none; border:none; color:white; font-size:24px;">×</button>
+    </div>
+    <div id="inv-tabs" style="display:flex; gap:10px; margin-bottom:15px;">
+        <button onclick="switchTab('food')" class="skill-btn">🍕 料理</button>
+        <button onclick="switchTab('equip')" class="skill-btn">⚔️ 裝備</button>
+    </div>
+    <div id="inv-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; height:calc(100% - 100px); overflow-y:auto;"></div>
+</div>
+
+<div id="store-modal" class="modal">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <h2 style="margin:0; font-family:'Cinzel'; color:var(--equip);">🏪 魔法商店</h2>
+        <button onclick="closeAllModals()" style="background:none; border:none; color:white; font-size:24px;">×</button>
+    </div>
+    <div id="npc-area" style="display:flex; align-items:center; gap:10px; background:rgba(255,255,255,0.05); padding:10px; border-radius:15px; margin-bottom:15px;">
+        <div id="npc-avatar" style="font-size:40px;">🎃</div>
+        <div>
+            <div id="npc-name" style="font-weight:bold; color:var(--gold);">南瓜</div>
+            <div id="npc-dialogue" style="font-size:12px; font-style:italic;">「...」</div>
+        </div>
+    </div>
+    <div id="store-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; height:calc(100% - 130px); overflow-y:auto;"></div>
+</div>
+<script>
+/**
+ * 【阿毛之塔：創世神邏輯引擎】
+ * 負責處理所有複雜的數值加成、頭銜判定與裝備權重。
+ */
+
+// 4-1. 極致數值演算：基礎值 + 裝備權重 + 智力補正
+function calculateFinalStats() {
+    let bonus = { atk: 0, def: 0, spd: 0, luk: 0, int: 0 };
+
+    // 遍歷所有已穿戴的裝備槽位
+    Object.values(state.equips).forEach(item => {
+        if (item) {
+            bonus.atk += (item.atk || 0);
+            bonus.def += (item.def || 0);
+            bonus.spd += (item.spd || 0);
+            bonus.luk += (item.luk || 0);
+            bonus.int += (item.int || 0);
+        }
+    });
+
+    // 智力補正：智力越高，額外獲得 5% 的攻擊力補強 (史萊哲林的聰明才智)
+    const intBonus = Math.floor(state.int * 0.05);
+
+    return {
+        atk: (state.atk + bonus.atk + intBonus) * state.atkBuff, // 考慮狂暴倍率
+        def: state.def + bonus.def,
+        spd: state.spd + bonus.spd,
+        luk: state.luk + bonus.luk,
+        int: state.int + bonus.int
+    };
+}
+
+// 4-2. 史萊哲林式頭銜晉升判定
+function checkTitles() {
+    let changed = false;
+
+    // 判斷是否達成解鎖條件 (最複雜的進化條件)
+    if (state.lvl >= 50 && !state.unlockedTitles.has("奇蹟創造神")) {
+        unlockTitle(5); changed = true;
+    } else if (state.lvl >= 30 && !state.unlockedTitles.has("史萊哲林繼承者")) {
+        unlockTitle(4); changed = true;
+    } else if (state.int >= 50 && !state.unlockedTitles.has("真理探求者")) {
+        unlockTitle(3); changed = true;
+    } else if (state.mood >= 100 && state.lvl >= 10 && !state.unlockedTitles.has("瑰麗夢想家")) {
+        unlockTitle(2); changed = true;
+    } else if (state.atk >= 40 && !state.unlockedTitles.has("燃燒鬥士")) {
+        unlockTitle(1); changed = true;
+    }
+
+    if (changed) {
+        updateMsg(`<b style="color:var(--gold)">🏆 頭銜晉升！</b> 阿毛獲得了新的魔法稱號！`);
+        saveGame();
     }
 }
 
-// --- 10-3. 商店與頭銜核心 ---
-function openStore() {
-    document.getElementById('store-modal').style.display = 'block';
-    const mKeys = Object.keys(MERCHANT_DB);
-    const mType = mKeys[Math.floor(Math.random() * mKeys.length)];
-    const m = MERCHANT_DB[mType];
+function unlockTitle(idx) {
+    const t = DB.titles[idx];
+    state.titles.push(t);
+    state.unlockedTitles.add(`${t.p}${t.s}`);
+    state.curTitleIdx = state.titles.length - 1; // 自動裝備最新頭銜
+}
+
+// 4-3. 魔法日誌更新更新 (確保文字不塌陷)
+function updateMsg(text) {
+    const box = document.getElementById('msg-box');
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    box.innerHTML = `<div style="margin-bottom:5px; border-left:2px solid var(--magic); padding-left:5px;">
+        <small style="color:var(--silver)">[${time}]</small> ${text}
+    </div>` + box.innerHTML;
     
-    document.getElementById('npc-avatar').innerText = m.i;
-    document.getElementById('npc-name').innerText = (mType === 'sheep') ? "怯弱百合作家·羊" : m.n;
+    // 限制顯示條數，保持流暢
+    if (box.children.length > 20) box.removeChild(box.lastChild);
+}
+
+// 4-4. 全域更新界面 (核心)
+function update() {
+    const stats = calculateFinalStats();
     
-    const talks = NPC_TALKS[mType];
-    document.getElementById('npc-dialogue').innerText = `「${talks[Math.floor(Math.random()*talks.length)]}」`;
-    
-    const grid = document.getElementById('store-grid');
-    grid.innerHTML = "";
-    
-    for(let i=0; i<4; i++) {
-        const item = m.getGear();
-        const cost = item.type === 'food' ? 30 : (50 + state.lvl * 3);
-        const card = document.createElement('div');
-        card.className = 'item-card';
-        card.innerHTML = `
-            <div style="font-size:30px;">${item.icon}</div>
-            <b style="font-size:12px; color:var(--gold)">${item.name}</b><br>
-            <button onclick="buyItem(${JSON.stringify(item).replace(/"/g, '&quot;')}, ${cost})" 
-                    style="margin-top:8px; background:var(--gold); border:none; padding:5px 10px; border-radius:8px; font-weight:bold; width:100%">
-                💰 ${cost}
-            </button>
-        `;
-        grid.appendChild(card);
-    }
-    
-    tunaBlessing(); // 幕後者的隨機關注
-    update();
+    // 更新頂部欄
+    document.getElementById('stat-lvl').innerText = state.lvl;
+    document.getElementById('stat-nrg').innerText = state.nrg;
+    document.getElementById('stat-gold').innerText = state.gold;
+    document.getElementById('stat-mood').innerText = state.mood;
+
+    // 更新五維面板
+    document.getElementById('val-atk').innerText = Math.floor(stats.atk);
+    document.getElementById('val-def').innerText = stats.def;
+    document.getElementById('val-spd').innerText = stats.spd;
+    document.getElementById('val-luk').innerText = stats.luk;
+    document.getElementById('val-int').innerText = stats.int;
+
+    // 更新頭銜顏色與文字
+    const curT = DB.titles.find(t => `${t.p}${t.s}` === `${state.titles[state.curTitleIdx].p}${state.titles[state.curTitleIdx].s}`);
+    const titleEl = document.getElementById('amao-title');
+    titleEl.innerText = `${curT.p}${curT.s}`;
+    titleEl.style.color = curT.color;
+    titleEl.style.textShadow = `0 0 10px ${curT.color}`;
+
+    // 更新血條視覺
+    document.getElementById('amao-hp-fill').style.width = (state.mood) + "%";
 }
 </script>
 <script>
-// --- 11-1. 奧義技能系統：鮪魚堡設定的絕對法則 ---
-async function castSkill(type) {
-    if (!state.isBattle) return;
+/**
+ * 【阿毛之塔：創世神物資演算系統】
+ * 負責生成數千種組合的美食與裝備，並精確計算其魔法價值。
+ */
+
+const Generator = {
+    // 5-1. 幻想美食生成：3125 種隨機組合
+    generateFood: function() {
+        const d = DB.f_dims;
+        const t = d.temp[Math.floor(Math.random() * d.temp.length)];
+        const x = d.texture[Math.floor(Math.random() * d.texture.length)];
+        const m = d.method[Math.floor(Math.random() * d.method.length)];
+        const n = d.main[Math.floor(Math.random() * d.main.length)];
+        const e = d.extra[Math.floor(Math.random() * d.extra.length)];
+
+        // 根據詞條賦予魔法效果 (例如：燃燒的會加攻擊，清涼的加心情)
+        const buffAtk = t.includes("燃燒") ? 5 : (t.includes("活力") ? 2 : 0);
+        const recoverMood = x.includes("雲朵") ? 40 : 20;
+
+        return {
+            type: 'food',
+            icon: (n === "鮪魚堡") ? "🍔" : (n === "雞排" ? "🍗" : "🍜"),
+            name: `${t}${x}${m}${n}`,
+            desc: `這道菜${e}，充滿了不可思議的魔力。`,
+            eff: { atk: buffAtk, mood: recoverMood },
+            id: Date.now() + Math.random()
+        };
+    },
+
+    // 5-2. 史萊哲林裝備生成：千變萬化的詞綴組合
+    generateEquip: function(slot) {
+        const pre = DB.e_pre[Math.floor(Math.random() * DB.e_pre.length)];
+        const name = DB.e_name[slot][Math.floor(Math.random() * DB.e_name[slot].length)];
+        
+        // 複雜數值權重：根據前綴決定屬性傾向
+        let atk = 0, def = 0, spd = 0, luk = 0, int = 0;
+        const lvlBonus = state.lvl * 2; // 層數越高，裝備越強
+
+        if (pre.includes("史萊哲林")) { int = 15; def = 10; }
+        else if (pre.includes("南瓜")) { atk = 20; spd = 5; }
+        else if (pre.includes("羊")) { luk = 20; int = 5; }
+        else if (pre.includes("絕對意志")) { atk = 15; def = 15; int = 15; }
+        else { atk = 5; def = 5; spd = 5; }
+
+        return {
+            type: 'equip',
+            slot: slot,
+            icon: (slot==='head'?'🫅':(slot==='body'?'🥋':(slot==='hand'?'🪄':'🧦'))),
+            name: `${pre}·${name}`,
+            atk: atk + lvlBonus,
+            def: def + lvlBonus,
+            spd: spd + Math.floor(lvlBonus/2),
+            luk: luk,
+            int: int,
+            id: Date.now() + Math.random()
+        };
+    }
+};
+
+// 5-3. 輔助功能：將物品加入背包 (包含上限邏輯，避免過載)
+function addToInv(item) {
+    if (state.inv.length >= 24) {
+        updateMsg("<span style='color:var(--legend)'>⚠️ 背包滿了！創世神建議你清理一下。</span>");
+        return false;
+    }
+    state.inv.push(item);
+    updateMsg(`獲得了 <b style="color:var(--gold)">${item.name}</b>！`);
+    return true;
+}
+
+// 5-4. 物品使用/裝備邏輯
+function useItem(id) {
+    const idx = state.inv.findIndex(i => i.id === id);
+    if (idx === -1) return;
+    const item = state.inv[idx];
+
+    if (item.type === 'food') {
+        // 使用美食：永久提升微量屬性 + 恢復心情
+        state.atk += (item.eff.atk || 0);
+        state.mood = Math.min(100, state.mood + item.eff.mood);
+        updateMsg(`阿毛優雅地享用了 ${item.name}，心情大好！`);
+        state.inv.splice(idx, 1);
+    } else if (item.type === 'equip') {
+        // 穿戴裝備
+        const oldEquip = state.equips[item.slot];
+        state.equips[item.slot] = item;
+        state.inv.splice(idx, 1);
+        if (oldEquip) state.inv.push(oldEquip); // 換下來的回背包
+        updateMsg(`阿毛裝備了 ${item.name}，魔力流動更加穩定。`);
+    }
     
-    // 檢查體力是否足夠發動奧義
+    closeAllModals();
+    update();
+}
+
+// 5-5. 物品丟棄 (轉換為少量金幣)
+function scrapItem(id) {
+    const idx = state.inv.findIndex(i => i.id === id);
+    if (idx !== -1) {
+        state.gold += 10;
+        state.inv.splice(idx, 1);
+        updateMsg("物品已分解為微量金幣。");
+        openInv(); // 刷新背包
+    }
+}
+</script>
+<script>
+/**
+ * 【阿毛之塔：創世神戰鬥與奧義系統】
+ * 負責處理怪物生成、回合制邏輯以及四種極致奧義的發動。
+ */
+
+// 6-1. 魔法怪物生成：根據層數膨脹數值
+function spawnEnemy() {
+    const pre = DB.m_pre[Math.floor(Math.random() * DB.m_pre.length)];
+    const name = DB.m_names[Math.floor(Math.random() * DB.m_names.length)];
+    const suf = DB.m_suf[Math.floor(Math.random() * DB.m_suf.length)];
+    
+    const lvlFactor = 1 + (state.lvl * 0.1); // 每層強 10%
+    const baseHp = 50 * lvlFactor;
+    
+    window.currentEnemy = {
+        name: `${pre}${name}${suf}`,
+        hp: Math.floor(baseHp),
+        maxHp: Math.floor(baseHp),
+        atk: Math.floor(10 * lvlFactor),
+        def: Math.floor(5 * lvlFactor),
+        gold: Math.floor(20 + state.lvl * 5),
+        exp: 1
+    };
+
+    // 更新 UI
+    const enArea = document.getElementById('enemy-hp-bar');
+    enArea.style.display = 'block';
+    document.getElementById('enemy-name').innerText = window.currentEnemy.name;
+    document.getElementById('enemy-sprite').innerText = (name.includes('貓')) ? '🐱' : (name.includes('羊') ? '🐑' : '👾');
+    document.getElementById('en-hp-fill').style.width = "100%";
+    
+    updateMsg(`警告！<b style="color:var(--legend)">${window.currentEnemy.name}</b> 出現在阿毛面前！`);
+}
+
+// 6-2. 奧義技能系統：鮪魚堡親自設定的絕對武力
+async function castSkill(type) {
+    if (!state.isBattle || !window.currentEnemy) {
+        updateMsg("現在不是發動奧義的時機。");
+        return;
+    }
+    
     if (state.nrg < 10) {
-        updateMsg("<span style='color:var(--monster)'>❌ 體力不足，無法發動奧義！</span>");
+        updateMsg("<span style='color:var(--legend)'>❌ 能量不足，無法施展奧義！</span>");
         return;
     }
 
     state.nrg -= 10;
-    const enemy = window.currentEnemy; 
+    const enemy = window.currentEnemy;
     let effectMsg = "";
+    const stats = calculateFinalStats();
 
+    // 史萊哲林魔法演算
     switch(type) {
-        case 'blood': // 血崩
-            const bleedDmg = Math.floor(enemy.hp * 0.3);
+        case 'blood': // 血崩：根據敵人當前血量比例造成真實傷害
+            const bleedDmg = Math.floor(enemy.hp * 0.4);
             enemy.hp -= bleedDmg;
-            effectMsg = `阿毛發動【血崩】，敵方大量出血，造成 ${bleedDmg} 點真實傷害！`;
+            effectMsg = `阿毛發動【血崩】，敵方大量出血，蒸發了 ${bleedDmg} 點生命！`;
             break;
-        case 'light': // 聖光
-            enemy.atk = Math.max(1, Math.floor(enemy.atk * 0.5));
-            effectMsg = `【聖光】降臨！敵方被閃瞎了，攻擊力永久減半！`;
+        case 'light': // 聖光：大幅削弱敵方攻擊力，並造成智力補正傷害
+            const lightDmg = Math.floor(stats.int * 2);
+            enemy.atk = Math.max(1, Math.floor(enemy.atk * 0.4));
+            enemy.hp -= lightDmg;
+            effectMsg = `【聖光】降臨！造成 ${lightDmg} 點魔法傷害，並永久淨化了敵方的鬥志！`;
             break;
-        case 'heal': // 治癒
-            state.mood = Math.min(100, state.mood + 30);
-            effectMsg = `阿毛使用了【治癒】，感覺心靈被洗滌了，心情大幅回升！`;
+        case 'heal': // 治癒：恢復心情並短暫提升防禦
+            state.mood = Math.min(100, state.mood + 40);
+            state.def += 5; 
+            effectMsg = `阿毛使用了【治癒】，心靈被洗滌，快樂值與防禦力同時提升！`;
             break;
-        case 'rage': // 狂暴
-            state.atkBuff = 2; // 攻擊翻倍
-            effectMsg = `阿毛進入【狂暴】狀態！接下來的攻擊力將翻倍！`;
-            setTimeout(() => state.atkBuff = 1, 5000);
+        case 'rage': // 狂暴：捨棄幸運，攻擊力翻倍
+            state.atkBuff = 2.5;
+            effectMsg = `阿毛進入【狂暴】狀態！毛都炸起來了，攻擊力瘋狂提升！`;
+            setTimeout(() => { state.atkBuff = 1; update(); }, 8000);
             break;
     }
 
-    updateMsg(`<b style="color:var(--legend)">✨ 奧義：${effectMsg}</b>`);
-    document.body.style.animation = "hurtShake 0.4s";
-    setTimeout(() => document.body.style.animation = "", 400);
+    updateMsg(`<b style="color:var(--gold)">✨ 奧義：${effectMsg}</b>`);
+    triggerEffect('blessed'); // 阿毛髮光
     
-    // 立即更新戰鬥畫面
-    document.getElementById('en-hp-fill').style.width = Math.max(0, (enemy.hp/enemy.maxHp)*100) + "%";
-    update();
-}
-
-// --- 11-2. 全局初始化：喚醒阿毛 ---
-function init() {
-    console.log("阿毛之塔：啟動中... 創世神鮪魚堡的意志已注入。");
-    
-    // 嘗試讀取存檔
-    const saved = localStorage.getItem('amao_tower_save');
-    if (saved) {
-        const data = JSON.parse(saved);
-        Object.assign(state, data);
-        state.unlockedTitles = new Set(data.unlockedTitles || []);
-        updateMsg("歡迎回來！阿毛在窩裡等你好久了。");
+    // 檢查敵人是否死亡
+    if (enemy.hp <= 0) {
+        winBattle();
     } else {
-        updateMsg("歡迎來到阿毛之塔！點擊骰子開始冒險吧！汪！");
+        updateBattleUI();
+        enemyTurn(); // 奧義後敵方反擊
     }
+}
 
-    // 啟動自動存檔計時器 (每 30 秒)
-    setInterval(saveGame, 30000);
+// 6-3. 回合制核心邏輯
+function enemyTurn() {
+    if (!state.isBattle || !window.currentEnemy) return;
     
-    // 初始渲染
-    update();
-}
-
-function saveGame() {
-    const saveData = { ...state, unlockedTitles: Array.from(state.unlockedTitles) };
-    localStorage.setItem('amao_tower_save', JSON.stringify(saveData));
-    console.log("進度已自動保存。");
-}
-
-// --- 11-3. 萬能更新函數：確保數據一致性 ---
-function update() {
-    // 1. 計算最終數值 (基礎 + 裝備)
+    const enemy = window.currentEnemy;
     const stats = calculateFinalStats();
     
-    // 2. 更新頂部狀態欄
-    document.getElementById('stat-nrg').innerText = state.nrg;
-    document.getElementById('stat-mood').innerText = state.mood;
-    document.getElementById('stat-gold').innerText = state.gold;
-    document.getElementById('stat-lvl').innerText = state.lvl;
-
-    // 3. 更新頭銜與數值面板
-    const curT = state.titles[state.curTitleIdx];
-    document.getElementById('amao-title').innerText = `${curT.p}${curT.s}`;
-    document.getElementById('amao-title').title = curT.d; // 懸停顯示描述
+    // 傷害計算：敵攻 - 阿毛防 (最少 1 點傷害)
+    const dmg = Math.max(1, enemy.atk - Math.floor(stats.def / 2));
+    state.mood = Math.max(0, state.mood - dmg);
     
-    document.getElementById('val-atk').innerText = stats.atk;
-    document.getElementById('val-def').innerText = stats.def;
-    document.getElementById('val-spd').innerText = stats.spd;
+    updateMsg(`敵方攻擊！阿毛受傷了，心情低落了 ${dmg} 點。`);
+    triggerEffect('hurt');
 
-    // 4. 更新進度條視覺
-    document.getElementById('nrg-fill').style.width = (state.nrg / 60 * 100) + "%";
-    document.getElementById('mood-fill').style.width = state.mood + "%";
-
-    // 5. 檢查頭銜解鎖條件
-    if(typeof checkTitles === "function") checkTitles();
+    if (state.mood <= 0) {
+        loseBattle();
+    }
+    update();
 }
 
-// 啟動！
-window.onload = init;
+function updateBattleUI() {
+    const enemy = window.currentEnemy;
+    const hpPercent = (enemy.hp / enemy.maxHp) * 100;
+    document.getElementById('en-hp-fill').style.width = Math.max(0, hpPercent) + "%";
+}
+
+function triggerEffect(cssClass) {
+    const sprite = document.getElementById('amao-sprite');
+    sprite.classList.add(cssClass);
+    setTimeout(() => sprite.classList.remove(cssClass), 500);
+}
+
+// 6-4. 戰鬥結束判定
+function winBattle() {
+    state.isBattle = false;
+    const enemy = window.currentEnemy;
+    state.gold += enemy.gold;
+    updateMsg(`<b style="color:#2ecc71;">🎉 勝利！</b> 阿毛優雅地擊敗了 ${enemy.name}，獲得了 ${enemy.gold} 金幣！`);
+    
+    // 隨機掉落裝備或美食
+    if (Math.random() > 0.5) {
+        const slots = ['head', 'body', 'hand', 'feet'];
+        const item = Math.random() > 0.3 ? Generator.generateFood() : Generator.generateEquip(slots[Math.floor(Math.random()*4)]);
+        addToInv(item);
+    }
+
+    document.getElementById('enemy-hp-bar').style.display = 'none';
+    window.currentEnemy = null;
+    update();
+}
+
+function loseBattle() {
+    state.isBattle = false;
+    state.lvl = Math.max(1, state.lvl - 1); // 掉下一層
+    state.mood = 20;
+    updateMsg("<b style='color:var(--legend)'>💀 阿毛太累了...</b> 逃回了前一層休息。");
+    document.getElementById('enemy-hp-bar').style.display = 'none';
+    window.currentEnemy = null;
+    update();
+}
 </script>
+<script>
+/**
+ * 【阿毛之塔：命運投擲引擎】
+ * 負責處理擲骰動畫、層數移動以及隨機魔法事件的發生。
+ */
+
+// 7-1. 投擲命運之骰
+async function rollDice() {
+    if (state.isBattle) {
+        // 戰鬥中點擊骰子改為一般攻擊
+        normalAttack();
+        return;
+    }
+    
+    if (state.nrg < 5) {
+        updateMsg("<span style='color:var(--legend)'>⚠️ 能量枯竭！阿毛需要休息或吃點鮪魚堡。</span>");
+        return;
+    }
+
+    if (state.isProcessing) return; // 防止連點
+    state.isProcessing = true;
+
+    // 1. 消耗能量
+    state.nrg -= 5;
+    
+    // 2. 執行旋轉動畫
+    const dice = document.getElementById('dice-container');
+    dice.classList.add('rolling');
+    updateMsg("命運之骰旋轉中...");
+
+    // 3. 延時判定結果 (模擬隨機感)
+    setTimeout(() => {
+        dice.classList.remove('rolling');
+        const roll = Math.floor(Math.random() * 6) + 1;
+        dice.innerText = ["⚀","⚁","⚂","⚃","⚄","⚅"][roll-1];
+        
+        // 提升層數 (考慮幸運值補正)
+        const luckBonus = state.luk > 50 ? 2 : 1;
+        const move = roll + luckBonus;
+        state.lvl += move;
+        
+        updateMsg(`阿毛擲出了 ${roll} 點！幸運加持下，一口氣往上爬了 ${move} 層。`);
+        
+        // 4. 隨機事件判定 (最雜最滿的事件池)
+        triggerRandomEvent();
+        
+        state.isProcessing = false;
+        update();
+    }, 600);
+}
+
+// 7-2. 隨機事件池：史萊哲林式隨機性
+function triggerRandomEvent() {
+    const r = Math.random() * 100;
+
+    if (r > 85) {
+        // A. 遭遇怪物 (15% 機率)
+        state.isBattle = true;
+        spawnEnemy();
+    } 
+    else if (r > 70) {
+        // B. 撿到物資 (15% 機率)
+        const item = Math.random() > 0.5 ? Generator.generateFood() : Generator.generateEquip(['head','body','hand','feet'][Math.floor(Math.random()*4)]);
+        addToInv(item);
+        updateMsg(`<b style="color:var(--equip)">✨ 奇遇！</b> 阿毛在角落發現了 ${item.name}！`);
+    } 
+    else if (r > 60) {
+        // C. 鮪魚堡神蹟 (10% 機率)
+        tunaBlessing();
+    }
+    else if (r > 50) {
+        // D. 魔法陷阱 (有趣的挑戰，非負面)
+        const goldLost = Math.floor(state.gold * 0.1);
+        state.gold -= goldLost;
+        updateMsg(`阿毛不小心踩到了「金幣噴泉」，噴掉了 ${goldLost} 金幣，但感覺整隻狗都變亮了！`);
+    }
+    else {
+        // E. 平安無事
+        const hints = [
+            "空氣中瀰漫著淡淡的肉泥香氣。",
+            "遠處傳來南瓜重訓的嘶哈聲。",
+            "牆上貼著羊寫的百合小說試閱版。",
+            "滷滷米達似乎在附近調整塔的重力。",
+            "這裡很安全，適合伸個懶腰。"
+        ];
+        updateMsg(hints[Math.floor(Math.random() * hints.length)]);
+    }
+}
+
+// 7-3. 戰鬥中的普通攻擊 (骰子功能的延伸)
+function normalAttack() {
+    if (!state.isBattle || !window.currentEnemy) return;
+
+    const stats = calculateFinalStats();
+    const enemy = window.currentEnemy;
+    
+    // 基礎傷害演算
+    const dmg = Math.max(5, Math.floor(stats.atk - (enemy.def / 2)));
+    enemy.hp -= dmg;
+    
+    updateMsg(`阿毛奮力一躍！對敵人造成 ${dmg} 點物理衝擊。`);
+    triggerEffect('hurt');
+
+    if (enemy.hp <= 0) {
+        winBattle();
+    } else {
+        updateBattleUI();
+        // 50% 機率敵方反擊，增加戰鬥深度
+        if (Math.random() > 0.5) enemyTurn();
+    }
+}
+
+// 7-4. 幕後觀察者（鮪魚堡）的隨機干預：最華麗效果
+function tunaBlessing() {
+    const r = Math.random();
+    const dice = document.getElementById('dice-container');
+    dice.classList.add('blessed'); // 全局發光
+    
+    if (r > 0.5) {
+        state.gold += 500;
+        updateMsg(`<b style="color:var(--gold)">🐍 創世神的神祕微笑</b><br>鮪魚堡大人覺得你的進度太慢，直接往你口袋塞了 500 金幣。`);
+    } else {
+        state.nrg = 60;
+        state.mood = 100;
+        updateMsg(`<b style="color:var(--legend)">🌀 塔之法則重寫</b><br>一股史萊哲林的意志降臨，阿毛的能量與心情瞬間回滿！`);
+    }
+    
+    setTimeout(() => dice.classList.remove('blessed'), 2000);
+}
+</script>
+<script>
+/**
+ * 【阿毛之塔：史萊哲林魔法背包引擎】
+ * 負責渲染高度複雜的物品卡片，並處理分頁切換與裝備交互。
+ */
+
+// 8-1. 打開背包並執行首屏渲染
+function openInv() {
+    document.getElementById('modal-overlay').style.display = 'block';
+    document.getElementById('inv-modal').style.display = 'block';
+    renderInv();
+}
+
+// 8-2. 分頁切換邏輯 (Food / Equip)
+function switchTab(tab) {
+    state.curTab = tab;
+    renderInv();
+}
+
+// 8-3. 核心渲染函數：動態生成最華麗的物品卡片
+function renderInv() {
+    const grid = document.getElementById('inv-grid');
+    grid.innerHTML = ""; // 清空舊內容
+    
+    // 過濾出目前分頁的物品
+    const items = state.inv.filter(i => i.type === state.curTab);
+
+    if (items.length === 0) {
+        grid.innerHTML = `<div style="grid-column: 1/3; text-align: center; color: var(--silver); margin-top: 50px; opacity: 0.5;">「 空 蕩 蕩 的 史 萊 哲 林 儲 物 間 」</div>`;
+        return;
+    }
+
+    items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'item-card';
+        
+        let statsHtml = "";
+        // 如果是裝備，顯示五維增幅標籤
+        if (item.type === 'equip') {
+            statsHtml = `
+                <div style="font-size: 10px; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; margin-top: 5px;">
+                    ${item.atk ? `<span style="color:var(--legend)">⚔️${item.atk}</span>` : ''}
+                    ${item.def ? `<span style="color:var(--equip)">🛡️${item.def}</span>` : ''}
+                    ${item.spd ? `<span style="color:var(--silver)">👟${item.spd}</span>` : ''}
+                    ${item.int ? `<span style="color:var(--magic)">🧠${item.int}</span>` : ''}
+                    ${item.luk ? `<span style="color:#2ecc71;">🍀${item.luk}</span>` : ''}
+                </div>
+            `;
+        } else {
+            // 如果是食物，顯示恢復量與特殊效果
+            statsHtml = `<div style="font-size: 10px; color: #ff69b4; margin-top: 5px;">💖 心情 +${item.eff.mood} ${item.eff.atk ? ` | ⚔️ +${item.eff.atk}` : ''}</div>`;
+        }
+
+        card.innerHTML = `
+            <div style="font-size: 35px; margin-bottom: 5px;">${item.icon}</div>
+            <b style="font-size: 12px; color: var(--gold); display: block; min-height: 32px;">${item.name}</b>
+            ${statsHtml}
+            <div style="margin-top: 10px; display: flex; gap: 5px;">
+                <button onclick="useItem(${item.id})" style="flex: 2; background: var(--magic); border: none; color: white; border-radius: 5px; font-size: 11px; padding: 5px 0; cursor: pointer;">
+                    ${item.type === 'food' ? '享用' : '裝備'}
+                </button>
+                <button onclick="scrapItem(${item.id})" style="flex: 1; background: #444; border: none; color: #bbb; border-radius: 5px; font-size: 11px; padding: 5px 0; cursor: pointer;">
+                    👋
+                </button>
+            </div>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+// 8-4. 全域關閉彈窗邏輯
+function closeAllModals() {
+    document.getElementById('modal-overlay').style.display = 'none';
+    document.getElementById('inv-modal').style.display = 'none';
+    document.getElementById('store-modal').style.display = 'none';
+    update(); // 關閉時強制刷新主介面數值
+}
+
+// 8-5. 裝備欄位佔位符美化 (顯示目前裝備中)
+function getEquipStatus(slot) {
+    const item = state.equips[slot];
+    return item ? `${item.icon} ${item.name}` : "「 虛 位 以 待 」";
+}
+</script>
+<script>
+/**
+ * 【阿毛之塔：NPC 家人式吐槽商貿系統】
+ * 移除客套與過度稱讚，換成朋友間的損人語錄。
+ */
+
+const Store = {
+    npcs: [
+        {
+            name: "南瓜 (肌肉教練)",
+            avatar: "🎃",
+            color: "#ff8c00",
+            items: ['hand', 'body', 'food'],
+            dialogue: [
+                "「阿毛，你這腿細得跟竹竿一樣，是在演弱不禁風嗎？」", "「這把劍很重，拿不動的話記得叫你媽幫你。」", "「又來買鮪魚堡？你的肚子快要比我這顆南瓜還圓了。」",
+                "「看你爬兩層就喘成這樣，我這教練臉都丟光了。」", "「史萊哲林的人是不是都只動腦不動手？真是服了。」",
+                "「這啞鈴你拿去當枕頭睡可能比較合適。」", "「別用那種求救的眼神看我，去深蹲一百下再說。」", "「這汗水味...嘖嘖，是青春的臭味啊。」",
+                "「阿毛，你走路的姿勢很像在拖地板，給我挺胸！」", "「這件重裝穿上去，我看你連門都出不去。」",
+                "「裝備不是買來裝飾的，是用來打怪的，你懂吧？」", "「整天只想著吃，你是豬還是狗？」", "「這把法杖揮起來比擀麵棍還輕，你一定行。」",
+                "「我看你這副骨架，除了可愛真是一無是處。」", "「這雙鞋防滑，專治你這種走路會平地摔的。」", "「沒錢？那就在旁邊看我表演深蹲，一邊收費。」",
+                "「雖然你很弱，但看在你可愛的份上，這件算你貴一點。」", "「南瓜出品，必屬精品，雖然你不一定用得好。」", "「阿毛，別在店門口流口水，很難清。」",
+                "「休息？那是留給死人的，給我動起來！」", "「這瓶飲料喝了會變強，但副作用是會變聰明，你可能不習慣。」", "「被打敗了別哭，回來我再幫你加重訓練。」",
+                "「這戰袍很潮，穿上去保證你是塔裡最靓的崽。」", "「別學史萊哲林耍帥，熱血才是王道！」", "「這座塔的樓梯到底是誰設計的？爬死我了。」",
+                "「這法杖能導電，下雨天記得別亂揮。」", "「阿毛，你有空看裝備，不如去練練你的麒麟臂。」", "「這食物熱量超標，但我猜你根本不在乎。」",
+                "「我的頭雖然是南瓜，但裡面裝的不是漿糊，是你。」", "「來吧，把你的壓歲錢交出來換這些廢銅爛鐵。」"
+            ]
+        },
+        {
+            name: "羊 (百合夢想家)",
+            avatar: "🐑",
+            color: "#ff69b4",
+            items: ['head', 'feet', 'food'],
+            dialogue: [
+                "「阿毛，快來看這對惡貓在壁咚！我的天哪！」", "「買裝備幹嘛？跟我一起坐下來看小說不好嗎？」", "「心情不好？那你一定是缺了一對 CP 的糧。」",
+                "「這絲帶很美吧？雖然我覺得你戴起來像禮物盒。」", "「這座塔的層數根本是隨便亂設的吧，像我的草稿一樣。」",
+                "「這法帽戴上去，保證沒人看得到你的黑眼圈。」", "「阿毛，你覺不覺得滷滷米達其實很悶騷？」", "「百合萬歲！反對的人都去吃三色豆！」",
+                "「這雙舞鞋能讓你在被打飛時動作更優雅。」", "「這是我的原稿，拿去墊桌腳都覺得浪費。」", "「文字比刀劍更痛，這是我熬夜寫出來的體悟。」",
+                "「看你這孤家寡人的樣子，買個粉紅掛飾平衡一下吧。」", "「史萊哲林那種冷酷勁，其實就是在裝逼啦。」", "「阿毛，你再把這件衣服穿反，我就把你寫進悲劇裡。」",
+                "「這甜點甜到會讓牙醫哭出來，你要嗎？」", "「我的草稿堆在一起能產生重力場，你信嗎？」", "「這髮箍能接收腦電波，雖然我覺得你沒什麼電波。」",
+                "「在這種鬼地方找真愛，阿毛你是不是發燒了？」", "「這件睡衣很柔軟，適合你這種整天想躺平的人。」", "「別問我結局，我還在等靈感大神降臨。」",
+                "「阿毛，別在我的稿紙上蓋腳印！那是限量版！」", "「這戒指能看到未來，但我猜你的未來還是只有吃。」", "「愛是一道光，綠到你發慌...喔不，是聖光。」",
+                "「這是我為了慶祝作者斷更而做的憤怒特餐。」", "「故事裡的主角都結婚了，你還在這裡擲骰子。」", "「這披風除了帥什麼功能都沒有，跟你一樣。」",
+                "「阿毛，穿上這雙鞋，趕快跑去幫我買杯手搖飲。」", "「所有的相遇都是為了讓你花錢，這就是命。」", "「金幣是身外之物，裝備的顏色才是一輩子的事。」",
+                "「來吧，跟我一起墮入幻想的深淵。」"
+            ]
+        },
+        {
+            name: "滷滷米達 (邏輯守護者)",
+            avatar: "🦉",
+            color: "#00f2fe",
+            items: ['head', 'hand', 'body'],
+            dialogue: [
+                "「根據我的精密計算，你現在的勝率大概跟抽中樂透差不多。」", "「別用那種充滿 Bug 的眼神看我，我會強迫症發作。」", "「這裝備是我隨便寫的，反正你也看不出差別。」",
+                "「這座塔的物理引擎一定是實習生寫的，全是漏洞。」", "「阿毛，你的大腦是不是還在初始化？反應這麼慢。」", "「這護甲很穩，至少比你的理財計畫穩。」",
+                "「別跟我說廢話，我的 CPU 不想處理這種垃圾訊息。」", "「這把劍的重心偏移了，但我懶得修，你自己看著辦。」", "「史萊哲林的聰明人很多，但你顯然不是其中一個。」",
+                "「這雙靴子的抓地力很好，適合你逃跑時使用。」", "「如果你死了，記得把遺產留給我研究。」", "「我正在修補這座塔的記憶體，別擋在路中間。」",
+                "「這食物吃下去不會變強，只是讓你不餓而已，別想太多。」", "「感情是邏輯的雜訊，所以阿毛你是塔裡最大的雜訊。」", "「這法杖的魔法傳導率極佳，但你的魔力值幾乎為零。」",
+                "「系統顯示你已經玩很久了，真的不考慮休息嗎？」", "「阿毛，你的智力水平讓我覺得這個世界很不公平。」", "",
+                "「這件斗篷能隱身，如果你想偷吃南瓜的零食很有用。」", "「數據顯示你很窮，但我這不接受賒帳。」", "「這是我開發的 2.0 版防護帽，專門保護你那空空如也的腦袋。」",
+                "「每一筆交易都是智商稅，歡迎繳納。」", "「阿毛，你的心跳頻率告訴我你在害怕，是在怕怪還是怕我？」", "「邏輯崩壞不可怕，可怕的是你還覺得這很正常。」",
+                "「這戰袍內襯有除臭功能，適合你這種不愛洗澡的人。」", "「直覺是腦殘的代名詞，我只相信代碼。」", "「這戒指能提升專注力，幫你脫離發呆狀態。」",
+                "「你的幸運值是隨機數，我這輩子最恨隨機數。」", "「塔的頂端是什麼？大概是一個更大的 Bug 吧。」", "「買不買隨便你，反正我也沒打算靠你發財。」"
+            ]
+        }
+    ],
+
+    currentNpc: null,
+
+    open: function() {
+        this.currentNpc = this.npcs[Math.floor(Math.random() * this.npcs.length)];
+        document.getElementById('modal-overlay').style.display = 'block';
+        document.getElementById('store-modal').style.display = 'block';
+        this.render();
+    },
+
+    render: function() {
+        const npc = this.currentNpc;
+        document.getElementById('npc-avatar').innerText = npc.avatar;
+        document.getElementById('npc-name').innerText = npc.name;
+        document.getElementById('npc-name').style.color = npc.color;
+        document.getElementById('npc-dialogue').innerText = npc.dialogue[Math.floor(Math.random() * npc.dialogue.length)];
+
+        const grid = document.getElementById('store-grid');
+        grid.innerHTML = "";
+
+        for(let i=0; i<6; i++) {
+            const type = npc.items[Math.floor(Math.random() * npc.items.length)];
+            const item = (type === 'food') ? Generator.generateFood() : Generator.generateEquip(type);
+            const price = (type === 'food') ? 50 : 150 + (state.lvl * 10);
+
+            const card = document.createElement('div');
+            card.className = 'item-card';
+            card.style.border = `1px solid ${npc.color}55`;
+            
+            card.innerHTML = `
+                <div style="font-size: 30px;">${item.icon}</div>
+                <b style="font-size: 11px; color: var(--gold); display:block; min-height:30px;">${item.name}</b>
+                <div style="font-size: 12px; color: var(--gold); margin: 5px 0;">💰 ${price}</div>
+                <button onclick="Store.buy('${encodeURIComponent(JSON.stringify(item))}', ${price})" 
+                    style="width: 100%; background: ${npc.color}; border: none; color: #000; font-weight: bold; border-radius: 5px; padding: 5px; cursor: pointer;">
+                    購買
+                </button>
+            `;
+            grid.appendChild(card);
+        }
+    },
+
+    buy: function(itemStr, price) {
+        if (state.gold < price) {
+            updateMsg("<span style='color:var(--legend)'>💸 沒錢還敢買？南瓜教練說這叫意志力不足。</span>");
+            return;
+        }
+        const item = JSON.parse(decodeURIComponent(itemStr));
+        if (addToInv(item)) {
+            state.gold -= price;
+            updateMsg(`成交！NPC 順便給你一個關愛的（損友）眼神。`);
+            this.render();
+            update();
+        }
+    }
+};
+
+function openStore() { Store.open(); }
+</script>
+<script>
+/**
+ * 【阿毛之塔：阿毛養成與搞怪動效引擎】
+ * 處理阿毛的隨機行為、餵食深度加成，以及與環境的冷幽默互動。
+ */
+
+const Life = {
+    // 10-1. 阿毛的隨機日常動作 (每 10 秒判定一次)
+    idleTimer: null,
+    startIdle: function() {
+        this.idleTimer = setInterval(() => {
+            const r = Math.random();
+            const sprite = document.getElementById('amao-sprite');
+            
+            if (r > 0.8) {
+                updateMsg("阿毛優雅地伸了一個懶腰，順便吐槽了一下塔裡的空氣。");
+                sprite.style.transform = "scale(1.2) rotate(5deg)";
+                setTimeout(() => sprite.style.transform = "scale(1)", 1000);
+            } else if (r > 0.6) {
+                updateMsg("阿毛開始打瞌睡，夢到了滿地的鮪魚堡。");
+                sprite.innerText = "😴";
+                setTimeout(() => sprite.innerText = "🐶", 3000);
+            } else if (r > 0.5) {
+                updateMsg("阿毛覺得腳有點癢，但他決定忍住，保持史萊哲林的優雅。");
+                triggerEffect('hurt'); // 借用震動特效
+            }
+        }, 15000);
+    },
+
+    // 10-2. 極致餵食加成：滷肉飯與鮪魚堡的「靈魂對話」
+    feedDeepEffect: function(foodName) {
+        const r = Math.random();
+        if (foodName.includes("鮪魚堡")) {
+            state.int += 2;
+            state.luk += 5;
+            updateMsg(`<b style="color:var(--gold)">🍔 鮪魚堡靈魂加持</b>：這口感...這就是家的味道！阿毛感到智商與運氣同時爆棚。`);
+        } else if (foodName.includes("滷肉飯")) {
+            state.atk += 3;
+            updateMsg(`<b style="color:#f39c12">🍚 黃金滷肉飯能量</b>：滿滿的膠質轉化為物理衝擊力！阿毛現在可以一拳打飛南瓜。`);
+        }
+        
+        // 飽食度連動心情
+        if (state.mood < 100) {
+            state.mood = Math.min(100, state.mood + 10);
+            updateMsg("胃滿了，心就暖了。心情指數小幅回升。");
+        }
+    },
+
+    // 10-3. 家族式神蹟：當阿毛處於極端狀態時觸發
+    checkFamilyBlessing: function() {
+        // 如果金幣極少且能量極低 (窮困潦倒時)
+        if (state.gold < 50 && state.nrg < 10) {
+            const gift = 200;
+            state.gold += gift;
+            updateMsg(`<b style="color:var(--equip)">✉️ 家人的緊急快遞</b>：南瓜和羊看你太慘了，偷偷往你鞋子裡塞了 ${gift} 金幣。`);
+        }
+        
+        // 如果心情連續低迷 (沮喪判定)
+        if (state.mood < 30) {
+            state.mood = 60;
+            updateMsg(`<b style="color:var(--magic)">🔮 史萊哲林的傲嬌關懷</b>：滷滷米達丟了一瓶強效藥劑，罵了一句「廢物」後幫你補滿了心情。`);
+        }
+    }
+};
+
+// 10-4. 初始化養成系統
+Life.startIdle();
+
+// 10-5. 存檔與讀取邏輯 (Local Storage)
+function saveGame() {
+    const data = JSON.stringify(state);
+    localStorage.setItem('amao_tower_save', data);
+    // 為了不打擾玩家，僅靜默存檔，或在特定日誌顯示
+    console.log("阿毛的足跡已刻在塔的牆上。");
+}
+
+function loadGame() {
+    const data = localStorage.getItem('amao_tower_save');
+    if (data) {
+        const savedState = JSON.parse(data);
+        // 合併數據，確保新版本增加的欄位不會遺失
+        state = { ...state, ...savedState };
+        updateMsg("命運之書已翻回上次停留的那一頁。");
+        update();
+    }
+}
+
+// 啟動時自動嘗試讀取
+window.onload = () => {
+    loadGame();
+    update();
+};
+</script>
+<script>
+/**
+ * 【阿毛之塔：創世神終極權限與系統封口】
+ * 包含後台調試工具、定時自動存檔，以及正式的封口標籤。
+ */
+
+// 11-1. 隱藏的創世神後台 (Console 開發者指令)
+// 製作人可以在控制台輸入以下指令：
+// God.giveMoney(9999) - 暴富
+// God.levelUp(10) - 直接跳層
+const God = {
+    giveMoney: function(amount) {
+        state.gold += amount;
+        updateMsg(`【創世神蹟】天降金幣 ${amount} 枚！`);
+        update();
+    },
+    levelUp: function(lv) {
+        state.lvl += lv;
+        updateMsg(`【創世神蹟】空間摺疊，阿毛瞬間上升了 ${lv} 層！`);
+        update();
+    },
+    fullNrg: function() {
+        state.nrg = 60;
+        state.mood = 100;
+        updateMsg(`【創世神蹟】時間回溯，阿毛狀態全滿！`);
+        update();
+    }
+};
+
+// 11-2. 自動存檔循環 (每 30 秒存一次)
+setInterval(() => {
+    saveGame();
+}, 30000);
+
+// 11-3. 介面初始化補丁 (確保所有按鈕綁定正確)
+document.addEventListener('DOMContentLoaded', () => {
+    // 檢查是否有存檔需要載入
+    loadGame();
+    
+    // 初始屬性刷新
+    update();
+    
+    updateMsg("<b style='color:var(--gold)'>[系統啟動]</b> 阿毛之塔正式載入。史萊哲林的旗幟正在頂端飄揚。");
+});
+
+// 11-4. 處理視窗關閉前的最後存檔
+window.onbeforeunload = function() {
+    saveGame();
+};
+
+console.log("阿毛之塔：第 11 區塊封頂完成。所有魔法迴路已接通。");
+</script>
+
+<div style="height: 50px; text-align: center; color: rgba(255,255,255,0.2); font-size: 10px; margin-top: 20px;">
+    &copy; 2026 阿毛之塔 · 鮪魚堡創世委員會 · 史萊哲林美學部
+</div>
+
+</div> </body>
+</html>
+
+
 
     
