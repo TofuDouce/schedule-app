@@ -1575,6 +1575,76 @@ window.openMenu = function(type) {
         ct.innerHTML = '<div style="grid-column:span 4; text-align:center; padding:20px;">背包正在重新整理中...</div>';
     }
 };
+</script><script>
+/**
+ * 阿毛之塔 - 1樓啟航補丁 (確保撿到東西並進入背包)
+ */
+
+// 1. 強化物品接收與顯示
+AmaoGame.receiveItem = function(itemData) {
+    if (!itemData) return;
+    const name = itemData.fullName || itemData.name;
+    
+    // 確保背包數組存在
+    this.inventory = this.inventory || [];
+    
+    let existing = this.inventory.find(i => (i.fullName || i.name) === name);
+    if (existing) {
+        existing.count++;
+    } else {
+        this.inventory.push({
+            fullName: name,
+            icon: itemData.icon || '📦',
+            desc: itemData.desc || '神祕的物件。',
+            type: /水餃|肉|麵|堡|飯|餅|布丁/.test(name) ? 'food' : 'item',
+            count: 1,
+            power: itemData.power || 20
+        });
+    }
+    
+    // 更新日誌與存檔
+    this.addLog("🎁", `在路邊撿到了 <span class="highlight-text">${name}</span>！`);
+    this.save();
+    this.refreshUI();
+};
+
+// 2. 注入骰子事件：大幅提高 1 樓撿到測試物品的機率
+const originalDice = AmaoGame.rollWithBattle || AmaoGame.roll;
+const rollKey = AmaoGame.rollWithBattle ? 'rollWithBattle' : 'roll';
+
+AmaoGame[rollKey] = function() {
+    // 執行原有的移動邏輯
+    originalDice.call(this);
+
+    // 強制觸發：每走一步都有 50% 機率撿到東西（測試用，之後可以調低）
+    if (Math.random() < 0.5) {
+        const testPool = [
+            { name: "爆發性布丁", icon: "🍮", desc: "吃了會充滿力量！", power: 30 },
+            { name: "熱騰騰水餃", icon: "🥟", desc: "阿毛最愛的高麗菜口味。", power: 20 },
+            { name: "亮晶晶螺絲", icon: "🔩", desc: "看起來可以修好什麼。", type: "item" }
+        ];
+        const picked = testPool[Math.floor(Math.random() * testPool.length)];
+        
+        setTimeout(() => {
+            this.receiveItem(picked);
+        }, 400);
+    }
+};
+
+// 3. 確保商人點開是商店，不是背包
+const oldOpenMenu = window.openMenu;
+window.openMenu = function(type) {
+    if (type === 'shop' && this.activeNPC) {
+        // 如果是商店且有商人在場，呼叫渲染
+        if (typeof this.renderShop === 'function') {
+            this.renderShop();
+            return;
+        }
+    }
+    oldOpenMenu(type);
+};
+
+console.log("🌟 1樓環境配置完成！現在投骰子應該會瘋狂撿到東西了。");
 </script>
 </body>
 </html>
