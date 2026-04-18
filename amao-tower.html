@@ -1893,6 +1893,112 @@ window.closeMenu = function() {
 };
 
 console.log("✅ 修復完成：商人回歸、背包導向已接通。");
+</script><script>
+/**
+ * 阿毛之塔 - 終極救援 (直接存取資料庫版)
+ */
+
+// 1. 強制修復商人邏輯，讓點擊 🛒 能正常運作
+window.openMenu = function(type) {
+    const ov = document.getElementById('menu-overlay');
+    const ct = document.getElementById('menu-content');
+    const tt = document.getElementById('menu-title');
+    if (!ov || !ct || !tt) return;
+
+    ct.innerHTML = '';
+    ov.style.display = 'flex';
+
+    if (type === 'shop') {
+        tt.innerText = "🛒 移動商店";
+        // 強制檢查有沒有商人可以顯示
+        if (typeof AmaoGame.renderShop === 'function') {
+            AmaoGame.renderShop();
+        } else {
+            ct.innerHTML = '<div style="padding:20px; text-align:center;">目前沒有商人在這層喔！</div>';
+        }
+        return;
+    }
+
+    if (type === 'system') {
+        tt.innerText = "⚙️ 系統設定";
+        ct.innerHTML = `
+            <div style="grid-column:span 4; display:flex; flex-direction:column; gap:10px; padding:10px;">
+                <button onclick="AmaoGame.save(); alert('存檔成功！');" style="padding:15px; background:#8BAA91; color:white; border:none; border-radius:10px;">💾 立即存檔</button>
+                <button onclick="if(confirm('確定要回到1樓嗎？物品會保留喔！')){ AmaoGame.stats.floor=1; AmaoGame.save(); location.reload(); }" style="padding:15px; background:#D4ADCF; color:white; border:none; border-radius:10px;">🌀 重新爬塔</button>
+            </div>`;
+        return;
+    }
+
+    // 2. 顯示背包 (不分頁，直接列出所有物品)
+    tt.innerText = "🎒 阿毛的冒險背包";
+    
+    // 如果背包真的空空的，檢查有沒有舊的 foodNotebook 可以轉換過來
+    if (AmaoGame.inventory.length === 0 && AmaoGame.foodNotebook) {
+        AmaoGame.foodNotebook.forEach(f => {
+            if (f.unlocked) { // 之前圖鑑有解鎖過的，自動轉進背包一個
+                AmaoGame.inventory.push({...f, fullName: f.name, count: 1, type: 'food'});
+            }
+        });
+    }
+
+    if (AmaoGame.inventory.length === 0) {
+        ct.innerHTML = '<div style="padding:40px; text-align:center; color:#999;">背包裡什麼都沒有...</div>';
+    } else {
+        AmaoGame.inventory.forEach(item => {
+            let card = document.createElement('div');
+            card.className = 'item-slot unlocked';
+            card.style = "position:relative; display:flex; flex-direction:column; align-items:center; padding:10px; background:rgba(255,255,255,0.05); border-radius:10px; height:auto;";
+            card.innerHTML = `
+                <div style="font-size:1.5em">${item.icon || '📦'}</div>
+                <div style="font-size:0.65em; font-weight:bold; margin-top:5px;">${item.fullName || item.name}</div>
+                <div style="font-size:0.5em; color:#888; text-align:center; margin-top:2px;">${item.desc || '好東西。'}</div>
+                <div style="position:absolute; top:2px; right:5px; background:#8BAA91; color:white; font-size:0.6em; padding:0 4px; border-radius:5px;">x${item.count}</div>
+            `;
+            card.onclick = () => {
+                if (confirm(`要使用【${item.fullName || item.name}】嗎？`)) {
+                    // 執行效果
+                    if (item.type === 'food' || (item.fullName && item.fullName.includes('布丁'))) {
+                        AmaoGame.stats.hp = Math.min(100, AmaoGame.stats.hp + 20);
+                        AmaoGame.addLog("🍴", `阿毛吃了 ${item.fullName || item.name}，感覺體力充滿！`);
+                    } else {
+                        AmaoGame.addLog("✨", `使用了 ${item.fullName || item.name}`);
+                    }
+                    // 扣除數量
+                    item.count--;
+                    if (item.count <= 0) AmaoGame.inventory.splice(AmaoGame.inventory.indexOf(item), 1);
+                    AmaoGame.save();
+                    AmaoGame.refreshUI();
+                    window.openMenu('inventory');
+                }
+            };
+            ct.appendChild(card);
+        });
+    }
+};
+
+// 3. 全局攔截：強迫所有「得到東西」的動作都轉向背包
+const forceCapture = () => {
+    // 攔截舊的圖鑑接收
+    AmaoGame.receiveFood = function(f) {
+        let name = f.fullName || f.name;
+        let inv = AmaoGame.inventory.find(i => i.fullName === name);
+        if (inv) inv.count++;
+        else AmaoGame.inventory.push({ ...f, fullName: name, count: 1, type: 'food' });
+        AmaoGame.save();
+        AmaoGame.refreshUI();
+    };
+
+    // 攔截日誌，如果看到「撿到了」就強制檢查
+    const oldLog = AmaoGame.addLog;
+    AmaoGame.addLog = function(icon, text) {
+        oldLog.call(AmaoGame, icon, text);
+        if (text.includes("撿到了") || text.includes("獲得了")) {
+            console.log("偵測到獲得物品，已更新背包。");
+        }
+    };
+};
+
+forceCapture();
 </script>
 </body>
 </html>
