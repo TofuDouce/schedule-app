@@ -990,6 +990,102 @@ AmaoGame.buyItem = function(itemId) {
 // 啟動頭銜加成
 AmaoGame.applyTitleStats();
 
+</script><script>
+/**
+ * 阿毛之塔 - 核心引擎 5.0 (最終章)
+ * 功能：環境連動、阿毛心情、資料持久化、彩蛋觸發
+ */
+
+const WorldEngine = {
+    // [1] 莫蘭迪時鐘：根據現實時間改變遊戲氣氛
+    updateEnvironment() {
+        const hour = new Date().getHours();
+        const root = document.documentElement;
+        const logTitle = document.querySelector('.log-header span');
+        
+        if (hour >= 18 || hour < 6) {
+            // 夜間模式：莫蘭迪深藍調
+            root.style.setProperty('--panel-bg', '#F2F2F2');
+            root.style.setProperty('--morandi-green', '#778899'); // 切換為灰藍
+            if(logTitle) logTitle.innerText = "🌙 阿毛的深夜冒險";
+        } else {
+            // 日間模式：經典莫蘭迪綠
+            root.style.setProperty('--morandi-green', '#A9BA9D');
+            if(logTitle) logTitle.innerText = "☀️ 阿毛的白日登山";
+        }
+    },
+
+    // [2] 阿毛心情隨機語句
+    generateAmaoMood() {
+        const moods = [
+            "阿毛覺得這層的空氣有淡淡的藍莓茶味。",
+            "阿毛在想，鮪魚堡是不是又在偷改地圖了？",
+            "阿毛的肉球感覺到地板涼涼的，很舒服。",
+            "阿毛突然好想念奶奶煮的炒飯喔...",
+            "阿毛發現牆角有一朵莫蘭迪色的花。",
+            "阿毛覺得南瓜老闆的嘶哈聲有點太吵了。",
+            "阿毛在想，滷滷米達的眼鏡到底有沒有度數？",
+            "阿毛覺得羊畫的小狗跟自己有點像。"
+        ];
+        return moods[Math.floor(Math.random() * moods.length)];
+    }
+};
+
+// 擴充 AmaoGame
+Object.assign(AmaoGame, {
+    // [3] 終極成就檢查
+    checkGrandAchievement() {
+        if (this.floor >= 500 && !localStorage.getItem('GrandAchieve')) {
+            localStorage.setItem('GrandAchieve', 'true');
+            this.addLog("🌌", "<span style='color:#EAC4D5; font-weight:bold;'>【傳說】阿毛抵達了塔的頂端，看見了純淨的莫蘭迪星空！</span>");
+            alert("🎉 恭喜妳！妳陪著阿毛爬到了 500 層！這是屬於妳們的紀念時刻。");
+        }
+    },
+
+    // [4] 自動存檔強化版
+    autoBackup() {
+        this.save();
+        console.log("[系統] 冒險紀錄已安全存儲至阿毛的時空膠囊。");
+    }
+});
+
+// 覆寫 roll 邏輯，加入心情與彩蛋
+const finalRoll = AmaoGame.rollWithBattle;
+AmaoGame.rollWithBattle = function() {
+    finalRoll.apply(this);
+    
+    // 20% 機率跳出阿毛的小碎念
+    if (Math.random() > 0.8) {
+        this.addLog("🐾", `<span style='color:var(--text-light); font-style:italic;'>${WorldEngine.generateAmaoMood()}</span>`);
+    }
+    
+    this.checkGrandAchievement();
+    this.autoBackup();
+};
+
+// [5] 啟動世界引擎
+WorldEngine.updateEnvironment();
+setInterval(() => WorldEngine.updateEnvironment(), 60000); // 每分鐘檢查一次時間
+
+// 點擊阿毛會有驚喜
+const amaoImg = document.getElementById('amao-sprite');
+if (amaoImg) {
+    amaoImg.style.cursor = "pointer";
+    amaoImg.onclick = () => {
+        const lines = [
+            "汪！(不要一直戳我啦～)",
+            "汪汪！(肚子餓了，有水餃嗎？)",
+            "嗷嗚～(鮪魚堡說點我一百次會有 BUG 喔！)",
+            "汪！(妳今天也辛苦了，休息一下吧！)"
+        ];
+        alert(lines[Math.floor(Math.random() * lines.length)]);
+    };
+}
+
+// 修正原本的一個顯示 Bug：確保體力不會顯示成「無限」
+document.querySelector('.status-row span:first-child').innerHTML = `⚡ 體力: ${AmaoGame.stats.hp}`;
+
+console.log("阿毛之塔 5.0 啟動成功。這是一個充滿溫度的世界。");
 </script>
 </body>
 </html>
