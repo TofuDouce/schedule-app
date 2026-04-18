@@ -1199,6 +1199,76 @@ document.addEventListener('DOMContentLoaded', () => {
         dice.addEventListener('touchend', () => clearTimeout(timer));
     }
 });
+</<style>
+    /* 1. 修正全域色彩與標題字體 */
+    :root {
+        --magic: #8e44ad !important; /* 統一改為「幻夢紫」 */
+    }
+
+    /* 2. 大幅放大日誌文字，改善手機閱讀感 */
+    #msg-box {
+        font-size: 16px !important; 
+        padding: 12px !important;
+        border-radius: 12px !important;
+    }
+    
+    /* 3. 狀態文字顯眼化 */
+    #enemy-name {
+        font-size: 22px !important;
+        letter-spacing: 2px;
+        color: #d1d1d1 !important; /* 中性高級灰 */
+        text-shadow: 0 0 15px rgba(142, 68, 173, 0.6) !important;
+    }
+
+    /* 4. 戰鬥UI自動隱藏與字體修正 */
+    #enemy-hp-bar { margin-top: 15px; }
+</style>
+
+<script>
+/**
+ * 原創化修正：移除所有外部 IP 詞彙，替換為塔內風格
+ */
+(function() {
+    const replaceIP = () => {
+        // 1. 修正遊戲內的靜態文字
+        document.body.innerHTML = document.body.innerHTML
+            .replace(/史萊哲林/g, '幻夢')
+            .replace(/霍格華茲/g, '阿毛之塔')
+            .replace(/Slytherin/gi, 'Mystic');
+
+        // 2. 修正 NPC 語音庫 (如果已經在記憶體中)
+        if (typeof Store !== 'undefined' && Store.npcs) {
+            Store.npcs.forEach(npc => {
+                npc.dialogue = npc.dialogue.map(line => 
+                    line.replace(/史萊哲林/g, '有格調').replace(/裝逼/g, '高冷')
+                );
+            });
+        }
+        
+        // 3. 修正日誌內的過往文字
+        const msgBox = document.getElementById('msg-box');
+        if (msgBox) {
+            msgBox.innerHTML = msgBox.innerHTML.replace(/史萊哲林/g, '幻夢');
+        }
+    };
+
+    // 執行一次修正
+    replaceIP();
+
+    // 針對戰鬥區域的顯示邏輯做最終清理
+    setInterval(() => {
+        if (typeof state !== 'undefined' && !state.isBattle) {
+            // 沒打架就清空那些多餘的裝飾圖標
+            const vsLabel = document.querySelector('div[style*="font-family: \'Bangers\'"]');
+            if (vsLabel) vsLabel.style.opacity = '0'; 
+            
+            const enemySprite = document.getElementById('enemy-sprite');
+            if (enemySprite && (enemySprite.innerText === "✨" || enemySprite.innerText === "尋找魔法中...")) {
+                enemySprite.innerText = ""; 
+            }
+        }
+    }, 1000);
+})();
 </script>
 
 <div style="height: 50px; text-align: center; color: rgba(255,255,255,0.2); font-size: 10px; margin-top: 20px;">
