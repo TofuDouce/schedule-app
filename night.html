@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文字解謎遊戲</title>
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: #dcdcdc;
+            font-family: "Microsoft JhengHei", sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #game-container {
+            width: 80%;
+            max-width: 600px;
+            background: #2a2a2a;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid #444;
+        }
+        #text {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            min-height: 100px;
+        }
+        .options {
+            display: grid;
+            gap: 10px;
+        }
+        button {
+            padding: 12px;
+            background: #4a4a6a;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #6a6a8a;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="text">正在讀取場景...</div>
+    <div id="options" class="options"></div>
+</div>
+
+<script>
+    const textElement = document.getElementById('text');
+    const optionsElement = document.getElementById('options');
+
+    let state = {}; // 用於記錄玩家是否拿到了關鍵道具
+
+    const scenes = [
+        {
+            id: 1,
+            text: "你猛然醒來，發現自己躺在走廊的長椅上。四周一片漆黑，只有遠處的護理站閃爍著詭異的藍光。前方有門，右邊是昏暗的茶水間。",
+            options: [
+                { text: "走向護理站", nextScene: 2 },
+                { text: "進入茶水間", nextScene: 3 }
+            ]
+        },
+        {
+            id: 2,
+            text: "護理站的電腦還開著，螢幕上不斷跳出『錯誤碼：404』。你在櫃檯下發現了一把【生鏽的鑰匙】。",
+            options: [
+                { 
+                    text: "拿起鑰匙並回到走廊", 
+                    setState: { hasKey: true }, 
+                    nextScene: 1 
+                },
+                { text: "嘗試操作電腦", nextScene: 4 }
+            ]
+        },
+        {
+            id: 3,
+            text: "茶水間裡有一股淡淡的咖啡味，但牆角坐著一個低頭不語的身影。你想上前搭話嗎？",
+            options: [
+                { text: "「請問有人在嗎？」", nextScene: 5 },
+                { text: "感覺不妙，趕快離開", nextScene: 1 }
+            ]
+        },
+        {
+            id: 4,
+            text: "電腦突然發出刺耳的尖叫聲！螢幕上出現你的名字...這不是你該待的地方。你感到一陣暈眩。",
+            options: [
+                { text: "重新開始", nextScene: 1 }
+            ]
+        },
+        {
+            id: 5,
+            text: "那個人緩緩抬頭，竟然沒有臉！他遞給你一杯冒煙的液體。這是解脫，還是陷阱？",
+            options: [
+                { text: "逃跑", nextScene: 1 },
+                { text: "喝下它", nextScene: 6 }
+            ]
+        },
+        {
+            id: 6,
+            text: "你感覺身體變得很輕，牆壁開始透明。你穿過了醫院的大門，回到了現實世界。恭喜你逃脫了！",
+            options: [
+                { text: "再玩一次", nextScene: 1 }
+            ]
+        }
+    ];
+
+    function startLevel(sceneId) {
+        const scene = scenes.find(s => s.id === sceneId);
+        textElement.innerText = scene.text;
+        
+        while (optionsElement.firstChild) {
+            optionsElement.removeChild(optionsElement.firstChild);
+        }
+
+        scene.options.forEach(option => {
+            const button = document.createElement('button');
+            button.innerText = option.text;
+            button.onclick = () => {
+                if (option.setState) {
+                    state = { ...state, ...option.setState };
+                }
+                startLevel(option.nextScene);
+            };
+            optionsElement.appendChild(button);
+        });
+    }
+
+    startLevel(1);
+</script>
+
+</body>
+</html>
