@@ -2,379 +2,291 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>阿毛之塔：藍莓歐蕾輕盈版</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>阿毛之塔：藍莓歐蕾極限版</title>
     <style>
-        /* --- 輕柔藍莓果茶配色定義 --- */
+        /* --- 視覺主題：輕柔藍莓歐蕾 --- */
         :root {
-            --berry-soft: #f3e5f5;    /* 輕柔莓果紫 */
-            --berry-milk: #ede7f6;    /* 藍莓鮮奶藍 */
-            --berry-bright: #ce93d8;  /* 熟透藍莓色 */
-            --berry-dark: #7b1fa2;    /* 莓果強調色 */
-            --cream: #ffffff;         /* 奶霜白 */
-            --glass: rgba(255, 255, 255, 0.7);
-            --shadow: 0 8px 32px rgba(186, 104, 200, 0.15);
+            --berry-soft: #f8f0fc;    /* 背景輕紫 */
+            --berry-bright: #c8a2c8;  /* 藍莓歐蕾紫 */
+            --berry-deep: #7b1fa2;    /* 文字強調紫 */
+            --white: #ffffff;
+            --glass: rgba(255, 255, 255, 0.85);
+            --shadow: 0 4px 15px rgba(186, 104, 200, 0.1);
+            --safe-top: env(safe-area-inset-top);
+            --safe-bottom: env(safe-area-inset-bottom);
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body { 
             margin: 0; padding: 0; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
-            background-color: var(--berry-soft);
-            background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
-                              radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), 
-                              radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
-            /* 修正背景為輕柔漸層 */
-            background: linear-gradient(135deg, #fdfcfb 0%, #e2d1f9 100%);
-            height: 100vh; overflow: hidden; display: flex; flex-direction: column;
-            color: #512da8;
+            background: linear-gradient(180deg, #ffffff 0%, #f3e5f5 100%);
+            height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+            color: var(--berry-deep);
         }
 
-        /* --- 1. 懸浮頂部看板 (HUD) --- */
-        .hud-glass {
-            margin: 15px; padding: 15px; border-radius: 20px;
-            background: var(--glass); backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+        /* --- 1. 固定頂部 (Fixed Header) --- */
+        header {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            background: var(--glass); backdrop-filter: blur(12px);
+            padding: calc(var(--safe-top) + 10px) 15px 10px 15px;
+            border-bottom: 1px solid rgba(200, 162, 200, 0.3);
             box-shadow: var(--shadow);
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
         }
-        .hud-item { text-align: center; }
-        .hud-label { font-size: 10px; color: var(--berry-bright); font-weight: bold; display: block; }
-        .hud-val { font-size: 16px; font-weight: 900; color: var(--berry-dark); }
-        .hud-full { grid-column: span 3; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 8px; margin-top: 5px; font-size: 12px; font-weight: bold; }
+        .stat-card { text-align: center; background: rgba(255,255,255,0.5); padding: 5px; border-radius: 12px; }
+        .stat-label { font-size: 10px; color: #999; display: block; margin-bottom: 2px; }
+        .stat-val { font-size: 14px; font-weight: 900; }
 
-        /* --- 2. 集中式舞台區 --- */
-        .main-stage {
-            flex: 1; position: relative; display: flex; flex-direction: column; align-items: center;
+        /* --- 2. 中央滾動舞台 (Main Content) --- */
+        main {
+            flex: 1; margin-top: 100px; margin-bottom: 180px; /* 留出上下固定欄的空間 */
+            overflow-y: auto; display: flex; flex-direction: column; align-items: center;
+            padding: 20px; -webkit-overflow-scrolling: touch;
         }
+
+        .stage-container { width: 100%; max-width: 500px; text-align: center; }
         
-        /* 樓層浮水印 */
-        #floor-tag {
-            position: absolute; top: 10%; font-size: 120px; font-weight: 900;
-            color: rgba(123, 31, 162, 0.04); z-index: 0; pointer-events: none;
-        }
-
-        /* 阿毛劇場 */
-        .amao-theater {
-            flex: 2; display: flex; align-items: center; justify-content: center;
-            position: relative; width: 100%;
-        }
-        #amao-entity {
-            font-size: 120px; z-index: 10; cursor: pointer;
-            filter: drop-shadow(0 10px 15px rgba(123, 31, 162, 0.2));
+        #amao-display {
+            font-size: 100px; margin: 30px 0; display: inline-block;
             transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        
-        /* 氣泡對話 */
-        #amao-speech {
-            position: absolute; top: 20%; background: var(--cream);
-            padding: 8px 15px; border-radius: 15px; font-size: 14px; font-weight: bold;
-            box-shadow: var(--shadow); opacity: 0; transform: translateY(10px);
-            transition: 0.3s; z-index: 20;
+            filter: drop-shadow(0 10px 20px rgba(123, 31, 162, 0.15));
         }
 
-        /* 即時簡潔日誌 */
-        .mini-logs {
-            width: 90%; height: 120px; background: var(--glass);
-            border-radius: 20px; margin-bottom: 20px; padding: 15px;
-            overflow-y: auto; box-shadow: var(--shadow);
-            border: 1px solid rgba(255, 255, 255, 0.5);
+        .title-tag { 
+            background: var(--berry-bright); color: white; padding: 4px 15px; 
+            border-radius: 20px; font-size: 12px; font-weight: bold; margin-bottom: 20px;
+            display: inline-block;
         }
-        .log-entry { font-size: 13px; margin-bottom: 6px; padding-left: 10px; border-left: 3px solid var(--berry-bright); animation: fadeIn 0.3s forwards; }
-        .log-entry.battle { border-left-color: #ff80ab; color: #ad1457; }
-        .log-entry.gain { border-left-color: #4db6ac; color: #00695c; }
 
-        /* --- 3. 底部控制台 --- */
-        .bottom-nav {
-            background: var(--cream); padding: 20px 20px 40px 20px;
-            border-radius: 40px 40px 0 0; box-shadow: 0 -10px 40px rgba(123, 31, 162, 0.1);
+        /* 冒險日誌樣式 */
+        .log-list { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+        .log-item {
+            background: white; padding: 12px 15px; border-radius: 18px;
+            font-size: 14px; box-shadow: var(--shadow);
+            border-left: 5px solid var(--berry-bright);
+            animation: slideIn 0.3s forwards; line-height: 1.5;
         }
-        .roll-area { margin-bottom: 15px; }
-        .btn-main {
-            width: 100%; height: 70px; border-radius: 25px; border: none;
+        .log-item.battle { border-left-color: #ff80ab; background: #fff5f8; }
+        .log-item.rare { border-left-color: #ffd700; background: #fffdf0; }
+
+        /* --- 3. 固定底部 (Fixed Footer) --- */
+        footer {
+            position: fixed; bottom: 0; left: 0; width: 100%; z-index: 1000;
+            background: var(--white); 
+            padding: 15px 20px calc(var(--safe-bottom) + 20px) 20px;
+            border-top: 1px solid rgba(200, 162, 200, 0.2);
+            box-shadow: 0 -10px 30px rgba(123, 31, 162, 0.08);
+            border-radius: 30px 30px 0 0;
+        }
+
+        .btn-roll {
+            width: 100%; height: 60px; border-radius: 20px; border: none;
             background: linear-gradient(135deg, #ce93d8 0%, #ba68c8 100%);
-            color: white; font-size: 22px; font-weight: 900;
-            box-shadow: 0 10px 20px rgba(186, 104, 200, 0.3);
+            color: white; font-size: 20px; font-weight: 900;
+            margin-bottom: 15px; box-shadow: 0 8px 20px rgba(186, 104, 200, 0.3);
             transition: 0.2s;
         }
-        .btn-main:active { transform: scale(0.96) translateY(5px); box-shadow: 0 4px 10px rgba(186, 104, 200, 0.3); }
+        .btn-roll:active { transform: scale(0.97); opacity: 0.9; }
 
-        .icon-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
-        .icon-btn {
-            background: var(--berry-milk); border: none; border-radius: 18px;
-            padding: 10px; display: flex; flex-direction: column; align-items: center;
-            color: var(--berry-dark); font-size: 11px; font-weight: bold;
+        .nav-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .nav-item {
+            background: #f3e5f5; border: none; border-radius: 15px; padding: 10px 5px;
+            display: flex; flex-direction: column; align-items: center; gap: 5px;
+            color: var(--berry-deep); font-size: 11px; font-weight: bold;
         }
-        .icon-btn span { font-size: 24px; margin-bottom: 4px; }
+        .nav-item i { font-style: normal; font-size: 22px; }
 
-        /* --- 4. 側選單/彈窗 --- */
-        .sheet {
-            position: fixed; bottom: -100%; left: 0; width: 100%; height: 80%;
-            background: var(--cream); border-radius: 35px 35px 0 0; z-index: 3000;
-            transition: 0.5s cubic-bezier(0, 1, 0.5, 1); padding: 30px;
-            box-shadow: 0 -20px 50px rgba(0,0,0,0.1);
+        /* --- 4. 彈出選單 --- */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 2000;
+            display: none; align-items: flex-end;
         }
-        .sheet.active { bottom: 0; }
-        .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-        .sheet-content { height: calc(100% - 60px); overflow-y: auto; }
-        .item-card {
-            background: var(--berry-milk); padding: 18px; border-radius: 20px;
-            margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;
+        .modal-sheet {
+            width: 100%; background: white; border-radius: 30px 30px 0 0;
+            padding: 30px; transform: translateY(100%); transition: 0.4s ease;
+            max-height: 80vh; overflow-y: auto;
         }
+        .modal-overlay.active { display: flex; }
+        .modal-overlay.active .modal-sheet { transform: translateY(0); }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateX(-10px); } }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } }
+
+        /* 響應式微調 */
+        @media (max-height: 700px) {
+            main { margin-top: 90px; margin-bottom: 160px; }
+            #amao-display { font-size: 80px; margin: 15px 0; }
+        }
     </style>
 </head>
 <body>
 
-    <header class="hud-glass">
-        <div class="hud-item"><span class="hud-label">藍莓金幣</span><b id="ui-gold">0</b></div>
-        <div class="hud-item"><span class="hud-label">當前樓層</span><b id="ui-floor">1F</b></div>
-        <div class="hud-item"><span class="hud-label">阿毛狀態</span><b id="ui-hp">100%</b></div>
-        <div class="hud-full" id="ui-title">🫐 藍莓歐蕾初學者</div>
+    <header>
+        <div class="stat-card">
+            <span class="stat-label">藍莓金幣</span>
+            <span class="stat-val" id="st-gold">2250</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">當前位置</span>
+            <span class="stat-val" id="st-floor">1F</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">歐蕾能量</span>
+            <span class="stat-val" id="st-hp">100%</span>
+        </div>
     </header>
 
-    <main class="main-stage">
-        <div id="floor-tag">01</div>
-        
-        <div class="amao-theater">
-            <div id="amao-speech">好喝！</div>
-            <div id="amao-entity" onclick="Game.pet()">🐶</div>
+    <main id="scroll-area">
+        <div class="stage-container">
+            <div id="amao-display" onclick="Game.interact()">🐶</div>
+            <br>
+            <div class="title-tag" id="st-title">【藍莓歐蕾初學者】</div>
+            
+            <div class="log-list" id="log-list">
+                <div class="log-item">📍 塔門開啟，阿毛充滿期待地踏入了一樓。</div>
+            </div>
         </div>
-
-        <div class="mini-logs" id="log-box"></div>
     </main>
 
-    <footer class="bottom-nav">
-        <div class="roll-area">
-            <button class="btn-main" onclick="Game.roll()">🎲 攪拌果茶 (前進)</button>
-        </div>
-        <div class="icon-grid">
-            <button class="icon-btn" onclick="UI.toggle('bag')"><span>👜</span>口袋</button>
-            <button class="icon-btn" onclick="UI.toggle('mix')"><span>🍹</span>調配</button>
-            <button class="icon-btn" onclick="UI.toggle('shop')"><span>🏪</span>茶店</button>
-            <button class="icon-btn" onclick="UI.toggle('rank')"><span>🏆</span>成就</button>
+    <footer>
+        <button class="btn-roll" onclick="Game.roll()">🎲 攪拌果茶 (前進)</button>
+        <div class="nav-grid">
+            <button class="nav-item" onclick="UI.show('bag')"><i>👜</i>口袋</button>
+            <button class="nav-item" onclick="UI.show('mix')"><i>🍹</i>調配</button>
+            <button class="nav-item" onclick="UI.show('shop')"><i>🏪</i>茶店</button>
+            <button class="nav-item" onclick="UI.show('rank')"><i>🏆</i>成就</button>
         </div>
     </footer>
 
-    <div class="sheet" id="sheet">
-        <div class="sheet-header">
-            <h2 id="sheet-title" style="margin:0; color:var(--berry-dark);">選單</h2>
-            <button onclick="UI.toggle()" style="background:none; border:none; color:var(--berry-bright); font-size:40px;">×</button>
+    <div class="modal-overlay" id="overlay" onclick="UI.hide()">
+        <div class="modal-sheet" id="sheet" onclick="event.stopPropagation()">
+            <h2 id="modal-title">選單</h2>
+            <div id="modal-content"></div>
         </div>
-        <div class="sheet-content" id="sheet-body"></div>
     </div>
 
     <script>
         /**
-         * 藍莓果茶冒險：核心邏輯系統
-         * 開發版本：5.0 (輕柔歐蕾版)
+         * 遊戲邏輯引擎 - 高密度版
          */
-        const State = {
-            gold: 1200, floor: 1, hp: 100, maxHp: 100, 
-            exp: 0, lvl: 1,
-            title: "🫐 藍莓歐蕾初學者",
-            inventory: {},
-            titles: ["🫐 藍莓歐蕾初學者", "🍹 專業調茶犬", "👑 莓果高塔王"],
-            isRolling: false,
-            
-            // 資料庫
-            db: {
-                events: [
-                    { t: "發現一袋藍莓果粒！", g: 150, h: 0, msg: "又是豐收的一天呢。", type: "gain" },
-                    { t: "遇到搶茶的壞貓咪！", g: -50, h: -15, msg: "阿毛奮力守住了果茶！", type: "battle" },
-                    { t: "這層樓有溫暖的陽光。", g: 0, h: 10, msg: "體力稍微恢復了。", type: "gain" },
-                    { t: "掉進了珍珠陷阱！", g: 0, h: -10, msg: "好黏啊，阿毛掙扎了一下。", type: "battle" }
-                ],
-                items: [
-                    { n: "特濃藍莓醬", p: 400, d: "恢復 50% 的體力", v: 50 },
-                    { n: "純白鮮奶蓋", p: 600, d: "提升體力上限 20 點", v: 20 },
-                    { n: "紫色吸管", p: 200, d: "只是裝飾，阿毛很喜歡", v: 0 },
-                    { n: "大顆果粒", p: 800, d: "永久提升戰鬥勝率", v: 1 }
-                ],
-                talks: ["藍莓賽高！", "這口歐蕾好香~", "加油爬塔！", "摸摸我？", "想喝果茶了。"]
-            }
-        };
-
         const Game = {
+            data: {
+                gold: 2250, floor: 1, hp: 100,
+                inv: {},
+                logs: [],
+                isMoving: false,
+                db: {
+                    events: [
+                        { msg: "發現一粒藍莓果粒！", g: 120, h: 0, type: 'rare' },
+                        { msg: "遇到搶茶的貓咪...", g: -40, h: -10, type: 'battle' },
+                        { msg: "吸管稍微堵住了。", g: 0, h: -5, type: 'normal' },
+                        { msg: "這層茶香好濃郁。", g: 0, h: 5, type: 'normal' }
+                    ],
+                    shop: [
+                        { n: "特濃藍莓醬", p: 500, d: "恢復 50% 能量" },
+                        { n: "純白鮮奶蓋", p: 800, d: "提升能量上限" },
+                        { n: "紫晶果凍", p: 300, d: "下次投擲必為 6" }
+                    ]
+                }
+            },
+
             init() {
                 this.updateUI();
-                this.log("🚩 歡迎回來，製作人！阿毛已經準備好攪拌果茶了。");
-                this.autoSave();
+                console.log("遊戲初始化成功");
             },
 
             updateUI() {
-                document.getElementById('ui-gold').innerText = State.gold;
-                document.getElementById('ui-floor').innerText = State.floor + "F";
-                document.getElementById('ui-hp').innerText = State.hp + "%";
-                document.getElementById('ui-title').innerText = State.title;
-                document.getElementById('floor-tag').innerText = String(State.floor).padStart(2, '0');
-                
-                // 動態背景色偏轉 (隨樓層變換輕柔色調)
-                const hue = (State.floor * 10) % 360;
-                document.body.style.backgroundColor = `hsl(${hue}, 30%, 95%)`;
+                document.getElementById('st-gold').innerText = this.data.gold;
+                document.getElementById('st-floor').innerText = this.data.floor + "F";
+                document.getElementById('st-hp').innerText = this.data.hp + "%";
             },
 
-            log(msg, type = '') {
-                const box = document.getElementById('log-box');
+            log(text, type = 'normal') {
+                const list = document.getElementById('log-list');
                 const div = document.createElement('div');
-                div.className = `log-entry ${type}`;
-                div.innerText = msg;
-                box.prepend(div);
-                if(box.childNodes.length > 30) box.removeChild(box.lastChild);
-            },
-
-            speak(text) {
-                const bubble = document.getElementById('amao-speech');
-                bubble.innerText = text || State.db.talks[Math.floor(Math.random()*State.db.talks.length)];
-                bubble.style.opacity = 1;
-                bubble.style.transform = "translateY(0)";
-                setTimeout(() => {
-                    bubble.style.opacity = 0;
-                    bubble.style.transform = "translateY(10px)";
-                }, 2000);
-            },
-
-            pet() {
-                this.speak("汪！(蹭~)");
-                const amao = document.getElementById('amao-entity');
-                amao.style.transform = "scale(1.2)";
-                setTimeout(() => amao.style.transform = "scale(1)", 200);
+                div.className = `log-item ${type}`;
+                div.innerText = text;
+                list.prepend(div);
+                
+                // 自動滾動到頂部（因為我們是用 prepend，最新日誌在最上面）
+                document.getElementById('scroll-area').scrollTo({ top: 0, behavior: 'smooth' });
             },
 
             roll() {
-                if(State.isRolling) return;
-                if(State.hp <= 0) {
-                    this.log("⚠️ 阿毛累壞了，請先喝點藍莓醬恢復體力！", "battle");
-                    return;
-                }
+                if(this.data.isMoving || this.data.hp <= 0) return;
+                this.data.isMoving = true;
 
-                State.isRolling = true;
                 const dice = Math.floor(Math.random() * 6) + 1;
-                State.floor += dice;
+                this.data.floor += dice;
                 
-                const amao = document.getElementById('amao-entity');
-                amao.style.transform = "translateY(-50px) rotate(20deg)";
+                const amao = document.getElementById('amao-display');
+                amao.style.transform = "translateY(-40px) scale(1.2)";
                 
-                this.log(`🎲 攪拌成功！擲出 ${dice} 點，阿毛跑到了 ${State.floor}F。`);
+                this.log(`🎲 攪拌成功！擲出 ${dice} 點，來到 ${this.data.floor}F。`);
 
                 setTimeout(() => {
-                    amao.style.transform = "translateY(0) rotate(0deg)";
-                    this.triggerEvent();
+                    amao.style.transform = "translateY(0) scale(1)";
+                    this.trigger();
                     this.updateUI();
-                    State.isRolling = false;
+                    this.data.isMoving = false;
                 }, 400);
             },
 
-            triggerEvent() {
-                const rng = Math.random();
-                if(rng < 0.4) {
-                    const ev = State.db.events[Math.floor(Math.random() * State.db.events.length)];
-                    State.gold = Math.max(0, State.gold + ev.g);
-                    State.hp = Math.min(100, Math.max(0, State.hp + ev.h));
-                    this.log(`${ev.t} ${ev.msg}`, ev.type);
-                    if(ev.h < 0) this.speak("哎呀！");
-                } else if(rng < 0.55) {
-                    this.log("🎁 意外發現了果茶配料！");
-                    this.addLoot();
-                } else {
-                    this.speak();
+            trigger() {
+                const r = Math.random();
+                if(r < 0.4) {
+                    const ev = this.data.db.events[Math.floor(Math.random()*this.data.db.events.length)];
+                    this.data.gold = Math.max(0, this.data.gold + ev.g);
+                    this.data.hp = Math.min(100, Math.max(0, this.data.hp + ev.h));
+                    this.log(`✨ ${ev.msg}`, ev.type);
                 }
+                if(this.data.hp <= 0) this.log("💀 阿毛能量耗盡了...", "battle");
             },
 
-            addLoot() {
-                const item = State.db.items[Math.floor(Math.random() * State.db.items.length)];
-                if(State.inventory[item.n]) State.inventory[item.n].count++;
-                else State.inventory[item.n] = { ...item, count: 1 };
-                this.log(`獲得了 [${item.n}]，已存入口袋。`, "gain");
-            },
-
-            autoSave() {
-                const save = { gold: State.gold, floor: State.floor, hp: State.hp, inv: State.inventory };
-                localStorage.setItem('Amao_Blueberry_Save', JSON.stringify(save));
-                setTimeout(() => this.autoSave(), 10000);
+            interact() {
+                const amao = document.getElementById('amao-display');
+                amao.style.transform = "rotate(20deg)";
+                setTimeout(()=>amao.style.transform="rotate(0deg)", 200);
+                this.log("🐶 阿毛向妳撒嬌了一下！");
             }
         };
 
         const UI = {
-            toggle(mode) {
-                const sheet = document.getElementById('sheet');
-                const title = document.getElementById('sheet-title');
-                const body = document.getElementById('sheet-body');
-                
-                if(!mode) {
-                    sheet.classList.remove('active');
-                    return;
-                }
+            show(mode) {
+                const over = document.getElementById('overlay');
+                const title = document.getElementById('modal-title');
+                const content = document.getElementById('modal-content');
+                over.classList.add('active');
 
-                sheet.classList.add('active');
                 if(mode === 'bag') {
-                    title.innerText = "👜 口袋裡的配料";
-                    const items = Object.entries(State.inventory);
-                    body.innerHTML = items.length ? items.map(([n, i]) => `
-                        <div class="item-card">
-                            <div><b>${n} (x${i.count})</b><p style="font-size:11px;color:#999;margin:5px 0 0 0;">${i.d}</p></div>
-                            <button class="btn-main" style="width:auto;height:40px;font-size:14px;padding:0 15px;" onclick="UI.useItem('${n}')">使用</button>
-                        </div>
-                    `).join('') : "<p style='text-align:center;padding-top:50px;color:#aaa;'>目前沒有配料喔。</p>";
+                    title.innerText = "👜 藍莓萬寶袋";
+                    content.innerHTML = "<p style='color:#999'>口袋裡空空如也...</p>";
                 } else if(mode === 'shop') {
                     title.innerText = "🏪 藍莓精品茶店";
-                    body.innerHTML = State.db.items.map(i => `
-                        <div class="item-card">
-                            <div><b>${i.n} (💰${i.p})</b><p style="font-size:11px;color:#999;margin:5px 0 0 0;">${i.d}</p></div>
-                            <button class="btn-main" style="width:auto;height:40px;font-size:14px;padding:0 15px;" onclick="UI.buyItem('${i.n}', ${i.p})">購買</button>
+                    content.innerHTML = Game.data.db.shop.map(i => `
+                        <div style="background:#f9f9f9; padding:15px; border-radius:15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+                            <div><b>${i.n}</b><br><small>${i.d}</small></div>
+                            <button style="background:var(--berry-bright); border:none; color:white; padding:8px 12px; border-radius:10px;" onclick="UI.buy('${i.n}', ${i.p})">💰${i.p}</button>
                         </div>
                     `).join('');
                 } else if(mode === 'rank') {
-                    title.innerText = "🏆 冒險榮譽";
-                    body.innerHTML = State.titles.map(t => `
-                        <div class="item-card" onclick="State.title='${t}'; Game.updateUI(); UI.toggle();">
-                            <b>${t}</b>
-                        </div>
-                    `).join('');
+                    title.innerText = "🏆 冒險成就";
+                    content.innerHTML = "<div style='padding:10px;'>阿毛正在努力寫下傳奇...</div>";
                 }
             },
-
-            useItem(name) {
-                const item = State.inventory[name];
-                if(item.count > 1) item.count--;
-                else delete State.inventory[name];
-                
-                if(name === "特濃藍莓醬") State.hp = Math.min(100, State.hp + 50);
-                if(name === "純白鮮奶蓋") { State.maxHp += 20; State.hp = 100; }
-                
-                Game.log(`✨ 使用了 [${name}]！阿毛恢復了活力。`);
-                Game.updateUI();
-                this.toggle();
-            },
-
-            buyItem(name, price) {
-                if(State.gold >= price) {
-                    State.gold -= price;
-                    const item = State.db.items.find(i => i.n === name);
-                    if(State.inventory[name]) State.inventory[name].count++;
-                    else State.inventory[name] = { ...item, count: 1 };
-                    Game.log(`🛒 購入了 [${name}]！花費了 ${price} 金幣。`);
+            hide() { document.getElementById('overlay').classList.remove('active'); },
+            buy(n, p) {
+                if(Game.data.gold >= p) {
+                    Game.data.gold -= p;
+                    Game.log(`🛒 買到了 [${n}]！`);
                     Game.updateUI();
-                    this.toggle();
-                } else {
-                    alert("金幣不足，阿毛需要再努力爬塔喔！");
-                }
+                    this.hide();
+                } else { alert("藍莓金幣不夠喔！"); }
             }
         };
 
-        // 啟動遊戲
-        window.onload = () => {
-            const saved = localStorage.getItem('Amao_Blueberry_Save');
-            if(saved) {
-                const data = JSON.parse(saved);
-                State.gold = data.gold;
-                State.floor = data.floor;
-                State.hp = data.hp;
-                State.inventory = data.inv || {};
-            }
-            Game.init();
-        };
+        window.onload = () => Game.init();
     </script>
 </body>
 </html>
