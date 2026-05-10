@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DreamID ✦ Pure Essence</title>
+    <title>DreamID ✦ Deep Essence</title>
     <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #13101c; --gold: #e2d1a7; --gold-dim: rgba(226, 209, 167, 0.2); --text: #fdfbff; --mucha-green: #7d8c6d; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: var(--bg); color: var(--text); font-family: "Cormorant Garamond", serif; padding-bottom: 50px; }
+        body { background: var(--bg); color: var(--text); font-family: "Cormorant Garamond", serif; padding-bottom: 50px; overflow-x: hidden; }
 
         /* 裝飾元素 */
         .moon { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); font-size: 26px; color: var(--gold); opacity: 0.5; z-index: 1; }
@@ -18,9 +18,21 @@
 
         .container { width: 92%; max-width: 480px; margin: auto; padding-top: 60px; position: relative; z-index: 10; }
         
-        .header { text-align: center; margin-bottom: 50px; }
-        .main-title { font-family: "Great Vibes", cursive; font-size: 88px; line-height: 0.9; }
-        .subtitle { font-family: "Cinzel", serif; font-size: 18px; letter-spacing: 6px; color: var(--gold); margin-top: 20px; }
+        /* 標題與副標題：使用 vw 單位達成自動縮放且不斷行 */
+        .header { text-align: center; margin-bottom: 50px; white-space: nowrap; }
+        .main-title { 
+            font-family: "Great Vibes", cursive; 
+            font-size: clamp(60px, 20vw, 88px); 
+            line-height: 1; 
+        }
+        .subtitle { 
+            font-family: "Cinzel", serif; 
+            font-size: clamp(12px, 3.5vw, 18px); 
+            letter-spacing: 0.4em; 
+            color: var(--gold); 
+            margin-top: 10px;
+            text-transform: uppercase;
+        }
 
         .panel { background: rgba(255, 255, 255, 0.02); border: 0.5px solid var(--gold-dim); padding: 35px 25px; backdrop-filter: blur(10px); }
 
@@ -69,7 +81,7 @@
     <div class="container">
         <div class="header">
             <h1 class="main-title">DreamID</h1>
-            <p class="subtitle">✦ ESSENCE OF IDENTITY ✦</p>
+            <p class="subtitle">Essence of Identity</p>
         </div>
 
         <div class="panel">
@@ -149,15 +161,12 @@
         zen: { name: "禪意", words: { "Ink": "淡雅墨跡", "Tea": "清心茶味", "Moon": "水中之月", "Kaze": "流動之風", "Sora": "無垠天空" }}
     };
 
-    function toggleSwitch(el) {
-        el.classList.toggle('active');
-    }
+    function toggleSwitch(el) { el.classList.toggle('active'); }
 
     document.getElementById('range').addEventListener('input', function(e) {
         document.getElementById('lenDisp').innerText = e.target.value + ' 字元';
     });
 
-    // 重新封裝生成邏輯，確保事件綁定成功
     function runGeneration() {
         const k1 = document.getElementById('k1').value || "Tofu";
         const k2 = document.getElementById('k2').value;
@@ -192,7 +201,19 @@
             let id = parts.join(sep);
             if(isNum) id += Math.floor(Math.random() * 9);
             if(isSym) id += "_";
-            if(isDeco) id = "v" + id;
+
+            // --- DECO 功能進化版 ---
+            if(isDeco) {
+                const decoStyles = [
+                    (s) => `v${s}`,          // 經典 v 系
+                    (s) => `${s}x`,          // 後綴 x 系
+                    (s) => `_${s}_`,         // 底線圍繞
+                    (s) => `i${s}`,          // 小寫 i 起首
+                    (s) => `${s}o`,          // 圓形後綴
+                    (s) => `x${s}x`,         // 交叉圍繞
+                ];
+                id = decoStyles[Math.floor(Math.random() * decoStyles.styles.length)](id);
+            }
 
             if(id.length > limit) id = id.substring(0, limit).replace(/[._\-@]$/, "");
             if(isUpper) id = id.toUpperCase();
@@ -208,20 +229,15 @@
                 navigator.clipboard.writeText(id);
                 const originalMeaning = this.querySelector('.id-meaning').innerText;
                 this.querySelector('.id-meaning').innerText = "已複製 ID ✦";
-                this.querySelector('.id-meaning').style.color = "#7d8c6d";
                 setTimeout(() => {
                     this.querySelector('.id-meaning').innerText = originalMeaning;
-                    this.querySelector('.id-meaning').style.color = "var(--gold)";
                 }, 1000);
             };
             resBox.appendChild(card);
         }
     }
 
-    // 綁定按鈕點擊
     document.getElementById('generateBtn').addEventListener('click', runGeneration);
-
-    // 初始執行一次
     window.onload = runGeneration;
 </script>
 </body>
