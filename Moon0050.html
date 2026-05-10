@@ -739,7 +739,7 @@ button{
         placeholder="例如 1000">
 
         <label class="label">
-            ETF 代號
+            ETF / 股票代號
         </label>
 
         <input
@@ -766,7 +766,7 @@ button{
             </div>
 
             <div class="stock">
-                ETF：
+                標的：
                 <span id="stockName"></span>
             </div>
 
@@ -883,7 +883,9 @@ const annualReturnMap = {
     "00919":10,
     "QQQ":15,
     "VOO":12,
-    "SPY":11
+    "SPY":11,
+    "2330":18,
+    "2317":10
 };
 
 async function getETFPrice(code){
@@ -923,9 +925,20 @@ async function getETFPrice(code){
         const currentPrice =
         prices[prices.length - 1];
 
+        const title =
+        data.title || "";
+
+        const stockName =
+        title
+        .replace(/[\d年月\s]/g,"")
+        .replace(code,"")
+        .replace("各日成交資訊","");
+
         return {
 
             currentPrice,
+
+            stockName,
 
             annualReturn:
             annualReturnMap[code] || 10
@@ -1028,7 +1041,7 @@ async function calculate(){
 
     if(!data){
 
-        alert("抓不到 ETF 資料 😭");
+        alert("抓不到資料 😭");
 
         return;
     }
@@ -1070,7 +1083,7 @@ async function calculate(){
     document
     .getElementById("stockName")
     .innerText =
-    code;
+    `${code} ${data.stockName}`;
 
     document
     .getElementById("currentPrice")
