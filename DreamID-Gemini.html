@@ -3,82 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DreamID ✦ Mucha Edition</title>
+    <title>DreamID ✦ Mucha Final</title>
     <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg: #1a1625;
-            --gold: #d8bf8a;
-            --gold-dim: rgba(216, 191, 138, 0.3);
-            --glass: rgba(255, 255, 255, 0.03);
-            --text: #f4efff;
-        }
-
+        :root { --bg: #1a1625; --gold: #d8bf8a; --gold-dim: rgba(216, 191, 138, 0.2); --glass: rgba(255, 255, 255, 0.03); --text: #f4efff; --mucha-green: #7d8c6d; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            background-color: var(--bg);
-            color: var(--text);
-            font-family: "Cormorant Garamond", serif;
-            padding: 40px 20px;
-            display: flex;
-            justify-content: center;
-            line-height: 1.5;
-        }
+        body { background: var(--bg); color: var(--text); font-family: "Cormorant Garamond", serif; padding: 30px 15px; display: flex; justify-content: center; }
+        
+        /* 纖細裝飾 */
+        .frame { position: fixed; inset: 12px; border: 0.5px solid var(--gold-dim); pointer-events: none; z-index: 100; }
+        .corner { position: fixed; width: 50px; height: 50px; border: 0.8px solid var(--gold); border-radius: 100% 0 100% 0; pointer-events: none; z-index: 101; }
+        .tl { top: 8px; left: 8px; } .tr { top: 8px; right: 8px; transform: scaleX(-1); }
+        .bl { bottom: 8px; left: 8px; transform: scaleY(-1); } .br { bottom: 8px; right: 8px; transform: scale(-1); }
 
-        /* --- 纖細慕夏裝飾 --- */
-        .frame { position: fixed; inset: 15px; border: 0.5px solid var(--gold-dim); pointer-events: none; z-index: 100; }
-        .corner {
-            position: fixed; width: 60px; height: 60px; pointer-events: none; z-index: 101;
-            border: 0.8px solid var(--gold); border-radius: 100% 0 100% 0;
-        }
-        .tl { top: 10px; left: 10px; }
-        .tr { top: 10px; right: 10px; transform: scaleX(-1); }
-        .bl { bottom: 10px; left: 10px; transform: scaleY(-1); }
-        .br { bottom: 10px; right: 10px; transform: scale(-1); }
+        .container { width: 100%; max-width: 420px; z-index: 10; }
+        .header { text-align: center; margin-bottom: 35px; }
+        .main-title { font-family: "Great Vibes", cursive; font-size: 62px; font-weight: 400; color: var(--text); }
+        .subtitle { font-family: "Cinzel", serif; font-size: 11px; letter-spacing: 5px; color: var(--gold); margin-top: 10px; }
 
-        .container { width: 100%; max-width: 400px; z-index: 10; }
+        .panel { background: rgba(255, 255, 255, 0.01); border: 0.5px solid var(--gold-dim); padding: 25px 20px; backdrop-filter: blur(5px); }
 
-        /* --- 標題 (精確比例) --- */
-        .header { text-align: center; margin-bottom: 45px; }
-        .main-title { font-family: "Great Vibes", cursive; font-size: 68px; font-weight: 400; margin-bottom: 5px; }
-        .subtitle { font-family: "Cinzel", serif; font-size: 12px; letter-spacing: 4px; color: var(--gold); opacity: 0.8; }
+        /* 並列佈局 */
+        .row-split { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .label-zh { font-family: "Cinzel", serif; font-size: 16px; color: var(--text); display: block; }
+        .label-en { font-size: 9px; color: var(--gold); letter-spacing: 1.5px; text-transform: uppercase; opacity: 0.7; }
+        
+        input, select { width: 100%; background: var(--glass); border: 0.5px solid var(--gold-dim); color: #fff; padding: 10px; margin-top: 6px; font-family: inherit; font-size: 15px; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--gold); background: rgba(255,255,255,0.06); }
 
-        /* --- 面板結構 --- */
-        .panel { background: rgba(255,255,255,0.02); border: 0.5px solid var(--gold-dim); padding: 30px 20px; }
+        /* 滑桿與按鈕 */
+        .grid-toggles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .toggle-item { border: 0.5px solid var(--gold-dim); padding: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .switch { width: 32px; height: 16px; background: #333; border-radius: 8px; position: relative; cursor: pointer; transition: 0.3s; }
+        .switch.active { background: var(--mucha-green); }
+        .dot { position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; background: #fff; border-radius: 50%; transition: 0.2s; }
+        .switch.active .dot { left: 18px; }
 
-        .label-wrap { margin-bottom: 20px; }
-        .label-zh { font-family: "Cinzel", serif; font-size: 18px; color: var(--text); }
-        .label-en { font-size: 10px; color: var(--gold); letter-spacing: 2px; text-transform: uppercase; }
+        .gen-btn { width: 100%; height: 54px; margin-top: 25px; background: transparent; border: 0.8px solid var(--gold); color: var(--gold); font-family: "Cinzel", serif; letter-spacing: 4px; cursor: pointer; }
+        .gen-btn:active { background: var(--gold); color: var(--bg); }
 
-        input, select {
-            width: 100%; background: var(--glass); border: 0.5px solid var(--gold-dim);
-            color: #fff; padding: 12px; margin-top: 8px; font-family: inherit; font-size: 16px; outline: none;
-        }
-
-        /* --- Tags --- */
-        .tags-wrap { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-        .tag { background: rgba(216, 191, 138, 0.1); border: 0.5px solid var(--gold-dim); padding: 4px 10px; font-size: 13px; color: var(--gold); }
-
-        /* --- 滑桿與多元按鈕 (圖一復刻) --- */
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
-        .toggle-card { border: 0.5px solid var(--gold-dim); padding: 12px; display: flex; justify-content: space-between; align-items: center; }
-        .toggle-name { font-size: 14px; }
-        .switch { width: 34px; height: 18px; background: #333; border-radius: 9px; position: relative; cursor: pointer; transition: 0.3s; }
-        .switch.active { background: #7d8c6d; }
-        .dot { position: absolute; top: 3px; left: 3px; width: 12px; height: 12px; background: #fff; border-radius: 50%; transition: 0.2s; }
-        .switch.active .dot { left: 19px; }
-
-        .btn-gen {
-            width: 100%; height: 56px; margin-top: 30px; background: transparent;
-            border: 0.8px solid var(--gold); color: var(--gold); font-family: "Cinzel", serif;
-            letter-spacing: 4px; cursor: pointer; transition: 0.3s;
-        }
-        .btn-gen:hover { background: var(--gold); color: var(--bg); }
-
-        /* --- 結果顯示 --- */
-        .result-item { border-bottom: 0.5px solid var(--gold-dim); padding: 25px 0; cursor: pointer; }
-        .id-text { font-family: "Cinzel", serif; font-size: 26px; color: var(--text); margin-bottom: 5px; }
-        .id-desc { font-size: 13px; color: var(--gold); font-style: italic; opacity: 0.6; }
+        /* 結果顯示區 */
+        .result-card { border-bottom: 0.5px solid var(--gold-dim); padding: 20px 0; animation: fadeIn 0.5s ease; cursor: pointer; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .id-val { font-family: "Cinzel", serif; font-size: 24px; color: #fff; margin-bottom: 4px; }
+        .id-meaning { font-size: 13px; color: var(--gold); font-style: italic; display: flex; align-items: center; gap: 6px; }
+        .id-meaning::before { content: "✦"; font-size: 10px; }
     </style>
 </head>
 <body>
@@ -90,127 +59,124 @@
     <div class="container">
         <div class="header">
             <h1 class="main-title">DreamID</h1>
-            <p class="subtitle">✦ Create beautiful usernames ✦</p>
+            <p class="subtitle">✦ 美名生成器 ✦</p>
         </div>
 
         <div class="panel">
-            <div class="label-wrap">
-                <span class="label-zh">第一關鍵字</span><br><span class="label-en">PRIMARY KEYWORD</span>
-                <input id="k1" value="Tofu">
+            <div class="row-split">
+                <div>
+                    <span class="label-zh">關鍵字一</span><span class="label-en">PRIMARY</span>
+                    <input id="k1" placeholder="例如: Tofu">
+                </div>
+                <div>
+                    <span class="label-zh">關鍵字二</span><span class="label-en">OPTIONAL</span>
+                    <input id="k2" placeholder="例如: Douce">
+                </div>
             </div>
 
-            <div class="label-wrap">
-                <span class="label-zh">第二關鍵字</span><br><span class="label-en">OPTIONAL</span>
-                <input id="k2" value="Douce">
-            </div>
-
-            <div class="label-wrap">
-                <span class="label-zh">世界觀風格</span><br><span class="label-en">STYLE WORLD</span>
-                <select id="style">
-                    <option value="dreamy">🌙 夢境 Dreamy</option>
-                    <option value="angel">✨ 天使 Angel</option>
-                    <option value="cyber">⚡ 賽博 Cyber</option>
-                    <option value="luxury">👑 奢華 Luxury</option>
-                </select>
-            </div>
-
-            <div class="label-wrap">
-                <span class="label-zh">自訂元素</span><br><span class="label-en">CUSTOM TAGS</span>
-                <input id="tagInput" placeholder="Press Enter to add...">
-                <div class="tags-wrap" id="tagsBox"></div>
-            </div>
-
-            <div class="grid-2">
+            <div class="row-split">
                 <div style="grid-column: span 2;">
-                    <span class="label-en" id="lenVal">19 字元</span>
-                    <input type="range" id="range" min="4" max="24" value="19" style="height:2px; accent-color:var(--gold); margin-top:10px;">
-                </div>
-                <select id="sep" style="margin-top:0;">
-                    <option value="">無分隔</option>
-                    <option value=".">.</option>
-                    <option value="_">_</option>
-                </select>
-                <div class="toggle-card">
-                    <span class="toggle-name">大寫 UPPER</span>
-                    <div class="switch" id="up"><div class="dot"></div></div>
+                    <span class="label-zh">世界觀風格</span><span class="label-en">STYLE WORLD</span>
+                    <select id="style">
+                        <option value="dreamy">🌙 夢境 Dreamy (幻象/輕盈)</option>
+                        <option value="angel">✨ 天使 Angel (神聖/純淨)</option>
+                        <option value="herbal">🌿 草本 Herbal (法式/自然)</option>
+                        <option value="aurora">🌌 極光 Aurora (冷冽/絢爛)</option>
+                        <option value="luxury">👑 奢華 Luxury (凡爾賽/典雅)</option>
+                        <option value="gothic">🦇 幽夜 Gothic (暗黑/薔薇)</option>
+                        <option value="myth">🏛️ 神話 Myth (希臘/永恆)</option>
+                        <option value="cyber">⚡ 賽博 Cyber (流光/未來)</option>
+                    </select>
                 </div>
             </div>
 
-            <div class="grid-2" style="margin-top: 10px;">
-                <div class="toggle-card"><span class="toggle-name">數字 NUM</span><div class="switch active" id="num"><div class="dot"></div></div></div>
-                <div class="toggle-card"><span class="toggle-name">符號 SYM</span><div class="switch" id="sym"><div class="dot"></div></div></div>
+            <div class="row-split" style="align-items: end;">
+                <div>
+                    <span class="label-en" id="lenDisp">18 字元</span>
+                    <input type="range" id="range" min="4" max="24" value="18" style="height:1px; accent-color:var(--gold);">
+                </div>
+                <div>
+                    <span class="label-en">分隔符 SEP</span>
+                    <select id="sep" style="margin-top:2px;">
+                        <option value="">無</option><option value=".">.</option><option value="_">_</option>
+                    </select>
+                </div>
             </div>
 
-            <button class="btn-gen" onclick="generate()">GENERATE ID</button>
+            <div class="grid-toggles">
+                <div class="toggle-item"><span class="label-en">大寫 UPPER</span><div class="switch" id="up"><div class="dot"></div></div></div>
+                <div class="toggle-item"><span class="label-en">數字 NUM</span><div class="switch active" id="num"><div class="dot"></div></div></div>
+                <div class="toggle-item"><span class="label-en">符號 SYM</span><div class="switch" id="sym"><div class="dot"></div></div></div>
+                <div class="toggle-item"><span class="label-en">繁複 DECO</span><div class="switch active" id="deco"><div class="dot"></div></div></div>
+            </div>
+
+            <button class="gen-btn" onclick="generate()">GENERATE IDENTITY</button>
             <div id="results"></div>
         </div>
     </div>
 
 <script>
-    // Tags 控制
-    let tags = ["yume", "mori"];
-    const tInput = document.getElementById('tagInput');
-    const tBox = document.getElementById('tagsBox');
-    
-    function renderTags() {
-        tBox.innerHTML = tags.map((t,i) => `<div class="tag">${t} <span onclick="tags.splice(${i},1);renderTags()" style="cursor:pointer">×</span></div>`).join('');
-    }
-    tInput.onkeydown = (e) => { if(e.key==='Enter' && tInput.value) { tags.push(tInput.value); tInput.value=''; renderTags(); }};
-    renderTags();
-
-    // UI 互動
-    document.querySelectorAll('.switch').forEach(s => s.onclick = () => s.classList.toggle('active'));
-    document.getElementById('range').oninput = (e) => document.getElementById('lenVal').innerText = e.target.value + ' 字元';
-
-    const worlds = {
-        dreamy: ["Nova", "Cloud", "Echo", "Velvet", "Vesper"],
-        angel: ["Halo", "Grace", "Seraph", "Caelum"],
-        cyber: ["Void", "Neo", "Pixel", "Quantum"],
-        luxury: ["Gold", "Elite", "Luxe", "Royal"]
+    const dict = {
+        dreamy: { words: ["Nova", "Echo", "Vesper", "Somnus"], mean: "夢境中的回響與星辰" },
+        angel: { words: ["Halo", "Seraph", "Grace", "Caelum"], mean: "神聖光環下的純淨祝禱" },
+        herbal: { words: ["Fleur", "Sauge", "Rose", "Menthe"], mean: "法式莊園裡的草本芬芳" },
+        aurora: { words: ["Borealis", "Neon", "Frost", "Cyan"], mean: "極地夜空中流轉的寒光" },
+        luxury: ["Dore", "Elite", "Bijou", "Reine"], // 混合寫法測試
+        luxury: { words: ["Dore", "Elite", "Bijou", "Reine"], mean: "凡爾賽宮殿的璀璨珠寶" },
+        gothic: { words: ["Noir", "Morte", "Raven", "Thorn"], mean: "幽夜中的黑色薔薇與荊棘" },
+        myth: { words: ["Athena", "Nyx", "Chaos", "Astra"], mean: "古希臘神話的永恆意志" },
+        cyber: { words: ["Void", "Pixel", "Data", "Byte"], mean: "數位虛擬世界中的流光碎片" }
     };
 
+    // UI 控制
+    document.querySelectorAll('.switch').forEach(s => s.onclick = () => s.classList.toggle('active'));
+    document.getElementById('range').oninput = (e) => document.getElementById('lenDisp').innerText = e.target.value + ' 字元';
+
     function generate() {
-        const config = {
-            k1: document.getElementById('k1').value,
+        const c = {
+            k1: document.getElementById('k1').value || "Amo",
             k2: document.getElementById('k2').value,
             style: document.getElementById('style').value,
             limit: parseInt(document.getElementById('range').value),
             sep: document.getElementById('sep').value,
             up: document.getElementById('up').classList.contains('active'),
             num: document.getElementById('num').classList.contains('active'),
-            sym: document.getElementById('sym').classList.contains('active')
+            sym: document.getElementById('sym').classList.contains('active'),
+            deco: document.getElementById('deco').classList.contains('active')
         };
 
         const resBox = document.getElementById('results');
         resBox.innerHTML = "";
 
-        for(let i=0; i<5; i++) {
-            let pool = worlds[config.style];
-            let worldWord = pool[Math.floor(Math.random()*pool.length)];
-            let tagWord = tags.length ? tags[Math.floor(Math.random()*tags.length)] : "";
+        for(let i=0; i<4; i++) {
+            let styleData = dict[c.style];
+            let sw = styleData.words[Math.floor(Math.random()*styleData.words.length)];
             
-            // --- 智能組合邏輯 ---
-            let parts = [config.k1];
-            if(config.k2 && Math.random() > 0.4) parts.push(config.k2);
-            if(Math.random() > 0.3) parts.push(worldWord);
-            if(tagWord && Math.random() > 0.5) parts.push(tagWord);
+            // 組合邏輯
+            let parts = [c.k1];
+            if(c.k2 && Math.random() > 0.3) parts.push(c.k2);
+            parts.push(sw);
+            
+            let id = parts.join(c.sep);
+            if(c.num) id += Math.floor(Math.random()*9);
+            if(c.sym) id += (Math.random() > 0.5 ? "_" : "");
+            if(c.deco) id = (Math.random() > 0.5 ? "v_" : "") + id;
 
-            let id = parts.join(config.sep);
-            if(config.num) id += Math.floor(Math.random()*99);
-            if(config.sym) id += (Math.random() > 0.5 ? "_" : ".");
+            // 截斷與大小寫
+            if(id.length > c.limit) id = id.substring(0, c.limit).replace(/[._-]$/, "");
+            if(c.up) id = id.toUpperCase();
 
-            // --- 強制長度修正 ---
-            if(id.length > config.limit) id = id.substring(0, config.limit).replace(/[._-]$/, "");
-            if(config.up) id = id.toUpperCase();
+            // 生成寓意 (簡單解析)
+            let meanStr = `來自「${document.getElementById('style').selectedOptions[0].text.split(' ')[1]}」的世界，${styleData.mean}`;
 
-            const item = document.createElement('div');
-            item.className = 'result-item';
-            item.innerHTML = `<div class="id-text">${id}</div><div class="id-desc">A beautiful identity from the ${config.style} world.</div>`;
-            item.onclick = () => { navigator.clipboard.writeText(id); alert('Copied!'); };
-            resBox.appendChild(item);
+            const card = document.createElement('div');
+            card.className = 'result-card';
+            card.innerHTML = `<div class="id-val">${id}</div><div class="id-meaning">${meanStr}</div>`;
+            card.onclick = () => { navigator.clipboard.writeText(id); alert('已複製 ✦'); };
+            resBox.appendChild(card);
         }
     }
-    generate();
+    generate(); // 初始執行
 </script>
 </body>
 </html>
