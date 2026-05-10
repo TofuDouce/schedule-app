@@ -3,55 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DreamID ✦ Matrix</title>
+    <title>DreamID ✦ Fusion</title>
     <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #13101c; --gold: #e2d1a7; --gold-dim: rgba(226, 209, 167, 0.2); --text: #fdfbff; --mucha-green: #7d8c6d; }
+        :root { --bg: #13101c; --gold: #e2d1a7; --gold-dim: rgba(226, 209, 167, 0.2); --text: #fdfbff; --active-bg: rgba(226, 209, 167, 0.15); }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: var(--text); font-family: "Cormorant Garamond", serif; padding-bottom: 50px; overflow-x: hidden; }
+        body { background: var(--bg); color: var(--text); font-family: "Cormorant Garamond", serif; padding-bottom: 50px; }
 
-        .container { width: 92%; max-width: 480px; margin: auto; padding-top: 40px; position: relative; z-index: 10; }
-        .header { text-align: center; margin-bottom: 25px; white-space: nowrap; }
-        .main-title { font-family: "Great Vibes", cursive; font-size: clamp(48px, 16vw, 68px); line-height: 1; }
-        .subtitle { font-family: "Cinzel", serif; font-size: 11px; letter-spacing: 0.3em; color: var(--gold); margin-top: 5px; opacity: 0.8; }
+        .container { width: 92%; max-width: 480px; margin: auto; padding-top: 30px; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .main-title { font-family: "Great Vibes", cursive; font-size: 56px; line-height: 1; }
 
-        .panel { background: rgba(255, 255, 255, 0.02); border: 0.5px solid var(--gold-dim); padding: 20px; backdrop-filter: blur(10px); }
+        .panel { background: rgba(255, 255, 255, 0.02); border: 0.5px solid var(--gold-dim); padding: 18px; backdrop-filter: blur(10px); }
 
-        .section-title { font-family: "Cinzel", serif; font-size: 14px; color: var(--gold); letter-spacing: 2px; margin-bottom: 12px; text-transform: uppercase; border-left: 2px solid var(--gold); padding-left: 8px; }
-
-        /* 5x4 矩陣按鈕 */
-        .world-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 25px; }
+        /* 5x4 矩陣開關視覺 */
+        .world-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 20px; }
         .world-btn { 
-            background: rgba(255,255,255,0.05); border: 0.5px solid var(--gold-dim); color: var(--text);
-            padding: 10px 2px; font-size: 13px; cursor: pointer; transition: 0.3s; text-align: center;
-            border-radius: 2px; display: flex; flex-direction: column; align-items: center; gap: 4px;
+            background: rgba(255,255,255,0.03); border: 0.5px solid rgba(226, 209, 167, 0.1); 
+            color: rgba(255,255,255,0.6); padding: 8px 0; font-size: 12px; cursor: pointer; 
+            transition: all 0.2s ease; text-align: center; border-radius: 4px;
+            display: flex; flex-direction: column; align-items: center; position: relative;
         }
-        .world-btn.active { background: var(--gold-dim); border-color: var(--gold); box-shadow: 0 0 10px rgba(226, 209, 167, 0.2); }
-        .world-btn .emoji { font-size: 16px; }
+        /* 選中狀態：發光與內凹感 */
+        .world-btn.active { 
+            background: var(--active-bg); border-color: var(--gold); color: #fff;
+            box-shadow: inset 0 0 8px rgba(226, 209, 167, 0.2), 0 0 12px rgba(226, 209, 167, 0.1);
+        }
+        .world-btn.active::after { content: '●'; font-size: 6px; color: var(--gold); margin-top: 2px; }
+        .world-btn .emoji { font-size: 16px; margin-bottom: 2px; filter: grayscale(100%); transition: 0.3s; }
+        .world-btn.active .emoji { filter: grayscale(0%); }
 
-        .row-split { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
+        .row-split { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         input, select { 
             width: 100%; background: rgba(255,255,255,0.06); border: 0.5px solid var(--gold-dim); 
-            color: #fff; padding: 10px; font-size: 15px; outline: none; border-radius: 2px;
+            color: #fff; padding: 10px; font-size: 14px; outline: none; border-radius: 2px;
         }
-
-        .grid-toggles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .toggle-item { border: 0.5px solid var(--gold-dim); padding: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .switch { width: 36px; height: 18px; background: #333; border-radius: 9px; position: relative; cursor: pointer; transition: 0.3s; }
-        .switch.active { background: var(--mucha-green); }
-        .dot { position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; background: #fff; border-radius: 50%; transition: 0.2s; }
-        .switch.active .dot { left: 20px; }
 
         .gen-btn { 
-            width: 100%; height: 55px; margin-top: 25px; background: transparent; 
+            width: 100%; height: 50px; margin-top: 20px; background: transparent; 
             border: 1px solid var(--gold); color: var(--gold); font-family: "Cinzel", serif; 
-            font-size: 16px; letter-spacing: 3px; cursor: pointer; transition: 0.4s;
+            font-size: 15px; letter-spacing: 2px; cursor: pointer; transition: 0.4s;
         }
+        .gen-btn:active { background: var(--gold-dim); }
 
-        #results { margin-top: 20px; }
-        .result-card { border-bottom: 0.5px solid var(--gold-dim); padding: 12px 0; animation: fadeIn 0.4s ease forwards; opacity: 0; cursor: pointer; }
-        .id-val { font-family: "Cinzel", serif; font-size: 20px; color: #fff; margin-bottom: 3px; }
-        .id-meaning { font-size: 13px; color: var(--gold); font-style: italic; opacity: 0.7; }
+        .result-card { border-bottom: 0.5px solid var(--gold-dim); padding: 12px 0; animation: fadeIn 0.4s ease forwards; }
+        .id-val { font-family: "Cinzel", serif; font-size: 20px; color: #fff; margin-bottom: 4px; }
+        .id-meaning { font-size: 13px; color: var(--gold); font-style: italic; line-height: 1.4; opacity: 0.8; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -61,133 +58,110 @@
     <div class="container">
         <div class="header">
             <h1 class="main-title">DreamID</h1>
-            <p class="subtitle">Nexus Multi-Core</p>
         </div>
 
         <div class="panel">
-            <div class="section-title">World Matrix 世界觀矩陣</div>
-            <div class="world-grid" id="worldGrid">
-                </div>
+            <div class="world-grid" id="worldGrid"></div>
 
             <div class="row-split">
-                <div><input id="k1" value="Ann" placeholder="Key 1"></div>
-                <div><input id="k2" placeholder="Key 2 (可選)"></div>
+                <input id="k1" value="Ann" placeholder="Key 1">
+                <input id="k2" placeholder="Key 2">
             </div>
 
             <div class="row-split" style="align-items: center;">
                 <div>
-                    <span style="font-size:12px; color:var(--gold)" id="lenDisp">10 字元</span>
-                    <input type="range" id="range" min="4" max="24" value="10" style="accent-color: var(--gold);">
+                    <span style="font-size:12px; color:var(--gold)" id="lenDisp">14 字元</span>
+                    <input type="range" id="range" min="6" max="24" value="14" style="accent-color: var(--gold);">
                 </div>
-                <div>
-                    <select id="sep">
-                        <option value="">無間隔</option>
-                        <option value=".">點號 .</option>
-                        <option value="-">橫槓 -</option>
-                        <option value="_">底線 _</option>
-                    </select>
-                </div>
+                <select id="sep">
+                    <option value="">無間隔</option>
+                    <option value=".">.</option>
+                    <option value="_">_</option>
+                </select>
             </div>
 
-            <div class="grid-toggles">
-                <div class="toggle-item"><span style="font-size:10px">UPPER</span><div class="switch" id="up" onclick="toggleSwitch(this)"><div class="dot"></div></div></div>
-                <div class="toggle-item"><span style="font-size:10px">NUM</span><div class="switch active" id="num" onclick="toggleSwitch(this)"><div class="dot"></div></div></div>
-                <div class="toggle-item"><span style="font-size:10px">SYM</span><div class="switch" id="sym" onclick="toggleSwitch(this)"><div class="dot"></div></div></div>
-                <div class="toggle-item"><span style="font-size:10px">DECO</span><div class="switch active" id="deco" onclick="toggleSwitch(this)"><div class="dot"></div></div></div>
-            </div>
-
-            <button class="gen-btn" id="generateBtn">START SYNCHRONIZATION</button>
+            <button class="gen-btn" id="generateBtn">FUSION START</button>
             <div id="results"></div>
         </div>
     </div>
 
 <script>
     const worlds = [
-        { id: 'sweet', n: '糖霜', e: '🍭', w: { "Sugar": "砂糖", "Cream": "鮮奶油", "Berry": "莓果", "Coco": "可可" }},
-        { id: 'tenno', n: '虛空', e: '⚔️', w: { "Lotus": "秘蓮", "Prime": "黃金", "Void": "虛空", "Oro": "傳承" }},
-        { id: 'hunter', n: '獵跡', e: '🐉', w: { "Rath": "火魂", "Scale": "龍鱗", "Apex": "巔峰", "Carve": "剝取" }},
-        { id: 'desert', n: '荒漠', e: '🏜️', w: { "Sand": "流沙", "Dune": "沙丘", "Oasis": "綠洲", "Sol": "烈日" }},
-        { id: 'herbal', n: '草本', e: '🌿', w: { "Rose": "薔薇", "Mint": "薄荷", "Ivy": "蔓延", "Fleur": "盛開" }},
-        { id: 'star', n: '星海', e: '🌌', w: { "Nova": "新星", "Luna": "月輪", "Nebula": "星雲", "Stella": "恆星" }},
-        { id: 'ocean', n: '深海', e: '🌊', w: { "Tide": "潮汐", "Coral": "珊瑚", "Pearl": "珍珠", "Abyss": "深淵" }},
-        { id: 'classic', n: '古典', e: '📜', w: { "Muse": "繆思", "Aura": "氣場", "Velvet": "絲絨", "Lyric": "敘事" }},
-        { id: 'fairy', n: '仙境', e: '🍄', w: { "Dew": "晨露", "Mori": "森林", "Pixie": "妖精", "Fern": "蕨類" }},
-        { id: 'gothic', n: '歌德', e: '🦇', w: { "Noir": "漆黑", "Raven": "渡鴉", "Thorn": "荊棘", "Morte": "沉寂" }},
-        { id: 'cyber', n: '賽博', e: '🤖', w: { "Neon": "霓虹", "Pixel": "像素", "Data": "數據", "Sync": "同步" }},
-        { id: 'nordic', n: '北歐', e: '❄️', w: { "Frost": "冰霜", "Rune": "盧恩", "Fjord": "峽灣", "Odin": "神諭" }},
-        { id: 'zen', n: '禪意', e: '🍵', w: { "Ink": "墨痕", "Tea": "茶煙", "Wind": "流風", "Sora": "蒼穹" }},
-        { id: 'magic', n: '奧術', e: '🪄', w: { "Mana": "魔力", "Sage": "賢者", "Rune": "刻印", "Soul": "靈魂" }},
-        { id: 'steam', n: '蒸氣', e: '⚙️', w: { "Gear": "齒輪", "Haze": "迷霧", "Brass": "黃銅", "Core": "核心" }},
-        { id: 'ink', n: '墨影', e: '📽️', w: { "Lens": "鏡頭", "Shadow": "暗影", "Film": "膠卷", "Grey": "灰色" }},
-        { id: 'sakura', n: '櫻落', e: '🌸', w: { "Hana": "花瓣", "Yoru": "宵暗", "Kaze": "微風", "Sake": "醺陶" }},
-        { id: 'lava', n: '熔岩', e: '🔥', w: { "Ash": "餘燼", "Flare": "閃焰", "Magma": "岩漿", "Pyre": "祭壇" }},
-        { id: 'ice', n: '晶綻', e: '💎', w: { "Ice": "寒冰", "Blue": "湛藍", "Crystal": "晶體", "Cold": "寂冷" }},
-        { id: 'cloud', n: '雲端', e: '☁️', w: { "Cloud": "流雲", "Mist": "嵐霧", "Halo": "光暈", "Angel": "聖潔" }}
+        { id: 'sweet', n: '糖霜', e: '🍭', w: ["Sugar", "Cream", "Berry", "Honey"], m: "砂糖" },
+        { id: 'tenno', n: '虛空', e: '⚔️', w: ["Lotus", "Void", "Oro", "Prime"], m: "秘蓮" },
+        { id: 'hunter', n: '獵跡', e: '🐉', w: ["Rath", "Scale", "Apex", "Hunt"], m: "火魂" },
+        { id: 'desert', n: '荒漠', e: '🏜️', w: ["Sand", "Oasis", "Dune", "Sol"], m: "綠洲" },
+        { id: 'herbal', n: '草本', e: '🌿', w: ["Rose", "Mint", "Ivy", "Leaf"], m: "蔓延" },
+        { id: 'star', n: '星海', e: '🌌', w: ["Nova", "Luna", "Astra", "Star"], m: "星雲" },
+        { id: 'ocean', n: '深海', e: '🌊', w: ["Tide", "Coral", "Abyss", "Aqua"], m: "潮汐" },
+        { id: 'classic', n: '古典', e: '📜', w: ["Muse", "Aura", "Velvet", "Poet"], m: "繆思" },
+        { id: 'fairy', n: '仙境', e: '🍄', w: ["Dew", "Mori", "Pixie", "Fern"], m: "森林" },
+        { id: 'gothic', n: '歌德', e: '🦇', w: ["Noir", "Raven", "Thorn", "Dark"], m: "暗夜" },
+        { id: 'cyber', n: '賽博', e: '🤖', w: ["Neon", "Pixel", "Data", "Sync"], m: "霓虹" },
+        { id: 'nordic', n: '北歐', e: '❄️', w: ["Frost", "Rune", "Fjord", "Ice"], m: "冰霜" },
+        { id: 'zen', n: '禪意', e: '🍵', w: ["Ink", "Tea", "Wind", "Sora"], m: "墨痕" },
+        { id: 'magic', n: '奧術', e: '🪄', w: ["Mana", "Sage", "Soul", "Echo"], m: "靈魂" },
+        { id: 'steam', n: '蒸氣', e: '⚙️', w: ["Gear", "Haze", "Brass", "Core"], m: "齒輪" },
+        { id: 'ink', n: '墨影', e: '📽️', w: ["Lens", "Shadow", "Grain", "Film"], m: "鏡頭" },
+        { id: 'sakura', n: '櫻落', e: '🌸', w: ["Hana", "Yoru", "Kaze", "Sake"], m: "花瓣" },
+        { id: 'lava', n: '熔岩', e: '🔥', w: ["Ash", "Flare", "Magma", "Pyre"], m: "餘燼" },
+        { id: 'ice', n: '晶綻', e: '💎', w: ["Crystal", "Cold", "Glaze", "Blue"], m: "晶體" },
+        { id: 'cloud', n: '雲端', e: '☁️', w: ["Cloud", "Mist", "Halo", "Sky"], m: "流雲" }
     ];
 
     const grid = document.getElementById('worldGrid');
     worlds.forEach(w => {
         const btn = document.createElement('div');
-        btn.className = 'world-btn' + (w.id === 'star' ? ' active' : '');
+        btn.className = 'world-btn';
         btn.dataset.id = w.id;
         btn.innerHTML = `<span class="emoji">${w.e}</span><span>${w.n}</span>`;
         btn.onclick = () => btn.classList.toggle('active');
         grid.appendChild(btn);
     });
 
-    function toggleSwitch(el) { el.classList.toggle('active'); }
-    document.getElementById('range').addEventListener('input', e => document.getElementById('lenDisp').innerText = e.target.value + ' 字元');
-
-    function toPascal(str) { return str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : ""; }
+    function toPascal(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : ""; }
 
     function generate() {
-        const activeBtns = Array.from(document.querySelectorAll('.world-btn.active'));
-        if (activeBtns.length === 0) { alert("請至少選擇一個世界觀"); return; }
+        const activeIds = Array.from(document.querySelectorAll('.world-btn.active')).map(b => b.dataset.id);
+        if (activeIds.length === 0) { alert("請至少選擇一個世界觀以進行融合"); return; }
 
-        const k1 = document.getElementById('k1').value || "Ann";
-        const k2 = document.getElementById('k2').value;
-        const limit = parseInt(document.getElementById('range').value);
+        const k1 = toPascal(document.getElementById('k1').value || "Ann");
+        const k2 = toPascal(document.getElementById('k2').value);
         const sep = document.getElementById('sep').value;
-        const isUpper = document.getElementById('up').classList.contains('active');
-        const isNum = document.getElementById('num').classList.contains('active');
-        const isSym = document.getElementById('sym').classList.contains('active');
-        const isDeco = document.getElementById('deco').classList.contains('active');
-
+        const limit = parseInt(document.getElementById('range').value);
         const resBox = document.getElementById('results');
         resBox.innerHTML = "";
 
         for(let i=0; i<8; i++) {
-            // 從選中的世界觀中隨機抽一個
-            const targetBtn = activeBtns[Math.floor(Math.random() * activeBtns.length)];
-            const world = worlds.find(w => w.id === targetBtn.dataset.id);
-            const wordKeys = Object.keys(world.w);
-            const sw = wordKeys[Math.floor(Math.random() * wordKeys.length)];
+            // 隨機打亂選中的 ID，取前兩個進行融合
+            const shuffled = activeIds.sort(() => 0.5 - Math.random());
+            const picked = shuffled.slice(0, 2);
+            
+            let fusionWords = [];
+            let fusionMeanings = [];
+            
+            picked.forEach(id => {
+                const world = worlds.find(w => w.id === id);
+                const word = world.w[Math.floor(Math.random() * world.w.length)];
+                fusionWords.push(toPascal(word));
+                fusionMeanings.push(world.m);
+            });
 
-            let id = toPascal(k1) + (k2 ? sep + toPascal(k2) : "") + sep + toPascal(sw);
-            if(isNum) id += Math.floor(Math.random() * 9);
-            if(isSym) id += "_";
-            if(isDeco) {
-                const decos = [(s)=>"v"+s, (s)=>s+"x", (s)=>"i"+s, (s)=>"_"+s];
-                id = decos[Math.floor(Math.random()*decos.length)](id);
-            }
-            if(id.length > limit) id = id.substring(0, limit).replace(/[._\-]$/, "");
-            if(isUpper) id = id.toUpperCase();
+            // 組合 ID：關鍵字 + 世界1 + 世界2
+            let id = k1 + (k2 ? sep + k2 : "") + sep + fusionWords.join("");
+            if(id.length > limit) id = id.substring(0, limit);
 
             const card = document.createElement('div');
             card.className = 'result-card';
-            card.innerHTML = `<div class="id-val">${id}</div><div class="id-meaning">✦ ${world.n}系：融合了${world.w[sw]}意象</div>`;
-            card.onclick = function() {
-                navigator.clipboard.writeText(id);
-                const m = this.querySelector('.id-meaning');
-                const old = m.innerText; m.innerText = "已複製到剪貼簿 ✦";
-                setTimeout(() => m.innerText = old, 800);
-            };
+            card.innerHTML = `
+                <div class="id-val">${id}</div>
+                <div class="id-meaning">✦ 融合：${fusionMeanings.join(' 與 ')}之美學</div>
+            `;
             resBox.appendChild(card);
         }
     }
 
     document.getElementById('generateBtn').onclick = generate;
-    window.onload = generate;
 </script>
 </body>
 </html>
