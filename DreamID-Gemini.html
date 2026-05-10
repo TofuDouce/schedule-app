@@ -3,165 +3,220 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DreamID ✦ Fusion</title>
+    <title>DreamID ✦ Multiverse</title>
     <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #13101c; --gold: #e2d1a7; --gold-dim: rgba(226, 209, 167, 0.2); --text: #fdfbff; --active-bg: rgba(226, 209, 167, 0.15); }
+        :root { --bg: #1a1625; --gold: #e2d1a7; --gold-dim: rgba(226, 209, 167, 0.2); --text: #fdfbff; --card-bg: rgba(255, 255, 255, 0.05); }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: var(--text); font-family: "Cormorant Garamond", serif; padding-bottom: 50px; }
+        body { background: var(--bg); color: var(--text); font-family: "Cormorant Garamond", serif; padding: 20px 0 60px; }
 
-        .container { width: 92%; max-width: 480px; margin: auto; padding-top: 30px; }
-        .header { text-align: center; margin-bottom: 20px; }
-        .main-title { font-family: "Great Vibes", cursive; font-size: 56px; line-height: 1; }
+        /* 復原裝飾邊角 */
+        .corner { position: absolute; width: 40px; height: 40px; border: 1px solid var(--gold-dim); border-radius: 50% 0 50% 0; pointer-events: none; }
+        .tl { top: 10px; left: 10px; border-right: none; border-bottom: none; }
+        .tr { top: 10px; right: 10px; border-left: none; border-bottom: none; transform: scaleX(-1); }
 
-        .panel { background: rgba(255, 255, 255, 0.02); border: 0.5px solid var(--gold-dim); padding: 18px; backdrop-filter: blur(10px); }
+        .container { width: 92%; max-width: 480px; margin: auto; position: relative; }
+        .header { text-align: center; margin-bottom: 30px; padding-top: 20px; }
+        .main-title { font-family: "Great Vibes", cursive; font-size: 64px; color: var(--gold); line-height: 1; text-shadow: 0 0 10px rgba(226, 209, 167, 0.3); }
+        .subtitle { font-family: "Cinzel", serif; font-size: 12px; letter-spacing: 4px; color: var(--gold); margin-top: 10px; }
 
-        /* 5x4 矩陣開關視覺 */
-        .world-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 20px; }
+        .panel { background: rgba(20, 18, 28, 0.6); border: 0.5px solid var(--gold-dim); padding: 25px 20px; backdrop-filter: blur(15px); position: relative; }
+
+        .section-label { font-family: "Cinzel", serif; font-size: 16px; margin-bottom: 12px; display: block; color: var(--text); }
+        .section-sub { font-size: 10px; color: var(--gold); letter-spacing: 1px; text-transform: uppercase; margin-top: -8px; margin-bottom: 15px; opacity: 0.7; }
+
+        /* 5x4 矩陣開關 */
+        .world-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 25px; }
         .world-btn { 
-            background: rgba(255,255,255,0.03); border: 0.5px solid rgba(226, 209, 167, 0.1); 
-            color: rgba(255,255,255,0.6); padding: 8px 0; font-size: 12px; cursor: pointer; 
-            transition: all 0.2s ease; text-align: center; border-radius: 4px;
-            display: flex; flex-direction: column; align-items: center; position: relative;
+            background: var(--card-bg); border: 0.5px solid var(--gold-dim); padding: 10px 0; 
+            border-radius: 4px; cursor: pointer; transition: 0.3s; text-align: center;
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
         }
-        /* 選中狀態：發光與內凹感 */
-        .world-btn.active { 
-            background: var(--active-bg); border-color: var(--gold); color: #fff;
-            box-shadow: inset 0 0 8px rgba(226, 209, 167, 0.2), 0 0 12px rgba(226, 209, 167, 0.1);
-        }
-        .world-btn.active::after { content: '●'; font-size: 6px; color: var(--gold); margin-top: 2px; }
-        .world-btn .emoji { font-size: 16px; margin-bottom: 2px; filter: grayscale(100%); transition: 0.3s; }
-        .world-btn.active .emoji { filter: grayscale(0%); }
+        .world-btn span { font-size: 12px; color: rgba(255,255,255,0.6); }
+        .world-btn .emoji { font-size: 18px; filter: grayscale(100%); transition: 0.3s; }
+        
+        .world-btn.active { background: rgba(226, 209, 167, 0.15); border-color: var(--gold); box-shadow: 0 0 12px rgba(226, 209, 167, 0.2); }
+        .world-btn.active span { color: var(--gold); font-weight: bold; }
+        .world-btn.active .emoji { filter: grayscale(0%); transform: scale(1.1); }
 
-        .row-split { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .row-split { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
         input, select { 
-            width: 100%; background: rgba(255,255,255,0.06); border: 0.5px solid var(--gold-dim); 
-            color: #fff; padding: 10px; font-size: 14px; outline: none; border-radius: 2px;
+            width: 100%; background: rgba(255,255,255,0.08); border: 0.5px solid var(--gold-dim); 
+            color: #fff; padding: 12px; font-size: 16px; outline: none; border-radius: 4px;
         }
+
+        /* 復原開關滑條視覺 */
+        .toggle-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+        .toggle-box { background: var(--card-bg); border: 0.5px solid var(--gold-dim); padding: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .switch { width: 42px; height: 22px; background: #333; border-radius: 11px; position: relative; cursor: pointer; transition: 0.3s; }
+        .switch.active { background: #b1a27b; }
+        .dot { position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; background: #fff; border-radius: 50%; transition: 0.3s; }
+        .switch.active .dot { left: 23px; }
 
         .gen-btn { 
-            width: 100%; height: 50px; margin-top: 20px; background: transparent; 
+            width: 100%; height: 60px; margin-top: 30px; background: transparent; 
             border: 1px solid var(--gold); color: var(--gold); font-family: "Cinzel", serif; 
-            font-size: 15px; letter-spacing: 2px; cursor: pointer; transition: 0.4s;
+            font-size: 18px; letter-spacing: 4px; cursor: pointer; transition: 0.4s;
         }
-        .gen-btn:active { background: var(--gold-dim); }
+        .gen-btn:hover { background: var(--gold-dim); }
 
-        .result-card { border-bottom: 0.5px solid var(--gold-dim); padding: 12px 0; animation: fadeIn 0.4s ease forwards; }
-        .id-val { font-family: "Cinzel", serif; font-size: 20px; color: #fff; margin-bottom: 4px; }
-        .id-meaning { font-size: 13px; color: var(--gold); font-style: italic; line-height: 1.4; opacity: 0.8; }
+        #results { margin-top: 30px; }
+        .result-card { border-bottom: 0.5px solid var(--gold-dim); padding: 20px 0; animation: fadeIn 0.5s ease forwards; cursor: pointer; }
+        .id-val { font-family: "Cinzel", serif; font-size: 24px; color: #fff; margin-bottom: 6px; letter-spacing: 1px; }
+        .id-meaning { font-size: 14px; color: var(--gold); font-style: italic; line-height: 1.6; opacity: 0.8; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
     <div class="container">
+        <div class="corner tl"></div><div class="corner tr"></div>
         <div class="header">
             <h1 class="main-title">DreamID</h1>
+            <p class="subtitle">✦ 美名生成器 ✦</p>
         </div>
 
         <div class="panel">
+            <span class="section-label">世界觀風格網格</span>
+            <p class="section-sub">Style Multiverse (Multi-Select)</p>
             <div class="world-grid" id="worldGrid"></div>
 
             <div class="row-split">
-                <input id="k1" value="Ann" placeholder="Key 1">
-                <input id="k2" placeholder="Key 2">
+                <div>
+                    <span class="section-label">關鍵字一</span>
+                    <input id="k1" value="Ann">
+                </div>
+                <div>
+                    <span class="section-label">關鍵字二</span>
+                    <input id="k2" placeholder="例如: Douce">
+                </div>
             </div>
 
             <div class="row-split" style="align-items: center;">
                 <div>
-                    <span style="font-size:12px; color:var(--gold)" id="lenDisp">14 字元</span>
+                    <span class="section-label" id="lenDisp">14 字元</span>
                     <input type="range" id="range" min="6" max="24" value="14" style="accent-color: var(--gold);">
                 </div>
-                <select id="sep">
-                    <option value="">無間隔</option>
-                    <option value=".">.</option>
-                    <option value="_">_</option>
-                </select>
+                <div>
+                    <span class="section-label">分隔符</span>
+                    <select id="sep">
+                        <option value="">無</option>
+                        <option value=".">.</option>
+                        <option value="_">_</option>
+                        <option value="-">-</option>
+                    </select>
+                </div>
             </div>
 
-            <button class="gen-btn" id="generateBtn">FUSION START</button>
+            <div class="toggle-group">
+                <div class="toggle-box"><span>大寫 UPPER</span><div class="switch" id="up" onclick="tgl(this)"><div class="dot"></div></div></div>
+                <div class="toggle-box"><span>數字 NUM</span><div class="switch active" id="num" onclick="tgl(this)"><div class="dot"></div></div></div>
+                <div class="toggle-box"><span>符號 SYM</span><div class="switch" id="sym" onclick="tgl(this)"><div class="dot"></div></div></div>
+                <div class="toggle-box"><span>繁複 DECO</span><div class="switch active" id="deco" onclick="tgl(this)"><div class="dot"></div></div></div>
+            </div>
+
+            <button class="gen-btn" id="generateBtn">GENERATE IDENTITY</button>
             <div id="results"></div>
         </div>
     </div>
 
 <script>
     const worlds = [
-        { id: 'sweet', n: '糖霜', e: '🍭', w: ["Sugar", "Cream", "Berry", "Honey"], m: "砂糖" },
-        { id: 'tenno', n: '虛空', e: '⚔️', w: ["Lotus", "Void", "Oro", "Prime"], m: "秘蓮" },
-        { id: 'hunter', n: '獵跡', e: '🐉', w: ["Rath", "Scale", "Apex", "Hunt"], m: "火魂" },
-        { id: 'desert', n: '荒漠', e: '🏜️', w: ["Sand", "Oasis", "Dune", "Sol"], m: "綠洲" },
-        { id: 'herbal', n: '草本', e: '🌿', w: ["Rose", "Mint", "Ivy", "Leaf"], m: "蔓延" },
-        { id: 'star', n: '星海', e: '🌌', w: ["Nova", "Luna", "Astra", "Star"], m: "星雲" },
-        { id: 'ocean', n: '深海', e: '🌊', w: ["Tide", "Coral", "Abyss", "Aqua"], m: "潮汐" },
-        { id: 'classic', n: '古典', e: '📜', w: ["Muse", "Aura", "Velvet", "Poet"], m: "繆思" },
-        { id: 'fairy', n: '仙境', e: '🍄', w: ["Dew", "Mori", "Pixie", "Fern"], m: "森林" },
-        { id: 'gothic', n: '歌德', e: '🦇', w: ["Noir", "Raven", "Thorn", "Dark"], m: "暗夜" },
-        { id: 'cyber', n: '賽博', e: '🤖', w: ["Neon", "Pixel", "Data", "Sync"], m: "霓虹" },
-        { id: 'nordic', n: '北歐', e: '❄️', w: ["Frost", "Rune", "Fjord", "Ice"], m: "冰霜" },
-        { id: 'zen', n: '禪意', e: '🍵', w: ["Ink", "Tea", "Wind", "Sora"], m: "墨痕" },
-        { id: 'magic', n: '奧術', e: '🪄', w: ["Mana", "Sage", "Soul", "Echo"], m: "靈魂" },
-        { id: 'steam', n: '蒸氣', e: '⚙️', w: ["Gear", "Haze", "Brass", "Core"], m: "齒輪" },
-        { id: 'ink', n: '墨影', e: '📽️', w: ["Lens", "Shadow", "Grain", "Film"], m: "鏡頭" },
-        { id: 'sakura', n: '櫻落', e: '🌸', w: ["Hana", "Yoru", "Kaze", "Sake"], m: "花瓣" },
-        { id: 'lava', n: '熔岩', e: '🔥', w: ["Ash", "Flare", "Magma", "Pyre"], m: "餘燼" },
-        { id: 'ice', n: '晶綻', e: '💎', w: ["Crystal", "Cold", "Glaze", "Blue"], m: "晶體" },
-        { id: 'cloud', n: '雲端', e: '☁️', w: ["Cloud", "Mist", "Halo", "Sky"], m: "流雲" }
+        { id: 'sweet', n: '糖霜', e: '🍭', w: ["Sugar", "Cream", "Berry"], m: "砂糖意象" },
+        { id: 'tenno', n: '虛空', e: '⚔️', w: ["Lotus", "Void", "Prime"], m: "秘蓮意志" },
+        { id: 'hunter', n: '獵跡', e: '🐉', w: ["Rath", "Scale", "Apex"], m: "巨獸殘響" },
+        { id: 'desert', n: '荒漠', e: '🏜️', w: ["Sand", "Oasis", "Dune"], m: "流沙古國" },
+        { id: 'herbal', n: '草本', e: '🌿', w: ["Rose", "Mint", "Ivy"], m: "草本自然" },
+        { id: 'star', n: '星海', e: '🌌', w: ["Nova", "Luna", "Astra"], m: "星月之境" },
+        { id: 'ocean', n: '深海', e: '🌊', w: ["Tide", "Coral", "Abyss"], m: "深海沉潛" },
+        { id: 'classic', n: '古典', e: '📜', w: ["Muse", "Aura", "Velvet"], m: "古典繆思" },
+        { id: 'fairy', n: '仙境', e: '🍄', w: ["Dew", "Mori", "Pixie"], m: "森林童話" },
+        { id: 'gothic', n: '歌德', e: '🦇', w: ["Noir", "Raven", "Thorn"], m: "月下薔薇" },
+        { id: 'cyber', n: '賽博', e: '🤖', w: ["Neon", "Pixel", "Data"], m: "流光都市" },
+        { id: 'nordic', n: '北歐', e: '❄️', w: ["Frost", "Rune", "Fjord"], m: "冰雪神話" },
+        { id: 'zen', n: '禪意', e: '🍵', w: ["Ink", "Tea", "Wind"], m: "墨染流年" },
+        { id: 'magic', n: '奧術', e: '🪄', w: ["Mana", "Sage", "Soul"], m: "秘法靈魂" },
+        { id: 'steam', n: '蒸氣', e: '⚙️', w: ["Gear", "Haze", "Brass"], m: "蒸氣核心" },
+        { id: 'ink', n: '墨影', e: '📽️', w: ["Lens", "Shadow", "Grain"], m: "暗箱殘影" },
+        { id: 'sakura', n: '櫻落', e: '🌸', w: ["Hana", "Yoru", "Kaze"], m: "櫻花意象" },
+        { id: 'lava', n: '熔岩', e: '🔥', w: ["Ash", "Flare", "Magma"], m: "餘燼熔岩" },
+        { id: 'ice', n: '晶綻', e: '💎', w: ["Ice", "Crystal", "Blue"], m: "晶綻寒冰" },
+        { id: 'cloud', n: '雲端', e: '☁️', w: ["Cloud", "Mist", "Halo"], m: "流雲聖潔" }
     ];
 
     const grid = document.getElementById('worldGrid');
     worlds.forEach(w => {
         const btn = document.createElement('div');
-        btn.className = 'world-btn';
+        btn.className = 'world-btn' + (w.id === 'star' ? ' active' : '');
         btn.dataset.id = w.id;
         btn.innerHTML = `<span class="emoji">${w.e}</span><span>${w.n}</span>`;
         btn.onclick = () => btn.classList.toggle('active');
         grid.appendChild(btn);
     });
 
+    function tgl(el) { el.classList.toggle('active'); }
+    document.getElementById('range').addEventListener('input', e => document.getElementById('lenDisp').innerText = e.target.value + ' 字元');
+
     function toPascal(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : ""; }
 
     function generate() {
         const activeIds = Array.from(document.querySelectorAll('.world-btn.active')).map(b => b.dataset.id);
-        if (activeIds.length === 0) { alert("請至少選擇一個世界觀以進行融合"); return; }
+        if (activeIds.length === 0) { alert("請至少選擇一個風格"); return; }
 
         const k1 = toPascal(document.getElementById('k1').value || "Ann");
         const k2 = toPascal(document.getElementById('k2').value);
         const sep = document.getElementById('sep').value;
         const limit = parseInt(document.getElementById('range').value);
+        
+        const isUp = document.getElementById('up').classList.contains('active');
+        const isNum = document.getElementById('num').classList.contains('active');
+        const isSym = document.getElementById('sym').classList.contains('active');
+        const isDeco = document.getElementById('deco').classList.contains('active');
+
         const resBox = document.getElementById('results');
         resBox.innerHTML = "";
 
         for(let i=0; i<8; i++) {
-            // 隨機打亂選中的 ID，取前兩個進行融合
-            const shuffled = activeIds.sort(() => 0.5 - Math.random());
-            const picked = shuffled.slice(0, 2);
-            
             let fusionWords = [];
-            let fusionMeanings = [];
+            let fusionMeans = [];
+            
+            // 隨機選 1~2 個選中的風格進行融合
+            const pickCount = activeIds.length > 1 ? 2 : 1;
+            const picked = activeIds.sort(() => 0.5 - Math.random()).slice(0, pickCount);
             
             picked.forEach(id => {
-                const world = worlds.find(w => w.id === id);
-                const word = world.w[Math.floor(Math.random() * world.w.length)];
-                fusionWords.push(toPascal(word));
-                fusionMeanings.push(world.m);
+                const w = worlds.find(x => x.id === id);
+                fusionWords.push(toPascal(w.w[Math.floor(Math.random()*w.w.length)]));
+                fusionMeans.push(w.m);
             });
 
-            // 組合 ID：關鍵字 + 世界1 + 世界2
             let id = k1 + (k2 ? sep + k2 : "") + sep + fusionWords.join("");
-            if(id.length > limit) id = id.substring(0, limit);
+            if(isNum) id += Math.floor(Math.random()*10);
+            if(isSym) id += "_";
+            if(isDeco) {
+                const ds = [(s)=>"v"+s, (s)=>"i"+s, (s)=>s+"x", (s)=>s+"_"];
+                id = ds[Math.floor(Math.random()*ds.length)](id);
+            }
+
+            if(id.length > limit) id = id.substring(0, limit).replace(/[._\-]$/, "");
+            if(isUp) id = id.toUpperCase();
 
             const card = document.createElement('div');
             card.className = 'result-card';
-            card.innerHTML = `
-                <div class="id-val">${id}</div>
-                <div class="id-meaning">✦ 融合：${fusionMeanings.join(' 與 ')}之美學</div>
-            `;
+            card.innerHTML = `<div class="id-val">${id}</div><div class="id-meaning">✦ 「${k1}」融合了${fusionMeans.join('與')}，構成一段關於「美學」的記憶。</div>`;
+            card.onclick = () => {
+                navigator.clipboard.writeText(id);
+                const m = card.querySelector('.id-meaning');
+                const old = m.innerText; m.innerText = "已成功複製到剪貼簿 ✦";
+                setTimeout(() => m.innerText = old, 800);
+            };
             resBox.appendChild(card);
         }
     }
 
     document.getElementById('generateBtn').onclick = generate;
+    window.onload = generate;
 </script>
 </body>
 </html>
