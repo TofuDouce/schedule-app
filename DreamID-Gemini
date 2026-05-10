@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DreamID | Mucha Elegance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cormorant+Garamond:ital,wght@0,500;1,500&family=Great+Vibes&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --mucha-gold: #c5a059;
+            --mucha-rose: #d4a373;
+            --mucha-bg: #1a1625;
+            --card-glass: rgba(26, 22, 37, 0.85);
+            --border-gradient: linear-gradient(135deg, #c5a059 0%, #f9f1c0 50%, #c5a059 100%);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--mucha-bg);
+            color: #e0d5c0;
+            font-family: "Cormorant Garamond", serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+            overflow-x: hidden;
+        }
+
+        /* --- 慕夏靈魂：背景大光環 --- */
+        .mucha-halo {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80vh;
+            height: 80vh;
+            border: 1px solid rgba(197, 160, 89, 0.2);
+            border-radius: 50%;
+            z-index: -1;
+        }
+        .mucha-halo::before {
+            content: "";
+            position: absolute;
+            inset: 20px;
+            border: 8px double rgba(197, 160, 89, 0.15);
+            border-radius: 50%;
+        }
+
+        /* --- 真正的慕夏風邊框 (藤蔓感) --- */
+        .outer-frame {
+            position: fixed;
+            inset: 20px;
+            border: 2px solid var(--mucha-gold);
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .mucha-corner {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            filter: sepia(0.5) saturate(1.5);
+        }
+        /* 這裡用 SVG 繪製藤蔓節點 */
+        .corner-decoration {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border: 2px solid var(--mucha-gold);
+            border-radius: 60% 40% 70% 30% / 30% 70% 40% 60%; /* 有機曲線 */
+        }
+        .tl { top: -10px; left: -10px; transform: rotate(0deg); border-right: none; border-bottom: none; }
+        .tr { top: -10px; right: -10px; transform: rotate(90deg); border-right: none; border-bottom: none; }
+        .bl { bottom: -10px; left: -10px; transform: rotate(-90deg); border-right: none; border-bottom: none; }
+        .br { bottom: -10px; right: -10px; transform: rotate(180deg); border-right: none; border-bottom: none; }
+
+        /* --- 容器 --- */
+        .container {
+            width: 100%;
+            max-width: 550px;
+            z-index: 10;
+            text-align: center;
+        }
+
+        .main-title {
+            font-family: "Cinzel Decorative", cursive;
+            font-size: 3.5rem;
+            background: var(--border-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+            letter-spacing: 4px;
+        }
+
+        .subtitle {
+            font-style: italic;
+            color: var(--mucha-gold);
+            margin-bottom: 30px;
+            letter-spacing: 2px;
+        }
+
+        .panel {
+            background: var(--card-glass);
+            border: 1px solid rgba(197, 160, 89, 0.4);
+            padding: 40px;
+            position: relative;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+        }
+
+        /* 慕夏標誌性的裝飾線 */
+        .panel::after {
+            content: "❧ ❦ ☙";
+            display: block;
+            color: var(--mucha-gold);
+            margin-top: 20px;
+            font-size: 1.2rem;
+        }
+
+        /* 輸入框調整 */
+        .input-group { text-align: left; margin-bottom: 20px; }
+        label { 
+            display: block; 
+            font-family: "Cinzel Decorative"; 
+            color: var(--mucha-gold); 
+            font-size: 0.8rem;
+            margin-bottom: 5px;
+        }
+
+        input, select {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid var(--mucha-gold);
+            color: #fff;
+            padding: 10px;
+            font-family: "Cormorant Garamond";
+            font-size: 1.2rem;
+            outline: none;
+            transition: 0.3s;
+        }
+        input:focus { border-bottom: 2px solid #f9f1c0; background: rgba(197,160,89,0.05); }
+
+        /* 按鈕設計 */
+        .generate-btn {
+            background: transparent;
+            border: 1px solid var(--mucha-gold);
+            color: var(--mucha-gold);
+            padding: 15px 40px;
+            font-family: "Cinzel Decorative";
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: 0.4s;
+            margin-top: 20px;
+            letter-spacing: 2px;
+        }
+        .generate-btn:hover {
+            background: var(--mucha-gold);
+            color: var(--mucha-bg);
+            box-shadow: 0 0 20px rgba(197,160,89,0.4);
+        }
+
+        /* 結果顯示 */
+        .result-card {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid rgba(197,160,89,0.2);
+            transition: 0.3s;
+            cursor: pointer;
+        }
+        .result-card:hover { background: rgba(197,160,89,0.1); }
+        .username { font-size: 2rem; font-family: "Cinzel Decorative"; color: #f9f1c0; }
+        .meaning { color: var(--mucha-rose); font-size: 0.9rem; font-style: italic; }
+
+        /* 字數滑桿 */
+        .range-container { margin: 20px 0; text-align: left; }
+        input[type=range] { height: 2px; accent-color: var(--mucha-gold); }
+
+    </style>
+</head>
+<body>
+
+<div class="mucha-halo"></div>
+<div class="outer-frame">
+    <div class="corner-decoration tl"></div>
+    <div class="corner-decoration tr"></div>
+    <div class="corner-decoration bl"></div>
+    <div class="corner-decoration br"></div>
+</div>
+
+<div class="container">
+    <h1 class="main-title">DreamID</h1>
+    <p class="subtitle">Art Nouveau Identity Generator</p>
+
+    <div class="panel">
+        <div class="input-group">
+            <label>PRIMARY KEYWORD</label>
+            <input id="k1" value="L'Aube">
+        </div>
+
+        <div class="input-group">
+            <label>STYLE WORLD</label>
+            <select id="style">
+                <option value="dreamy">🌙 夢境 (Le Rêve)</option>
+                <option value="luxury">👑 奢華 (L'Or)</option>
+                <option value="gothic">🦇 幽夜 (La Nuit)</option>
+            </select>
+        </div>
+
+        <div class="range-container">
+            <label id="lenLabel">MAX LENGTH: 12</label>
+            <input type="range" id="maxLen" min="4" max="24" value="12" style="width: 100%">
+        </div>
+
+        <button class="generate-btn" onclick="generate()">GENERATE</button>
+
+        <div id="results"></div>
+    </div>
+</div>
+
+<script>
+    const styleData = {
+        dreamy: ["Silene", "Luna", "Fleur", "Aura", "Étoile"],
+        luxury: ["Dore", "Bijou", "Reine", "Eclat", "Palais"],
+        gothic: ["Ombre", "Morte", "Corbeau", "Noir", "Priere"]
+    };
+
+    const maxLenInput = document.getElementById('maxLen');
+    maxLenInput.oninput = () => document.getElementById('lenLabel').innerText = `MAX LENGTH: ${maxLenInput.value}`;
+
+    function generate() {
+        const k1 = document.getElementById('k1').value;
+        const style = document.getElementById('style').value;
+        const limit = parseInt(maxLenInput.value);
+        const display = document.getElementById('results');
+        display.innerHTML = "";
+
+        for(let i=0; i<3; i++) {
+            let pool = styleData[style];
+            let suffix = pool[Math.floor(Math.random() * pool.length)];
+            
+            // --- 核心修復：精確字數處理 ---
+            // 模式：[關鍵字][分隔符][風格詞]
+            let rawId = `${k1}_${suffix}`;
+            
+            // 如果超出長度，優先切斷風格詞，確保關鍵字盡量完整
+            let finalId = rawId;
+            if (finalId.length > limit) {
+                finalId = finalId.substring(0, limit);
+                // 去掉尾部可能殘留的分隔符
+                finalId = finalId.replace(/[._-]$/, "");
+            }
+
+            const div = document.createElement('div');
+            div.className = 'result-card';
+            div.innerHTML = `
+                <div class="username">${finalId}</div>
+                <div class="meaning">Inspired by the ${style} period.</div>
+            `;
+            div.onclick = () => {
+                navigator.clipboard.writeText(finalId);
+                alert("已複製到剪貼簿 ✦");
+            };
+            display.appendChild(div);
+        }
+    }
+</script>
+
+</body>
+</html>
