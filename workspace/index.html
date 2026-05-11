@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>中正診所 Portal</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@900&family=Noto+Sans+TC:wght@900&display=swap" rel="stylesheet">
     <style>
         :root[data-theme="light"] {
             --bg-color: #f8fafc;
@@ -26,16 +26,23 @@
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { min-height: 100vh; background-color: var(--bg-color); color: var(--text-main); font-family: "Inter", "Microsoft JhengHei", sans-serif; transition: 0.3s; padding-bottom: 80px; }
+        body { 
+            min-height: 100vh; 
+            background-color: var(--bg-color); 
+            color: var(--text-main); 
+            font-family: "Inter", "Noto Sans TC", "Microsoft JhengHei", sans-serif; 
+            transition: 0.3s; 
+            padding-bottom: 80px; 
+        }
 
         .main { width: 100%; max-width: 1400px; margin: auto; padding: 20px; }
         
-        /* 核心修改：左右對齊且頂端貼齊 */
+        /* 標題與時間左右配置：診所大於時間 */
         .header { 
             display: flex; 
             flex-direction: row; 
             justify-content: space-between; 
-            align-items: flex-start; /* 確保兩者都貼齊頂部 */
+            align-items: flex-start; 
             text-align: left; 
             margin-bottom: 30px; 
             border-bottom: 4px solid var(--accent-secondary); 
@@ -47,18 +54,27 @@
             .clock-area { align-items: center !important; text-align: center !important; margin-top: 15px; }
         }
 
-        /* 加大診所名稱 */
         .title-group { display: flex; flex-direction: column; }
-        .title-main { font-size: clamp(50px, 9vw, 85px); font-weight: 900; line-height: 1.0; margin-top: -5px; }
-        .title-sub { font-size: clamp(16px, 3vw, 22px); color: var(--accent-primary); font-weight: 800; letter-spacing: 4px; }
+        .title-main { 
+            font-size: clamp(55px, 10vw, 90px); 
+            font-weight: 900; 
+            line-height: 0.9; 
+            margin-top: -8px;
+            letter-spacing: -3px; /* 縮緊中文字距，更好看 */
+        }
+        .title-sub { 
+            font-size: clamp(16px, 3vw, 22px); 
+            color: var(--accent-primary); 
+            font-weight: 800; 
+            letter-spacing: 4px; 
+            margin-top: 8px;
+        }
         
-        /* 縮小時間區塊 */
         .clock-area { display: flex; flex-direction: column; align-items: flex-end; text-align: right; }
+        .clock { font-size: clamp(28px, 5vw, 40px); font-weight: 900; color: var(--accent-primary); line-height: 1; }
+        .date-display { font-size: clamp(14px, 2vw, 18px); font-weight: 700; margin-top: 5px; color: var(--text-sub); }
 
-        .clock { font-size: clamp(30px, 6vw, 45px); font-weight: 900; color: var(--accent-primary); line-height: 1; }
-        .date-display { font-size: clamp(14px, 2.5vw, 20px); font-weight: 700; margin-top: 5px; color: var(--text-sub); }
-
-        .mode-toggle { margin-top: 8px; padding: 6px 15px; font-size: 14px; font-weight: 800; border-radius: 8px; border: 2px solid var(--accent-secondary); background: transparent; color: var(--accent-secondary); cursor: pointer; }
+        .mode-toggle { margin-top: 10px; padding: 6px 12px; font-size: 13px; font-weight: 800; border-radius: 8px; border: 2px solid var(--accent-secondary); background: transparent; color: var(--accent-secondary); cursor: pointer; }
 
         .section-title { font-size: clamp(28px, 6vw, 42px); font-weight: 900; margin: 30px 0 20px; padding-left: 15px; border-left: 10px solid var(--accent-primary); }
         
@@ -72,13 +88,13 @@
         
         .card-link { display: block; padding: 25px; text-decoration: none; color: inherit; }
         .icon-box { font-size: 50px; margin-bottom: 12px; display: block; }
-        
-        .card-title { font-size: 28px; font-weight: 900; color: var(--accent-primary); margin-bottom: 8px; letter-spacing: -0.5px; line-height: 1.2; }
+        .card-title { font-size: 28px; font-weight: 900; color: var(--accent-primary); margin-bottom: 8px; letter-spacing: -0.5px; }
         .card-desc { font-size: 16px; font-weight: 700; color: var(--text-sub); line-height: 1.4; }
 
+        /* 管理面板 */
         .admin-panel { position: fixed; top: 0; right: -100%; width: 90%; max-width: 450px; height: 100vh; background: #fff; border-left: 8px solid var(--accent-primary); padding: 25px; overflow-y: auto; transition: 0.4s; z-index: 2000; color: #000; }
         .admin-panel.show { right: 0; }
-        .input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 10px; font-size: 16px; margin-bottom: 12px; }
+        .input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 10px; font-size: 16px; margin-bottom: 12px; font-family: inherit; }
         .emoji-picker { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px; background: #f1f5f9; padding: 10px; border-radius: 10px; }
         .emoji-item { font-size: 24px; cursor: pointer; text-align: center; padding: 8px; background: #fff; border-radius: 8px; border: 1px solid #e2e8f0; }
         .btn { width: 100%; padding: 15px; font-weight: 900; font-size: 18px; border: none; border-radius: 10px; cursor: pointer; margin-bottom: 10px; }
@@ -115,27 +131,23 @@
         <h2 style="font-size:24px; font-weight:900;">管理面板</h2>
         <button onclick="closeAdmin()" style="font-size:30px; border:none; background:none; cursor:pointer;">✕</button>
     </div>
-    
     <label>分類</label>
     <select id="linkCategory" class="input">
         <option value="primary">主要入口</option>
         <option value="secondary">次要工具</option>
     </select>
-    <label>快速選擇圖示</label>
+    <label>選擇圖示</label>
     <div class="emoji-picker" id="emojiPicker"></div>
     <input id="linkIcon" class="input" readonly placeholder="點擊上方圖示">
     <input id="linkTitle" class="input" placeholder="網站名稱">
     <input id="linkUrl" class="input" placeholder="網址 (https://)">
-    <input id="linkDesc" class="input" placeholder="次標題/說明文字">
-    <button class="btn save-btn" id="saveBtn" onclick="saveLink()">保存設定</button>
-    <button class="btn" style="background:#64748b; color:white;" onclick="resetForm()">取消修改</button>
-    <div id="manageList" style="margin-top:20px; border-top: 2px solid #eee; padding-top: 15px;"></div>
+    <input id="linkDesc" class="input" placeholder="說明文字">
+    <button class="btn save-btn" onclick="saveLink()">保存設定</button>
 </div>
 
 <script>
     const _PH = "8227b6c507a2a6b7e6417539c36d2c416e9196b653245053f3e786b6a22287b3";
-    const emojis = ["🩺", "💉", "🏥", "💊", "☁️", "📦", "💻", "🔍", "📋", "🏠", "🧪", "📁", "🧬", "📅", "🔔", "✉️"];
-    let editingId = null;
+    const emojis = ["🩺", "💉", "🏥", "💊", "☁️", "📦", "💻", "🔍", "📋", "🏠", "🧪", "📅"];
 
     async function sha256(message) {
         const msgUint8 = new TextEncoder().encode(message);
@@ -150,54 +162,41 @@
         const hash = await sha256(pass);
         if (hash === _PH) {
             document.getElementById("adminPanel").classList.add("show");
-            renderManageList();
         } else { alert("密碼錯誤"); }
     }
 
     const coreLinks = {
         primary: [
-            { id: 'c1', title: "中正診所", url: "https://webhis.vision.com.tw/88336/login", desc: "門診系統登入", icon: "🩺", core: true },
-            { id: 'c2', title: "VPN", url: "https://medvpn.nhi.gov.tw/iwse0000/IWSE0001S01.aspx", desc: "健保資訊網服務系統", icon: "💻", core: true },
-            { id: 'c3', title: "智慧防疫物資", url: "https://smis.cdc.gov.tw/SMIS/Default.aspx", desc: "每週一登入", icon: "📦", core: true },
-            { id: 'c4', title: "雲端查詢系統", url: "https://medcloud2.nhi.gov.tw/imu/IMUE1000/", desc: "健保醫療資訊雲端查詢", icon: "☁️", core: true },
-            { id: 'c5', title: "NIIS", url: "https://10.241.219.42/Login.aspx", desc: "醫療院所預防接種管理子系統", icon: "💉", core: true }
+            { id: 'c1', title: "中正診所", url: "https://webhis.vision.com.tw/88336/login", desc: "門診系統登入", icon: "🩺" },
+            { id: 'c2', title: "VPN", url: "https://medvpn.nhi.gov.tw/iwse0000/IWSE0001S01.aspx", desc: "健保資訊網服務系統", icon: "💻" },
+            { id: 'c3', title: "智慧防疫物資", url: "https://smis.cdc.gov.tw/SMIS/Default.aspx", desc: "每週一登入", icon: "📦" },
+            { id: 'c4', title: "雲端查詢系統", url: "https://medcloud2.nhi.gov.tw/imu/IMUE1000/", desc: "健保醫療資訊雲端查詢", icon: "☁️" },
+            { id: 'c5', title: "NIIS", url: "https://10.241.219.42/Login.aspx", desc: "預防接種管理系統", icon: "💉" }
         ],
         secondary: [
-            { id: 'c6', title: "亞東醫院轉診掛號", url: "https://www.femh.org.tw/webregs/HClinicLogin.aspx", desc: "亞東醫院轉診服務", icon: "🏥", core: true },
-            { id: 'c7', title: "亞東醫院轉診查詢", url: "https://hos.femh.org.tw/hosmanplatform/login.aspx", desc: "掛號結果查詢", icon: "🔍", core: true },
-            { id: 'c8', title: "醫品平台系統", url: "https://manage.healthleader.com.tw/Account/Login?ReturnUrl=%2F", desc: "台灣優品/醫品平台系統", icon: "📋", core: true },
-            { id: 'c9', title: "家醫大平台", url: "https://medqfm.nhi.gov.tw/health-ui/#/login", desc: "家醫照護大平台", icon: "🏠", core: true },
-            { id: 'c10', title: "Paxlovid交互作用", url: "https://depart.femh.org.tw/meta/paxsearch.htm?0.08336732489988208", desc: "用商品名比對交互作用", icon: "💊", core: true },
-            { id: 'c11', title: "腎絲球過濾計算", url: "egfr.html", desc: "eGFR 計算工具", icon: "🧪", core: true },
-            { id: 'c12', title: "年份轉換工具", url: "age-conv.html", desc: "西元 ⇄ 民國轉換", icon: "📅", core: true }
+            { id: 'c6', title: "亞東醫院轉診掛號", url: "https://www.femh.org.tw/webregs/HClinicLogin.aspx", desc: "亞東醫院轉診服務", icon: "🏥" },
+            { id: 'c7', title: "亞東醫院轉診查詢", url: "https://hos.femh.org.tw/hosmanplatform/login.aspx", desc: "掛號結果查詢", icon: "🔍" },
+            { id: 'c8', title: "醫品平台系統", url: "https://manage.healthleader.com.tw/Account/Login?ReturnUrl=%2F", desc: "台灣優品/醫品平台系統", icon: "📋" },
+            { id: 'c9', title: "家醫大平台", url: "https://medqfm.nhi.gov.tw/health-ui/#/login", desc: "家醫照護大平台", icon: "🏠" },
+            { id: 'c10', title: "Paxlovid交互作用", url: "https://depart.femh.org.tw/meta/paxsearch.htm", desc: "交互作用查詢", icon: "💊" },
+            { id: 'c11', title: "腎絲球過濾計算", url: "egfr.html", desc: "eGFR 計算工具", icon: "🧪" },
+            { id: 'c12', title: "年份轉換工具", url: "age-conv.html", desc: "西元 ⇄ 民國轉換", icon: "📅" }
         ]
     };
 
     let userLinks = JSON.parse(localStorage.getItem('cz_user_links_v3')) || { primary: [], secondary: [] };
 
-    const picker = document.getElementById('emojiPicker');
-    emojis.forEach(e => {
-        const div = document.createElement('div');
-        div.className = 'emoji-item';
-        div.innerText = e;
-        div.onclick = () => {
-            document.querySelectorAll('.emoji-item').forEach(i => i.classList.remove('selected'));
-            div.classList.add('selected');
-            document.getElementById('linkIcon').value = e;
-        };
-        picker.appendChild(div);
-    });
-
     function saveLink() {
         const cat = document.getElementById("linkCategory").value;
         const title = document.getElementById("linkTitle").value.trim();
         const url = document.getElementById("linkUrl").value.trim();
-        const desc = document.getElementById("linkDesc").value.trim();
         const icon = document.getElementById("linkIcon").value || "🩺";
+        const desc = document.getElementById("linkDesc").value.trim();
         if (!title || !url) return alert("名稱與網址必填");
         userLinks[cat].push({ id: 'u' + Date.now(), title, url, desc, icon });
         localStorage.setItem('cz_user_links_v3', JSON.stringify(userLinks));
-        resetForm(); render(); renderManageList();
+        document.getElementById("adminPanel").classList.remove("show");
+        render();
     }
 
     function render() {
@@ -205,6 +204,15 @@
         document.getElementById("primaryGrid").innerHTML = [...coreLinks.primary, ...userLinks.primary].map(fn).join('');
         document.getElementById("secondaryGrid").innerHTML = [...coreLinks.secondary, ...userLinks.secondary].map(fn).join('');
     }
+
+    const picker = document.getElementById('emojiPicker');
+    emojis.forEach(e => {
+        const div = document.createElement('div');
+        div.className = 'emoji-item';
+        div.innerText = e;
+        div.onclick = () => { document.getElementById('linkIcon').value = e; };
+        picker.appendChild(div);
+    });
 
     function updateClock() {
         const now = new Date();
@@ -220,18 +228,7 @@
         document.getElementById('themeBtn').innerText = next === 'light' ? '切換至夜間模式 🌙' : '切換至日間模式 ☀️';
     }
 
-    function resetForm() {
-        document.getElementById("linkTitle").value = ""; document.getElementById("linkUrl").value = "";
-        document.getElementById("linkDesc").value = ""; document.getElementById("linkIcon").value = "";
-    }
-
-    function renderManageList() {
-        const list = document.getElementById("manageList");
-        const all = [...coreLinks.primary, ...coreLinks.secondary, ...userLinks.primary, ...userLinks.secondary];
-        list.innerHTML = all.map(l => `<div style="padding:5px 0;">${l.icon} ${l.title}</div>`).join('');
-    }
-
-    function closeAdmin() { document.getElementById("adminPanel").classList.remove("show"); resetForm(); }
+    function closeAdmin() { document.getElementById("adminPanel").classList.remove("show"); }
 
     setInterval(updateClock, 1000); updateClock(); render();
 </script>
