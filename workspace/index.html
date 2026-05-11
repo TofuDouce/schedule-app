@@ -1,10 +1,3 @@
-標題亂掉是因為在手機窄螢幕上，大字級與固定佈局發生了衝撞。我已經針對手機瀏覽進行了「響應式設計（Responsive Design）」優化。
-### 🛠️ 這次的修正重點：
- 1. **標題自動縮放**：在手機上，標題會自動縮小字體並改為置中排列，避免文字重疊或斷行。
- 2. **時鐘優化**：手機版時鐘字體適度縮小，確保在小螢幕上也能完整顯示。
- 3. **純色夜間模式**：背景完全改為**深藏青色 (#0f172a)**，徹底拔除漸層綠，視覺更純淨。
- 4. **核心書籤保護**：那 11 個書籤已寫入硬體邏輯，**不可刪除、僅能修改**，只有你新加的書籤才會出現刪除鈕。
-```html
 <!DOCTYPE html>
 <html lang="zh-Hant" data-theme="light">
 <head>
@@ -23,7 +16,7 @@
             --border-color: #e2e8f0;
         }
         :root[data-theme="dark"] {
-            --bg-color: #0f172a; /* 純深藏青色 */
+            --bg-color: #0f172a;
             --card-bg: #1e293b;
             --accent-primary: #38bdf8;
             --accent-secondary: #34d399;
@@ -37,7 +30,6 @@
 
         .main { width: 100%; max-width: 1400px; margin: auto; padding: 20px; }
         
-        /* 響應式 Header */
         .header { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 30px; border-bottom: 4px solid var(--accent-secondary); padding-bottom: 20px; gap: 15px; }
         @media (min-width: 768px) {
             .header { flex-direction: row; justify-content: space-between; align-items: flex-end; text-align: left; padding: 40px 0 20px; }
@@ -57,20 +49,18 @@
 
         .section-title { font-size: clamp(28px, 6vw, 42px); font-weight: 900; margin: 30px 0 20px; padding-left: 15px; border-left: 10px solid var(--accent-primary); }
         
-        /* 網格系統優化 */
         .grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
         @media (min-width: 640px) { .grid { grid-template-columns: repeat(2, 1fr); } }
         @media (min-width: 1024px) { .grid { grid-template-columns: repeat(4, 1fr); } }
         @media (min-width: 1400px) { .grid { grid-template-columns: repeat(5, 1fr); } }
 
-        .card { background: var(--card-bg); border-radius: 20px; border: 2px solid var(--border-color); transition: 0.3s; }
+        .card { background: var(--card-bg); border-radius: 20px; border: 2px solid var(--border-color); transition: 0.3s; height: 100%; }
         .card:hover { transform: translateY(-5px); border-color: var(--accent-primary); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
         .card-link { display: block; padding: 25px; text-decoration: none; color: inherit; }
         .icon-box { font-size: 45px; margin-bottom: 10px; display: block; }
         .card-title { font-size: 24px; font-weight: 900; color: var(--accent-primary); margin-bottom: 5px; }
         .card-desc { font-size: 16px; font-weight: 700; color: var(--text-sub); }
 
-        /* 管理面板 */
         .admin-panel { position: fixed; top: 0; right: -100%; width: 90%; max-width: 450px; height: 100vh; background: #fff; border-left: 8px solid var(--accent-primary); padding: 25px; overflow-y: auto; transition: 0.4s; z-index: 2000; color: #000; }
         .admin-panel.show { right: 0; }
         .input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 10px; font-size: 16px; margin-bottom: 12px; }
@@ -139,7 +129,6 @@
     const emojis = ["🩺", "💉", "🏥", "💊", "☁️", "📦", "💻", "🔍", "📋", "🏠", "🧪", "📁", "🧬", "📅", "🔔", "✉️"];
     let editingId = null;
 
-    // 11 個核心書籤
     const coreLinks = {
         primary: [
             { id: 'c1', title: "中正診所", url: "https://webhis.vision.com.tw/88336/login", desc: "門診系統登入", icon: "🩺", core: true },
@@ -158,7 +147,7 @@
         ]
     };
 
-    let userLinks = JSON.parse(localStorage.getItem('cz_user_links_v2')) || { primary: [], secondary: [] };
+    let userLinks = JSON.parse(localStorage.getItem('cz_user_links_v3')) || { primary: [], secondary: [] };
 
     const picker = document.getElementById('emojiPicker');
     emojis.forEach(e => {
@@ -202,8 +191,8 @@
             userLinks[cat].push({ id: 'u' + Date.now(), title, url, desc, icon });
         }
 
-        localStorage.setItem('cz_user_links_v2', JSON.stringify(userLinks));
-        localStorage.setItem('cz_core_overrides_v2', JSON.stringify(coreLinks));
+        localStorage.setItem('cz_user_links_v3', JSON.stringify(userLinks));
+        localStorage.setItem('cz_core_over_v3', JSON.stringify(coreLinks));
         resetForm(); render(); renderManageList();
     }
 
@@ -223,7 +212,7 @@
     function deleteLink(cat, id) {
         if (!confirm("確定刪除此書籤？")) return;
         userLinks[cat] = userLinks[cat].filter(l => l.id !== id);
-        localStorage.setItem('cz_user_links_v2', JSON.stringify(userLinks));
+        localStorage.setItem('cz_user_links_v3', JSON.stringify(userLinks));
         render(); renderManageList();
     }
 
@@ -279,12 +268,10 @@
 
     function closeAdmin() { document.getElementById("adminPanel").classList.remove("show"); resetForm(); }
 
-    const overrides = JSON.parse(localStorage.getItem('cz_core_overrides_v2'));
+    const overrides = JSON.parse(localStorage.getItem('cz_core_over_v3'));
     if (overrides) { coreLinks.primary = overrides.primary; coreLinks.secondary = overrides.secondary; }
 
     setInterval(updateClock, 1000); updateClock(); render();
 </script>
 </body>
 </html>
-
-```
