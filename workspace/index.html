@@ -30,24 +30,28 @@
 
         .main { width: 100%; max-width: 1400px; margin: auto; padding: 20px; }
         
-        /* 調整標題區塊：改為垂直排列並置中 */
+        /* 恢復原狀：左邊標題，右邊時間 */
         .header { 
             display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            text-align: center; 
+            flex-direction: row; 
+            justify-content: space-between; 
+            align-items: flex-end; 
+            text-align: left; 
             margin-bottom: 30px; 
             border-bottom: 4px solid var(--accent-secondary); 
             padding: 40px 0 20px; 
-            gap: 15px; 
+        }
+
+        @media (max-width: 768px) {
+            .header { flex-direction: column; align-items: center; text-align: center; }
+            .clock-area { align-items: center !important; text-align: center !important; margin-top: 15px; }
         }
 
         .title-group { display: flex; flex-direction: column; }
         .title-main { font-size: clamp(40px, 8vw, 70px); font-weight: 900; line-height: 1.1; }
         .title-sub { font-size: clamp(16px, 3vw, 24px); color: var(--accent-primary); font-weight: 800; letter-spacing: 4px; }
         
-        /* 時間區塊：置於標題下方 */
-        .clock-area { display: flex; flex-direction: column; align-items: center; }
+        .clock-area { display: flex; flex-direction: column; align-items: flex-end; text-align: right; }
 
         .clock { font-size: clamp(50px, 10vw, 85px); font-weight: 900; color: var(--accent-primary); line-height: 1; }
         .date-display { font-size: clamp(18px, 4vw, 32px); font-weight: 800; margin-top: 5px; color: var(--text-sub); }
@@ -71,7 +75,6 @@
         .card-title { font-size: 28px; font-weight: 900; color: var(--accent-primary); margin-bottom: 8px; letter-spacing: -0.5px; line-height: 1.2; }
         .card-desc { font-size: 16px; font-weight: 700; color: var(--text-sub); line-height: 1.4; }
 
-        /* 管理面板樣式 (維持原樣) */
         .admin-panel { position: fixed; top: 0; right: -100%; width: 90%; max-width: 450px; height: 100vh; background: #fff; border-left: 8px solid var(--accent-primary); padding: 25px; overflow-y: auto; transition: 0.4s; z-index: 2000; color: #000; }
         .admin-panel.show { right: 0; }
         .input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 10px; font-size: 16px; margin-bottom: 12px; }
@@ -128,7 +131,6 @@
     
     <button class="btn save-btn" id="saveBtn" onclick="saveLink()">保存設定</button>
     <button class="btn" style="background:#64748b; color:white;" onclick="resetForm()">取消修改</button>
-
     <div id="manageList" style="margin-top:20px; border-top: 2px solid #eee; padding-top: 15px;"></div>
 </div>
 
@@ -195,9 +197,7 @@
         const url = document.getElementById("linkUrl").value.trim();
         const desc = document.getElementById("linkDesc").value.trim();
         const icon = document.getElementById("linkIcon").value || "🩺";
-
         if (!title || !url) return alert("名稱與網址必填");
-
         if (editingId) {
             let found = false;
             ['primary', 'secondary'].forEach(c => {
@@ -209,7 +209,6 @@
         } else {
             userLinks[cat].push({ id: 'u' + Date.now(), title, url, desc, icon });
         }
-
         localStorage.setItem('cz_user_links_v3', JSON.stringify(userLinks));
         resetForm(); render(); renderManageList();
     }
