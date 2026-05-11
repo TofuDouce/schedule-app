@@ -64,13 +64,10 @@
         .card-title { font-size: 28px; font-weight: 900; color: var(--accent-primary); margin-bottom: 8px; letter-spacing: -0.5px; line-height: 1.2; }
         .card-desc { font-size: 16px; font-weight: 700; color: var(--text-sub); line-height: 1.4; }
 
+        /* 管理面板樣式 */
         .admin-panel { position: fixed; top: 0; right: -100%; width: 90%; max-width: 450px; height: 100vh; background: #fff; border-left: 8px solid var(--accent-primary); padding: 25px; overflow-y: auto; transition: 0.4s; z-index: 2000; color: #000; }
         .admin-panel.show { right: 0; }
         .input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 10px; font-size: 16px; margin-bottom: 12px; }
-        
-        .emoji-picker { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px; background: #f1f5f9; padding: 10px; border-radius: 10px; }
-        .emoji-item { font-size: 24px; cursor: pointer; text-align: center; padding: 8px; background: #fff; border-radius: 8px; border: 1px solid #e2e8f0; }
-
         .btn { width: 100%; padding: 15px; font-weight: 900; font-size: 18px; border: none; border-radius: 10px; cursor: pointer; margin-bottom: 10px; }
         .save-btn { background: var(--accent-primary); color: white; }
         .admin-btn { position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px; border-radius: 50%; background: var(--card-bg); border: 2px solid var(--accent-primary); font-size: 24px; cursor: pointer; opacity: 0.2; z-index: 1000; }
@@ -105,12 +102,34 @@
         <h2 style="font-size:24px; font-weight:900;">管理面板</h2>
         <button onclick="closeAdmin()" style="font-size:30px; border:none; background:none; cursor:pointer;">✕</button>
     </div>
+    <p style="margin-bottom:15px; font-weight:700; color:var(--text-sub);">您可以新增自訂連結</p>
     <input id="linkTitle" class="input" placeholder="網站名稱">
     <input id="linkUrl" class="input" placeholder="網址 (https://)">
     <button class="btn save-btn" id="saveBtn" onclick="saveLink()">保存設定</button>
 </div>
 
 <script>
+    // 密碼的 SHA-256 哈希值（對應 720750）
+    const _PH = "8227b6c507a2a6b7e6417539c36d2c416e9196b653245053f3e786b6a22287b3";
+
+    async function sha256(message) {
+        const msgUint8 = new TextEncoder().encode(message);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    async function openAdmin() {
+        const pass = prompt("請輸入管理密碼");
+        if (!pass) return;
+        const hash = await sha256(pass);
+        if (hash === _PH) {
+            document.getElementById("adminPanel").classList.add("show");
+        } else {
+            alert("密碼錯誤");
+        }
+    }
+
     const coreLinks = {
         primary: [
             { id: 'c1', title: "中正診所", url: "https://webhis.vision.com.tw/88336/login", desc: "門診系統登入", icon: "🩺", core: true },
@@ -125,7 +144,8 @@
             { id: 'c8', title: "醫品平台系統", url: "https://manage.healthleader.com.tw/Account/Login?ReturnUrl=%2F", desc: "台灣優品/醫品平台系統", icon: "📋", core: true },
             { id: 'c9', title: "家醫大平台", url: "https://medqfm.nhi.gov.tw/health-ui/#/login", desc: "家醫照護大平台", icon: "🏠", core: true },
             { id: 'c10', title: "Paxlovid交互作用", url: "https://depart.femh.org.tw/meta/paxsearch.htm?0.08336732489988208", desc: "用商品名比對交互作用", icon: "💊", core: true },
-            { id: 'c11', title: "腎絲球過濾計算", url: "egfr.html", desc: "eGFR 計算工具", icon: "🧪", core: true }
+            { id: 'c11', title: "腎絲球過濾計算", url: "egfr.html", desc: "eGFR 計算工具", icon: "🧪", core: true },
+            { id: 'c12', title: "年份轉換工具", url: "age-conv.html", desc: "西元 ⇄ 民國轉換", icon: "📅", core: true }
         ]
     };
 
@@ -135,11 +155,6 @@
         const fn = (l) => `<div class="card"><a class="card-link" href="${l.url}" target="_blank"><span class="icon-box">${l.icon}</span><div class="card-title">${l.title}</div><div class="card-desc">${l.desc}</div></a></div>`;
         document.getElementById("primaryGrid").innerHTML = [...coreLinks.primary, ...userLinks.primary].map(fn).join('');
         document.getElementById("secondaryGrid").innerHTML = [...coreLinks.secondary, ...userLinks.secondary].map(fn).join('');
-    }
-
-    function openAdmin() {
-        const pass = prompt("請輸入管理密碼");
-        if (pass === "720750") { document.getElementById("adminPanel").classList.add("show"); }
     }
 
     function toggleTheme() {
@@ -155,6 +170,8 @@
         const y = now.getFullYear();
         document.getElementById("date").innerText = `(民${y-1911}) ${y}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')}`;
     }
+
+    function closeAdmin() { document.getElementById("adminPanel").classList.remove("show"); }
 
     setInterval(updateClock, 1000); updateClock(); render();
 </script>
