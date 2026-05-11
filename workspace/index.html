@@ -80,11 +80,9 @@
         .card-link { display: block; padding: 25px; text-decoration: none; color: inherit; }
         .icon-box { font-size: 45px; margin-bottom: 12px; display: block; }
         
-        /* 書籤標題維持大字 (28px) */
         .card-title { font-size: 28px; font-weight: 900; color: var(--accent-primary); margin-bottom: 8px; }
         .card-desc { font-size: 16px; font-weight: 700; color: var(--text-sub); line-height: 1.4; }
 
-        /* 管理面板樣式 */
         .admin-panel { position: fixed; top: 0; right: -100%; width: 90%; max-width: 400px; height: 100vh; background: #fff; border-left: 8px solid var(--accent-primary); padding: 25px; overflow-y: auto; transition: 0.4s; z-index: 2000; color: #000; }
         .admin-panel.show { right: 0; }
         .input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 10px; font-size: 16px; margin-bottom: 12px; }
@@ -92,7 +90,7 @@
         .emoji-item { font-size: 24px; cursor: pointer; text-align: center; padding: 8px; background: #fff; border-radius: 8px; border: 1px solid #e2e8f0; }
         .btn { width: 100%; padding: 15px; font-weight: 900; border: none; border-radius: 10px; cursor: pointer; margin-bottom: 10px; }
         .save-btn { background: var(--accent-primary); color: white; }
-        .admin-btn { position: fixed; bottom: 20px; right: 20px; width: 50px; height: 50px; border-radius: 50%; background: var(--card-bg); border: 2px solid var(--accent-primary); font-size: 20px; cursor: pointer; opacity: 0.1; z-index: 1000; }
+        .admin-btn { position: fixed; bottom: 20px; right: 20px; width: 50px; height: 50px; border-radius: 50%; background: var(--card-bg); border: 2px solid var(--accent-primary); font-size: 20px; cursor: pointer; opacity: 0.2; z-index: 1000; }
     </style>
 </head>
 <body>
@@ -117,11 +115,11 @@
     <div id="secondaryGrid" class="grid"></div>
 </div>
 
-<button class="admin-btn" onclick="handleAdminOpen()">⚙️</button>
+<button class="admin-btn" onclick="openAdmin()">⚙️</button>
 
 <div class="admin-panel" id="adminPanel">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <h2 style="font-weight:900;">管理面板</h2>
+        <h2 style="font-weight:900;">管理面板 (免密碼模式)</h2>
         <button onclick="closeAdmin()" style="font-size:24px; border:none; background:none; cursor:pointer;">✕</button>
     </div>
     <label>分類</label>
@@ -139,25 +137,11 @@
 </div>
 
 <script>
-    // 預期密碼：720750 的雜湊
-    const _TARGET = "8227b6c507a2a6b7e6417539c36d2c416e9196b653245053f3e786b6a22287b3";
     const emojis = ["🩺", "💉", "🏥", "💊", "☁️", "📦", "💻", "🔍", "📋", "🏠", "🧪", "📅"];
 
-    // 修正後的密碼驗證：強制等待結果
-    async function handleAdminOpen() {
-        const pass = prompt("請輸入管理密碼");
-        if (!pass) return;
-
-        const msgBuffer = new TextEncoder().encode(pass);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-
-        if (hashHex === _TARGET) {
-            document.getElementById("adminPanel").classList.add("show");
-        } else {
-            alert("密碼錯誤，請檢查輸入是否正確。");
-        }
+    // 密碼驗證已移除，點擊齒輪直接開啟
+    function openAdmin() {
+        document.getElementById("adminPanel").classList.add("show");
     }
 
     const coreLinks = {
