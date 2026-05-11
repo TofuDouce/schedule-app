@@ -56,24 +56,12 @@
 
         .card { background: var(--card-bg); border-radius: 20px; border: 2px solid var(--border-color); transition: 0.3s; height: 100%; }
         .card:hover { transform: translateY(-5px); border-color: var(--accent-primary); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-        .card:hover .card-title { color: var(--accent-secondary); } /* 懸停時標題變色 */
+        .card:hover .card-title { color: var(--accent-secondary); }
         
         .card-link { display: block; padding: 25px; text-decoration: none; color: inherit; }
-        
-        /* 圖示區塊微調 */
         .icon-box { font-size: 50px; margin-bottom: 12px; display: block; }
         
-        /* 重點修改：加大藍字標題 */
-        .card-title { 
-            font-size: 28px; 
-            font-weight: 900; 
-            color: var(--accent-primary); 
-            margin-bottom: 8px;
-            letter-spacing: -0.5px;
-            line-height: 1.2;
-            transition: 0.2s;
-        }
-        
+        .card-title { font-size: 28px; font-weight: 900; color: var(--accent-primary); margin-bottom: 8px; letter-spacing: -0.5px; line-height: 1.2; }
         .card-desc { font-size: 16px; font-weight: 700; color: var(--text-sub); line-height: 1.4; }
 
         .admin-panel { position: fixed; top: 0; right: -100%; width: 90%; max-width: 450px; height: 100vh; background: #fff; border-left: 8px solid var(--accent-primary); padding: 25px; overflow-y: auto; transition: 0.4s; z-index: 2000; color: #000; }
@@ -82,7 +70,6 @@
         
         .emoji-picker { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px; background: #f1f5f9; padding: 10px; border-radius: 10px; }
         .emoji-item { font-size: 24px; cursor: pointer; text-align: center; padding: 8px; background: #fff; border-radius: 8px; border: 1px solid #e2e8f0; }
-        .emoji-item.selected { border: 3px solid var(--accent-primary); background: #e0f2fe; }
 
         .btn { width: 100%; padding: 15px; font-weight: 900; font-size: 18px; border: none; border-radius: 10px; cursor: pointer; margin-bottom: 10px; }
         .save-btn { background: var(--accent-primary); color: white; }
@@ -118,32 +105,12 @@
         <h2 style="font-size:24px; font-weight:900;">管理面板</h2>
         <button onclick="closeAdmin()" style="font-size:30px; border:none; background:none; cursor:pointer;">✕</button>
     </div>
-    
-    <label>分類</label>
-    <select id="linkCategory" class="input">
-        <option value="primary">主要入口</option>
-        <option value="secondary">次要工具</option>
-    </select>
-
-    <label>快速選擇圖示</label>
-    <div class="emoji-picker" id="emojiPicker"></div>
-    <input id="linkIcon" class="input" readonly placeholder="點擊上方圖示">
-
     <input id="linkTitle" class="input" placeholder="網站名稱">
     <input id="linkUrl" class="input" placeholder="網址 (https://)">
-    <input id="linkDesc" class="input" placeholder="次標題/說明文字">
-    
     <button class="btn save-btn" id="saveBtn" onclick="saveLink()">保存設定</button>
-    <button class="btn" style="background:#64748b; color:white;" onclick="resetForm()">取消修改</button>
-
-    <div id="manageList" style="margin-top:20px; border-top: 2px solid #eee; padding-top: 15px;"></div>
 </div>
 
 <script>
-    const _H = "8227b6c507a2a6b7e6417539c36d2c416e9196b653245053f3e786b6a22287b3";
-    const emojis = ["🩺", "💉", "🏥", "💊", "☁️", "📦", "💻", "🔍", "📋", "🏠", "🧪", "📁", "🧬", "📅", "🔔", "✉️"];
-    let editingId = null;
-
     const coreLinks = {
         primary: [
             { id: 'c1', title: "中正診所", url: "https://webhis.vision.com.tw/88336/login", desc: "門診系統登入", icon: "🩺", core: true },
@@ -158,107 +125,11 @@
             { id: 'c8', title: "醫品平台系統", url: "https://manage.healthleader.com.tw/Account/Login?ReturnUrl=%2F", desc: "台灣優品/醫品平台系統", icon: "📋", core: true },
             { id: 'c9', title: "家醫大平台", url: "https://medqfm.nhi.gov.tw/health-ui/#/login", desc: "家醫照護大平台", icon: "🏠", core: true },
             { id: 'c10', title: "Paxlovid交互作用", url: "https://depart.femh.org.tw/meta/paxsearch.htm?0.08336732489988208", desc: "用商品名比對交互作用", icon: "💊", core: true },
-            { id: 'c11', title: "腎絲球過濾計算", url: "https://tofudouce.github.io/schedule-app/workspace/egfr.html", desc: "eGFR 計算工具", icon: "🧪", core: true }
+            { id: 'c11', title: "腎絲球過濾計算", url: "egfr.html", desc: "eGFR 計算工具", icon: "🧪", core: true }
         ]
     };
 
     let userLinks = JSON.parse(localStorage.getItem('cz_user_links_v3')) || { primary: [], secondary: [] };
-
-    const picker = document.getElementById('emojiPicker');
-    emojis.forEach(e => {
-        const div = document.createElement('div');
-        div.className = 'emoji-item';
-        div.innerText = e;
-        div.onclick = () => {
-            document.querySelectorAll('.emoji-item').forEach(i => i.classList.remove('selected'));
-            div.classList.add('selected');
-            document.getElementById('linkIcon').value = e;
-        };
-        picker.appendChild(div);
-    });
-
-    function openAdmin() {
-        const pass = prompt("請輸入管理密碼");
-        if (pass === "720750") {
-            document.getElementById("adminPanel").classList.add("show");
-            renderManageList();
-        } else if (pass) { alert("密碼錯誤"); }
-    }
-
-    function saveLink() {
-        const cat = document.getElementById("linkCategory").value;
-        const title = document.getElementById("linkTitle").value.trim();
-        const url = document.getElementById("linkUrl").value.trim();
-        const desc = document.getElementById("linkDesc").value.trim();
-        const icon = document.getElementById("linkIcon").value || "🩺";
-
-        if (!title || !url) return alert("名稱與網址必填");
-
-        if (editingId) {
-            let found = false;
-            ['primary', 'secondary'].forEach(c => {
-                coreLinks[c].forEach(l => { if (l.id === editingId) { l.title = title; l.url = url; l.desc = desc; l.icon = icon; found = true; } });
-            });
-            if (!found) {
-                userLinks[cat].forEach(l => { if (l.id === editingId) { l.title = title; l.url = url; l.desc = desc; l.icon = icon; } });
-            }
-        } else {
-            userLinks[cat].push({ id: 'u' + Date.now(), title, url, desc, icon });
-        }
-
-        localStorage.setItem('cz_user_links_v3', JSON.stringify(userLinks));
-        localStorage.setItem('cz_core_over_v3', JSON.stringify(coreLinks));
-        resetForm(); render(); renderManageList();
-    }
-
-    function editLink(id) {
-        editingId = id;
-        const all = [...coreLinks.primary, ...coreLinks.secondary, ...userLinks.primary, ...userLinks.secondary];
-        const item = all.find(l => l.id === id);
-        if (item) {
-            document.getElementById("linkTitle").value = item.title;
-            document.getElementById("linkUrl").value = item.url;
-            document.getElementById("linkDesc").value = item.desc;
-            document.getElementById("linkIcon").value = item.icon;
-            document.getElementById("saveBtn").innerText = "確認修改";
-        }
-    }
-
-    function deleteLink(cat, id) {
-        if (!confirm("確定刪除此書籤？")) return;
-        userLinks[cat] = userLinks[cat].filter(l => l.id !== id);
-        localStorage.setItem('cz_user_links_v3', JSON.stringify(userLinks));
-        render(); renderManageList();
-    }
-
-    function resetForm() {
-        editingId = null;
-        document.getElementById("linkTitle").value = ""; document.getElementById("linkUrl").value = "";
-        document.getElementById("linkDesc").value = ""; document.getElementById("linkIcon").value = "";
-        document.getElementById("saveBtn").innerText = "保存設定";
-    }
-
-    function renderManageList() {
-        const list = document.getElementById("manageList");
-        let html = "<p style='font-size:14px; color:#666;'>預設項不可刪除</p>";
-        const all = [
-            ...coreLinks.primary.map(l => ({...l, cat: 'primary'})),
-            ...coreLinks.secondary.map(l => ({...l, cat: 'secondary'})),
-            ...userLinks.primary.map(l => ({...l, cat: 'primary'})),
-            ...userLinks.secondary.map(l => ({...l, cat: 'secondary'}))
-        ];
-
-        html += all.map(l => `
-            <div style="padding:8px 0; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-size:14px;">${l.icon} ${l.title}</span>
-                <div>
-                    <button onclick="editLink('${l.id}')" style="color:blue; border:none; background:none; cursor:pointer;">改</button>
-                    ${l.core ? '' : `<button onclick="deleteLink('${l.cat}', '${l.id}')" style="color:red; border:none; background:none; cursor:pointer; margin-left:10px;">刪</butto>`}
-                </div>
-            </div>
-        `).join('');
-        list.innerHTML = html;
-    }
 
     function render() {
         const fn = (l) => `<div class="card"><a class="card-link" href="${l.url}" target="_blank"><span class="icon-box">${l.icon}</span><div class="card-title">${l.title}</div><div class="card-desc">${l.desc}</div></a></div>`;
@@ -266,12 +137,9 @@
         document.getElementById("secondaryGrid").innerHTML = [...coreLinks.secondary, ...userLinks.secondary].map(fn).join('');
     }
 
-    function updateClock() {
-        const now = new Date();
-        document.getElementById("clock").innerText = now.toLocaleTimeString("zh-TW", { hour12: false });
-        const y = now.getFullYear();
-        const week = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
-        document.getElementById("date").innerText = `(民${y-1911}) ${y}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')} ${week[now.getDay()]}`;
+    function openAdmin() {
+        const pass = prompt("請輸入管理密碼");
+        if (pass === "720750") { document.getElementById("adminPanel").classList.add("show"); }
     }
 
     function toggleTheme() {
@@ -281,10 +149,12 @@
         document.getElementById('themeBtn').innerText = next === 'light' ? '切換至夜間模式 🌙' : '切換至日間模式 ☀️';
     }
 
-    function closeAdmin() { document.getElementById("adminPanel").classList.remove("show"); resetForm(); }
-
-    const overrides = JSON.parse(localStorage.getItem('cz_core_over_v3'));
-    if (overrides) { coreLinks.primary = overrides.primary; coreLinks.secondary = overrides.secondary; }
+    function updateClock() {
+        const now = new Date();
+        document.getElementById("clock").innerText = now.toLocaleTimeString("zh-TW", { hour12: false });
+        const y = now.getFullYear();
+        document.getElementById("date").innerText = `(民${y-1911}) ${y}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')}`;
+    }
 
     setInterval(updateClock, 1000); updateClock(); render();
 </script>
