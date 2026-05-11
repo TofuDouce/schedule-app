@@ -37,7 +37,6 @@
 
         .main { width: 100%; max-width: 1400px; margin: auto; padding: 20px; }
         
-        /* 標題與時間：左上 vs 右上 */
         .header { 
             display: flex; 
             flex-direction: row; 
@@ -55,7 +54,7 @@
 
         .title-group { display: flex; flex-direction: column; }
         .title-main { 
-            font-size: clamp(32px, 5vw, 42px); /* 這是縮小後的中正診所標題 */
+            font-size: clamp(32px, 5vw, 42px); 
             font-weight: 900; 
             line-height: 1.1; 
             letter-spacing: -1px;
@@ -86,7 +85,6 @@
         .card-link { display: block; padding: 25px; text-decoration: none; color: inherit; }
         .icon-box { font-size: 45px; margin-bottom: 12px; display: block; }
         
-        /* 恢復書籤標題大小 */
         .card-title { font-size: 28px; font-weight: 900; color: var(--accent-primary); margin-bottom: 8px; }
         .card-desc { font-size: 16px; font-weight: 700; color: var(--text-sub); line-height: 1.4; }
 
@@ -145,10 +143,11 @@
 </div>
 
 <script>
-    // 密碼 720750
+    // 預期密碼：720750
     const _PH = "8227b6c507a2a6b7e6417539c36d2c416e9196b653245053f3e786b6a22287b3";
     const emojis = ["🩺", "💉", "🏥", "💊", "☁️", "📦", "💻", "🔍", "📋", "🏠", "🧪", "📅"];
 
+    // 確保 SHA-256 函數正確運作
     async function sha256(message) {
         const msgUint8 = new TextEncoder().encode(message);
         const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
@@ -156,13 +155,22 @@
         return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     }
 
+    // 修復密碼驗證邏輯
     async function openAdmin() {
         const pass = prompt("請輸入管理密碼");
         if (!pass) return;
-        const hash = await sha256(pass);
-        if (hash === _PH) {
-            document.getElementById("adminPanel").classList.add("show");
-        } else { alert("密碼錯誤"); }
+        
+        try {
+            const hash = await sha256(pass);
+            if (hash === _PH) {
+                document.getElementById("adminPanel").classList.add("show");
+            } else { 
+                alert("密碼錯誤"); 
+            }
+        } catch (e) {
+            console.error(e);
+            alert("驗證出錯，請再試一次");
+        }
     }
 
     const coreLinks = {
@@ -213,11 +221,14 @@
         picker.appendChild(div);
     });
 
+    // 更新時間邏輯，加入星期顯示
     function updateClock() {
         const now = new Date();
+        const days = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
         document.getElementById("clock").innerText = now.toLocaleTimeString("zh-TW", { hour12: false });
         const y = now.getFullYear();
-        document.getElementById("date").innerText = `(民${y-1911}) ${y}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')}`;
+        const dateStr = `${y}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')}`;
+        document.getElementById("date").innerText = `(民${y-1911}) ${dateStr} ${days[now.getDay()]}`;
     }
 
     function toggleTheme() {
