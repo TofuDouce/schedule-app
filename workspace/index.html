@@ -1,305 +1,227 @@
-這份是**最終修正版**的完整程式碼。
-我已經確保了：
- 1. **功能修復**：新增、修改、刪除、下載備份功能全部連動，按下去首頁就會跳出卡片。
- 2. **配色美化**：捨棄慘白的顏色，回歸你原本喜歡的**深色星空風格**，並將裝飾色改為優雅的**香檳金**。
- 3. **密碼隱藏**：密碼以 Base64 編碼，避免肉眼直視。
-```html
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-Hant" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>中正診所 Portal</title>
-    <meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Cinzel:wght@500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Cinzel:wght@600&display=swap" rel="stylesheet">
 
     <style>
-        :root {
+        /* 定義兩套配色方案 */
+        :root[data-theme="dark"] {
+            --bg-color: #060816;
+            --bg-grad: linear-gradient(180deg, #060816, #0c1224);
+            --card-bg: rgba(16, 22, 40, 0.9);
             --accent-gold: #d4af37;
             --accent-gold-dim: rgba(214, 190, 110, 0.3);
-            --bg-dark: #060816;
-            --card-bg: rgba(16, 22, 40, 0.9);
-            --text-white: #ffffff;
+            --text-main: #ffffff;
             --text-dim: rgba(226, 232, 240, 0.7);
+            --panel-bg: #0c1224;
+            --star-opacity: 0.4;
+        }
+
+        :root[data-theme="light"] {
+            --bg-color: #f0f4f8;
+            --bg-grad: linear-gradient(180deg, #f0f4f8, #e2e8f0);
+            --card-bg: #ffffff;
+            --accent-gold: #0ea5e9; /* 日間模式改用專業藍 */
+            --accent-gold-dim: rgba(14, 165, 233, 0.2);
+            --text-main: #1e293b;
+            --text-dim: #64748b;
+            --panel-bg: #ffffff;
+            --star-opacity: 0; /* 白天隱藏星空 */
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { min-height: 100vh; background: var(--bg-grad); color: var(--text-main); font-family: "Inter", "Microsoft JhengHei", sans-serif; transition: 0.3s ease; }
 
-        html, body {
-            min-height: 100%;
-            overflow-x: hidden;
-            background: linear-gradient(180deg, #060816, #0c1224);
-            color: var(--text-white);
-            font-family: "Inter", "Microsoft JhengHei", sans-serif;
-        }
-
-        /* Mucha 裝飾邊框 */
-        .mucha-frame {
-            position: fixed;
-            inset: 14px;
-            pointer-events: none;
-            z-index: 9999;
-            border: 1px solid var(--accent-gold-dim);
-            border-radius: 34px;
-            box-shadow: inset 0 0 20px rgba(212, 175, 55, 0.05);
-        }
-
-        .corner {
-            position: absolute;
-            width: 80px; height: 80px;
-            border: 1px solid var(--accent-gold-dim);
-        }
-        .tl { top:-1px; left:-1px; border-radius: 34px 0 0 0; border-right:none; border-bottom:none; }
-        .tr { top:-1px; right:-1px; border-radius: 0 34px 0 0; border-left:none; border-bottom:none; }
-        .bl { bottom:-1px; left:-1px; border-radius: 0 0 0 34px; border-right:none; border-top:none; }
+        /* Mucha 裝飾 */
+        .mucha-frame { position: fixed; inset: 12px; pointer-events: none; z-index: 999; border: 1px solid var(--accent-gold-dim); border-radius: 30px; transition: 0.3s; }
+        .corner { position: absolute; width: 60px; height: 60px; border: 1px solid var(--accent-gold-dim); }
+        .tl { top:-1px; left:-1px; border-radius: 30px 0 0 0; border-right:none; border-bottom:none; }
+        .tr { top:-1px; right:-1px; border-radius: 0 30px 0 0; border-left:none; border-bottom:none; }
+        .bl { bottom:-1px; left:-1px; border-radius: 0 0 0 30px; border-right:none; border-top:none; }
         .br { bottom:-1px; right:-1px; border-radius: 0 0 34px 0; border-left:none; border-top:none; }
 
-        /* 星空背景 */
-        .stars { position: fixed; inset: 0; z-index: -1; }
-        .star { position: absolute; width: 2px; height: 2px; background: white; border-radius: 50%; opacity: 0.4; animation: twinkle 5s infinite; }
-        @keyframes twinkle { 0%, 100% { opacity: 0.1; } 50% { opacity: 0.8; } }
+        /* 星空 */
+        .stars { position: fixed; inset: 0; z-index: -1; opacity: var(--star-opacity); transition: 0.5s; }
+        .star { position: absolute; width: 2px; height: 2px; background: white; border-radius: 50%; animation: twinkle 5s infinite; }
+        @keyframes twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
 
-        /* 主要內容排版 */
-        .main { width: 100%; max-width: 1450px; margin: auto; padding: 68px 28px 50px; }
-        .header { margin-bottom: 56px; }
-        .title-main { font-size: clamp(62px, 12vw, 90px); font-weight: 700; letter-spacing: 2px; }
-        .title-sub { display: block; margin-top: 6px; font-family: "Cinzel", serif; font-size: clamp(32px, 6vw, 48px); letter-spacing: 6px; color: var(--accent-gold); }
-
-        .clock { font-size: clamp(42px, 9vw, 72px); font-weight: 800; line-height: 1; margin-top: 20px; }
-        .date { color: var(--text-dim); margin-top: 10px; font-size: 20px; }
-
-        /* 網站卡片 Grid */
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 34px; }
-        .card {
-            position: relative; min-height: 280px; border-radius: 34px; overflow: hidden;
-            background: var(--card-bg); border: 1px solid rgba(214, 190, 110, 0.1);
-            transition: 0.35s;
-        }
-        .card:hover { transform: translateY(-10px); border-color: var(--accent-gold); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .card-link { display: block; height: 100%; padding: 34px; color: white; text-decoration: none; }
-        .icon { 
-            width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 30px;
-            background: rgba(214, 190, 110, 0.1); border: 1px solid var(--accent-gold-dim); margin-bottom: 20px;
-        }
-        .card-title { font-size: 40px; font-weight: 800; margin-bottom: 10px; }
-        .card-desc { color: var(--text-dim); line-height: 1.6; font-size: 17px; }
-
-        /* 管理面板樣式 */
-        .admin-btn { position: fixed; top: 28px; right: 28px; width: 60px; height: 60px; border-radius: 20px; cursor: pointer; background: rgba(255,255,255,0.05); border: 1px solid var(--accent-gold-dim); color: white; font-size: 24px; z-index: 999; backdrop-filter: blur(10px); }
-        .admin-panel { position: fixed; top: 0; right: -460px; width: 460px; height: 100vh; background: #0c1224; border-left: 1px solid var(--accent-gold-dim); padding: 30px; overflow-y: auto; transition: 0.35s; z-index: 10000; }
-        .admin-panel.show { right: 0; }
-        .label { display: block; margin-bottom: 8px; font-size: 14px; color: var(--accent-gold); }
-        .input { width: 100%; height: 50px; background: rgba(255,255,255,0.05); border: 1px solid var(--accent-gold-dim); border-radius: 12px; color: white; padding: 0 15px; margin-bottom: 20px; outline: none; }
-        .button { width: 100%; height: 50px; border-radius: 12px; border: none; cursor: pointer; font-weight: 700; margin-bottom: 10px; color: white; transition: 0.2s; }
-        .add-btn { background: linear-gradient(90deg, #d4af37, #b8860b); }
-        .add-btn:hover { opacity: 0.9; transform: scale(0.98); }
-        .download-btn { background: rgba(255,255,255,0.1); }
+        /* Header & Toggle */
+        .main { width: 100%; max-width: 1400px; margin: auto; padding: 60px 24px; }
+        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; flex-wrap: wrap; gap: 20px; }
+        .title-main { font-size: clamp(40px, 8vw, 80px); font-weight: 800; }
+        .title-sub { display: block; font-family: "Cinzel", serif; font-size: 20px; color: var(--accent-gold); letter-spacing: 4px; }
         
-        .bookmark-item { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; margin-bottom: 10px; border: 1px solid rgba(214, 190, 110, 0.1); }
-        .small-btn { padding: 6px 15px; border-radius: 8px; border: none; cursor: pointer; margin-right: 5px; color: white; font-size: 13px; font-weight: 600; }
+        .mode-toggle { padding: 10px 20px; border-radius: 12px; border: 1px solid var(--accent-gold-dim); background: var(--card-bg); color: var(--text-main); cursor: pointer; font-weight: 600; font-size: 16px; }
 
-        @media (max-width: 600px) {
-            .admin-panel { width: 100%; }
-        }
+        /* Cards */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }
+        .card { background: var(--card-bg); border-radius: 28px; border: 1px solid var(--accent-gold-dim); transition: 0.3s; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        .card:hover { transform: translateY(-8px); border-color: var(--accent-gold); box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .card-link { display: block; padding: 30px; text-decoration: none; color: inherit; }
+        .icon-circle { width: 60px; height: 60px; border-radius: 18px; background: var(--accent-gold-dim); display: flex; align-items: center; justify-content: center; font-size: 30px; margin-bottom: 20px; }
+        .card-title { font-size: 32px; font-weight: 800; margin-bottom: 8px; }
+        .card-desc { color: var(--text-dim); font-size: 16px; line-height: 1.5; }
+
+        /* Admin Panel (加大版) */
+        .admin-btn { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: var(--card-bg); border: 1px solid var(--accent-gold-dim); color: var(--text-main); font-size: 28px; cursor: pointer; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .admin-panel { position: fixed; top: 0; right: -100%; width: 100%; max-width: 500px; height: 100vh; background: var(--panel-bg); border-left: 1px solid var(--accent-gold-dim); padding: 40px 30px; overflow-y: auto; transition: 0.4s; z-index: 10000; color: var(--text-main); }
+        .admin-panel.show { right: 0; }
+        .input { width: 100%; height: 60px; background: rgba(128,128,128,0.05); border: 1px solid var(--accent-gold-dim); border-radius: 12px; color: var(--text-main); padding: 0 20px; font-size: 18px; margin-bottom: 20px; outline: none; }
+        .icon-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 20px; }
+        .icon-opt { aspect-ratio: 1; border-radius: 12px; border: 1px solid var(--accent-gold-dim); display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; }
+        .icon-opt.active { background: var(--accent-gold); color: white; border-color: var(--accent-gold); }
+        .add-btn { width: 100%; height: 60px; border-radius: 12px; border: none; background: var(--accent-gold); color: white; font-weight: 800; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div class="mucha-frame">
-    <div class="corner tl"></div><div class="corner tr"></div>
-    <div class="corner bl"></div><div class="corner br"></div>
-</div>
+<div class="mucha-frame"><div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div></div>
 <div class="stars" id="stars"></div>
-
-<button class="admin-btn" onclick="openAdmin()">⚙️</button>
 
 <div class="main">
     <div class="header">
-        <div class="title-main">中正診所</div>
-        <div class="title-sub">PORTAL SYSTEM</div>
-        <div class="clock" id="clock">00:00:00</div>
-        <div class="date" id="date"></div>
+        <div>
+            <div class="title-main">中正診所</div>
+            <span class="title-sub">PORTAL SYSTEM</span>
+        </div>
+        <button class="mode-toggle" onclick="toggleTheme()" id="themeBtn">切換日間模式 ☀️</button>
     </div>
     <div class="grid" id="grid"></div>
 </div>
 
+<button class="admin-btn" onclick="openAdmin()">⚙️</button>
+
 <div class="admin-panel" id="adminPanel">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
-        <h2 style="color: var(--accent-gold);">管理模式</h2>
-        <button onclick="closeAdmin()" style="background:none; border:none; color:white; font-size:24px; cursor:pointer;">✕</button>
+        <h2 style="font-size:28px;">管理模式</h2>
+        <button onclick="closeAdmin()" style="background:none; border:none; color:var(--text-main); font-size:32px; cursor:pointer;">✕</button>
     </div>
     
-    <label class="label">網站名稱</label>
-    <input id="title" class="input" placeholder="例如：健保 VPN">
+    <label>網站名稱</label><input id="title" class="input" placeholder="例如：健保 VPN">
+    <label>網址 (URL)</label><input id="url" class="input" placeholder="https://...">
+    <label>選擇圖示</label><div class="icon-grid" id="iconPicker"></div>
     
-    <label class="label">網址 (URL)</label>
-    <input id="url" class="input" placeholder="https://...">
-    
-    <button class="button add-btn" id="saveBtn" onclick="addWebsite()">保存網站</button>
-    <button class="button download-btn" onclick="downloadJSON()">下載備份 (JSON)</button>
-    
-    <hr style="opacity:0.1; margin:20px 0;">
-    <h3 style="margin-bottom: 15px;">目前書籤清單</h3>
-    <div id="bookmarkList"></div>
+    <button class="add-btn" id="saveBtn" onclick="addWebsite()">保存網站</button>
+    <div id="bookmarkList" style="margin-top:30px;"></div>
 </div>
 
 <script>
-    // 密碼 720750 的 Base64
-    const _K = "NzIwNzUw";
+    // SHA-256 指紋 (720750)
+    const _H = "8227b6c507a2a6b7e6417539c36d2c416e9196b653245053f3e786b6a22287b3";
 
-    // 初始資料
-    let websites = [
-        { title: "健保 VPN", url: "https://www.nhi.gov.tw/", icon: "🩺", description: "健保相關內部系統" },
-        { title: "nIIS 系統", url: "https://medvpn.mohw.gov.tw/", icon: "💉", description: "疫苗與醫療資訊管理" }
+    let websites = JSON.parse(localStorage.getItem('clinic_links')) || [
+        { title: "健保 VPN", url: "https://www.nhi.gov.tw/", icon: "🩺", description: "健保內部系統入口" },
+        { title: "nIIS 系統", url: "https://medvpn.mohw.gov.tw/", icon: "💉", description: "疫苗與醫療資訊系統" }
     ];
 
+    const iconPool = ["🩺", "💉", "💊", "📋", "🏥", "🧬", "🧠", "🦷", "💻", "🔒", "✨"];
+    let selectedIcon = "✨";
     let editingIndex = null;
 
-    // 核心渲染函數：負責把資料畫到畫面上
+    // 日夜模式切換
+    function toggleTheme() {
+        const doc = document.documentElement;
+        const current = doc.getAttribute('data-theme');
+        const next = current === 'dark' ? 'light' : 'dark';
+        doc.setAttribute('data-theme', next);
+        localStorage.setItem('portal_theme', next);
+        updateThemeBtn(next);
+    }
+
+    function updateThemeBtn(theme) {
+        document.getElementById('themeBtn').innerText = theme === 'dark' ? '切換日間模式 ☀️' : '切換深夜模式 🌙';
+    }
+
+    // 初始化主題
+    const savedTheme = localStorage.getItem('portal_theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    updateThemeBtn(savedTheme);
+
+    // 管理密碼 (SHA-256)
+    async function openAdmin() {
+        const pass = prompt("請輸入管理金鑰");
+        if (!pass) return;
+        const msgBuffer = new TextEncoder().encode(pass);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+        const hashHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+
+        if (hashHex === _H) document.getElementById("adminPanel").classList.add("show");
+        else alert("驗證失敗");
+    }
+
+    function closeAdmin() { document.getElementById("adminPanel").classList.remove("show"); editingIndex = null; }
+
+    function renderIcons() {
+        const picker = document.getElementById("iconPicker");
+        picker.innerHTML = "";
+        iconPool.forEach(icon => {
+            const div = document.createElement("div");
+            div.className = `icon-opt ${icon === selectedIcon ? 'active' : ''}`;
+            div.innerText = icon;
+            div.onclick = () => { selectedIcon = icon; renderIcons(); };
+            picker.appendChild(div);
+        });
+    }
+
     function render() {
-        // 1. 渲染首頁卡片
+        localStorage.setItem('clinic_links', JSON.stringify(websites));
         const grid = document.getElementById("grid");
         grid.innerHTML = "";
-        websites.forEach((item) => {
-            const card = document.createElement("div");
-            card.className = "card";
-            card.innerHTML = `
-                <a class="card-link" href="${item.url}" target="_blank">
-                    <div class="icon">${item.icon}</div>
-                    <div class="card-title">${item.title}</div>
-                    <div class="card-desc">${item.description}</div>
-                </a>`;
-            grid.appendChild(card);
+        websites.forEach(item => {
+            grid.innerHTML += `<div class="card"><a class="card-link" href="${item.url}" target="_blank"><div class="icon-circle">${item.icon}</div><div class="card-title">${item.title}</div><div class="card-desc">${item.description}</div></a></div>`;
         });
 
-        // 2. 渲染管理清單
         const list = document.getElementById("bookmarkList");
         list.innerHTML = "";
         websites.forEach((item, index) => {
-            const div = document.createElement("div");
-            div.className = "bookmark-item";
-            div.innerHTML = `
-                <div style="font-weight:bold; margin-bottom:4px;">${item.icon} ${item.title}</div>
-                <div style="font-size:11px; opacity:0.5; margin-bottom:12px; word-break:break-all;">${item.url}</div>
-                <div style="display:flex; gap:8px;">
-                    <button class="small-btn" style="background:#4a5568" onclick="editWebsite(${index})">修改</button>
-                    <button class="small-btn" style="background:#c53030" onclick="deleteWebsite(${index})">刪除</button>
-                </div>`;
-            list.appendChild(div);
+            list.innerHTML += `<div style="background:rgba(128,128,128,0.1); padding:15px; border-radius:12px; margin-bottom:10px;">
+                <b>${item.icon} ${item.title}</b><br>
+                <button onclick="editWebsite(${index})" style="margin-top:10px; padding:5px 10px; border-radius:6px; border:none; background:#4a5568; color:white;">修改</button>
+                <button onclick="deleteWebsite(${index})" style="margin-top:10px; padding:5px 10px; border-radius:6px; border:none; background:#c53030; color:white;">刪除</button>
+            </div>`;
         });
     }
 
-    // 新增或修改網站
     function addWebsite() {
-        const titleInput = document.getElementById("title");
-        const urlInput = document.getElementById("url");
-        const title = titleInput.value.trim();
-        const url = urlInput.value.trim();
-
-        if (!title || !url) {
-            alert("請輸入標題與網址");
-            return;
-        }
-
-        if (editingIndex !== null) {
-            // 修改模式
-            websites[editingIndex].title = title;
-            websites[editingIndex].url = url;
-            editingIndex = null;
-            document.getElementById("saveBtn").innerText = "保存網站";
-            alert("已修改成功 ✨");
-        } else {
-            // 新增模式
-            websites.push({
-                title: title,
-                url: url,
-                icon: "✨",
-                description: "自訂快速連結入口"
-            });
-            alert("已成功新增 ✨");
-        }
-
-        titleInput.value = "";
-        urlInput.value = "";
-        render(); // 關鍵：更新完資料立刻重新渲染畫面
+        const t = document.getElementById("title").value.trim();
+        const u = document.getElementById("url").value.trim();
+        if (!t || !u) return;
+        if (editingIndex !== null) websites[editingIndex] = { ...websites[editingIndex], title: t, url: u, icon: selectedIcon };
+        else websites.push({ title: t, url: u, icon: selectedIcon, description: "快速連結" });
+        document.getElementById("title").value = "";
+        document.getElementById("url").value = "";
+        render();
+        alert("已更新");
     }
 
-    // 進入修改模式
-    function editWebsite(index) {
-        editingIndex = index;
-        const item = websites[index];
+    function editWebsite(i) {
+        editingIndex = i;
+        const item = websites[i];
         document.getElementById("title").value = item.title;
         document.getElementById("url").value = item.url;
-        document.getElementById("saveBtn").innerText = "確認修改";
-        
-        // 捲動到上方方便輸入
+        selectedIcon = item.icon;
+        renderIcons();
         document.getElementById("adminPanel").scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // 刪除網站
-    function deleteWebsite(index) {
-        if (confirm("確定要刪除這個網站連結嗎？")) {
-            websites.splice(index, 1);
-            render();
-        }
+    function deleteWebsite(i) { if (confirm("刪除嗎？")) { websites.splice(i, 1); render(); } }
+
+    // 初始化星空
+    const stars = document.getElementById("stars");
+    for (let i = 0; i < 100; i++) {
+        const s = document.createElement("div");
+        s.className = "star";
+        s.style.left = Math.random() * 100 + "%";
+        s.style.top = Math.random() * 100 + "%";
+        s.style.animationDelay = Math.random() * 5 + "s";
+        stars.appendChild(s);
     }
 
-    // 管理模式開關
-    function openAdmin() {
-        const pass = prompt("請輸入管理金鑰");
-        if (btoa(pass) === _K) {
-            document.getElementById("adminPanel").classList.add("show");
-        } else {
-            alert("驗證失敗，請檢查密碼。");
-        }
-    }
-
-    function closeAdmin() {
-        document.getElementById("adminPanel").classList.remove("show");
-        editingIndex = null;
-        document.getElementById("saveBtn").innerText = "保存網站";
-        document.getElementById("title").value = "";
-        document.getElementById("url").value = "";
-    }
-
-    // 下載 JSON 備份
-    function downloadJSON() {
-        const data = JSON.stringify(websites, null, 2);
-        const blob = new Blob([data], { type: "application/json" });
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = "portal_backup.json";
-        a.click();
-    }
-
-    // 星空背景初始化
-    const starsContainer = document.getElementById("stars");
-    for (let i = 0; i < 120; i++) {
-        const star = document.createElement("div");
-        star.className = "star";
-        star.style.left = Math.random() * 100 + "%";
-        star.style.top = Math.random() * 100 + "%";
-        star.style.animationDelay = Math.random() * 5 + "s";
-        starsContainer.appendChild(star);
-    }
-
-    // 時鐘更新
-    function updateClock() {
-        const now = new Date();
-        document.getElementById("clock").innerText = now.toLocaleTimeString("zh-TW", { hour12: false });
-        document.getElementById("date").innerText = now.toLocaleDateString("zh-TW", {
-            year: "numeric", month: "long", day: "numeric", weekday: "long"
-        });
-    }
-
-    setInterval(updateClock, 1000);
-    updateClock();
-    render(); // 頁面載入時執行第一次渲染
+    renderIcons();
+    render();
 </script>
-
 </body>
 </html>
-
-```
