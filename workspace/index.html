@@ -196,7 +196,7 @@ body{
     font-size:15px;
 }
 
-/* 齒輪 */
+/* 管理按鈕 */
 
 .admin-btn{
 
@@ -227,6 +227,14 @@ body{
     1px solid rgba(139,92,246,.28);
 
     backdrop-filter:blur(18px);
+
+    transition:.25s;
+}
+
+.admin-btn:hover{
+
+    transform:
+    rotate(90deg);
 }
 
 /* Grid */
@@ -262,10 +270,6 @@ body{
 
     overflow:hidden;
 
-    text-decoration:none;
-
-    color:white;
-
     min-height:320px;
 
     backdrop-filter:blur(18px);
@@ -277,6 +281,15 @@ body{
 
     transform:
     translateY(-8px);
+}
+
+.card-link{
+
+    text-decoration:none;
+
+    color:white;
+
+    display:block;
 }
 
 .card-top{
@@ -359,6 +372,50 @@ body{
     letter-spacing:2px;
 
     font-size:14px;
+}
+
+/* 卡片控制 */
+
+.card-controls{
+
+    position:absolute;
+
+    top:20px;
+    right:20px;
+
+    display:flex;
+
+    gap:8px;
+
+    z-index:10;
+}
+
+.control-btn{
+
+    width:42px;
+    height:42px;
+
+    border:none;
+
+    border-radius:12px;
+
+    cursor:pointer;
+
+    color:white;
+
+    font-size:16px;
+}
+
+.edit-btn{
+
+    background:
+    rgba(255,255,255,.08);
+}
+
+.delete-btn{
+
+    background:
+    rgba(255,80,80,.18);
 }
 
 /* Admin Panel */
@@ -551,7 +608,7 @@ body{
 
 <div class="stars" id="stars"></div>
 
-<!-- 齒輪 -->
+<!-- 管理 -->
 
 <button
 class="admin-btn"
@@ -589,7 +646,7 @@ onclick="openAdmin()">
             class="clock"
             id="clock">
 
-                --:--
+                --:--:--
 
             </div>
 
@@ -665,7 +722,7 @@ id="adminPanel">
     class="button add-btn"
     onclick="addWebsite()">
 
-        新增網站
+        新增 / 修改網站
 
     </button>
 
@@ -720,7 +777,8 @@ function updateClock(){
     "zh-TW",
     {
         hour:"2-digit",
-        minute:"2-digit"
+        minute:"2-digit",
+        second:"2-digit"
     });
 
     document
@@ -779,6 +837,8 @@ let websites = [
 
 ];
 
+let editingIndex = null;
+
 /* ===== render ===== */
 
 const grid =
@@ -788,46 +848,69 @@ function renderCards(){
 
     grid.innerHTML = "";
 
-    websites.forEach(item => {
+    websites.forEach((item,index) => {
 
         const card =
-        document.createElement("a");
+        document.createElement("div");
 
         card.className = "card";
-
-        card.href = item.url;
-
-        card.target = "_blank";
 
         card.innerHTML =
 
         `
-        <div class="card-top">
+        <a
+        class="card-link"
+        href="${item.url}"
+        target="_blank">
 
-            <div class="icon">
-                ${item.icon}
+            <div class="card-top">
+
+                <div class="icon">
+                    ${item.icon}
+                </div>
+
+                <div class="tag">
+                    ${item.tag}
+                </div>
+
             </div>
 
-            <div class="tag">
-                ${item.tag}
+            <div class="card-title">
+                ${item.title}
             </div>
 
-        </div>
+            <div class="card-url">
+                ${item.url}
+            </div>
 
-        <div class="card-title">
-            ${item.title}
-        </div>
+            <div class="card-desc">
+                ${item.description}
+            </div>
 
-        <div class="card-url">
-            ${item.url}
-        </div>
+            <div class="open">
+                OPEN →
+            </div>
 
-        <div class="card-desc">
-            ${item.description}
-        </div>
+        </a>
 
-        <div class="open">
-            OPEN →
+        <div class="card-controls">
+
+            <button
+            class="control-btn edit-btn"
+            onclick="editWebsite(${index})">
+
+                ✏️
+
+            </button>
+
+            <button
+            class="control-btn delete-btn"
+            onclick="deleteWebsite(${index})">
+
+                🗑️
+
+            </button>
+
         </div>
         `;
 
@@ -867,7 +950,7 @@ function closeAdmin(){
     .remove("show");
 }
 
-/* ===== 新增 ===== */
+/* ===== 新增 / 修改 ===== */
 
 function addWebsite(){
 
@@ -890,14 +973,36 @@ function addWebsite(){
         return;
     }
 
-    websites.push({
+    /* 修改 */
 
-        title:title,
-        url:url,
-        icon:"✨",
-        tag:"LINK",
-        description:"自訂網站入口"
-    });
+    if(editingIndex !== null){
+
+        websites[editingIndex].title =
+        title;
+
+        websites[editingIndex].url =
+        url;
+
+        editingIndex = null;
+
+        alert("已修改 ✨");
+    }
+
+    /* 新增 */
+
+    else{
+
+        websites.push({
+
+            title:title,
+            url:url,
+            icon:"✨",
+            tag:"LINK",
+            description:"自訂網站入口"
+        });
+
+        alert("已新增 ✨");
+    }
 
     renderCards();
 
@@ -908,11 +1013,51 @@ function addWebsite(){
     document
     .getElementById("url")
     .value = "";
-
-    alert("已新增 ✨");
 }
 
-/* ===== 下載 JSON ===== */
+/* ===== 編輯 ===== */
+
+function editWebsite(index){
+
+    const item =
+    websites[index];
+
+    document
+    .getElementById("title")
+    .value =
+    item.title;
+
+    document
+    .getElementById("url")
+    .value =
+    item.url;
+
+    editingIndex =
+    index;
+
+    openAdmin();
+}
+
+/* ===== 刪除 ===== */
+
+function deleteWebsite(index){
+
+    const confirmDelete =
+    confirm("確定刪除？");
+
+    if(!confirmDelete){
+
+        return;
+    }
+
+    websites.splice(index,1);
+
+    renderCards();
+
+    alert("已刪除");
+}
+
+/* ===== JSON ===== */
 
 function downloadJSON(){
 
