@@ -679,36 +679,9 @@ updateClock,
 1000
 );
 
-/* ===== 模擬資料 ===== */
-/* 之後會改成 data.json */
+/* ===== 資料 ===== */
 
-const websites = [
-
-    {
-        title:"健保 VPN",
-        category:"醫療系統",
-        icon:"🩺",
-        url:"https://example.com",
-        description:"VPN 與診所系統入口"
-    },
-
-    {
-        title:"員工班表",
-        category:"排班",
-        icon:"📅",
-        url:"https://example.com",
-        description:"班表查詢與管理"
-    },
-
-    {
-        title:"Google Drive",
-        category:"行政",
-        icon:"🧾",
-        url:"https://drive.google.com",
-        description:"診所文件與共用資料"
-    }
-
-];
+let websites = [];
 
 /* render */
 
@@ -766,7 +739,36 @@ function renderCards(data){
     });
 }
 
-renderCards(websites);
+/* ===== 讀取 data.json ===== */
+
+async function loadData(){
+
+    try{
+
+        const response =
+        await fetch("data.json");
+
+        websites =
+        await response.json();
+
+        renderCards(websites);
+
+    }catch(err){
+
+        grid.innerHTML =
+
+        `
+        <div style="
+            color:white;
+            font-size:20px;
+        ">
+            無法讀取 data.json 😭
+        </div>
+        `;
+    }
+}
+
+loadData();
 
 /* 搜尋 */
 
@@ -788,6 +790,12 @@ document
         ||
 
         item.description
+        .toLowerCase()
+        .includes(keyword)
+
+        ||
+
+        item.category
         .toLowerCase()
         .includes(keyword)
     );
