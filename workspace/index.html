@@ -30,17 +30,24 @@
 
         .main { width: 100%; max-width: 1400px; margin: auto; padding: 20px; }
         
-        .header { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 30px; border-bottom: 4px solid var(--accent-secondary); padding-bottom: 20px; gap: 15px; }
-        @media (min-width: 768px) {
-            .header { flex-direction: row; justify-content: space-between; align-items: flex-end; text-align: left; padding: 40px 0 20px; }
+        /* 調整標題區塊：改為垂直排列並置中 */
+        .header { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            text-align: center; 
+            margin-bottom: 30px; 
+            border-bottom: 4px solid var(--accent-secondary); 
+            padding: 40px 0 20px; 
+            gap: 15px; 
         }
 
         .title-group { display: flex; flex-direction: column; }
         .title-main { font-size: clamp(40px, 8vw, 70px); font-weight: 900; line-height: 1.1; }
         .title-sub { font-size: clamp(16px, 3vw, 24px); color: var(--accent-primary); font-weight: 800; letter-spacing: 4px; }
         
+        /* 時間區塊：置於標題下方 */
         .clock-area { display: flex; flex-direction: column; align-items: center; }
-        @media (min-width: 768px) { .clock-area { align-items: flex-end; } }
 
         .clock { font-size: clamp(50px, 10vw, 85px); font-weight: 900; color: var(--accent-primary); line-height: 1; }
         .date-display { font-size: clamp(18px, 4vw, 32px); font-weight: 800; margin-top: 5px; color: var(--text-sub); }
@@ -64,10 +71,12 @@
         .card-title { font-size: 28px; font-weight: 900; color: var(--accent-primary); margin-bottom: 8px; letter-spacing: -0.5px; line-height: 1.2; }
         .card-desc { font-size: 16px; font-weight: 700; color: var(--text-sub); line-height: 1.4; }
 
-        /* 管理面板樣式 */
+        /* 管理面板樣式 (維持原樣) */
         .admin-panel { position: fixed; top: 0; right: -100%; width: 90%; max-width: 450px; height: 100vh; background: #fff; border-left: 8px solid var(--accent-primary); padding: 25px; overflow-y: auto; transition: 0.4s; z-index: 2000; color: #000; }
         .admin-panel.show { right: 0; }
         .input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 10px; font-size: 16px; margin-bottom: 12px; }
+        .emoji-picker { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px; background: #f1f5f9; padding: 10px; border-radius: 10px; }
+        .emoji-item { font-size: 24px; cursor: pointer; text-align: center; padding: 8px; background: #fff; border-radius: 8px; border: 1px solid #e2e8f0; }
         .btn { width: 100%; padding: 15px; font-weight: 900; font-size: 18px; border: none; border-radius: 10px; cursor: pointer; margin-bottom: 10px; }
         .save-btn { background: var(--accent-primary); color: white; }
         .admin-btn { position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px; border-radius: 50%; background: var(--card-bg); border: 2px solid var(--accent-primary); font-size: 24px; cursor: pointer; opacity: 0.2; z-index: 1000; }
@@ -102,15 +111,31 @@
         <h2 style="font-size:24px; font-weight:900;">管理面板</h2>
         <button onclick="closeAdmin()" style="font-size:30px; border:none; background:none; cursor:pointer;">✕</button>
     </div>
-    <p style="margin-bottom:15px; font-weight:700; color:var(--text-sub);">您可以新增自訂連結</p>
+    
+    <label>分類</label>
+    <select id="linkCategory" class="input">
+        <option value="primary">主要入口</option>
+        <option value="secondary">次要工具</option>
+    </select>
+
+    <label>快速選擇圖示</label>
+    <div class="emoji-picker" id="emojiPicker"></div>
+    <input id="linkIcon" class="input" readonly placeholder="點擊上方圖示">
+
     <input id="linkTitle" class="input" placeholder="網站名稱">
     <input id="linkUrl" class="input" placeholder="網址 (https://)">
+    <input id="linkDesc" class="input" placeholder="次標題/說明文字">
+    
     <button class="btn save-btn" id="saveBtn" onclick="saveLink()">保存設定</button>
+    <button class="btn" style="background:#64748b; color:white;" onclick="resetForm()">取消修改</button>
+
+    <div id="manageList" style="margin-top:20px; border-top: 2px solid #eee; padding-top: 15px;"></div>
 </div>
 
 <script>
-    // 密碼的 SHA-256 哈希值（對應 720750）
     const _PH = "8227b6c507a2a6b7e6417539c36d2c416e9196b653245053f3e786b6a22287b3";
+    const emojis = ["🩺", "💉", "🏥", "💊", "☁️", "📦", "💻", "🔍", "📋", "🏠", "🧪", "📁", "🧬", "📅", "🔔", "✉️"];
+    let editingId = null;
 
     async function sha256(message) {
         const msgUint8 = new TextEncoder().encode(message);
@@ -125,9 +150,8 @@
         const hash = await sha256(pass);
         if (hash === _PH) {
             document.getElementById("adminPanel").classList.add("show");
-        } else {
-            alert("密碼錯誤");
-        }
+            renderManageList();
+        } else { alert("密碼錯誤"); }
     }
 
     const coreLinks = {
@@ -151,17 +175,49 @@
 
     let userLinks = JSON.parse(localStorage.getItem('cz_user_links_v3')) || { primary: [], secondary: [] };
 
+    // 初始化 Emoji 選擇器
+    const picker = document.getElementById('emojiPicker');
+    emojis.forEach(e => {
+        const div = document.createElement('div');
+        div.className = 'emoji-item';
+        div.innerText = e;
+        div.onclick = () => {
+            document.querySelectorAll('.emoji-item').forEach(i => i.classList.remove('selected'));
+            div.classList.add('selected');
+            document.getElementById('linkIcon').value = e;
+        };
+        picker.appendChild(div);
+    });
+
+    function saveLink() {
+        const cat = document.getElementById("linkCategory").value;
+        const title = document.getElementById("linkTitle").value.trim();
+        const url = document.getElementById("linkUrl").value.trim();
+        const desc = document.getElementById("linkDesc").value.trim();
+        const icon = document.getElementById("linkIcon").value || "🩺";
+
+        if (!title || !url) return alert("名稱與網址必填");
+
+        if (editingId) {
+            let found = false;
+            ['primary', 'secondary'].forEach(c => {
+                coreLinks[c].forEach(l => { if (l.id === editingId) { l.title = title; l.url = url; l.desc = desc; l.icon = icon; found = true; } });
+            });
+            if (!found) {
+                userLinks[cat].forEach(l => { if (l.id === editingId) { l.title = title; l.url = url; l.desc = desc; l.icon = icon; } });
+            }
+        } else {
+            userLinks[cat].push({ id: 'u' + Date.now(), title, url, desc, icon });
+        }
+
+        localStorage.setItem('cz_user_links_v3', JSON.stringify(userLinks));
+        resetForm(); render(); renderManageList();
+    }
+
     function render() {
         const fn = (l) => `<div class="card"><a class="card-link" href="${l.url}" target="_blank"><span class="icon-box">${l.icon}</span><div class="card-title">${l.title}</div><div class="card-desc">${l.desc}</div></a></div>`;
         document.getElementById("primaryGrid").innerHTML = [...coreLinks.primary, ...userLinks.primary].map(fn).join('');
         document.getElementById("secondaryGrid").innerHTML = [...coreLinks.secondary, ...userLinks.secondary].map(fn).join('');
-    }
-
-    function toggleTheme() {
-        const doc = document.documentElement;
-        const next = doc.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-        doc.setAttribute('data-theme', next);
-        document.getElementById('themeBtn').innerText = next === 'light' ? '切換至夜間模式 🌙' : '切換至日間模式 ☀️';
     }
 
     function updateClock() {
@@ -171,7 +227,27 @@
         document.getElementById("date").innerText = `(民${y-1911}) ${y}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')}`;
     }
 
-    function closeAdmin() { document.getElementById("adminPanel").classList.remove("show"); }
+    function toggleTheme() {
+        const doc = document.documentElement;
+        const next = doc.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+        doc.setAttribute('data-theme', next);
+        document.getElementById('themeBtn').innerText = next === 'light' ? '切換至夜間模式 🌙' : '切換至日間模式 ☀️';
+    }
+
+    function resetForm() {
+        editingId = null;
+        document.getElementById("linkTitle").value = ""; document.getElementById("linkUrl").value = "";
+        document.getElementById("linkDesc").value = ""; document.getElementById("linkIcon").value = "";
+        document.getElementById("saveBtn").innerText = "保存設定";
+    }
+
+    function renderManageList() {
+        const list = document.getElementById("manageList");
+        const all = [...coreLinks.primary, ...coreLinks.secondary, ...userLinks.primary, ...userLinks.secondary];
+        list.innerHTML = all.map(l => `<div style="padding:5px 0;">${l.icon} ${l.title}</div>`).join('');
+    }
+
+    function closeAdmin() { document.getElementById("adminPanel").classList.remove("show"); resetForm(); }
 
     setInterval(updateClock, 1000); updateClock(); render();
 </script>
