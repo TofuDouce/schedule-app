@@ -1,166 +1,146 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" data-theme="dark">
+<html lang="zh-Hant" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>中正診所 Portal</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Cinzel:wght@600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;800&display=swap" rel="stylesheet">
 
     <style>
-        :root[data-theme="dark"] {
-            --bg-grad: linear-gradient(180deg, #060816, #0c1224);
-            --card-bg: rgba(16, 22, 40, 0.9);
-            --accent-gold: #d4af37;
-            --accent-gold-dim: rgba(214, 190, 110, 0.3);
-            --text-main: #ffffff;
-            --text-dim: rgba(226, 232, 240, 0.7);
-            --panel-bg: #0c1224;
-            --star-opacity: 0.4;
+        /* 針對高齡友善優化：高對比顏色設定 */
+        :root[data-theme="light"] {
+            --bg-grad: #f8fafc;
+            --card-bg: #ffffff;
+            --accent-primary: #0284c7; /* 明亮的藍色 */
+            --accent-gold: #b45309;   /* 深金色，確保對比 */
+            --text-main: #0f172a;     /* 極深藍，接近黑 */
+            --text-sub: #1e293b;      /* 清晰的次要文字 */
+            --border-color: #cbd5e1;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
 
-        :root[data-theme="light"] {
-            --bg-grad: linear-gradient(180deg, #f0f4f8, #e2e8f0);
-            --card-bg: #ffffff;
-            --accent-gold: #0ea5e9;
-            --accent-gold-dim: rgba(14, 165, 233, 0.2);
-            --text-main: #1e293b;
-            --text-dim: #64748b;
-            --panel-bg: #ffffff;
-            --star-opacity: 0;
+        :root[data-theme="dark"] {
+            --bg-grad: #0f172a;
+            --card-bg: #1e293b;
+            --accent-primary: #38bdf8;
+            --accent-gold: #fbbf24;
+            --text-main: #f8fafc;
+            --text-sub: #e2e8f0;
+            --border-color: #334155;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { min-height: 100vh; background: var(--bg-grad); color: var(--text-main); font-family: "Inter", "Microsoft JhengHei", sans-serif; transition: 0.3s; overflow-x: hidden; }
+        body { min-height: 100vh; background: var(--bg-grad); color: var(--text-main); font-family: "Inter", "Microsoft JhengHei", sans-serif; transition: 0.3s; padding-bottom: 50px; }
 
-        /* 裝飾框與背景 */
-        .mucha-frame { position: fixed; inset: 12px; pointer-events: none; z-index: 999; border: 1px solid var(--accent-gold-dim); border-radius: 30px; }
-        .corner { position: absolute; width: 60px; height: 60px; border: 1px solid var(--accent-gold-dim); }
-        .tl { top:-1px; left:-1px; border-radius: 30px 0 0 0; border-right:none; border-bottom:none; }
-        .tr { top:-1px; right:-1px; border-radius: 0 30px 0 0; border-left:none; border-bottom:none; }
-        .bl { bottom:-1px; left:-1px; border-radius: 0 0 0 30px; border-right:none; border-top:none; }
-        .br { bottom:-1px; right:-1px; border-radius: 0 0 30px 0; border-left:none; border-top:none; }
-
-        .stars { position: fixed; inset: 0; z-index: -1; opacity: var(--star-opacity); transition: 0.5s; }
-        .star { position: absolute; width: 2px; height: 2px; background: white; border-radius: 50%; animation: twinkle 5s infinite; }
-        @keyframes twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
-
-        .main { width: 100%; max-width: 1600px; margin: auto; padding: 40px 24px; }
+        .main { width: 100%; max-width: 1400px; margin: auto; padding: 30px 20px; }
         
-        /* 標題與時間佈局：電腦版並排 */
-        .header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: flex-end; 
-            margin-bottom: 40px; 
-            flex-wrap: wrap; 
-            gap: 20px; 
-        }
+        /* 標題區塊 */
+        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; flex-wrap: wrap; gap: 20px; border-bottom: 3px solid var(--accent-primary); padding-bottom: 20px; }
+        .title-main { font-size: 56px; font-weight: 800; color: var(--text-main); }
+        .title-sub { font-size: 24px; color: var(--accent-gold); letter-spacing: 2px; font-weight: 600; }
         
-        .title-group { flex: 1; min-width: 250px; }
-        .title-main { font-size: clamp(36px, 6vw, 64px); font-weight: 800; line-height: 1.1; }
-        .title-sub { display: block; font-family: "Cinzel", serif; font-size: 18px; color: var(--accent-gold); letter-spacing: 4px; margin-top: 5px; }
-        
-        .clock-area { text-align: right; }
-        .clock { font-size: clamp(40px, 8vw, 60px); font-weight: 800; line-height: 1; }
-        .date-display { font-size: 18px; color: var(--text-dim); font-weight: 600; margin-top: 5px; letter-spacing: 1px; }
+        .clock-area { text-align: right; min-width: 300px; }
+        .clock { font-size: 64px; font-weight: 800; color: var(--accent-primary); line-height: 1; }
+        .date-display { font-size: 26px; font-weight: 800; margin-top: 10px; color: var(--text-sub); }
 
-        .mode-toggle { padding: 10px 20px; border-radius: 12px; border: 1px solid var(--accent-gold-dim); background: var(--card-bg); color: var(--text-main); cursor: pointer; font-weight: 600; transition: 0.2s; margin-top: 15px; }
-
-        /* 書籤卡片佈局：電腦版 5 欄 */
-        .grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
-            gap: 20px; 
+        /* 切換按鈕放大 */
+        .mode-toggle { 
+            margin-top: 20px; padding: 15px 30px; font-size: 22px; font-weight: 800; 
+            border-radius: 15px; border: 3px solid var(--accent-primary); 
+            background: var(--card-bg); color: var(--accent-primary); cursor: pointer; 
         }
 
-        @media (min-width: 1300px) {
-            .grid { grid-template-columns: repeat(5, 1fr); }
-        }
+        /* 分區標題 */
+        .section-title { font-size: 32px; font-weight: 800; margin: 40px 0 20px; padding-left: 15px; border-left: 8px solid var(--accent-gold); color: var(--text-main); }
 
-        .card { background: var(--card-bg); border-radius: 24px; border: 1px solid var(--accent-gold-dim); transition: 0.3s; height: 100%; }
-        .card:hover { transform: translateY(-5px); border-color: var(--accent-gold); box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+        /* Grid 佈局：電腦版 5 欄 */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 25px; }
+        @media (min-width: 1300px) { .grid { grid-template-columns: repeat(5, 1fr); } }
+
+        /* 卡片放大設計 */
+        .card { background: var(--card-bg); border-radius: 20px; border: 2px solid var(--border-color); box-shadow: var(--shadow); transition: 0.2s; height: 100%; }
+        .card:hover { transform: scale(1.03); border-color: var(--accent-primary); }
         .card-link { display: block; padding: 25px; text-decoration: none; color: inherit; }
-        .icon-circle { width: 56px; height: 56px; border-radius: 18px; background: var(--accent-gold-dim); display: flex; align-items: center; justify-content: center; font-size: 28px; margin-bottom: 15px; }
-        .card-title { font-size: 24px; font-weight: 800; margin-bottom: 6px; }
-        .card-desc { color: var(--text-dim); font-size: 15px; line-height: 1.4; }
+        .card-title { font-size: 28px; font-weight: 800; margin-bottom: 10px; color: var(--accent-primary); line-height: 1.2; }
+        .card-desc { font-size: 18px; font-weight: 600; color: var(--text-sub); line-height: 1.4; }
 
         @media (max-width: 768px) {
-            .header { flex-direction: column; align-items: flex-start; }
-            .clock-area { text-align: left; margin-top: 10px; }
-            .grid { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+            .header { flex-direction: column; text-align: center; align-items: center; }
+            .clock-area { text-align: center; }
+            .title-main { font-size: 48px; }
         }
 
-        /* 管理面板樣式 */
-        .admin-btn { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: var(--card-bg); border: 1px solid var(--accent-gold-dim); color: var(--text-main); font-size: 28px; cursor: pointer; z-index: 1000; box-shadow: 0 4px 20px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; }
-        .admin-panel { position: fixed; top: 0; right: -100%; width: 100%; max-width: 450px; height: 100vh; background: var(--panel-bg); border-left: 1px solid var(--accent-gold-dim); padding: 30px; overflow-y: auto; transition: 0.4s; z-index: 10000; color: var(--text-main); }
-        .admin-panel.show { right: 0; }
-        
-        .admin-label { display: block; margin: 15px 0 5px; font-weight: 600; color: var(--accent-gold); }
-        .input { width: 100%; height: 55px; background: rgba(128,128,128,0.05); border: 1px solid var(--accent-gold-dim); border-radius: 12px; color: var(--text-main); padding: 0 15px; font-size: 16px; margin-bottom: 10px; outline: none; }
-        
-        .icon-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 20px; }
-        .icon-opt { aspect-ratio: 1; border-radius: 10px; border: 1px solid var(--accent-gold-dim); display: flex; align-items: center; justify-content: center; font-size: 22px; cursor: pointer; }
-        .icon-opt.active { background: var(--accent-gold); color: white; border-color: var(--accent-gold); }
-        
-        .save-btn { width: 100%; height: 55px; border-radius: 12px; border: none; background: var(--accent-gold); color: white; font-weight: 800; cursor: pointer; font-size: 16px; }
+        /* 管理模式 */
+        .admin-btn { position: fixed; bottom: 20px; right: 20px; width: 70px; height: 70px; border-radius: 50%; background: #475569; color: white; font-size: 30px; border: none; cursor: pointer; opacity: 0.5; }
+        .admin-btn:hover { opacity: 1; }
     </style>
 </head>
 <body>
-
-<div class="mucha-frame"><div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div></div>
-<div class="stars" id="stars"></div>
 
 <div class="main">
     <div class="header">
         <div class="title-group">
             <div class="title-main">中正診所</div>
-            <span class="title-sub">PORTAL SYSTEM</span>
+            <div class="title-sub">PORTAL SYSTEM</div>
         </div>
         <div class="clock-area">
             <div class="clock" id="clock">00:00:00</div>
             <div class="date-display" id="date">載入中...</div>
-            <button class="mode-toggle" onclick="toggleTheme()" id="themeBtn">切換模式 ☀️</button>
+            <button class="mode-toggle" onclick="toggleTheme()" id="themeBtn">切換至夜間模式 🌙</button>
         </div>
     </div>
-    <div class="grid" id="grid"></div>
+
+    <div class="section-title">主要入口</div>
+    <div class="grid" id="primaryGrid"></div>
+
+    <div class="section-title">次要工具</div>
+    <div class="grid" id="secondaryGrid"></div>
 </div>
 
 <button class="admin-btn" onclick="openAdmin()">⚙️</button>
 
-<div class="admin-panel" id="adminPanel">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <h2 style="font-size:24px;">管理模式</h2>
-        <button onclick="closeAdmin()" style="background:none; border:none; color:var(--text-main); font-size:28px; cursor:pointer;">✕</button>
-    </div>
-    
-    <span class="admin-label">網站名稱</span>
-    <input id="title" class="input" placeholder="例如：健保 VPN">
-    
-    <span class="admin-label">網址 (URL)</span>
-    <input id="url" class="input" placeholder="https://...">
-    
-    <span class="admin-label">選擇圖示</span>
-    <div class="icon-grid" id="iconPicker"></div>
-    
-    <button class="save-btn" id="saveBtn" onclick="addWebsite()">保存網站</button>
-    
-    <hr style="opacity:0.1; margin:25px 0;">
-    <h3 style="margin-bottom: 15px;">目前書籤清單</h3>
-    <div id="bookmarkList"></div>
-</div>
-
 <script>
-    // 預設雜湊值
-    const _H = "8227b6c507a2a6b7e6417539c36d2c416e9196b653245053f3e786b6a22287b3";
-
-    let websites = JSON.parse(localStorage.getItem('clinic_links')) || [
-        { title: "健保 VPN", url: "https://www.nhi.gov.tw/", icon: "🩺", description: "健保內部系統入口" },
-        { title: "nIIS 系統", url: "https://medvpn.mohw.gov.tw/", icon: "💉", description: "疫苗與醫療資訊系統" }
+    // 預先設定好的書籤清單
+    const primaryLinks = [
+        { title: "中正診所 HIS", url: "https://webhis.vision.com.tw/88336/login", desc: "門診系統登入" },
+        { title: "VPN 健保系統", url: "https://medvpn.nhi.gov.tw/iwse0000/IWSE0001S01.aspx", desc: "健保資訊網服務系統" },
+        { title: "智慧防疫物資", url: "https://smis.cdc.gov.tw/SMIS/Default.aspx", desc: "每週一需登入 (SMIS)" },
+        { title: "雲端查詢系統", url: "https://medcloud2.nhi.gov.tw/imu/IMUE1000/", desc: "健保醫療資訊雲端查詢" },
+        { title: "NIIS 系統", url: "https://10.241.219.42/Login.aspx", desc: "預防接種管理子系統" }
     ];
 
-    const iconPool = ["🩺", "💉", "💊", "📋", "🏥", "🧬", "🧠", "🦷", "💻", "🔒", "✨", "📅", "🍎", "🔥"];
-    let selectedIcon = "✨";
-    let editingIndex = null;
+    const secondaryLinks = [
+        { title: "亞東轉診掛號", url: "https://www.femh.org.tw/webregs/HClinicLogin.aspx", desc: "亞東醫院轉診服務" },
+        { title: "亞東轉診查詢", url: "https://hos.femh.org.tw/hosmanplatform/login.aspx", desc: "掛號結果查詢" },
+        { title: "台灣醫品平台", url: "https://manage.healthleader.com.tw/Account/Login?ReturnUrl=%2F", desc: "醫品平台登入" },
+        { title: "家醫大平台", url: "https://medqfm.nhi.gov.tw/health-ui/#/login", desc: "健保家醫照護" },
+        { title: "Paxlovid 比對", url: "https://depart.femh.org.tw/meta/paxsearch.htm?0.08336732489988208", desc: "商品名比對交互作用" },
+        { title: "腎絲球過濾率", url: "https://www.tckdf.org.tw/Main/CKDEPI?scr=0&age=0&gender=0", desc: "eGFR 計算工具" }
+    ];
+
+    function render() {
+        const pGrid = document.getElementById("primaryGrid");
+        const sGrid = document.getElementById("secondaryGrid");
+        
+        pGrid.innerHTML = primaryLinks.map(link => `
+            <div class="card">
+                <a class="card-link" href="${link.url}" target="_blank">
+                    <div class="card-title">${link.title}</div>
+                    <div class="card-desc">${link.desc}</div>
+                </a>
+            </div>
+        `).join('');
+
+        sGrid.innerHTML = secondaryLinks.map(link => `
+            <div class="card">
+                <a class="card-link" href="${link.url}" target="_blank">
+                    <div class="card-title">${link.title}</div>
+                    <div class="card-desc">${link.desc}</div>
+                </a>
+            </div>
+        `).join('');
+    }
 
     function updateClock() {
         const now = new Date();
@@ -175,140 +155,15 @@
 
     function toggleTheme() {
         const doc = document.documentElement;
-        const next = doc.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        const isLight = doc.getAttribute('data-theme') === 'light';
+        const next = isLight ? 'dark' : 'light';
         doc.setAttribute('data-theme', next);
-        localStorage.setItem('portal_theme', next);
-        document.getElementById('themeBtn').innerText = next === 'dark' ? '切換模式 ☀️' : '切換模式 🌙';
+        document.getElementById('themeBtn').innerText = next === 'light' ? '切換至夜間模式 🌙' : '切換至日間模式 ☀️';
     }
 
-    // 終極修復版驗證函數
-    async function openAdmin() {
-        let pass = prompt("請輸入管理金鑰");
-        if (!pass) return;
-        pass = pass.trim();
-
-        // 備案機制：如果環境不支援加密 API，直接比對明文
-        if (!window.crypto || !window.crypto.subtle) {
-            if (pass === "720750") {
-                enterAdmin();
-            } else {
-                alert("驗證失敗");
-            }
-            return;
-        }
-
-        try {
-            const msgBuffer = new TextEncoder().encode(pass);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-            const hashHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
-
-            if (hashHex === _H || pass === "720750") { // 雙重檢查確保 720750 必過
-                enterAdmin();
-            } else {
-                alert("驗證失敗，請檢查密碼是否正確");
-            }
-        } catch (e) {
-            if (pass === "720750") enterAdmin();
-            else alert("驗證發生錯誤");
-        }
-    }
-
-    function enterAdmin() {
-        document.getElementById("adminPanel").classList.add("show");
-        renderIcons();
-    }
-
-    function closeAdmin() { 
-        document.getElementById("adminPanel").classList.remove("show"); 
-        editingIndex = null;
-        document.getElementById("saveBtn").innerText = "保存網站";
-    }
-
-    function renderIcons() {
-        const picker = document.getElementById("iconPicker");
-        picker.innerHTML = "";
-        iconPool.forEach(icon => {
-            const div = document.createElement("div");
-            div.className = `icon-opt ${icon === selectedIcon ? 'active' : ''}`;
-            div.innerText = icon;
-            div.onclick = () => { selectedIcon = icon; renderIcons(); };
-            picker.appendChild(div);
-        });
-    }
-
-    function render() {
-        localStorage.setItem('clinic_links', JSON.stringify(websites));
-        const grid = document.getElementById("grid");
-        grid.innerHTML = "";
-        websites.forEach(item => {
-            grid.innerHTML += `
-                <div class="card">
-                    <a class="card-link" href="${item.url}" target="_blank">
-                        <div class="icon-circle">${item.icon}</div>
-                        <div class="card-title">${item.title}</div>
-                        <div class="card-desc">${item.description}</div>
-                    </a>
-                </div>`;
-        });
-
-        const list = document.getElementById("bookmarkList");
-        list.innerHTML = "";
-        websites.forEach((item, index) => {
-            list.innerHTML += `
-                <div style="background:rgba(128,128,128,0.1); padding:12px; border-radius:12px; margin-bottom:10px;">
-                    <b style="font-size:16px;">${item.icon} ${item.title}</b>
-                    <div style="margin-top:8px;">
-                        <button onclick="editWebsite(${index})" style="padding:5px 10px; border-radius:6px; border:none; background:#4a5568; color:white; cursor:pointer; font-size:12px;">修改</button>
-                        <button onclick="deleteWebsite(${index})" style="padding:5px 10px; border-radius:6px; border:none; background:#c53030; color:white; cursor:pointer; font-size:12px; margin-left:5px;">刪除</button>
-                    </div>
-                </div>`;
-        });
-    }
-
-    function addWebsite() {
-        const t = document.getElementById("title").value.trim();
-        const u = document.getElementById("url").value.trim();
-        if (!t || !u) return alert("請填寫完整資訊");
-
-        if (editingIndex !== null) {
-            websites[editingIndex] = { ...websites[editingIndex], title: t, url: u, icon: selectedIcon };
-            editingIndex = null;
-            document.getElementById("saveBtn").innerText = "保存網站";
-        } else {
-            websites.push({ title: t, url: u, icon: selectedIcon, description: "快速連結" });
-        }
-        
-        document.getElementById("title").value = "";
-        document.getElementById("url").value = "";
-        render();
-        alert("已更新成功！");
-    }
-
-    function editWebsite(i) {
-        editingIndex = i;
-        const item = websites[i];
-        document.getElementById("title").value = item.title;
-        document.getElementById("url").value = item.url;
-        selectedIcon = item.icon;
-        renderIcons();
-        document.getElementById("saveBtn").innerText = "確認修改";
-        document.getElementById("adminPanel").scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function deleteWebsite(i) { if (confirm("確定刪除此網站？")) { websites.splice(i, 1); render(); } }
-
-    const savedTheme = localStorage.getItem('portal_theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    document.getElementById('themeBtn').innerText = savedTheme === 'dark' ? '切換模式 ☀️' : '切換模式 🌙';
-
-    const stars = document.getElementById("stars");
-    for (let i = 0; i < 80; i++) {
-        const s = document.createElement("div");
-        s.className = "star";
-        s.style.left = Math.random() * 100 + "%";
-        s.style.top = Math.random() * 100 + "%";
-        s.style.animationDelay = Math.random() * 5 + "s";
-        stars.appendChild(s);
+    function openAdmin() {
+        const pass = prompt("管理密碼");
+        if (pass === "720750") alert("目前為快速存取模式，如需新增書籤請告知助理更新程式碼。");
     }
 
     setInterval(updateClock, 1000);
