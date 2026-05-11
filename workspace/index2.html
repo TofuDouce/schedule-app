@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中正診所 Portal</title>
+<meta name="robots" content="noindex,nofollow">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Cinzel:wght@500;600&display=swap" rel="stylesheet">
+
+<style>
+/* 診所新配色變數 */
+:root {
+    --bg-color: #f8fafc; /* 極淺灰藍背景 */
+    --primary-mint: #2dd4bf; /* 醫療綠 */
+    --secondary-blue: #0ea5e9; /* 專業藍 */
+    --text-main: #1e293b; /* 深灰文字 */
+    --text-sub: #64748b; /* 淺灰文字 */
+    --card-bg: #ffffff;
+    --accent-gold: rgba(190, 157, 110, 0.2); /* 輕奢金邊框 */
+}
+
+*{ margin:0; padding:0; box-sizing:border-box; }
+
+html, body {
+    min-height: 100%;
+    background: var(--bg-color);
+    color: var(--text-main);
+    font-family: "Inter", "Microsoft JhengHei", sans-serif;
+}
+
+/* =========================
+   古典邊框 (配色優化)
+========================= */
+.mucha-frame {
+    position: fixed;
+    inset: 14px;
+    pointer-events: none;
+    z-index: 9999;
+    border: 2px solid var(--accent-gold);
+    border-radius: 34px;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.02);
+}
+
+.corner {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    border: 1px solid var(--accent-gold);
+}
+.tl { top:-1px; left:-1px; border-radius:34px 0 0 0; border-right:none; border-bottom:none; }
+.tr { top:-1px; right:-1px; border-radius:0 34px 0 0; border-left:none; border-bottom:none; }
+.bl { bottom:-1px; left:-1px; border-radius:0 0 0 34px; border-right:none; border-top:none; }
+.br { bottom:-1px; right:-1px; border-radius:0 0 34px 0; border-left:none; border-top:none; }
+
+/* =========================
+   Header 樣式
+========================= */
+.main { width: 100%; max-width: 1400px; margin: auto; padding: 60px 40px; }
+.title-main { font-size: clamp(48px, 8vw, 80px); font-weight: 700; color: var(--secondary-blue); }
+.title-sub { display: block; font-family: "Cinzel", serif; font-size: 24px; color: var(--text-sub); letter-spacing: 4px; }
+
+.clock { font-size: 60px; font-weight: 700; color: var(--text-main); margin-top: 20px; }
+.date { color: var(--primary-mint); font-weight: 600; font-size: 20px; }
+
+/* =========================
+   卡片樣式 (改為明亮潔淨)
+========================= */
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; margin-top: 50px; }
+
+.card {
+    background: var(--card-bg);
+    border-radius: 24px;
+    border: 1px solid rgba(0,0,0,0.05);
+    transition: 0.3s;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+.card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+.card-link { display: block; padding: 30px; text-decoration: none; color: inherit; }
+
+.icon {
+    width: 60px; height: 60px; border-radius: 18px;
+    background: #f0fdfa; border: 1px solid #ccfbf1;
+    display: flex; align-items: center; justify-content: center; font-size: 28px;
+}
+
+.card-title { font-size: 32px; font-weight: 700; margin: 15px 0 10px; color: #334155; }
+.card-desc { color: var(--text-sub); font-size: 16px; line-height: 1.6; }
+
+/* 管理按鈕隱藏與樣式 */
+.admin-btn {
+    position: fixed; bottom: 30px; right: 30px;
+    width: 50px; height: 50px; border-radius: 50%;
+    background: white; border: 1px solid #e2e8f0;
+    cursor: pointer; opacity: 0.3; transition: 0.3s;
+}
+.admin-btn:hover { opacity: 1; }
+
+/* Admin Panel 改色... (略，與主色調一致) */
+.admin-panel { position: fixed; top: 0; right: -460px; width: 400px; height: 100vh; background: white; box-shadow: -5px 0 15px rgba(0,0,0,0.1); padding: 30px; transition: 0.3s; z-index: 10000; color: #334155;}
+.admin-panel.show { right: 0; }
+.input { width: 100%; height: 45px; margin-bottom: 15px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; }
+.add-btn { background: var(--secondary-blue); color: white; border: none; padding: 10px; width: 100%; border-radius: 8px; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<div class="mucha-frame">
+    <div class="corner tl"></div><div class="corner tr"></div>
+    <div class="corner bl"></div><div class="corner br"></div>
+</div>
+
+<div class="main">
+    <div class="header">
+        <div class="title">
+            <div class="title-main">中正診所</div>
+            <span class="title-sub">MEDICAL PORTAL</span>
+        </div>
+        <div class="clock" id="clock">00:00:00</div>
+        <div class="date" id="date"></div>
+    </div>
+    <div class="grid" id="grid"></div>
+</div>
+
+<button class="admin-btn" onclick="openAdmin()">⚙️</button>
+
+<div class="admin-panel" id="adminPanel">
+    <h3>管理模式</h3><br>
+    <input id="title" class="input" placeholder="網站標題">
+    <input id="url" class="input" placeholder="https://">
+    <button class="add-btn" onclick="addWebsite()">新增網站</button>
+    <br><br>
+    <button onclick="closeAdmin()" style="width:100%; padding:10px; border:none; border-radius:8px;">關閉</button>
+</div>
+
+<script>
+/* 密碼隱藏：使用 Base64 編碼，避免原始碼直接看到數字 */
+const _ENC_PW = "NzIwNzUw"; // 這是 720750 的 Base64 編碼
+
+function openAdmin(){
+    const pass = prompt("請輸入管理金鑰");
+    // btoa 是把輸入轉成 Base64 再比對
+    if(btoa(pass) !== _ENC_PW){
+        alert("驗證失敗");
+        return;
+    }
+    document.getElementById("adminPanel").classList.add("show");
+}
+
+function closeAdmin(){
+    document.getElementById("adminPanel").classList.remove("show");
+}
+
+/* 時間與資料處理邏輯同前，僅修改 renderCards 的 HTML 模板配色 */
+let websites = [
+    { title:"健保 VPN", url:"https://www.nhi.gov.tw/", icon:"🩺", description:"健保相關入口網站" },
+    { title:"nIIS 系統", url:"https://medvpn.mohw.gov.tw/", icon:"💉", description:"疫苗與醫療資訊系統" }
+];
+
+function renderCards(){
+    const grid = document.getElementById("grid");
+    grid.innerHTML = "";
+    websites.forEach(item => {
+        grid.innerHTML += `
+            <div class="card">
+                <a class="card-link" href="${item.url}" target="_blank">
+                    <div class="icon">${item.icon}</div>
+                    <div class="card-title">${item.title}</div>
+                    <div class="card-desc">${item.description}</div>
+                </a>
+            </div>
+        `;
+    });
+}
+
+function updateClock(){
+    const now = new Date();
+    document.getElementById("clock").innerText = now.toLocaleTimeString("zh-TW", {hour12:false});
+    document.getElementById("date").innerText = now.toLocaleDateString("zh-TW", {year:"numeric", month:"long", day:"numeric", weekday:"long"});
+}
+
+setInterval(updateClock, 1000);
+updateClock();
+renderCards();
+</script>
+</body>
+</html>
