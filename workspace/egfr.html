@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eGFR 計算工具 | 中正診所</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;900&display=swap" rel="stylesheet">
+    <style>
+        :root[data-theme="light"] {
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --accent-primary: #0ea5e9; 
+            --accent-secondary: #10b981; 
+            --text-main: #0f172a;     
+            --text-sub: #475569;      
+            --border-color: #e2e8f0;
+        }
+        :root[data-theme="dark"] {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-primary: #38bdf8;
+            --accent-secondary: #34d399;
+            --text-main: #ffffff;
+            --text-sub: #cbd5e1;
+            --border-color: #334155;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            min-height: 100vh; 
+            background-color: var(--bg-color); 
+            color: var(--text-main); 
+            font-family: "Inter", "Microsoft JhengHei", sans-serif; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            transition: 0.3s;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            flex: 1; /* 讓容器撐開，使 footer 留在底部 */
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            font-weight: 900;
+            color: var(--accent-primary);
+            margin-bottom: 10px;
+        }
+
+        .formula-note {
+            font-size: 14px;
+            color: var(--text-sub);
+            background: var(--card-bg);
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 30px;
+            border: 2px solid var(--border-color);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .label {
+            display: block;
+            font-size: 18px;
+            font-weight: 900;
+            margin-bottom: 10px;
+            color: var(--text-main);
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 15px;
+            font-size: 20px;
+            border-radius: 12px;
+            border: 2px solid var(--border-color);
+            background: var(--bg-color);
+            color: var(--text-main);
+            outline: none;
+            transition: 0.2s;
+        }
+
+        .input-field:focus {
+            border-color: var(--accent-primary);
+        }
+
+        .radio-container {
+            display: flex;
+            gap: 20px;
+        }
+
+        .radio-option {
+            flex: 1;
+            position: relative;
+        }
+
+        .radio-option input {
+            display: none;
+        }
+
+        .radio-label {
+            display: block;
+            padding: 15px;
+            text-align: center;
+            background: var(--bg-color);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 900;
+            transition: 0.2s;
+        }
+
+        .radio-option input:checked + .radio-label {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+
+        .calc-btn {
+            width: 100%;
+            padding: 20px;
+            font-size: 22px;
+            font-weight: 900;
+            color: white;
+            background: var(--accent-secondary);
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .calc-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .result-box {
+            display: none;
+            margin-top: 30px;
+            text-align: center;
+            padding: 25px;
+            border-radius: 20px;
+            background: linear-gradient(145deg, #e0f2fe, #f0f9ff);
+            border: 2px solid var(--accent-primary);
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-title { font-size: 18px; font-weight: 800; color: var(--text-sub); margin-bottom: 10px; }
+        .result-value { font-size: 60px; font-weight: 900; color: var(--accent-primary); line-height: 1; }
+        .result-unit { font-size: 16px; font-weight: 700; color: var(--text-sub); margin-top: 10px; }
+
+        .theme-toggle {
+            margin-top: 30px;
+            background: none;
+            border: 1px solid var(--text-sub);
+            color: var(--text-sub);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 20px;
+            text-decoration: none;
+            color: var(--accent-primary);
+            font-weight: 800;
+        }
+
+        /* 署名樣式 */
+        .footer {
+            margin-top: 50px;
+            padding: 20px 0;
+            text-align: center;
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--text-sub);
+            letter-spacing: 1px;
+        }
+
+        .footer span {
+            color: var(--accent-primary);
+        }
+
+        [data-theme="dark"] .result-box {
+            background: #0c4a6e;
+            border-color: var(--accent-primary);
+        }
+        [data-theme="dark"] .result-value { color: #fff; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <a href="javascript:history.back()" class="back-btn">← 返回 Portal</a>
+    
+    <div class="header">
+        <h1>eGFR 計算器</h1>
+        <div class="formula-note">依據 2021 CKD-EPI (Creatinine) 公式</div>
+    </div>
+
+    <div class="card">
+        <div class="input-group">
+            <label class="label">血清肌酸酐 (Scr) <span style="font-size:14px; font-weight:normal;">mg/dL</span></label>
+            <input type="number" id="scr" class="input-field" placeholder="0.00" step="0.01" autofocus>
+        </div>
+
+        <div class="input-group">
+            <label class="label">病患年齡 <span style="font-size:14px; font-weight:normal;">Age</span></label>
+            <input type="number" id="age" class="input-field" placeholder="輸入歲數">
+        </div>
+
+        <div class="input-group">
+            <label class="label">病患性別</label>
+            <div class="radio-container">
+                <div class="radio-option">
+                    <input type="radio" name="gender" id="male" value="male" checked>
+                    <label for="male" class="radio-label">男性</label>
+                </div>
+                <div class="radio-option">
+                    <input type="radio" name="gender" id="female" value="female">
+                    <label for="female" class="radio-label">女性</label>
+                </div>
+            </div>
+        </div>
+
+        <button class="calc-btn" onclick="calculate()">觀看計算結果</button>
+
+        <div id="resultBox" class="result-box">
+            <div class="result-title">預估腎絲球過濾率</div>
+            <div id="egfrVal" class="result-value">--</div>
+            <div class="result-unit">mL/min/1.73m²</div>
+        </div>
+    </div>
+
+    <center>
+        <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙 切換模式</button>
+    </center>
+</div>
+
+<footer class="footer">
+    Made with ✨ by <span>中正小幫手</span>
+</footer>
+
+<script>
+    function calculate() {
+        const scr = parseFloat(document.getElementById('scr').value);
+        const age = parseInt(document.getElementById('age').value);
+        const isFemale = document.getElementById('female').checked;
+
+        if (isNaN(scr) || isNaN(age)) {
+            alert("請填寫正確的 Scr 與年齡數值");
+            return;
+        }
+
+        // 2021 CKD-EPI 公式參數
+        const k = isFemale ? 0.7 : 0.9;
+        const alpha = isFemale ? -0.241 : -0.302;
+        const genderFactor = isFemale ? 1.012 : 1.0;
+
+        const scrK = scr / k;
+        
+        // 公式：142 * min(Scr/k, 1)^alpha * max(Scr/k, 1)^-1.200 * 0.9938^Age * GenderFactor
+        const val = 142 
+            * Math.pow(Math.min(scrK, 1), alpha) 
+            * Math.pow(Math.max(scrK, 1), -1.200) 
+            * Math.pow(0.9938, age) 
+            * genderFactor;
+
+        const resultBox = document.getElementById('resultBox');
+        const egfrVal = document.getElementById('egfrVal');
+        
+        egfrVal.innerText = val.toFixed(1);
+        resultBox.style.display = 'block';
+
+        // 自動捲動到結果
+        resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function toggleTheme() {
+        const doc = document.documentElement;
+        const isDark = doc.getAttribute('data-theme') === 'dark';
+        const next = isDark ? 'light' : 'dark';
+        doc.setAttribute('data-theme', next);
+        document.getElementById('themeBtn').innerText = next === 'light' ? '🌙 切換模式' : '☀️ 切換模式';
+    }
+
+    // 監聽 Enter 鍵
+    document.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') { calculate(); }
+    });
+</script>
+
+</body>
+</html>
