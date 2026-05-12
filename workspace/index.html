@@ -30,11 +30,10 @@
             --card-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
 
-        /* --- 強制設定排列與字體變數 --- */
         :root {
             --dynamic-title-size: 28px;
             --dynamic-desc-size: 18px;
-            --grid-cols: 4; /* 強制預設 4 張 */
+            --grid-cols: 4;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -70,7 +69,7 @@
         .title-sub { font-size: 16px; color: var(--accent-primary); font-weight: 700; letter-spacing: 3px; margin-top: 5px; }
         
         .clock-area { text-align: right; }
-        .clock { font-size: clamp(32px, 5vw, 52px); font-weight: 900; color: var(--accent-primary); line-height: 1; }
+        .clock { font-size: clamp(32px, 5vw, 52px); font-weight: 900; color: var(--accent-primary); line-height: 1; font-variant-numeric: tabular-nums; }
         .date-display { font-size: 18px; font-weight: 700; color: var(--text-sub); margin-top: 4px; }
 
         .main { width: 100%; max-width: 1600px; margin: auto; padding: 180px 30px 100px; }
@@ -81,7 +80,6 @@
             color: var(--accent-primary);
         }
         
-        /* 改為強制排列，不讓瀏覽器自動判斷 */
         .grid { 
             display: grid; 
             grid-template-columns: repeat(var(--grid-cols, 4), 1fr); 
@@ -89,7 +87,6 @@
             width: 100%;
         }
 
-        /* 僅在手機等極小螢幕才變回 2 列 */
         @media (max-width: 800px) { 
             .grid { grid-template-columns: repeat(2, 1fr); } 
         }
@@ -111,32 +108,27 @@
         .card-link { display: block; padding: 40px 30px; text-decoration: none; color: inherit; text-align: center; }
         .icon-box { font-size: 60px; margin-bottom: 20px; display: block; }
         
-        .card-title { 
-            font-size: var(--dynamic-title-size); 
-            font-weight: 900; color: var(--accent-primary); margin-bottom: 12px; 
-        }
-        .card-desc { 
-            font-size: var(--dynamic-desc-size); 
-            font-weight: 700; color: var(--text-sub); line-height: 1.5; 
-        }
+        .card-title { font-size: var(--dynamic-title-size); font-weight: 900; color: var(--accent-primary); margin-bottom: 12px; }
+        .card-desc { font-size: var(--dynamic-desc-size); font-weight: 700; color: var(--text-sub); line-height: 1.5; }
 
-        body.admin-mode .card-actions { display: flex; }
-        .card-actions { position: absolute; top: 15px; right: 15px; display: none; gap: 8px; z-index: 10; }
-        .action-btn { padding: 8px 12px; border-radius: 10px; font-size: 14px; border: none; cursor: pointer; font-weight: bold; }
-        .edit-btn { background: #eab308; color: white; }
-        .del-btn { background: #ef4444; color: white; }
+        /* 這裡移除主畫面卡片上的編輯按鈕，改為全部在側邊欄管理 */
+        .card-actions { display: none; }
 
         .controls { position: fixed; bottom: 30px; right: 30px; display: flex; gap: 20px; z-index: 1000; }
         .ctrl-btn { 
             width: 70px; height: 70px; border-radius: 50%; 
             background: var(--card-bg); border: 3px solid var(--accent-secondary); 
             font-size: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center; 
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-            backdrop-filter: blur(10px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15); backdrop-filter: blur(10px);
         }
 
-        /* --- 管理面板 --- */
-        .admin-panel { position: fixed; top: 0; right: -100%; width: 95%; max-width: 500px; height: 100vh; background: var(--card-bg); backdrop-filter: blur(25px); border-left: 8px solid var(--accent-primary); padding: 40px; overflow-y: auto; transition: 0.4s; z-index: 2000; color: var(--text-main); }
+        /* --- 管理面板 (保留原本在右邊的設計) --- */
+        .admin-panel { 
+            position: fixed; top: 0; right: -100%; width: 95%; max-width: 500px; height: 100vh; 
+            background: var(--card-bg); backdrop-filter: blur(25px); 
+            border-left: 8px solid var(--accent-primary); padding: 40px; 
+            overflow-y: auto; transition: 0.4s; z-index: 2000; color: var(--text-main); 
+        }
         .admin-panel.show { right: 0; }
         .admin-panel h2 { font-size: 28px; margin-bottom: 20px; border-bottom: 2px solid var(--accent-secondary); padding-bottom: 10px; }
         .admin-panel label { font-size: 18px; font-weight: 700; display: block; margin-top: 15px; margin-bottom: 5px; }
@@ -145,12 +137,23 @@
         .emoji-picker { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; background: rgba(255,255,255,0.4); padding: 10px; border-radius: 15px; }
         .emoji-item { font-size: 28px; cursor: pointer; text-align: center; padding: 8px; background: white; border-radius: 10px; border: 1px solid #e2e8f0; }
         
-        /* 樣式設定區 */
         .style-config { background: rgba(2, 132, 199, 0.1); padding: 20px; border-radius: 20px; margin-bottom: 30px; border: 1px dashed var(--accent-primary); }
         .slider-info { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 5px; }
 
         .btn { width: 100%; padding: 18px; font-size: 20px; font-weight: 900; border: none; border-radius: 15px; cursor: pointer; margin-bottom: 10px; }
         .save-btn { background: var(--accent-primary); color: white; }
+
+        /* --- 新增：管理清單樣式 --- */
+        .user-link-item { 
+            background: rgba(255,255,255,0.5); padding: 15px; border-radius: 15px; 
+            margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
+            border: 1px solid var(--border-color);
+        }
+        .user-link-info { display: flex; align-items: center; gap: 10px; }
+        .user-link-btns { display: flex; gap: 5px; }
+        .mini-btn { padding: 5px 10px; border-radius: 8px; font-size: 14px; border: none; cursor: pointer; color: white; font-weight: bold; }
+        .mini-edit { background: #eab308; }
+        .mini-del { background: #ef4444; }
     </style>
 </head>
 <body id="bodyRoot">
@@ -185,9 +188,8 @@
         <button onclick="closeAdmin()" style="font-size:30px; border:none; background:none; cursor:pointer;">✕</button>
     </div>
 
-    <!-- 介面樣式設定 -->
     <div class="style-config">
-        <h3 style="margin-bottom:15px; font-size:18px;">🎨 顯示設定 (強制排列)</h3>
+        <h3 style="margin-bottom:15px; font-size:18px;">🎨 顯示設定</h3>
         <div style="margin-bottom:15px;">
             <div class="slider-info"><span>卡片標題大小</span><span id="titleSizeText">28px</span></div>
             <input type="range" id="titleSlider" min="16" max="60" value="28" style="width:100%" oninput="applyUIStyle()">
@@ -208,6 +210,7 @@
 
     <hr style="margin-bottom: 20px; opacity: 0.2;">
 
+    <h3 style="margin-bottom:10px;">🆕 新增/修改書籤</h3>
     <input type="hidden" id="editId">
     <label>分類</label>
     <select id="linkCategory" class="input">
@@ -219,17 +222,23 @@
     <div class="emoji-picker" id="emojiPicker"></div>
     <input id="linkIcon" class="input" readonly placeholder="點選上方圖示">
     
-    <label>連結設定</label>
     <input id="linkTitle" class="input" placeholder="網站名稱">
     <input id="linkUrl" class="input" placeholder="網址 (https://...)">
     <input id="linkDesc" class="input" placeholder="簡短說明">
     
     <button class="btn save-btn" onclick="saveLink()">確認儲存連結</button>
+
+    <hr style="margin: 30px 0 20px; opacity: 0.2;">
+
+    <h3 style="margin-bottom:15px; color: var(--accent-primary);">📂 管理已新增書籤</h3>
+    <div id="userLinksManager">
+        </div>
 </div>
 
 <script>
     const emojis = ["🩺", "💉", "🏥", "💊", "☁️", "📦", "💻", "🔍", "📋", "🏠", "🧪", "📅", "🔗", "⭐", "👤", "⚙️"];
     
+    // 原始核心連結 (不可修改)
     const coreLinks = {
         primary: [
             { id: 'c1', title: "中正診所", url: "https://webhis.vision.com.tw/88336/login", desc: "門診系統登入", icon: "🩺" },
@@ -256,14 +265,11 @@
         const titleS = document.getElementById('titleSlider').value;
         const descS = document.getElementById('descSlider').value;
         const colV = document.getElementById('gridColSelect').value;
-
         document.getElementById('titleSizeText').innerText = titleS + 'px';
         document.getElementById('descSizeText').innerText = descS + 'px';
-
         document.documentElement.style.setProperty('--dynamic-title-size', titleS + 'px');
         document.documentElement.style.setProperty('--dynamic-desc-size', descS + 'px');
         document.documentElement.style.setProperty('--grid-cols', colV);
-
         uiSettings = { titleSize: titleS, descSize: descS, cols: colV };
         localStorage.setItem('cz_ui_config', JSON.stringify(uiSettings));
     }
@@ -276,8 +282,8 @@
     }
 
     function toggleAdminMode() {
-        document.getElementById('bodyRoot').classList.toggle('admin-mode');
         document.getElementById("adminPanel").classList.toggle("show");
+        renderManager(); // 開啟時同步更新管理清單
     }
 
     function saveLink() {
@@ -297,15 +303,42 @@
             userLinks[cat].push({ id: 'u' + Date.now(), title, url, desc, icon });
         }
         localStorage.setItem('cz_user_links_v4', JSON.stringify(userLinks));
-        render(); closeAdmin();
+        render(); 
+        renderManager();
+        resetForm();
+    }
+
+    // 側邊欄內的管理清單渲染
+    function renderManager() {
+        const container = document.getElementById("userLinksManager");
+        const allUserLinks = [...userLinks.primary, ...userLinks.secondary];
+        
+        if (allUserLinks.length === 0) {
+            container.innerHTML = '<p style="opacity:0.5; text-align:center;">尚無自訂書籤</p>';
+            return;
+        }
+
+        container.innerHTML = allUserLinks.map(l => `
+            <div class="user-link-item">
+                <div class="user-link-info">
+                    <span>${l.icon}</span>
+                    <strong style="font-size:16px;">${l.title}</strong>
+                </div>
+                <div class="user-link-btns">
+                    <button class="mini-btn mini-edit" onclick="editLink('${l.id}')">✏️</button>
+                    <button class="mini-btn mini-del" onclick="deleteLink('${l.id}')">🗑️</button>
+                </div>
+            </div>
+        `).join('');
     }
 
     window.deleteLink = function(id) {
-        if (!confirm("確定刪除？")) return;
+        if (!confirm("確定刪除此書籤？")) return;
         userLinks.primary = userLinks.primary.filter(l => l.id !== id);
         userLinks.secondary = userLinks.secondary.filter(l => l.id !== id);
         localStorage.setItem('cz_user_links_v4', JSON.stringify(userLinks));
         render();
+        renderManager();
     };
 
     window.editLink = function(id) {
@@ -318,25 +351,36 @@
         document.getElementById("linkDesc").value = link.desc;
         document.getElementById("linkIcon").value = link.icon;
         document.getElementById("panelTitle").innerText = "修改書籤";
-        document.getElementById("adminPanel").classList.add("show");
+        // 捲動到輸入框位置
+        document.getElementById("linkTitle").focus();
     };
 
     function render() {
-        const createCard = (l, isUser) => `
+        const createCard = (l) => `
             <div class="card">
-                ${isUser ? `<div class="card-actions"><button class="action-btn edit-btn" onclick="editLink('${l.id}')">✏️</button><button class="action-btn del-btn" onclick="deleteLink('${l.id}')">🗑️</button></div>` : ''}
                 <a class="card-link" href="${l.url}" target="_blank">
                     <span class="icon-box">${l.icon}</span>
                     <div class="card-title">${l.title}</div>
                     <div class="card-desc">${l.desc}</div>
                 </a>
             </div>`;
-        document.getElementById("primaryGrid").innerHTML = coreLinks.primary.map(l => createCard(l, false)).join('') + userLinks.primary.map(l => createCard(l, true)).join('');
-        document.getElementById("secondaryGrid").innerHTML = coreLinks.secondary.map(l => createCard(l, false)).join('') + userLinks.secondary.map(l => createCard(l, true)).join('');
+        document.getElementById("primaryGrid").innerHTML = coreLinks.primary.map(l => createCard(l)).join('') + userLinks.primary.map(l => createCard(l)).join('');
+        document.getElementById("secondaryGrid").innerHTML = coreLinks.secondary.map(l => createCard(l)).join('') + userLinks.secondary.map(l => createCard(l)).join('');
     }
 
-    function resetForm() { document.getElementById("editId").value = ""; document.getElementById("linkTitle").value = ""; document.getElementById("linkUrl").value = ""; document.getElementById("linkDesc").value = ""; document.getElementById("linkIcon").value = ""; document.getElementById("panelTitle").innerText = "新增書籤"; }
-    function closeAdmin() { document.getElementById("adminPanel").classList.remove("show"); document.getElementById('bodyRoot').classList.remove('admin-mode'); resetForm(); }
+    function resetForm() { 
+        document.getElementById("editId").value = ""; 
+        document.getElementById("linkTitle").value = ""; 
+        document.getElementById("linkUrl").value = ""; 
+        document.getElementById("linkDesc").value = ""; 
+        document.getElementById("linkIcon").value = ""; 
+        document.getElementById("panelTitle").innerText = "介面管理"; 
+    }
+    
+    function closeAdmin() { 
+        document.getElementById("adminPanel").classList.remove("show"); 
+        resetForm(); 
+    }
 
     const picker = document.getElementById('emojiPicker');
     emojis.forEach(e => {
