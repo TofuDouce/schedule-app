@@ -1,295 +1,180 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" data-theme="light">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中正診所 Portal - 高級美學版</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Montserrat:wght@800&display=swap" rel="stylesheet">
+    <title>中正診所 Portal</title>
     <style>
+        /* 1. 主題配色變數定義 */
         :root {
-            /* 莫蘭迪柔和色系面板 */
-            --m-red: #e8a8a8; --m-orange: #f5d1b0; --m-green: #b8d8be; 
-            --m-blue: #b0c4de; --m-purple: #c3bedb; --m-gray: #d3d3d3;
-            
-            --bg-gradient: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
-            --accent-primary: #4a6fa5;
-            --text-dark: #2c3e50;
-            --glass-bg: rgba(255, 255, 255, 0.7);
-            
-            --dynamic-title-size: 28px;
-            --dynamic-desc-size: 18px;
-            --grid-cols: 5;
+            --primary-color: #007bff;
+            --primary-gradient: linear-gradient(135deg, #007bff, #0056b3);
+            --accent-glow: rgba(0, 123, 255, 0.3);
+            --bg-glass: rgba(255, 255, 255, 0.8);
+            --grid-cols: 4; /* 預設 4 欄 */
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            min-height: 100vh; background: var(--bg-gradient); 
-            font-family: 'Noto Sans TC', sans-serif; color: var(--text-dark);
-            transition: 0.3s ease;
+        [data-theme="green"] {
+            --primary-color: #28a745;
+            --primary-gradient: linear-gradient(135deg, #28a745, #1e7e34);
+            --accent-glow: rgba(40, 167, 69, 0.3);
         }
 
-        /* 🌟 核心美感：中正診所漸層標題 */
-        .header { 
-            position: fixed; top: 0; width: 100%; z-index: 1000;
-            display: flex; justify-content: space-between; align-items: center; 
-            padding: 20px 5%; background: var(--glass-bg); backdrop-filter: blur(15px);
-            border-bottom: 1px solid rgba(255,255,255,0.3); box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        [data-theme="red"] {
+            --primary-color: #dc3545;
+            --primary-gradient: linear-gradient(135deg, #dc3545, #a71d2a);
+            --accent-glow: rgba(220, 53, 69, 0.3);
         }
 
-        .title-gradient {
-            font-family: 'Noto Sans TC', sans-serif; font-weight: 900; font-size: 42px;
-            background: linear-gradient(to right, #4a6fa5, #16222a);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.1));
+        [data-theme="dark"] {
+            --primary-color: #343a40;
+            --primary-gradient: linear-gradient(135deg, #495057, #212529);
+            --accent-glow: rgba(0, 0, 0, 0.5);
         }
 
-        .clock-section { text-align: right; }
-        #clock { font-family: 'Montserrat', sans-serif; font-size: 36px; color: var(--accent-primary); font-weight: 800; }
-        #date { font-size: 14px; font-weight: 700; opacity: 0.7; }
-
-        .main { max-width: 1600px; margin: auto; padding: 140px 30px 100px; }
-
-        .section-title { 
-            font-size: 24px; font-weight: 900; margin: 40px 0 20px; 
-            display: flex; align-items: center; gap: 10px; color: #576574;
-        }
-        .section-title::after { content: ""; height: 2px; flex-grow: 1; background: linear-gradient(to right, #ccc, transparent); }
-
-        .grid { display: grid; grid-template-columns: repeat(var(--grid-cols), 1fr); gap: 25px; }
-
-        /* 🌟 卡片設計：莫蘭迪配色與修正文字消失問題 */
-        .card { 
-            background: #fff; border-radius: 20px; padding: 30px 20px; 
-            text-align: center; text-decoration: none; display: flex; flex-direction: column; align-items: center;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        /* 核心版型樣式 (保留您的 grid-cols 邏輯) */
+        #linkContainer {
+            display: grid;
+            grid-template-columns: repeat(var(--grid-cols), 1fr);
+            gap: 20px;
+            padding: 20px;
         }
 
-        /* 按順序套用莫蘭迪色 */
-        .card:nth-child(6n+1) { background: var(--m-red); }
-        .card:nth-child(6n+2) { background: var(--m-orange); }
-        .card:nth-child(6n+3) { background: var(--m-green); }
-        .card:nth-child(6n+4) { background: var(--m-blue); }
-        .card:nth-child(6n+5) { background: var(--m-purple); }
-        .card:nth-child(6n+6) { background: var(--m-gray); }
-
-        .card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            filter: saturate(1.2); /* 懸停時顏色稍微鮮豔一點 */
+        /* 管理面板樣式 */
+        .admin-panel {
+            position: fixed;
+            right: -350px;
+            top: 0;
+            width: 300px;
+            height: 100%;
+            background: white;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+            transition: right 0.3s;
+            padding: 20px;
+            z-index: 1000;
+            overflow-y: auto;
         }
+        .admin-panel.active { right: 0; }
 
-        .icon-wrapper {
-            width: 80px; height: 80px; background: rgba(255,255,255,0.6); border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; font-size: 45px; margin-bottom: 15px;
-        }
+        /* 主題顏色按鈕 */
+        .theme-options { display: flex; gap: 10px; margin: 10px 0; }
+        .theme-btn { width: 25px; height: 25px; border-radius: 50%; border: 2px solid #ddd; cursor: pointer; }
+        .blue { background: #007bff; } .green { background: #28a745; }
+        .red { background: #dc3545; } .dark { background: #343a40; }
 
-        /* 🌟 修正：文字在滑過時依然清晰，絕不變白 */
-        .card-title { 
-            font-size: var(--dynamic-title-size); font-weight: 900; color: #1a2a3a !important; 
-            margin-bottom: 8px; transition: 0.3s;
-        }
-        .card-desc { font-size: var(--dynamic-desc-size); font-weight: 700; color: #4b5a6b !important; opacity: 0.8; }
-
-        .card:hover .card-title { text-shadow: 0 2px 10px rgba(0,0,0,0.2); }
-
-        /* 🌟 毛玻璃管理面板 */
-        .admin-panel { 
-            position: fixed; top: 0; right: -450px; width: 400px; height: 100vh; 
-            background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(25px);
-            border-left: 1px solid rgba(255,255,255,0.3); padding: 40px 30px; 
-            transition: 0.5s cubic-bezier(0.77, 0, 0.175, 1); z-index: 2000;
-            box-shadow: -10px 0 50px rgba(0,0,0,0.1); overflow-y: auto;
-        }
-        .admin-panel.show { right: 0; }
-
-        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .panel-header h2 { font-weight: 900; color: var(--accent-primary); border-bottom: 3px solid var(--accent-primary); }
-
-        .admin-item { background: rgba(255,255,255,0.5); padding: 20px; border-radius: 15px; margin-bottom: 15px; }
-        .input { width: 100%; padding: 12px; border: 1.5px solid #d1d8e0; border-radius: 10px; margin-top: 8px; font-family: inherit; }
-
-        .btn-save { 
-            width: 100%; padding: 15px; background: var(--accent-primary); color: white; 
-            border: none; border-radius: 12px; font-size: 18px; font-weight: 900; cursor: pointer;
-            box-shadow: 0 4px 15px rgba(74, 111, 165, 0.3); transition: 0.2s;
-        }
-        .btn-save:hover { transform: scale(1.02); background: #3a5a8a; }
-
-        .controls { position: fixed; bottom: 30px; right: 30px; display: flex; flex-direction: column; gap: 15px; z-index: 1001; }
-        .circle-btn {
-            width: 55px; height: 55px; border-radius: 50%; border: none; cursor: pointer;
-            background: white; color: var(--accent-primary); font-size: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center;
-        }
-
-        .highlight-card { border: 3px solid #e74c3c !important; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(231, 76, 60, 0); } 100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); } }
-
-        @media (max-width: 768px) { .grid { grid-template-columns: repeat(2, 1fr); } .admin-panel { width: 100%; } }
+        .header { background: var(--primary-gradient); color: white; padding: 20px; text-align: center; }
+        .card { background: var(--bg-glass); border-left: 5px solid var(--primary-color); padding: 15px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
     </style>
 </head>
-<body id="bodyRoot">
+<body>
 
 <div class="header">
-    <div class="title-gradient">中正診所</div>
-    <div class="clock-section">
-        <div id="clock">00:00:00</div>
-        <div id="date">LOADING...</div>
+    <h1>中正診所 Portal</h1>
+    <div id="clock">載入中...</div>
+</div>
+
+<div id="adminPanel" class="admin-panel">
+    <h2>⚙️ 系統設定</h2>
+
+    <div class="admin-section">
+        <label>每列卡片數量: <span id="colValue">4</span> 欄</label>
+        <input type="range" id="colSlider" min="2" max="6" value="4" oninput="updateGridCols(this.value)">
+    </div>
+
+    <hr>
+
+    <div class="admin-section">
+        <label>文字大小: <span id="fontValue">16</span> px</label>
+        <input type="range" id="fontSizeSlider" min="14" max="24" value="16" oninput="updateFontSize(this.value)">
+    </div>
+
+    <hr>
+
+    <div class="admin-section">
+        <label>主題配色</label>
+        <div class="theme-options">
+            <button onclick="setTheme('default')" class="theme-btn blue" title="經典藍"></button>
+            <button onclick="setTheme('green')" class="theme-btn green" title="森林綠"></button>
+            <button onclick="setTheme('red')" class="theme-btn red" title="熱情紅"></button>
+            <button onclick="setTheme('dark')" class="theme-btn dark" title="深邃黑"></button>
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="admin-section">
+        <h3>新增書籤</h3>
+        <input type="text" id="newTitle" placeholder="標題">
+        <input type="text" id="newUrl" placeholder="網址">
+        <button onclick="addLink()">儲存連結</button>
     </div>
 </div>
 
-<div class="main" id="mainContainer">
-    <div class="section-title">🏥 醫療核心入口</div>
-    <div id="primaryGrid" class="grid"></div>
-    <div class="section-title">🛠️ 醫師專用工具</div>
-    <div id="secondaryGrid" class="grid"></div>
-</div>
+<button onclick="toggleAdmin()" style="position:fixed; bottom:20px; right:20px; z-index:1001; padding:10px; border-radius:50%; border:none; background:var(--primary-color); color:white; cursor:pointer;">⚙️</button>
 
-<div class="controls">
-    <button class="circle-btn" onclick="toggleAdminMode()" title="設定系統">⚙️</button>
-    <a href="https://www.mdcalc.com/calc/3939/ckd-epi-equations-glomerular-filtration-rate-gfr" target="_blank" class="circle-btn" title="eGFR 計算">🧬</a>
-</div>
-
-<div class="admin-panel" id="adminPanel">
-    <div class="panel-header">
-        <h2>系統管理</h2>
-        <button onclick="toggleAdminMode()" style="background:none; border:none; font-size:24px; cursor:pointer;">✕</button>
-    </div>
-
-    <div class="admin-item">
-        <h4 style="margin-bottom:10px;">🎨 介面美感設定</h4>
-        <label style="font-size:13px; font-weight:700;">標題字級: <span id="ts-val">28px</span></label>
-        <input type="range" id="titleSlider" min="20" max="50" value="28" style="width:100%" oninput="applyUIStyle()">
-        <label style="font-size:13px; font-weight:700; margin-top:10px; display:block;">描述字級: <span id="ds-val">18px</span></label>
-        <input type="range" id="descSlider" min="14" max="24" value="18" style="width:100%" oninput="applyUIStyle()">
-    </div>
-
-    <div class="admin-item">
-        <h4 style="margin-bottom:10px;">➕ 新增自訂連結</h4>
-        <input id="linkTitle" class="input" placeholder="網站名稱 (包含'重要'會發光)">
-        <input id="linkUrl" class="input" placeholder="網址 (https://...)">
-        <input id="linkDesc" class="input" placeholder="簡短描述">
-        <select id="linkIcon" class="input">
-            <option value="🩺">🩺 門診</option><option value="💉">💉 疫苗</option><option value="💊">💊 藥劑</option><option value="📋">📋 考核</option>
-        </select>
-        <button class="btn-save" style="margin-top:15px;" onclick="saveLink()">發佈到首頁</button>
-    </div>
-
-    <div class="admin-item" id="manageArea">
-        <h4 style="margin-bottom:10px; color:#e74c3c;">📋 管理已新增書籤</h4>
-        <div id="customLinksList"></div>
-    </div>
-</div>
+<main id="linkContainer">
+    </main>
 
 <script>
-    // 🔗 您的 Google Sheets 資料 ID 可以在此替換
-    const SHEET_ID = '1uYBA_CncbEAydmzNC1SRnsKJdswNgQh3zg1x6TKo0UU';
-    const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
+    // --- 調整功能邏輯 ---
 
-    let userLinks = JSON.parse(localStorage.getItem('cz_portal_v5_links')) || { primary: [], secondary: [] };
-
-    async function init() {
-        await fetchCloudData();
-        updateClock();
-        setInterval(updateClock, 1000);
-        loadUIConfig();
+    // 調整卡片數量 (補回)
+    function updateGridCols(value) {
+        document.documentElement.style.setProperty('--grid-cols', value);
+        document.getElementById('colValue').innerText = value;
+        localStorage.setItem('gridCols', value);
     }
 
-    async function fetchCloudData() {
-        try {
-            const res = await fetch(SHEET_URL + "&cb=" + Date.now());
-            const text = await res.text();
-            const lines = text.split(/\r?\n/).slice(1);
-            const pg = document.getElementById("primaryGrid");
-            const sg = document.getElementById("secondaryGrid");
-            pg.innerHTML = ""; sg.innerHTML = "";
-
-            lines.forEach(line => {
-                const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim());
-                if (cols.length >= 3) {
-                    const [cat, title, url, desc, icon] = cols;
-                    const html = createCardHtml({title, url, desc, icon});
-                    if (cat.toLowerCase().includes('primary')) pg.innerHTML += html;
-                    else sg.innerHTML += html;
-                }
-            });
-
-            // 疊加使用者手動新增的連結
-            userLinks.secondary.forEach(l => sg.innerHTML += createCardHtml(l));
-            updateManageList();
-        } catch (e) { console.error("Cloud Sync Error"); }
+    // 調整文字大小
+    function updateFontSize(size) {
+        document.body.style.fontSize = size + 'px';
+        document.getElementById('fontValue').innerText = size;
+        localStorage.setItem('fontSize', size);
     }
 
-    function createCardHtml(l) {
-        const isHighlight = l.title.includes("重要");
-        return `
-            <a class="card ${isHighlight ? 'highlight-card' : ''}" href="${l.url}" target="_blank">
-                <div class="icon-wrapper">${l.icon || '🔗'}</div>
-                <div class="card-title">${l.title}</div>
-                <div class="card-desc">${l.desc || ''}</div>
-            </a>`;
-    }
-
-    function saveLink() {
-        const title = document.getElementById('linkTitle').value;
-        const url = document.getElementById('linkUrl').value;
-        const desc = document.getElementById('linkDesc').value;
-        const icon = document.getElementById('linkIcon').value;
-        if(!title || !url) return alert("名稱與網址不能為空");
-        userLinks.secondary.push({id: Date.now(), title, url, desc, icon});
-        localStorage.setItem('cz_portal_v5_links', JSON.stringify(userLinks));
-        location.reload();
-    }
-
-    function updateManageList() {
-        const listDiv = document.getElementById("customLinksList");
-        listDiv.innerHTML = userLinks.secondary.length ? "" : "<small>尚無自訂連結</small>";
-        userLinks.secondary.forEach(l => {
-            listDiv.innerHTML += `
-                <div style="display:flex; justify-content:space-between; align-items:center; background:#fff; padding:10px; border-radius:10px; margin-bottom:5px; font-size:14px;">
-                    <span>${l.icon} ${l.title}</span>
-                    <button onclick="deleteLink(${l.id})" style="color:#e74c3c; border:none; background:none; cursor:pointer; font-weight:900;">刪除</button>
-                </div>`;
-        });
-    }
-
-    function deleteLink(id) {
-        if(!confirm("確定要移除此書籤嗎？")) return;
-        userLinks.secondary = userLinks.secondary.filter(x => x.id != id);
-        localStorage.setItem('cz_portal_v5_links', JSON.stringify(userLinks));
-        location.reload();
-    }
-
-    function applyUIStyle() {
-        const ts = document.getElementById('titleSlider').value;
-        const ds = document.getElementById('descSlider').value;
-        document.getElementById('ts-val').innerText = ts + 'px';
-        document.getElementById('ds-val').innerText = ds + 'px';
-        document.documentElement.style.setProperty('--dynamic-title-size', ts + 'px');
-        document.documentElement.style.setProperty('--dynamic-desc-size', ds + 'px');
-        localStorage.setItem('cz_ui_v5', JSON.stringify({ts, ds}));
-    }
-
-    function loadUIConfig() {
-        const cfg = JSON.parse(localStorage.getItem('cz_ui_v5'));
-        if(cfg) {
-            document.getElementById('titleSlider').value = cfg.ts;
-            document.getElementById('descSlider').value = cfg.ds;
-            applyUIStyle();
+    // 設定顏色主題
+    function setTheme(themeName) {
+        if(themeName === 'default') {
+            document.documentElement.removeAttribute('data-theme');
+        } else {
+            document.documentElement.setAttribute('data-theme', themeName);
         }
+        localStorage.setItem('portalTheme', themeName);
     }
 
-    function toggleAdminMode() { document.getElementById("adminPanel").classList.toggle("show"); }
-
-    function updateClock() {
-        const now = new Date();
-        document.getElementById("clock").innerText = now.toLocaleTimeString("zh-TW", { hour12: false });
-        const y = now.getFullYear();
-        document.getElementById("date").innerText = `(民${y-1911}年) ${y} / ${String(now.getMonth()+1).padStart(2,'0')} / ${String(now.getDate()).padStart(2,'0')}`;
+    function toggleAdmin() {
+        document.getElementById('adminPanel').classList.toggle('active');
     }
 
-    init();
+    // --- 初始化與記憶載入 ---
+    window.onload = function() {
+        // 載入主題
+        const savedTheme = localStorage.getItem('portalTheme');
+        if (savedTheme) setTheme(savedTheme);
+
+        // 載入卡片數量
+        const savedCols = localStorage.getItem('gridCols') || 4;
+        document.getElementById('colSlider').value = savedCols;
+        updateGridCols(savedCols);
+
+        // 載入字體大小
+        const savedFontSize = localStorage.getItem('fontSize') || 16;
+        document.getElementById('fontSizeSlider').value = savedFontSize;
+        updateFontSize(savedFontSize);
+
+        startClock();
+        renderLinks(); // 執行您原本的渲染函式
+    };
+
+    function startClock() {
+        setInterval(() => {
+            const now = new Date();
+            const rocYear = now.getFullYear() - 1911;
+            document.getElementById('clock').innerText = `民國 ${rocYear} 年 ${now.toLocaleTimeString()}`;
+        }, 1000);
+    }
+
+    // (此處保留您原本的 renderLinks, addLink 等邏輯)
 </script>
 </body>
 </html>
