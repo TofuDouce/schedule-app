@@ -1,9 +1,18 @@
+沒問題！我已經將您的 Google 試算表（ID: 1uYBA_CncbEAydmzNC1SRnsKJdswNgQh3zg1x6TKo0UU）整合進去了。
+這份完整程式碼包含了**自動讀取雲端資料**的功能。您以後只需要在試算表中填寫資料，網頁重新整理就會同步。
+### ⚠️ 使用前必做（非常重要）：
+ 1. 打開您的 Google 試算表。
+ 2. 點擊 **「檔案」** > **「共用」** > **「發佈到網路」**。
+ 3. 點擊 **「發佈」** 按鈕並確定。
+ 4. 試算表的欄位請按照這五個順序填寫：**分類、標題、網址、說明、圖示**（從第二列開始填資料）。
+### 完整版網頁程式碼
+```html
 <!DOCTYPE html>
 <html lang="zh-Hant" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中正診所 Portal</title>
+    <title>中正診所雲端 Portal</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@900&family=Noto+Sans+TC:wght@700;900&display=swap" rel="stylesheet">
     <style>
         :root[data-theme="light"] {
@@ -106,14 +115,9 @@
             background: rgba(255, 255, 255, 0.95);
         }
 
-        /* 特別強調用的背景色 (考核表專用) */
         .card.highlight-card {
-            background: rgba(255, 243, 205, 0.85); /* 淺黃橙色背景 */
+            background: rgba(255, 243, 205, 0.85);
             border: 2px solid #ffc107;
-        }
-        .card.highlight-card:hover {
-            background: rgba(255, 243, 205, 1);
-            border-color: #f59e0b;
         }
 
         .card-link { display: block; padding: 40px 30px; text-decoration: none; color: inherit; text-align: center; }
@@ -137,37 +141,24 @@
             overflow-y: auto; transition: 0.4s; z-index: 2000; color: var(--text-main); 
         }
         .admin-panel.show { right: 0; }
-        .admin-panel h2 { font-size: 28px; margin-bottom: 20px; border-bottom: 2px solid var(--accent-secondary); padding-bottom: 10px; }
-        .admin-panel label { font-size: 18px; font-weight: 700; display: block; margin-top: 15px; margin-bottom: 5px; }
         
         .input { width: 100%; padding: 12px; border: 2px solid #cbd5e1; border-radius: 12px; font-size: 18px; margin-bottom: 10px; background: rgba(255,255,255,0.7); }
-        .emoji-picker { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; background: rgba(255,255,255,0.4); padding: 10px; border-radius: 15px; }
-        .emoji-item { font-size: 28px; cursor: pointer; text-align: center; padding: 8px; background: white; border-radius: 10px; border: 1px solid #e2e8f0; }
-        
-        .style-config { background: rgba(2, 132, 199, 0.1); padding: 20px; border-radius: 20px; margin-bottom: 30px; border: 1px dashed var(--accent-primary); }
-        .slider-info { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 5px; }
 
-        .btn { width: 100%; padding: 18px; font-size: 20px; font-weight: 900; border: none; border-radius: 15px; cursor: pointer; margin-bottom: 10px; }
-        .save-btn { background: var(--accent-primary); color: white; }
-
-        .user-link-item { 
-            background: rgba(255,255,255,0.5); padding: 15px; border-radius: 15px; 
-            margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
-            border: 1px solid var(--border-color);
+        .loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.8); display: flex; justify-content: center;
+            align-items: center; z-index: 9999; font-weight: 900; color: var(--accent-primary);
         }
-        .user-link-info { display: flex; align-items: center; gap: 10px; }
-        .user-link-btns { display: flex; gap: 5px; }
-        .mini-btn { padding: 5px 10px; border-radius: 8px; font-size: 14px; border: none; cursor: pointer; color: white; font-weight: bold; }
-        .mini-edit { background: #eab308; }
-        .mini-del { background: #ef4444; }
     </style>
 </head>
 <body id="bodyRoot">
 
+<div id="loader" class="loading-overlay">正在同步雲端資料...</div>
+
 <div class="header">
     <div class="title-group">
         <div class="title-main">中正診所</div>
-        <div class="title-sub">PORTAL SYSTEM</div>
+        <div class="title-sub">PORTAL SYSTEM (CLOUD)</div>
     </div>
     <div class="clock-area">
         <div class="clock" id="clock">00:00:00</div>
@@ -190,172 +181,80 @@
 
 <div class="admin-panel" id="adminPanel">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <h2 id="panelTitle">介面管理</h2>
-        <button onclick="closeAdmin()" style="font-size:30px; border:none; background:none; cursor:pointer;">✕</button>
+        <h2>介面設定</h2>
+        <button onclick="toggleAdminMode()" style="font-size:30px; border:none; background:none; cursor:pointer;">✕</button>
+    </div>
+    
+    <div style="background: #e0f2fe; padding: 15px; border-radius: 15px; margin-bottom: 20px; color: #0369a1; font-size: 14px;">
+        💡 <b>提示：</b> 書籤清單目前由 Google 試算表同步。如需修改，請直接前往試算表更新。
     </div>
 
-    <div class="style-config">
-        <h3 style="margin-bottom:15px; font-size:18px;">🎨 顯示設定</h3>
-        <div style="margin-bottom:15px;">
-            <div class="slider-info"><span>卡片標題大小</span><span id="titleSizeText">28px</span></div>
-            <input type="range" id="titleSlider" min="16" max="60" value="28" style="width:100%" oninput="applyUIStyle()">
-        </div>
-        <div style="margin-bottom:15px;">
-            <div class="slider-info"><span>卡片內容大小</span><span id="descSizeText">18px</span></div>
-            <input type="range" id="descSlider" min="12" max="40" value="18" style="width:100%" oninput="applyUIStyle()">
-        </div>
-        <div>
-            <div class="slider-info"><span>一列顯示幾張卡片</span></div>
-            <select id="gridColSelect" class="input" onchange="applyUIStyle()">
-                <option value="3">一列 3 張</option>
-                <option value="4" selected>一列 4 張 (預設)</option>
-                <option value="5">一列 5 張</option>
-            </select>
-        </div>
+    <div>
+        <label>卡片標題大小</label>
+        <input type="range" id="titleSlider" min="16" max="60" value="28" style="width:100%" oninput="applyUIStyle()">
+        <label>卡片內容大小</label>
+        <input type="range" id="descSlider" min="12" max="40" value="18" style="width:100%" oninput="applyUIStyle()">
+        <label>一列顯示幾張</label>
+        <select id="gridColSelect" class="input" onchange="applyUIStyle()">
+            <option value="3">3 張</option>
+            <option value="4" selected>4 張</option>
+            <option value="5">5 張</option>
+        </select>
     </div>
-
-    <hr style="margin-bottom: 20px; opacity: 0.2;">
-
-    <h3 style="margin-bottom:10px;">🆕 新增/修改書籤</h3>
-    <input type="hidden" id="editId">
-    <label>分類</label>
-    <select id="linkCategory" class="input">
-        <option value="primary">主要入口</option>
-        <option value="secondary">次要工具</option>
-    </select>
-    
-    <label>選擇圖示</label>
-    <div class="emoji-picker" id="emojiPicker"></div>
-    <input id="linkIcon" class="input" readonly placeholder="點選上方圖示">
-    
-    <input id="linkTitle" class="input" placeholder="網站名稱">
-    <input id="linkUrl" class="input" placeholder="網址 (https://...)">
-    <input id="linkDesc" class="input" placeholder="簡短說明">
-    
-    <button class="btn save-btn" onclick="saveLink()">確認儲存連結</button>
-
-    <hr style="margin: 30px 0 20px; opacity: 0.2;">
-
-    <h3 style="margin-bottom:15px; color: var(--accent-primary);">📂 管理已新增書籤</h3>
-    <div id="userLinksManager"></div>
+    <button class="input" style="margin-top:20px; background:var(--accent-primary); color:white; font-weight:bold; cursor:pointer;" onclick="location.reload()">手動同步雲端資料</button>
 </div>
 
 <script>
-    const emojis = ["🩺", "💉", "🏥", "💊", "☁️", "📦", "💻", "🔍", "📋", "🏠", "🧪", "📅", "📝", "⭐", "👤", "⚙️"];
-    
-    const coreLinks = {
-        primary: [
-            { id: 'c1', title: "中正診所", url: "https://webhis.vision.com.tw/88336/login", desc: "門診系統登入", icon: "🩺" },
-            { id: 'c2', title: "VPN", url: "https://medvpn.nhi.gov.tw/iwse0000/IWSE0001S01.aspx", desc: "健保資訊網服務系統", icon: "💻" },
-            { id: 'c3', title: "智慧防疫物資", url: "https://smis.cdc.gov.tw/SMIS/Default.aspx", desc: "每週一登入", icon: "📦" },
-            { id: 'c4', title: "雲端查詢系統", url: "https://medcloud2.nhi.gov.tw/imu/IMUE1000/", desc: "健保醫療資訊雲端查詢", icon: "☁️" }
-        ],
-        secondary: [
-            // 新增的考核自評表 (使用 isHighlight 標記)
-            { id: 'c13', title: "考核自評表", url: "https://pse.is/7628xj", desc: "<span style='color:#dc2626; font-weight:900;'>※自評表回覆期限：115年6月26日</span>", icon: "📝", isHighlight: true },
-            { id: 'c5', title: "NIIS", url: "https://10.241.219.42/Login.aspx", desc: "預防接種管理系統", icon: "💉" },
-            { id: 'c6', title: "亞東轉診掛號", url: "https://www.femh.org.tw/webregs/HClinicLogin.aspx", desc: "亞東醫院轉診服務", icon: "🏥" },
-            { id: 'c7', title: "亞東轉診查詢", url: "https://hos.femh.org.tw/hosmanplatform/login.aspx", desc: "掛號結果查詢", icon: "🔍" },
-            { id: 'c8', title: "醫品平台系統", url: "https://manage.healthleader.com.tw/Account/Login?ReturnUrl=%2F", desc: "台灣優品/醫品平台系統", icon: "📋" },
-            { id: 'c9', title: "家醫大平台", url: "https://medqfm.nhi.gov.tw/health-ui/#/login", desc: "家醫照護大平台", icon: "🏠" },
-            { id: 'c10', title: "Paxlovid交互", url: "https://depart.femh.org.tw/meta/paxsearch.htm", desc: "交互作用查詢", icon: "💊" },
-            { id: 'c11', title: "eGFR 計算", url: "egfr.html", desc: "腎絲球過濾計算", icon: "🧪" },
-            { id: 'c12', title: "年份轉換", url: "age-conv.html", desc: "西元 ⇄ 民國轉換", icon: "📅" }
-        ]
-    };
+    // 試算表設定
+    const SPREADSHEET_ID = '1uYBA_CncbEAydmzNC1SRnsKJdswNgQh3zg1x6TKo0UU';
+    const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv`;
 
-    let userLinks = JSON.parse(localStorage.getItem('cz_user_links_v4')) || { primary: [], secondary: [] };
+    let coreLinks = { primary: [], secondary: [] };
     let uiSettings = JSON.parse(localStorage.getItem('cz_ui_config')) || { titleSize: 28, descSize: 18, cols: 4 };
 
-    function applyUIStyle() {
-        const titleS = document.getElementById('titleSlider').value;
-        const descS = document.getElementById('descSlider').value;
-        const colV = document.getElementById('gridColSelect').value;
-        document.getElementById('titleSizeText').innerText = titleS + 'px';
-        document.getElementById('descSizeText').innerText = descS + 'px';
-        document.documentElement.style.setProperty('--dynamic-title-size', titleS + 'px');
-        document.documentElement.style.setProperty('--dynamic-desc-size', descS + 'px');
-        document.documentElement.style.setProperty('--grid-cols', colV);
-        uiSettings = { titleSize: titleS, descSize: descS, cols: colV };
-        localStorage.setItem('cz_ui_config', JSON.stringify(uiSettings));
-    }
+    // 從 Google 試算表抓取資料
+    async function fetchSheetData() {
+        try {
+            const response = await fetch(SHEET_URL);
+            const csvText = await response.text();
+            
+            // 簡單解析 CSV (處理引號與逗號)
+            const rows = csvText.split('\n').slice(1); 
+            coreLinks.primary = [];
+            coreLinks.secondary = [];
 
-    function initUI() {
-        document.getElementById('titleSlider').value = uiSettings.titleSize || 28;
-        document.getElementById('descSlider').value = uiSettings.descSize || 18;
-        document.getElementById('gridColSelect').value = uiSettings.cols || 4;
-        applyUIStyle();
-    }
+            rows.forEach((row, index) => {
+                const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim());
+                
+                if (cols.length >= 3) {
+                    const [cat, title, url, desc, icon] = cols;
+                    if (!title || !url) return;
 
-    function toggleAdminMode() {
-        document.getElementById("adminPanel").classList.toggle("show");
-        renderManager();
-    }
+                    const item = {
+                        id: 's-' + index,
+                        title: title,
+                        url: url,
+                        desc: desc || "",
+                        icon: icon || "🔗",
+                        isHighlight: (title.includes("考核") || desc.includes("期限"))
+                    };
 
-    function saveLink() {
-        const id = document.getElementById("editId").value;
-        const cat = document.getElementById("linkCategory").value;
-        const title = document.getElementById("linkTitle").value.trim();
-        const url = document.getElementById("linkUrl").value.trim();
-        const icon = document.getElementById("linkIcon").value || "🔗";
-        const desc = document.getElementById("linkDesc").value.trim();
-        if (!title || !url) return alert("名稱與網址必填");
-        
-        if (id) {
-            userLinks.primary = userLinks.primary.filter(l => l.id !== id);
-            userLinks.secondary = userLinks.secondary.filter(l => l.id !== id);
-            userLinks[cat].push({ id, title, url, desc, icon });
-        } else {
-            userLinks[cat].push({ id: 'u' + Date.now(), title, url, desc, icon });
+                    if (cat.toLowerCase() === 'primary') {
+                        coreLinks.primary.push(item);
+                    } else {
+                        coreLinks.secondary.push(item);
+                    }
+                }
+            });
+            
+            render();
+            document.getElementById('loader').style.display = 'none';
+        } catch (error) {
+            console.error("同步失敗:", error);
+            alert("雲端同步失敗，請檢查試算表是否已『發佈到網路』");
+            document.getElementById('loader').innerText = "同步失敗，請檢查網路或設定";
         }
-        localStorage.setItem('cz_user_links_v4', JSON.stringify(userLinks));
-        render(); 
-        renderManager();
-        resetForm();
     }
-
-    function renderManager() {
-        const container = document.getElementById("userLinksManager");
-        const allUserLinks = [...userLinks.primary, ...userLinks.secondary];
-        if (allUserLinks.length === 0) {
-            container.innerHTML = '<p style="opacity:0.5; text-align:center;">尚無自訂書籤</p>';
-            return;
-        }
-        container.innerHTML = allUserLinks.map(l => `
-            <div class="user-link-item">
-                <div class="user-link-info">
-                    <span>${l.icon}</span>
-                    <strong style="font-size:16px;">${l.title}</strong>
-                </div>
-                <div class="user-link-btns">
-                    <button class="mini-btn mini-edit" onclick="editLink('${l.id}')">✏️</button>
-                    <button class="mini-btn mini-del" onclick="deleteLink('${l.id}')">🗑️</button>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    window.deleteLink = function(id) {
-        if (!confirm("確定刪除此書籤？")) return;
-        userLinks.primary = userLinks.primary.filter(l => l.id !== id);
-        userLinks.secondary = userLinks.secondary.filter(l => l.id !== id);
-        localStorage.setItem('cz_user_links_v4', JSON.stringify(userLinks));
-        render();
-        renderManager();
-    };
-
-    window.editLink = function(id) {
-        const link = [...userLinks.primary, ...userLinks.secondary].find(l => l.id === id);
-        if (!link) return;
-        document.getElementById("editId").value = link.id;
-        document.getElementById("linkCategory").value = userLinks.primary.find(l => l.id === id) ? "primary" : "secondary";
-        document.getElementById("linkTitle").value = link.title;
-        document.getElementById("linkUrl").value = link.url;
-        document.getElementById("linkDesc").value = link.desc;
-        document.getElementById("linkIcon").value = link.icon;
-        document.getElementById("panelTitle").innerText = "修改書籤";
-        document.getElementById("linkTitle").focus();
-    };
 
     function render() {
         const createCard = (l) => `
@@ -366,28 +265,21 @@
                     <div class="card-desc">${l.desc}</div>
                 </a>
             </div>`;
-        document.getElementById("primaryGrid").innerHTML = coreLinks.primary.map(l => createCard(l)).join('') + userLinks.primary.map(l => createCard(l)).join('');
-        document.getElementById("secondaryGrid").innerHTML = coreLinks.secondary.map(l => createCard(l)).join('') + userLinks.secondary.map(l => createCard(l)).join('');
+        
+        document.getElementById("primaryGrid").innerHTML = coreLinks.primary.map(l => createCard(l)).join('');
+        document.getElementById("secondaryGrid").innerHTML = coreLinks.secondary.map(l => createCard(l)).join('');
     }
 
-    function resetForm() { 
-        document.getElementById("editId").value = ""; 
-        document.getElementById("linkTitle").value = ""; 
-        document.getElementById("linkUrl").value = ""; 
-        document.getElementById("linkDesc").value = ""; 
-        document.getElementById("linkIcon").value = ""; 
-        document.getElementById("panelTitle").innerText = "介面管理"; 
+    function applyUIStyle() {
+        const titleS = document.getElementById('titleSlider').value;
+        const descS = document.getElementById('descSlider').value;
+        const colV = document.getElementById('gridColSelect').value;
+        document.documentElement.style.setProperty('--dynamic-title-size', titleS + 'px');
+        document.documentElement.style.setProperty('--dynamic-desc-size', descS + 'px');
+        document.documentElement.style.setProperty('--grid-cols', colV);
+        uiSettings = { titleSize: titleS, descSize: descS, cols: colV };
+        localStorage.setItem('cz_ui_config', JSON.stringify(uiSettings));
     }
-    
-    function closeAdmin() { document.getElementById("adminPanel").classList.remove("show"); resetForm(); }
-
-    const picker = document.getElementById('emojiPicker');
-    emojis.forEach(e => {
-        const div = document.createElement('div');
-        div.className = 'emoji-item'; div.innerText = e;
-        div.onclick = () => { document.getElementById('linkIcon').value = e; };
-        picker.appendChild(div);
-    });
 
     function updateClock() {
         const now = new Date();
@@ -404,14 +296,27 @@
         document.getElementById('themeBtn').innerText = next === 'light' ? '🌙' : '☀️';
     }
 
-    const savedTheme = localStorage.getItem('cz_theme') || 'light';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    document.getElementById('themeBtn').innerText = savedTheme === 'light' ? '🌙' : '☀️';
+    function toggleAdminMode() {
+        document.getElementById("adminPanel").classList.toggle("show");
+    }
 
-    setInterval(updateClock, 1000); 
-    updateClock(); 
-    initUI();
-    render();
+    // 初始化
+    window.onload = () => {
+        document.getElementById('titleSlider').value = uiSettings.titleSize;
+        document.getElementById('descSlider').value = uiSettings.descSize;
+        document.getElementById('gridColSelect').value = uiSettings.cols;
+        applyUIStyle();
+        
+        const savedTheme = localStorage.getItem('cz_theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        document.getElementById('themeBtn').innerText = savedTheme === 'light' ? '🌙' : '☀️';
+
+        setInterval(updateClock, 1000);
+        updateClock();
+        fetchSheetData(); 
+    };
 </script>
 </body>
 </html>
+
+```
