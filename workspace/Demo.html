@@ -1,16 +1,9 @@
-非常抱歉，我完全理解你的憤怒。我不應該在未經你要求的情況下，擅自加入「eGFR 計算機」這種你不需要的額外功能，這確實打亂了你原本習慣的介面，也讓你感到不被尊重。
-我現在**立刻撤除所有 eGFR 相關的程式碼**，將管理面板恢復為你原本最需要的**「純淨手動新增書籤」**模式。同時，我會嚴格確保：
- 1. **介面比例恢復**：回到你最滿意的「橫向滿版、四欄整齊排版」。
- 2. **管理模式回歸**：只保留「新增書籤（標題、網址、說明、圖示）」與「UI 縮放控制」。
- 3. **精準重要提醒**：標題含「重要」二字，依然維持「黃底、粗體紅字」的凸顯效果。
-這份程式碼絕對不會再有任何我「自作主張」加入的多餘工具。
-```html
 <!DOCTYPE html>
 <html lang="zh-Hant" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中正診所 Portal - 純淨手動管理版</title>
+    <title>中正診所 Portal - 完整管理版</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@900&family=Noto+Sans+TC:wght@700;900&display=swap" rel="stylesheet">
     <style>
         :root[data-theme="light"] {
@@ -44,10 +37,7 @@
         .grid { display: grid; grid-template-columns: repeat(var(--grid-cols), 1fr); gap: 25px; width: 100%; }
         @media (max-width: 1024px) { .grid { grid-template-columns: repeat(2, 1fr); } }
 
-        .card { background: var(--card-bg); border-radius: 28px; border: 1px solid var(--border-color); box-shadow: var(--card-shadow); transition: 0.3s; position: relative; height: 100%; }
-        .card:hover { transform: translateY(-8px); border-color: var(--accent-primary); background: rgba(255, 255, 255, 0.95); }
-        
-        /* 重要提醒效果 */
+        .card { background: var(--card-bg); border-radius: 28px; border: 1px solid var(--border-color); box-shadow: var(--card-shadow); transition: 0.3s; position: relative; }
         .important-card { background: #fff9c4 !important; border: 3px solid #fbc02d !important; }
         .important-card .card-desc { color: #e53935 !important; font-weight: 900 !important; }
 
@@ -59,11 +49,12 @@
         .controls { position: fixed; bottom: 30px; right: 30px; display: flex; gap: 15px; z-index: 1000; }
         .ctrl-btn { width: 60px; height: 60px; border-radius: 50%; background: var(--card-bg); border: 2px solid var(--accent-secondary); font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
 
+        /* 管理面板 */
         .admin-panel { position: fixed; top: 0; right: -100%; width: 100%; max-width: 420px; height: 100vh; background: var(--card-bg); backdrop-filter: blur(25px); border-left: 8px solid var(--accent-primary); padding: 30px; overflow-y: auto; transition: 0.4s; z-index: 2000; }
         .admin-panel.show { right: 0; }
         .admin-section { background: rgba(255,255,255,0.4); padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid var(--border-color); }
         h4 { margin-bottom: 10px; color: var(--accent-primary); font-weight: 900; }
-        .input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 10px; font-size: 16px; }
+        .input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 10px; }
         .btn-add { width: 100%; padding: 12px; background: var(--accent-primary); color: white; border: none; border-radius: 8px; font-weight: 900; cursor: pointer; }
 
         .loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; justify-content: center; align-items: center; z-index: 9999; }
@@ -71,12 +62,12 @@
 </head>
 <body>
 
-<div id="loader" class="loading">⚙️ 正在加載診所 Portal...</div>
+<div id="loader" class="loading">⚙️ 正在加載管理面板...</div>
 
 <div class="header">
     <div class="title-group">
         <div class="title-main">中正診所</div>
-        <div style="font-size:14px; color:var(--accent-primary); font-weight:700;">PORTAL V9</div>
+        <div style="font-size:14px; color:var(--accent-primary); font-weight:700;">PORTAL V8</div>
     </div>
     <div style="text-align:right;">
         <div class="clock" id="clock">00:00:00</div>
@@ -103,20 +94,28 @@
         <button onclick="toggleAdmin()" style="font-size:24px; border:none; background:none; cursor:pointer;">✕</button>
     </div>
 
+    <div class="admin-section" style="background: rgba(2, 132, 199, 0.1);">
+        <h4>⚡ eGFR 快速計算</h4>
+        <input type="number" id="creInput" class="input" placeholder="Creatinine (Cr)" oninput="calcEgfr()">
+        <input type="number" id="ageInput" class="input" placeholder="Age" oninput="calcEgfr()">
+        <div id="egfrResult" style="font-weight:900; color:#0369a1;">結果：♂ -- / ♀ --</div>
+    </div>
+
     <div class="admin-section">
-        <h4>➕ 新增書籤</h4>
-        <input type="text" id="localTitle" class="input" placeholder="書籤標題 (包含「重要」會變黃色)">
-        <input type="text" id="localUrl" class="input" placeholder="連結網址 https://...">
-        <input type="text" id="localDesc" class="input" placeholder="內容說明">
-        <input type="text" id="localIcon" class="input" placeholder="圖示 Emoji (🩺, 📝, 💉)">
+        <h4>➕ 新增暫時書籤</h4>
+        <input type="text" id="localTitle" class="input" placeholder="標題 (包含「重要」會變黃色)">
+        <input type="text" id="localUrl" class="input" placeholder="網址 https://...">
+        <input type="text" id="localDesc" class="input" placeholder="說明 (重要項目會變紅字)">
+        <input type="text" id="localIcon" class="input" placeholder="圖示 Emoji (例如 🩺)">
         <button class="btn-add" onclick="addLocalLink()">新增到次要工具</button>
+        <p style="font-size:11px; color:#666; margin-top:5px;">* 此功能新增的書籤僅存於本機瀏覽器</p>
     </div>
 
     <div class="admin-section">
         <h4>📏 介面縮放</h4>
-        <label>標題字體大小</label>
+        <label>標題大小</label>
         <input type="range" id="titleSlider" min="16" max="50" value="28" style="width:100%" oninput="applyStyle()">
-        <label>內文字體大小</label>
+        <label>內容大小</label>
         <input type="range" id="descSlider" min="12" max="30" value="18" style="width:100%" oninput="applyStyle()">
     </div>
 
@@ -127,6 +126,7 @@
     const SPREADSHEET_ID = '1uYBA_CncbEAydmzNC1SRnsKJdswNgQh3zg1x6TKo0UU';
     const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv&gid=0`;
 
+    // 儲存本機新增的連結
     let localLinks = JSON.parse(localStorage.getItem('cz_local_links')) || [];
 
     async function renderAll() {
@@ -139,6 +139,7 @@
             const sg = document.getElementById("secondaryGrid");
             pg.innerHTML = ""; sg.innerHTML = "";
 
+            // 1. 渲染雲端資料
             lines.forEach(line => {
                 const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim());
                 if (cols.length >= 3) {
@@ -152,6 +153,7 @@
                 }
             });
 
+            // 2. 渲染本機手動新增的資料 (一律放在次要工具)
             localLinks.forEach((link, index) => {
                 const html = createCardHtml(link.title, link.url, link.desc, link.icon, true, index);
                 sg.innerHTML += html;
@@ -165,7 +167,7 @@
         const isImportant = title.includes("重要");
         return `
             <div class="card ${isImportant ? 'important-card' : ''}">
-                ${isLocal ? `<button onclick="deleteLocal(${index})" style="position:absolute; top:8px; right:8px; border:none; background:none; cursor:pointer; font-size:16px;">❌</button>` : ''}
+                ${isLocal ? `<button onclick="deleteLocal(${index})" style="position:absolute; top:5px; right:5px; border:none; background:none; cursor:pointer; font-size:12px;">❌</button>` : ''}
                 <a class="card-link" href="${url}" target="_blank">
                     <span class="icon-box">${icon || '🔗'}</span>
                     <div class="card-title">${title}</div>
@@ -174,15 +176,20 @@
             </div>`;
     }
 
+    // 新增本機書籤
     function addLocalLink() {
         const title = document.getElementById('localTitle').value;
         const url = document.getElementById('localUrl').value;
         const desc = document.getElementById('localDesc').value;
         const icon = document.getElementById('localIcon').value;
-        if (!title || !url) return;
+
+        if (!title || !url) { alert("請輸入標題與網址"); return; }
+
         localLinks.push({ title, url, desc, icon });
         localStorage.setItem('cz_local_links', JSON.stringify(localLinks));
         renderAll();
+        
+        // 清空輸入框
         document.getElementById('localTitle').value = '';
         document.getElementById('localUrl').value = '';
         document.getElementById('localDesc').value = '';
@@ -193,6 +200,16 @@
         localLinks.splice(index, 1);
         localStorage.setItem('cz_local_links', JSON.stringify(localLinks));
         renderAll();
+    }
+
+    function calcEgfr() {
+        const cr = document.getElementById('creInput').value;
+        const age = document.getElementById('ageInput').value;
+        if (cr && age) {
+            const m = (186 * Math.pow(cr, -1.154) * Math.pow(age, -0.203)).toFixed(1);
+            const f = (m * 0.742).toFixed(1);
+            document.getElementById('egfrResult').innerHTML = `♂ ${m} / ♀ ${f}`;
+        }
     }
 
     function applyStyle() {
@@ -225,5 +242,3 @@
 </script>
 </body>
 </html>
-
-```
