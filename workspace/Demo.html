@@ -6,7 +6,7 @@
     <title>中正診所 Portal</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@900&family=Noto+Sans+TC:wght@700;900&display=swap" rel="stylesheet">
     <style>
-        /* 100% 採用你提供的 CSS 配色與變數 */
+        /* 採用你原版的變數與配色 */
         :root[data-theme="light"] {
             --bg-sky: linear-gradient(135deg, #e0f2fe 0%, #ffffff 100%);
             --header-bg: rgba(255, 255, 255, 0.85);
@@ -48,28 +48,23 @@
             transition: background 0.4s, color 0.4s; 
         }
 
-        /* 恢復漂亮的漸層標題與 Header */
         .header { 
             position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
             display: flex; justify-content: space-between; align-items: center; 
             padding: 20px 5%; 
             background-color: var(--header-bg);
             backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
             border-bottom: 4px solid var(--accent-secondary); 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
 
         .title-main { 
             font-size: clamp(32px, 5vw, 48px);
-            font-weight: 900; line-height: 1.1; 
+            font-weight: 900;
             background: linear-gradient(to right, #0369a1, #0ea5e9);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
         
-        .clock { font-size: clamp(32px, 5vw, 52px); font-weight: 900; color: var(--accent-primary); line-height: 1; font-variant-numeric: tabular-nums; }
-
         .main { width: 100%; max-width: 1600px; margin: auto; padding: 180px 30px 100px; }
 
         .section-title { 
@@ -84,9 +79,8 @@
             gap: 25px; 
         }
 
-        @media (max-width: 800px) { .grid { grid-template-columns: repeat(2, 1fr); } }
-
         .card { 
+            position: relative; 
             background: var(--card-bg); 
             backdrop-filter: blur(5px);
             border-radius: 28px; 
@@ -95,20 +89,28 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
         }
         
-        /* 恢復重要考核表的高對比黃色設計 */
+        /* 考核表專用黃色醒目效果 */
         .card.highlight-card {
             background: rgba(255, 243, 205, 0.9) !important;
             border: 3px solid #ffc107 !important;
         }
-        .card.highlight-card .card-desc {
-            color: #dc2626 !important;
-            font-weight: 900;
+
+        /* 刪除按鈕 */
+        .del-btn {
+            position: absolute; top: 15px; right: 15px;
+            width: 35px; height: 35px; border-radius: 50%;
+            background: #ef4444; color: white; border: none;
+            cursor: pointer; font-size: 16px; display: none;
+            z-index: 10; font-weight: 900;
         }
+        .admin-active .del-btn { display: block; }
 
+        .card-link { display: block; padding: 40px 30px; text-decoration: none; color: inherit; text-align: center; }
+        .icon-box { font-size: 60px; margin-bottom: 20px; display: block; }
         .card-title { font-size: var(--dynamic-title-size); font-weight: 900; color: var(--accent-primary); margin-bottom: 12px; }
-        .card-desc { font-size: var(--dynamic-desc-size); font-weight: 700; color: var(--text-sub); }
+        .card-desc { font-size: var(--dynamic-desc-size); font-weight: 700; color: var(--text-sub); line-height: 1.5; }
 
-        /* 管理面板樣式 (維持你的紫色點綴與美感) */
+        /* 管理面板 */
         .admin-panel { 
             position: fixed; top: 0; right: -100%; width: 95%; max-width: 500px; height: 100vh; 
             background: var(--card-bg); backdrop-filter: blur(25px); 
@@ -116,13 +118,11 @@
             overflow-y: auto; transition: 0.4s; z-index: 2000;
         }
         .admin-panel.show { right: 0; }
-        
         .input { width: 100%; padding: 12px; border: 2px solid #cbd5e1; border-radius: 12px; font-size: 18px; margin-bottom: 10px; }
-        .emoji-item:hover, .emoji-item.active { border-color: #8b5cf6; background: #ede9fe; }
-
         .btn { width: 100%; padding: 18px; font-size: 20px; font-weight: 900; border: none; border-radius: 15px; cursor: pointer; margin-top: 10px; }
-        .save-btn { background: #8b5cf6; color: white; }
-        .sync-btn { background: var(--accent-primary); color: white; }
+
+        .controls { position: fixed; bottom: 30px; right: 30px; display: flex; gap: 20px; z-index: 1000; }
+        .ctrl-btn { width: 70px; height: 70px; border-radius: 50%; border: 3px solid var(--accent-secondary); background: var(--card-bg); font-size: 28px; cursor: pointer; }
     </style>
 </head>
 <body id="bodyRoot">
@@ -132,22 +132,22 @@
         <div class="title-main">中正診所</div>
         <div style="font-size: 16px; color: var(--accent-primary); font-weight: 700; letter-spacing: 3px;">PORTAL SYSTEM</div>
     </div>
-    <div class="clock-area">
-        <div class="clock" id="clock">00:00:00</div>
-        <div class="date-display" id="date" style="font-size: 18px; font-weight: 700; color: var(--text-sub);"></div>
+    <div style="text-align: right;">
+        <div id="clock" style="font-size: clamp(32px, 5vw, 52px); font-weight: 900; color: var(--accent-primary);">00:00:00</div>
+        <div id="date" style="font-size: 18px; font-weight: 700; color: var(--text-sub);"></div>
     </div>
 </div>
 
-<div class="main">
+<div class="main" id="mainContainer">
     <div class="section-title">主要入口</div>
     <div id="primaryGrid" class="grid"></div>
     <div class="section-title">次要工具</div>
     <div id="secondaryGrid" class="grid"></div>
 </div>
 
-<div class="controls" style="position: fixed; bottom: 30px; right: 30px; display: flex; gap: 20px; z-index: 1000;">
-    <button class="ctrl-btn" onclick="toggleTheme()" id="themeBtn" style="width: 70px; height: 70px; border-radius: 50%; border: 3px solid var(--accent-secondary); background: var(--card-bg); font-size: 28px; cursor: pointer;">🌙</button>
-    <button class="ctrl-btn" onclick="toggleAdminMode()" style="width: 70px; height: 70px; border-radius: 50%; border: 3px solid var(--accent-secondary); background: var(--card-bg); font-size: 28px; cursor: pointer;">⚙️</button>
+<div class="controls">
+    <button class="ctrl-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
+    <button class="ctrl-btn" onclick="toggleAdminMode()">⚙️</button>
 </div>
 
 <div class="admin-panel" id="adminPanel">
@@ -158,13 +158,11 @@
 
     <div style="background: rgba(139, 92, 246, 0.1); padding: 20px; border-radius: 20px; margin-bottom: 25px; border: 1px dashed #8b5cf6;">
         <h3 style="margin-bottom:15px; font-size:18px;">🎨 顯示設定</h3>
-        <label style="display:flex; justify-content:space-between; font-weight:700;">卡片標題 <span id="ts-val">28px</span></label>
-        <input type="range" id="titleSlider" min="16" max="60" value="28" style="width:100%; accent-color:#8b5cf6;" oninput="applyUIStyle()">
-        
-        <label style="display:flex; justify-content:space-between; font-weight:700; margin-top:15px;">卡片內容 <span id="ds-val">18px</span></label>
-        <input type="range" id="descSlider" min="12" max="40" value="18" style="width:100%; accent-color:#8b5cf6;" oninput="applyUIStyle()">
-        
-        <label style="font-weight:700; margin-top:15px; display:block;">一列顯示幾張卡片</label>
+        <label>卡片標題字體 <span id="ts-val">28px</span></label>
+        <input type="range" id="titleSlider" min="16" max="60" value="28" style="width:100%" oninput="applyUIStyle()">
+        <label>卡片內容字體 <span id="ds-val">18px</span></label>
+        <input type="range" id="descSlider" min="12" max="40" value="18" style="width:100%" oninput="applyUIStyle()">
+        <label>一列顯示幾張</label>
         <select id="gridColSelect" class="input" onchange="applyUIStyle()">
             <option value="5">一列 5 張</option>
             <option value="4" selected>一列 4 張</option>
@@ -172,49 +170,26 @@
         </select>
     </div>
 
-    <h3 style="margin-bottom:10px;">🆕 新增/修改書籤</h3>
-    <input type="hidden" id="editId">
+    <h3 style="margin-bottom:10px;">🆕 新增自訂書籤</h3>
     <select id="linkCategory" class="input">
         <option value="primary">主要入口</option>
         <option value="secondary" selected>次要工具</option>
     </select>
-    <div class="emoji-picker" id="emojiPicker" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 10px;"></div>
+    <div id="emojiPicker" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 10px;"></div>
     <input id="linkTitle" class="input" placeholder="網站名稱">
     <input id="linkUrl" class="input" placeholder="網址 (https://...)">
     <input id="linkDesc" class="input" placeholder="內容說明">
-    <button class="btn save-btn" onclick="saveLink()">儲存書籤</button>
-    
-    <button class="btn sync-btn" onclick="location.reload()">🔄 手動同步雲端資料</button>
-
-    <div id="userLinksManager" style="margin-top:25px;"></div>
+    <button class="btn" style="background:#8b5cf6; color:white;" onclick="saveLink()">儲存書籤</button>
+    <button class="btn" style="background:var(--accent-primary); color:white;" onclick="location.reload()">🔄 立即更新雲端資料</button>
 </div>
 
 <script>
-    const SPREADSHEET_ID = '1uYBA_CncbEAydmzNC1SRnsKJdswNgQh3zg1x6TKo0UU';
-    const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv&gid=0`;
+    // 試算表 CSV 匯出網址
+    const SHEET_URL = `https://docs.google.com/spreadsheets/d/1uYBA_CncbEAydmzNC1SRnsKJdswNgQh3zg1x6TKo0UU/export?format=csv&gid=0`;
     const emojis = ["🩺", "💉", "🏥", "💊", "☁️", "📦", "💻", "🔍", "📋", "🏠", "🧪", "📅", "📝", "⭐", "👤", "⚙️"];
     let selectedIcon = "🔗";
 
-    const coreLinks = {
-        primary: [
-            { id: 'c1', title: "中正診所", url: "https://webhis.vision.com.tw/88336/login", desc: "門診系統登入", icon: "🩺" },
-            { id: 'c2', title: "VPN", url: "https://medvpn.nhi.gov.tw/iwse0000/IWSE0001S01.aspx", desc: "健保資訊網服務系統", icon: "💻" },
-            { id: 'c3', title: "智慧防疫物資", url: "https://smis.cdc.gov.tw/SMIS/Default.aspx", desc: "每週一登入", icon: "📦" },
-            { id: 'c4', title: "雲端查詢系統", url: "https://medcloud2.nhi.gov.tw/imu/IMUE1000/", desc: "健保醫療資訊雲端查詢", icon: "☁️" }
-        ],
-        secondary: [
-            { id: 'c13', title: "考核自評表", url: "https://pse.is/7628xj", desc: "※自評表回覆期限：115年6月26日", icon: "📝", isHighlight: true },
-            { id: 'c5', title: "NIIS", url: "https://10.241.219.42/Login.aspx", desc: "預防接種管理系統", icon: "💉" },
-            { id: 'c6', title: "亞東轉診掛號", url: "https://www.femh.org.tw/webregs/HClinicLogin.aspx", desc: "亞東醫院轉診服務", icon: "🏥" },
-            { id: 'c7', title: "亞東轉診查詢", url: "https://hos.femh.org.tw/hosmanplatform/login.aspx", desc: "掛號結果查詢", icon: "🔍" },
-            { id: 'c8', title: "醫品平台系統", url: "https://manage.healthleader.com.tw/Account/Login?ReturnUrl=%2F", desc: "台灣優品/醫品平台系統", icon: "📋" },
-            { id: 'c9', title: "家醫大平台", url: "https://medqfm.nhi.gov.tw/health-ui/#/login", desc: "家醫照護大平台", icon: "🏠" },
-            { id: 'c10', title: "Paxlovid交互", url: "https://depart.femh.org.tw/meta/paxsearch.htm", desc: "交互作用查詢", icon: "💊" },
-            { id: 'c11', title: "eGFR 計算", url: "egfr.html", desc: "腎絲球過濾計算", icon: "🧪" },
-            { id: 'c12', title: "年份轉換", url: "age-conv.html", desc: "西元 ⇄ 民國轉換", icon: "📅" }
-        ]
-    };
-
+    // ✅ 這裡完全清空，所有連結都從雲端讀取或 localStorage 讀取
     let userLinks = JSON.parse(localStorage.getItem('cz_user_links_v4')) || { primary: [], secondary: [] };
 
     async function fetchCloudData() {
@@ -222,35 +197,48 @@
             const res = await fetch(SHEET_URL + "&cb=" + Date.now());
             const text = await res.text();
             const lines = text.split(/\r?\n/).slice(1);
+            
             const pg = document.getElementById("primaryGrid");
             const sg = document.getElementById("secondaryGrid");
-            pg.innerHTML = coreLinks.primary.map(l => createCard(l)).join('');
-            sg.innerHTML = coreLinks.secondary.map(l => createCard(l)).join('');
+            pg.innerHTML = ""; // 清空舊資料
+            sg.innerHTML = "";
 
             lines.forEach(line => {
                 const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim());
                 if (cols.length >= 3) {
                     const [cat, title, url, desc, icon] = cols;
-                    const html = createCard({title, url, desc, icon});
+                    // 如果標題包含「考核」，自動套用黃色醒目效果
+                    const isHigh = title.includes("考核");
+                    const html = createCard({title, url, desc, icon, isHighlight: isHigh}, false);
                     if (cat.toLowerCase().includes('primary')) pg.innerHTML += html;
                     else sg.innerHTML += html;
                 }
             });
-            // 補上 localStorage 的連結
+
+            // 加上自訂連結
             userLinks.primary.forEach(l => pg.innerHTML += createCard(l, true));
             userLinks.secondary.forEach(l => sg.innerHTML += createCard(l, true));
-        } catch (e) { render(); }
+        } catch (e) { alert("讀取雲端資料失敗，請檢查網路或試算表權限"); }
     }
 
     function createCard(l, isLocal = false) {
         return `
             <div class="card ${l.isHighlight ? 'highlight-card' : ''}">
-                <a class="card-link" href="${l.url}" target="_blank" style="display: block; padding: 40px 30px; text-decoration: none; color: inherit; text-align: center;">
-                    <span style="font-size:60px; margin-bottom:20px; display:block;">${l.icon || '🔗'}</span>
+                ${isLocal ? `<button class="del-btn" onclick="deleteLink(${l.id})">🗑️</button>` : ''}
+                <a class="card-link" href="${l.url}" target="_blank">
+                    <span class="icon-box">${l.icon || '🔗'}</span>
                     <div class="card-title">${l.title}</div>
                     <div class="card-desc">${l.desc || ''}</div>
                 </a>
             </div>`;
+    }
+
+    function deleteLink(id) {
+        if(!confirm("確定要刪除這個自訂書籤嗎？")) return;
+        userLinks.primary = userLinks.primary.filter(x => x.id != id);
+        userLinks.secondary = userLinks.secondary.filter(x => x.id != id);
+        localStorage.setItem('cz_user_links_v4', JSON.stringify(userLinks));
+        location.reload();
     }
 
     function applyUIStyle() {
@@ -270,35 +258,39 @@
         const url = document.getElementById('linkUrl').value;
         const desc = document.getElementById('linkDesc').value;
         const cat = document.getElementById('linkCategory').value;
-        if(!title || !url) return;
+        if(!title || !url) return alert("請填寫名稱與網址");
         userLinks[cat].push({id: Date.now(), title, url, desc, icon: selectedIcon});
         localStorage.setItem('cz_user_links_v4', JSON.stringify(userLinks));
         location.reload();
     }
 
+    // Emoji 選擇器
     const picker = document.getElementById('emojiPicker');
     emojis.forEach(e => {
         const div = document.createElement('div');
-        div.className = 'emoji-item';
         div.style = "font-size:24px; cursor:pointer; text-align:center; padding:5px; border:1px solid #ddd; border-radius:10px; background:#fff;";
         div.innerText = e;
         div.onclick = () => { 
-            document.querySelectorAll('.emoji-item').forEach(x => x.style.borderColor = "#ddd");
-            div.style.borderColor = "#8b5cf6";
+            document.querySelectorAll('#emojiPicker div').forEach(d => d.style.borderColor = "#ddd");
             selectedIcon = e; 
+            div.style.borderColor = "#8b5cf6"; 
         };
         picker.appendChild(div);
     });
 
-    function toggleAdminMode() { document.getElementById("adminPanel").classList.toggle("show"); }
-    function closeAdmin() { document.getElementById("adminPanel").classList.remove("show"); }
+    function toggleAdminMode() {
+        document.getElementById("adminPanel").classList.toggle("show");
+        document.getElementById("mainContainer").classList.toggle("admin-active");
+    }
+    function closeAdmin() { 
+        document.getElementById("adminPanel").classList.remove("show"); 
+        document.getElementById("mainContainer").classList.remove("admin-active");
+    }
     function toggleTheme() {
-        const root = document.documentElement;
-        const next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-        root.setAttribute('data-theme', next);
+        const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', next);
         document.getElementById('themeBtn').innerText = next === 'light' ? '🌙' : '☀️';
     }
-
     function updateClock() {
         const now = new Date();
         document.getElementById("clock").innerText = now.toLocaleTimeString("zh-TW", { hour12: false });
