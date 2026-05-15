@@ -1,300 +1,1499 @@
 <!DOCTYPE html>
 <html lang="zh-Hant" data-theme="light" data-color="blue">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中正診所 Portal</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@900&family=Noto+Sans+TC:wght@700;900&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --dynamic-title-size: 28px;
-            --dynamic-desc-size: 18px;
-            --grid-cols: 5;
-        }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>中正診所 Portal</title>
 
-        /* 🎨 主題配色定義：[一般色] / [夜間亮化] / [黃卡加深] */
-        :root[data-color="blue"] { --brand-main: #0284c7; --brand-light: #7dd3fc; --brand-dark: #075985; }
-        :root[data-color="green"] { --brand-main: #059669; --brand-light: #6ee7b7; --brand-dark: #064e3b; }
-        :root[data-color="purple"] { --brand-main: #8b5cf6; --brand-light: #c4b5fd; --brand-dark: #4c1d95; }
-        :root[data-color="gray"] { --brand-main: #64748b; --brand-light: #e2e8f0; --brand-dark: #1e293b; }
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@700;900&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
 
-        /* ☀️ 淺色模式 */
-        :root[data-theme="light"] {
-            --bg-sky: linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%);
-            --header-bg: rgba(255, 255, 255, 0.85);
-            --card-bg: rgba(255, 255, 255, 0.75);
-            --accent-primary: var(--brand-main); 
-            --accent-secondary: var(--brand-light); 
-            --text-main: #0c4a6e; 
-            --text-sub: #334155;      
-            --border-color: rgba(255, 255, 255, 0.6);
-            --card-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.1);
-        }
-        
-        /* 🌙 深色模式 (確保灰色與紫色看得見) */
-        :root[data-theme="dark"] {
-            --bg-sky: #0f172a;
-            --header-bg: rgba(15, 23, 42, 0.9);
-            --card-bg: #1e293b;
-            --accent-primary: var(--brand-light); /* 夜間模式標題會自動變亮 */
-            --accent-secondary: var(--brand-main);
-            --text-main: #f8fafc;
-            --text-sub: #cbd5e1;
-            --border-color: #334155;
-            --card-shadow: 0 4px 20px rgba(0,0,0,0.4);
-        }
+<style>
+:root{
+    --dynamic-title-size: 24px;
+    --dynamic-desc-size: 15px;
+    --grid-cols: 4;
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            min-height: 100vh; background: var(--bg-sky); background-attachment: fixed;
-            color: var(--text-main); font-family: "Inter", "Noto Sans TC", sans-serif; 
-            transition: background 0.4s, color 0.4s; overflow-x: hidden;
-        }
+    --radius-xl: 34px;
+    --radius-lg: 24px;
+    --radius-md: 18px;
 
-        /* 頂部導航 */
-        .header { 
-            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
-            display: flex; justify-content: space-between; align-items: center; 
-            padding: 15px 5%; background-color: var(--header-bg); backdrop-filter: blur(15px);
-            border-bottom: 4px solid var(--accent-secondary); 
-        }
-        .title-main { font-size: clamp(24px, 5vw, 48px); font-weight: 900; background: linear-gradient(to right, var(--brand-main), var(--brand-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .main { width: 100%; max-width: 1600px; margin: auto; padding: 140px 20px 100px; }
-        .section-title { font-size: 28px; font-weight: 900; margin: 40px 0 20px; padding-left: 15px; border-left: 8px solid var(--accent-secondary); color: var(--accent-primary); }
-        .grid { display: grid; grid-template-columns: repeat(var(--grid-cols, 5), 1fr); gap: 20px; }
+    --transition: .28s cubic-bezier(.4,0,.2,1);
+}
 
-        /* ⭐ 強調卡片邏輯修正：背景變黃，字體根據主題變深色 */
-        .card.highlight-card { background: #fff9db !important; border: 3px solid #fcc419 !important; }
-        .card.highlight-card .card-title { color: var(--brand-dark) !important; font-weight: 900; text-shadow: none; }
-        .card.highlight-card .card-desc { color: #e03131 !important; font-weight: 900; }
+/* =========================
+   主題色
+========================= */
 
-        .card { position: relative; background: var(--card-bg); border-radius: 24px; border: 1px solid var(--border-color); box-shadow: var(--card-shadow); transition: 0.2s; display: flex; flex-direction: column; }
-        .card:hover { transform: translateY(-5px); border-color: var(--accent-primary); }
-        .card-link { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 35px 25px; text-decoration: none; color: inherit; text-align: center; height: 100%; }
-        .icon-box { font-size: 55px; margin-bottom: 15px; display: block; line-height: 1; }
-        .card-title { font-size: var(--dynamic-title-size); font-weight: 900; color: var(--accent-primary); margin-bottom: 8px; }
-        .card-desc { font-size: var(--dynamic-desc-size); font-weight: 700; color: var(--text-sub); line-height: 1.4; }
+:root[data-color="blue"]{
+    --brand-main:#3b82f6;
+    --brand-light:#93c5fd;
+    --brand-dark:#1d4ed8;
+    --brand-glow:rgba(59,130,246,.35);
+}
 
-        /* ⚙️ 介面管理面板優化 (針對您提供的截圖優化) */
-        .admin-panel { 
-            position: fixed; top: 0; right: -100%; width: 480px; height: 100vh; 
-            background: var(--card-bg); backdrop-filter: blur(40px); 
-            border-left: 10px solid var(--brand-main); padding: 40px; 
-            overflow-y: auto; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 2000;
-        }
-        .admin-panel.show { right: 0; box-shadow: -20px 0 50px rgba(0,0,0,0.2); }
-        
-        /* 讓面板標題超大、超清楚 */
-        .admin-panel h2 { font-size: 32px; font-weight: 900; color: var(--text-main); margin-bottom: 30px; letter-spacing: 1px; }
-        .admin-panel h3 { font-size: 22px; font-weight: 900; color: var(--brand-main); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
-        
-        .admin-setting-box {
-            background: rgba(255, 255, 255, 0.1); border: 2px dashed var(--accent-secondary);
-            border-radius: 20px; padding: 25px; margin-bottom: 30px;
-        }
+:root[data-color="green"]{
+    --brand-main:#10b981;
+    --brand-light:#6ee7b7;
+    --brand-dark:#047857;
+    --brand-glow:rgba(16,185,129,.35);
+}
 
-        .admin-label { font-size: 18px; font-weight: 900; color: var(--text-main); margin: 20px 0 10px; display: block; }
-        .admin-val-tag { background: var(--brand-main); color: white; padding: 2px 10px; border-radius: 8px; font-size: 16px; margin-left: 10px; }
+:root[data-color="purple"]{
+    --brand-main:#8b5cf6;
+    --brand-light:#c4b5fd;
+    --brand-dark:#6d28d9;
+    --brand-glow:rgba(139,92,246,.35);
+}
 
-        .input { width: 100%; padding: 15px; border: 2px solid #cbd5e1; border-radius: 15px; font-size: 18px; margin-bottom: 15px; }
-        .btn { width: 100%; padding: 18px; font-size: 20px; font-weight: 900; border: none; border-radius: 15px; cursor: pointer; transition: 0.3s; }
-        
-        .color-picker { display: flex; gap: 15px; margin: 15px 0; }
-        .color-dot { width: 45px; height: 45px; border-radius: 50%; cursor: pointer; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: 0.2s; }
-        .color-dot.active { transform: scale(1.2); outline: 4px solid var(--accent-primary); outline-offset: 3px; }
+:root[data-color="gray"]{
+    --brand-main:#64748b;
+    --brand-light:#cbd5e1;
+    --brand-dark:#334155;
+    --brand-glow:rgba(100,116,139,.35);
+}
 
-        .controls { position: fixed; bottom: 30px; right: 30px; display: flex; gap: 20px; z-index: 1000; }
-        .ctrl-btn { width: 70px; height: 70px; border-radius: 50%; border: 4px solid var(--accent-secondary); background: var(--card-bg); font-size: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
-    </style>
+/* =========================
+   Light Theme
+========================= */
+
+:root[data-theme="light"]{
+    --bg:
+        radial-gradient(circle at top left, rgba(147,197,253,.25), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(196,181,253,.22), transparent 35%),
+        linear-gradient(135deg,#f8fbff 0%,#eef5ff 35%,#ffffff 100%);
+
+    --header-bg:rgba(255,255,255,.72);
+    --card-bg:rgba(255,255,255,.78);
+    --card-hover:#ffffff;
+    --panel-bg:rgba(255,255,255,.86);
+
+    --text-main:#0f172a;
+    --text-sub:#475569;
+    --text-soft:#94a3b8;
+
+    --border:rgba(255,255,255,.65);
+
+    --shadow:
+        0 10px 30px rgba(15,23,42,.06),
+        0 2px 8px rgba(15,23,42,.03);
+
+    --shadow-hover:
+        0 22px 40px rgba(59,130,246,.14),
+        0 10px 20px rgba(15,23,42,.08);
+
+    --glass-blur:22px;
+}
+
+/* =========================
+   Dark Theme
+========================= */
+
+:root[data-theme="dark"]{
+    --bg:
+        radial-gradient(circle at top left, rgba(59,130,246,.16), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(139,92,246,.14), transparent 35%),
+        linear-gradient(135deg,#020617 0%,#0f172a 50%,#111827 100%);
+
+    --header-bg:rgba(15,23,42,.72);
+    --card-bg:rgba(15,23,42,.78);
+    --card-hover:#162033;
+    --panel-bg:rgba(15,23,42,.92);
+
+    --text-main:#f8fafc;
+    --text-sub:#cbd5e1;
+    --text-soft:#64748b;
+
+    --border:rgba(255,255,255,.06);
+
+    --shadow:
+        0 10px 30px rgba(0,0,0,.35);
+
+    --shadow-hover:
+        0 24px 50px rgba(0,0,0,.5);
+
+    --glass-blur:26px;
+}
+
+/* =========================
+   Base
+========================= */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+    min-height:100vh;
+    background:var(--bg);
+    background-attachment:fixed;
+    color:var(--text-main);
+    font-family:"Noto Sans TC",sans-serif;
+    overflow-x:hidden;
+    position:relative;
+}
+
+/* 漂浮背景光 */
+
+body::before,
+body::after{
+    content:"";
+    position:fixed;
+    width:420px;
+    height:420px;
+    border-radius:50%;
+    filter:blur(90px);
+    opacity:.22;
+    z-index:-1;
+    pointer-events:none;
+}
+
+body::before{
+    background:var(--brand-light);
+    top:-120px;
+    left:-80px;
+}
+
+body::after{
+    background:var(--brand-main);
+    bottom:-150px;
+    right:-100px;
+}
+
+/* =========================
+   Header
+========================= */
+
+.header{
+    position:fixed;
+    top:16px;
+    left:50%;
+    transform:translateX(-50%);
+    width:calc(100% - 30px);
+    max-width:1440px;
+    z-index:1000;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    padding:18px 26px;
+
+    background:var(--header-bg);
+    backdrop-filter:blur(var(--glass-blur));
+
+    border:1px solid var(--border);
+    border-radius:28px;
+
+    box-shadow:var(--shadow);
+}
+
+.title-group{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+}
+
+.title-main{
+    font-size:clamp(28px,5vw,46px);
+    font-weight:900;
+    letter-spacing:.5px;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--brand-main),
+            var(--brand-light)
+        );
+
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+
+    line-height:1;
+}
+
+.portal-sub{
+    font-size:11px;
+    font-weight:900;
+    letter-spacing:4px;
+    color:var(--brand-main);
+    opacity:.85;
+}
+
+.clock-wrap{
+    text-align:right;
+}
+
+#clock{
+    font-size:clamp(24px,4vw,40px);
+    font-weight:900;
+    font-family:"Inter",sans-serif;
+    color:var(--text-main);
+    font-variant-numeric:tabular-nums;
+    letter-spacing:1px;
+}
+
+#date{
+    margin-top:2px;
+    font-size:13px;
+    font-weight:700;
+    color:var(--text-sub);
+}
+
+/* =========================
+   Main
+========================= */
+
+.main{
+    width:100%;
+    max-width:1480px;
+    margin:auto;
+    padding:
+        150px
+        24px
+        110px;
+}
+
+.section-title{
+    position:relative;
+
+    display:flex;
+    align-items:center;
+    gap:14px;
+
+    margin:
+        42px
+        0
+        24px;
+
+    font-size:30px;
+    font-weight:900;
+    color:var(--text-main);
+
+    letter-spacing:.5px;
+}
+
+.section-title::before{
+    content:"";
+    width:8px;
+    height:34px;
+    border-radius:999px;
+
+    background:
+        linear-gradient(
+            to bottom,
+            var(--brand-light),
+            var(--brand-main)
+        );
+
+    box-shadow:0 0 18px var(--brand-glow);
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(var(--grid-cols),1fr);
+    gap:24px;
+}
+
+/* =========================
+   Card
+========================= */
+
+.card{
+    position:relative;
+    overflow:hidden;
+
+    background:var(--card-bg);
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius:var(--radius-xl);
+
+    box-shadow:var(--shadow);
+
+    backdrop-filter:blur(18px);
+
+    transition:var(--transition);
+}
+
+.card::before{
+    content:"";
+    position:absolute;
+    inset:0;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255,255,255,.18),
+            transparent 45%
+        );
+
+    pointer-events:none;
+}
+
+.card::after{
+    content:"";
+    position:absolute;
+    inset:-2px;
+
+    border-radius:inherit;
+
+    padding:1px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255,255,255,.4),
+            transparent,
+            rgba(255,255,255,.15)
+        );
+
+    -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+
+    -webkit-mask-composite:xor;
+    mask-composite:exclude;
+
+    opacity:.45;
+    pointer-events:none;
+}
+
+.card:hover{
+    transform:
+        translateY(-8px)
+        scale(1.015);
+
+    background:var(--card-hover);
+
+    border-color:rgba(255,255,255,.3);
+
+    box-shadow:var(--shadow-hover);
+}
+
+.card-link{
+    position:relative;
+    z-index:2;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+
+    text-align:center;
+    text-decoration:none;
+    color:inherit;
+
+    min-height:240px;
+
+    padding:
+        34px
+        24px;
+}
+
+.icon-box{
+    width:88px;
+    height:88px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:28px;
+
+    font-size:46px;
+
+    margin-bottom:22px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255,255,255,.9),
+            rgba(255,255,255,.4)
+        );
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.9),
+        0 12px 25px rgba(0,0,0,.08);
+
+    transition:var(--transition);
+}
+
+[data-theme="dark"] .icon-box{
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255,255,255,.08),
+            rgba(255,255,255,.03)
+        );
+}
+
+.card:hover .icon-box{
+    transform:
+        translateY(-4px)
+        scale(1.05);
+
+    box-shadow:
+        0 0 0 8px rgba(255,255,255,.05),
+        0 18px 35px var(--brand-glow);
+}
+
+.card-title{
+    font-size:var(--dynamic-title-size);
+    font-weight:900;
+    line-height:1.25;
+    color:var(--text-main);
+
+    margin-bottom:10px;
+
+    word-break:break-word;
+}
+
+.card-desc{
+    font-size:var(--dynamic-desc-size);
+    font-weight:700;
+    line-height:1.7;
+    color:var(--text-sub);
+
+    word-break:break-word;
+}
+
+/* =========================
+   Highlight Card
+========================= */
+
+.card.highlight-card{
+    background:
+        linear-gradient(
+            145deg,
+            #fff9db,
+            #fff4b8
+        ) !important;
+
+    border:
+        1px solid
+        rgba(255,215,0,.45) !important;
+
+    box-shadow:
+        0 16px 35px rgba(255,193,7,.18),
+        inset 0 1px 0 rgba(255,255,255,.8);
+}
+
+.card.highlight-card::before{
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255,255,255,.55),
+            transparent 40%
+        );
+}
+
+.card.highlight-card .card-title{
+    color:#7c2d12 !important;
+}
+
+.card.highlight-card .card-desc{
+    color:#b91c1c !important;
+}
+
+/* =========================
+   Controls
+========================= */
+
+.controls{
+    position:fixed;
+    right:28px;
+    bottom:28px;
+
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+
+    z-index:1200;
+}
+
+.ctrl-btn{
+    width:72px;
+    height:72px;
+
+    border:none;
+    cursor:pointer;
+
+    border-radius:24px;
+
+    background:var(--card-bg);
+
+    color:var(--text-main);
+
+    font-size:30px;
+
+    backdrop-filter:blur(18px);
+
+    border:1px solid var(--border);
+
+    box-shadow:var(--shadow);
+
+    transition:var(--transition);
+}
+
+.ctrl-btn:hover{
+    transform:
+        translateY(-4px)
+        scale(1.05);
+
+    box-shadow:
+        0 18px 40px rgba(0,0,0,.15);
+
+    border-color:var(--brand-light);
+}
+
+/* =========================
+   Admin Panel
+========================= */
+
+.admin-panel{
+    position:fixed;
+    top:0;
+    right:-100%;
+
+    width:520px;
+    max-width:100%;
+    height:100vh;
+
+    z-index:2000;
+
+    overflow-y:auto;
+
+    padding:34px;
+
+    background:var(--panel-bg);
+    backdrop-filter:blur(30px);
+
+    border-left:1px solid var(--border);
+
+    box-shadow:
+        -20px 0 60px rgba(0,0,0,.2);
+
+    transition:.45s cubic-bezier(.22,1,.36,1);
+}
+
+.admin-panel.show{
+    right:0;
+}
+
+.admin-panel::-webkit-scrollbar{
+    width:10px;
+}
+
+.admin-panel::-webkit-scrollbar-thumb{
+    background:rgba(148,163,184,.45);
+    border-radius:999px;
+}
+
+.panel-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    margin-bottom:28px;
+}
+
+.panel-title{
+    font-size:34px;
+    font-weight:900;
+    color:var(--text-main);
+}
+
+.close-btn{
+    border:none;
+    background:none;
+
+    font-size:42px;
+    cursor:pointer;
+
+    color:#ef4444;
+}
+
+.admin-setting-box{
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255,255,255,.08),
+            rgba(255,255,255,.03)
+        );
+
+    border:
+        1px solid
+        rgba(255,255,255,.08);
+
+    border-radius:28px;
+
+    padding:24px;
+
+    margin-bottom:28px;
+}
+
+.admin-setting-box h3{
+    font-size:24px;
+    margin-bottom:20px;
+    color:var(--brand-main);
+}
+
+.admin-label{
+    display:block;
+
+    margin:
+        20px
+        0
+        10px;
+
+    font-size:17px;
+    font-weight:900;
+}
+
+.color-picker{
+    display:flex;
+    gap:16px;
+}
+
+.color-dot{
+    width:52px;
+    height:52px;
+
+    border-radius:50%;
+    cursor:pointer;
+
+    border:4px solid rgba(255,255,255,.7);
+
+    transition:var(--transition);
+
+    box-shadow:
+        0 8px 20px rgba(0,0,0,.08);
+}
+
+.color-dot:hover{
+    transform:scale(1.08);
+}
+
+.color-dot.active{
+    transform:scale(1.12);
+    outline:4px solid var(--brand-main);
+    outline-offset:3px;
+}
+
+.input,
+select{
+    width:100%;
+
+    padding:16px 18px;
+
+    margin-bottom:14px;
+
+    border-radius:18px;
+
+    border:
+        1px solid
+        rgba(148,163,184,.25);
+
+    background:
+        rgba(255,255,255,.08);
+
+    color:var(--text-main);
+
+    font-size:17px;
+    font-weight:700;
+
+    outline:none;
+
+    transition:var(--transition);
+}
+
+.input:focus,
+select:focus{
+    border-color:var(--brand-main);
+    box-shadow:
+        0 0 0 5px var(--brand-glow);
+}
+
+.btn{
+    width:100%;
+
+    border:none;
+    cursor:pointer;
+
+    border-radius:20px;
+
+    padding:18px;
+
+    font-size:18px;
+    font-weight:900;
+
+    transition:var(--transition);
+}
+
+.btn:hover{
+    transform:translateY(-2px);
+}
+
+.manage-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    gap:12px;
+
+    padding:14px 16px;
+    margin-bottom:10px;
+
+    border-radius:18px;
+
+    background:
+        rgba(255,255,255,.05);
+
+    border:
+        1px solid
+        rgba(255,255,255,.06);
+
+    color:var(--text-main);
+
+    font-weight:700;
+}
+
+.mini-del-btn{
+    border:none;
+    cursor:pointer;
+
+    padding:
+        8px
+        12px;
+
+    border-radius:12px;
+
+    background:#ef4444;
+    color:white;
+
+    font-weight:900;
+}
+
+#emojiPicker{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
+
+    margin-bottom:18px;
+}
+
+#emojiPicker div{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    height:72px;
+
+    border-radius:20px;
+
+    font-size:30px;
+
+    cursor:pointer;
+
+    background:
+        rgba(255,255,255,.06);
+
+    border:
+        1px solid
+        rgba(255,255,255,.08);
+
+    transition:var(--transition);
+}
+
+#emojiPicker div:hover{
+    transform:translateY(-2px);
+}
+
+/* =========================
+   Range Slider
+========================= */
+
+input[type="range"]{
+    width:100%;
+    height:10px;
+    appearance:none;
+
+    border-radius:999px;
+
+    background:
+        linear-gradient(
+            to right,
+            var(--brand-main),
+            var(--brand-light)
+        );
+
+    outline:none;
+}
+
+input[type="range"]::-webkit-slider-thumb{
+    appearance:none;
+
+    width:26px;
+    height:26px;
+
+    border-radius:50%;
+
+    background:white;
+
+    border:4px solid var(--brand-main);
+
+    cursor:pointer;
+}
+
+/* =========================
+   Mobile
+========================= */
+
+@media(max-width:1200px){
+    .grid{
+        grid-template-columns:repeat(3,1fr);
+    }
+}
+
+@media(max-width:900px){
+    .grid{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .card-link{
+        min-height:220px;
+    }
+}
+
+@media(max-width:640px){
+
+    .header{
+        top:10px;
+        width:calc(100% - 16px);
+
+        padding:
+            16px
+            18px;
+
+        border-radius:24px;
+    }
+
+    .main{
+        padding:
+            128px
+            16px
+            120px;
+    }
+
+    .grid{
+        grid-template-columns:1fr;
+        gap:18px;
+    }
+
+    .section-title{
+        font-size:24px;
+    }
+
+    .card-link{
+        min-height:190px;
+        padding:28px 20px;
+    }
+
+    .icon-box{
+        width:78px;
+        height:78px;
+        font-size:40px;
+    }
+
+    .controls{
+        right:16px;
+        bottom:16px;
+    }
+
+    .ctrl-btn{
+        width:64px;
+        height:64px;
+        border-radius:20px;
+        font-size:28px;
+    }
+
+    .admin-panel{
+        width:100%;
+        border-left:none;
+    }
+}
+</style>
 </head>
+
 <body id="bodyRoot">
 
+<!-- Header -->
 <div class="header">
+
     <div class="title-group">
         <div class="title-main">中正診所</div>
-        <div style="font-size: 14px; color: var(--brand-main); font-weight: 700; letter-spacing: 3px;">PORTAL SYSTEM</div>
+        <div class="portal-sub">PORTAL SYSTEM</div>
     </div>
-    <div style="text-align: right;">
-        <div id="clock" style="font-size: clamp(24px, 4vw, 40px); font-weight: 900; color: var(--accent-primary); font-variant-numeric: tabular-nums;">00:00:00</div>
-        <div id="date" style="font-size: 16px; font-weight: 700; color: var(--text-sub);"></div>
+
+    <div class="clock-wrap">
+        <div id="clock">00:00:00</div>
+        <div id="date"></div>
     </div>
+
 </div>
 
+<!-- Main -->
 <div class="main" id="mainContainer">
+
     <div class="section-title">主要入口</div>
     <div id="primaryGrid" class="grid"></div>
+
     <div class="section-title">次要工具</div>
     <div id="secondaryGrid" class="grid"></div>
+
 </div>
 
+<!-- Floating Buttons -->
 <div class="controls">
     <button class="ctrl-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
     <button class="ctrl-btn" onclick="toggleAdminMode()">⚙️</button>
 </div>
 
+<!-- Admin -->
 <div class="admin-panel" id="adminPanel">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h2>介面管理</h2>
-        <button onclick="closeAdmin()" style="font-size:40px; border:none; background:none; cursor:pointer; color:#ef4444;">✕</button>
+
+    <div class="panel-header">
+        <div class="panel-title">介面管理</div>
+        <button onclick="closeAdmin()" class="close-btn">✕</button>
     </div>
 
     <div class="admin-setting-box">
+
         <h3>🎨 顯示設定</h3>
-        
+
         <label class="admin-label">主題顏色</label>
+
         <div class="color-picker">
-            <div class="color-dot" style="background:#0284c7" onclick="setColor('blue')" id="dot-blue"></div>
-            <div class="color-dot" style="background:#059669" onclick="setColor('green')" id="dot-green"></div>
+            <div class="color-dot" style="background:#3b82f6" onclick="setColor('blue')" id="dot-blue"></div>
+            <div class="color-dot" style="background:#10b981" onclick="setColor('green')" id="dot-green"></div>
             <div class="color-dot" style="background:#8b5cf6" onclick="setColor('purple')" id="dot-purple"></div>
             <div class="color-dot" style="background:#64748b" onclick="setColor('gray')" id="dot-gray"></div>
         </div>
 
-        <label class="admin-label">標題大小 <span class="admin-val-tag" id="ts-val">28px</span></label>
-        <input type="range" id="titleSlider" min="16" max="50" value="28" style="width:100%; height:10px;" oninput="applyUIStyle()">
-        
-        <label class="admin-label">內容大小 <span class="admin-val-tag" id="ds-val">18px</span></label>
-        <input type="range" id="descSlider" min="12" max="35" value="18" style="width:100%; height:10px;" oninput="applyUIStyle()">
-        
-        <label class="admin-label">電腦版一列顯示幾張卡片</label>
-        <select id="gridColSelect" class="input" onchange="applyUIStyle()">
-            <option value="6">一列 6 張 (小)</option>
-            <option value="5" selected>一列 5 張 (中)</option>
-            <option value="4">一列 4 張 (大)</option>
-            <option value="3">一列 3 張 (超大)</option>
+        <label class="admin-label">
+            標題大小
+            <span id="ts-val">24px</span>
+        </label>
+
+        <input
+            type="range"
+            id="titleSlider"
+            min="16"
+            max="45"
+            value="24"
+            oninput="applyUIStyle()"
+        >
+
+        <label class="admin-label">
+            說明大小
+            <span id="ds-val">15px</span>
+        </label>
+
+        <input
+            type="range"
+            id="descSlider"
+            min="12"
+            max="30"
+            value="15"
+            oninput="applyUIStyle()"
+        >
+
+        <label class="admin-label">電腦版排版</label>
+
+        <select id="gridColSelect" onchange="applyUIStyle()">
+            <option value="6">一列 6 張</option>
+            <option value="5">一列 5 張</option>
+            <option value="4" selected>一列 4 張</option>
         </select>
+
     </div>
 
-    <h3>🆕 新增自訂書籤</h3>
+    <h3 style="font-size:24px; margin-bottom:16px;">🆕 新增自訂書籤</h3>
+
     <select id="linkCategory" class="input">
         <option value="primary">主要入口區</option>
         <option value="secondary" selected>次要工具區</option>
     </select>
-    <div id="emojiPicker" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px;"></div>
-    <input id="linkTitle" class="input" placeholder="書籤名稱 (含「重要」自動變黃)">
-    <input id="linkUrl" class="input" placeholder="網址 (請包含 https://)">
-    <input id="linkDesc" class="input" placeholder="簡短說明 (可不填)">
-    <button class="btn" style="background:var(--brand-main); color:white; box-shadow: 0 4px 15px rgba(0,0,0,0.1);" onclick="saveLink()">儲存並新增書籤</button>
-    
-    <div id="customLinksList" style="margin-top:30px;"></div>
-    <button class="btn" style="background:#8b5cf6; color:white; margin-top:30px;" onclick="location.reload()">🔄 同步雲端資料</button>
+
+    <div id="emojiPicker"></div>
+
+    <input id="linkTitle" class="input" placeholder="名稱（含「重要」自動變色）">
+    <input id="linkUrl" class="input" placeholder="網址 (https://...)">
+    <input id="linkDesc" class="input" placeholder="簡短說明">
+
+    <button
+        class="btn"
+        style="
+            background:linear-gradient(135deg,var(--brand-main),var(--brand-dark));
+            color:white;
+        "
+        onclick="saveLink()"
+    >
+        儲存並新增
+    </button>
+
+    <div
+        id="customLinksList"
+        style="
+            margin-top:34px;
+            padding-top:26px;
+            border-top:1px solid rgba(148,163,184,.2);
+        "
+    ></div>
+
+    <button
+        class="btn"
+        style="
+            background:linear-gradient(135deg,#8b5cf6,#6d28d9);
+            color:white;
+            margin-top:30px;
+        "
+        onclick="location.reload()"
+    >
+        🔄 同步雲端資料
+    </button>
+
 </div>
 
 <script>
-    // 保留您原本完整的所有 JavaScript 邏輯，僅針對 setColor 與樣式部分微調
-    const SHEET_URL = `https://docs.google.com/spreadsheets/d/1uYBA_CncbEAydmzNC1SRnsKJdswNgQh3zg1x6TKo0UU/export?format=csv&gid=0`;
-    const emojis = ["🩺", "💉", "🏥", "💊", "📦", "💻", "🔍", "📋", "🧪", "📅", "📝", "⭐"];
-    let selectedIcon = "🔗";
-    let userLinks = JSON.parse(localStorage.getItem('cz_user_links_v4')) || { primary: [], secondary: [] };
+const SHEET_URL = `https://docs.google.com/spreadsheets/d/1uYBA_CncbEAydmzNC1SRnsKJdswNgQh3zg1x6TKo0UU/export?format=csv&gid=0`;
 
-    function setColor(color) {
-        document.documentElement.setAttribute('data-color', color);
-        document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
-        document.getElementById('dot-' + color).classList.add('active');
-        localStorage.setItem('cz_theme_color', color);
-    }
+const emojis = [
+    "🩺","💉","🏥","💊",
+    "📦","💻","🔍","📋",
+    "🧪","📅","📝","⭐",
+    "👤","⚙️","🔗","🏠"
+];
 
-    async function fetchCloudData() {
-        try {
-            const res = await fetch(SHEET_URL + "&cb=" + Date.now());
-            const text = await res.text();
-            const lines = text.split(/\r?\n/).slice(1);
-            const pg = document.getElementById("primaryGrid");
-            const sg = document.getElementById("secondaryGrid");
-            pg.innerHTML = ""; sg.innerHTML = "";
+let selectedIcon = "🔗";
 
-            lines.forEach(line => {
-                const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim());
-                if (cols.length >= 3) {
-                    const [cat, title, url, desc, icon] = cols;
-                    const html = createCard({title, url, desc, icon, isHighlight: title.includes("重要")});
-                    if (cat.toLowerCase().includes('primary')) pg.innerHTML += html;
-                    else sg.innerHTML += html;
+let userLinks =
+    JSON.parse(localStorage.getItem('cz_user_links_v4'))
+    || { primary: [], secondary: [] };
+
+/* =========================
+   Theme Color
+========================= */
+
+function setColor(color){
+
+    document.documentElement.setAttribute('data-color', color);
+
+    document
+        .querySelectorAll('.color-dot')
+        .forEach(d => d.classList.remove('active'));
+
+    document
+        .getElementById('dot-' + color)
+        .classList.add('active');
+
+    localStorage.setItem('cz_theme_color', color);
+}
+
+/* =========================
+   Fetch Cloud Data
+========================= */
+
+async function fetchCloudData(){
+
+    try{
+
+        const res = await fetch(
+            SHEET_URL + "&cb=" + Date.now()
+        );
+
+        const text = await res.text();
+
+        const lines =
+            text
+            .split(/\r?\n/)
+            .slice(1);
+
+        const pg = document.getElementById("primaryGrid");
+        const sg = document.getElementById("secondaryGrid");
+
+        pg.innerHTML = "";
+        sg.innerHTML = "";
+
+        lines.forEach(line => {
+
+            const cols = line
+                .split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
+                .map(c =>
+                    c.replace(/^"|"$/g, '').trim()
+                );
+
+            if(cols.length >= 3){
+
+                const [cat, title, url, desc, icon] = cols;
+
+                const html = createCard({
+                    title,
+                    url,
+                    desc,
+                    icon,
+                    isHighlight:title.includes("重要")
+                });
+
+                if(cat.toLowerCase().includes('primary')){
+                    pg.innerHTML += html;
+                }else{
+                    sg.innerHTML += html;
                 }
-            });
-            userLinks.primary.forEach(l => { l.isHighlight = l.title.includes("重要"); pg.innerHTML += createCard(l); });
-            userLinks.secondary.forEach(l => { l.isHighlight = l.title.includes("重要"); sg.innerHTML += createCard(l); });
-        } catch (e) { console.error("Cloud Error"); }
+            }
+        });
+
+        updateManageList();
+
+        userLinks.primary.forEach(l => {
+            l.isHighlight = l.title.includes("重要");
+            pg.innerHTML += createCard(l);
+        });
+
+        userLinks.secondary.forEach(l => {
+            l.isHighlight = l.title.includes("重要");
+            sg.innerHTML += createCard(l);
+        });
+
+    }catch(e){
+        console.error("Cloud Error");
+    }
+}
+
+/* =========================
+   Card Create
+========================= */
+
+function createCard(l){
+
+    return `
+        <div class="card ${l.isHighlight ? 'highlight-card' : ''}">
+            <a
+                class="card-link"
+                href="${l.url}"
+                target="_blank"
+            >
+                <span class="icon-box">
+                    ${l.icon || '🔗'}
+                </span>
+
+                <div class="card-title">
+                    ${l.title}
+                </div>
+
+                <div class="card-desc">
+                    ${l.desc || ''}
+                </div>
+            </a>
+        </div>
+    `;
+}
+
+/* =========================
+   Manage List
+========================= */
+
+function updateManageList(){
+
+    const listDiv =
+        document.getElementById("customLinksList");
+
+    listDiv.innerHTML =
+        "<h3 style='margin-bottom:14px;font-size:24px;'>📋 已存書籤管理</h3>";
+
+    const all = [
+        ...userLinks.primary,
+        ...userLinks.secondary
+    ];
+
+    all.forEach(l => {
+
+        const item = document.createElement("div");
+
+        item.className = "manage-item";
+
+        item.innerHTML = `
+            <span>${l.icon} ${l.title}</span>
+            <button
+                class="mini-del-btn"
+                onclick="deleteLink(${l.id})"
+            >
+                刪除
+            </button>
+        `;
+
+        listDiv.appendChild(item);
+    });
+}
+
+/* =========================
+   Apply UI
+========================= */
+
+function applyUIStyle(){
+
+    const ts =
+        document.getElementById('titleSlider').value;
+
+    const ds =
+        document.getElementById('descSlider').value;
+
+    const col =
+        document.getElementById('gridColSelect').value;
+
+    document.getElementById('ts-val').innerText =
+        ts + 'px';
+
+    document.getElementById('ds-val').innerText =
+        ds + 'px';
+
+    document.documentElement.style.setProperty(
+        '--dynamic-title-size',
+        ts + 'px'
+    );
+
+    document.documentElement.style.setProperty(
+        '--dynamic-desc-size',
+        ds + 'px'
+    );
+
+    document.documentElement.style.setProperty(
+        '--grid-cols',
+        col
+    );
+
+    localStorage.setItem(
+        'cz_ui_config',
+        JSON.stringify({ts, ds, col})
+    );
+}
+
+/* =========================
+   Save Link
+========================= */
+
+function saveLink(){
+
+    const title =
+        document.getElementById('linkTitle').value;
+
+    const url =
+        document.getElementById('linkUrl').value;
+
+    const desc =
+        document.getElementById('linkDesc').value;
+
+    const cat =
+        document.getElementById('linkCategory').value;
+
+    if(!title || !url){
+        return alert("請填寫名稱與網址");
     }
 
-    function createCard(l) {
-        return `
-            <div class="card ${l.isHighlight ? 'highlight-card' : ''}">
-                <a class="card-link" href="${l.url}" target="_blank">
-                    <span class="icon-box">${l.icon || '🔗'}</span>
-                    <div class="card-title">${l.title}</div>
-                    <div class="card-desc">${l.desc || ''}</div>
-                </a>
-            </div>`;
-    }
-
-    function applyUIStyle() {
-        const ts = document.getElementById('titleSlider').value;
-        const ds = document.getElementById('descSlider').value;
-        const col = document.getElementById('gridColSelect').value;
-        document.getElementById('ts-val').innerText = ts + 'px';
-        document.getElementById('ds-val').innerText = ds + 'px';
-        document.documentElement.style.setProperty('--dynamic-title-size', ts + 'px');
-        document.documentElement.style.setProperty('--dynamic-desc-size', ds + 'px');
-        document.documentElement.style.setProperty('--grid-cols', col);
-        localStorage.setItem('cz_ui_config', JSON.stringify({ts, ds, col}));
-    }
-
-    function saveLink() {
-        const title = document.getElementById('linkTitle').value;
-        const url = document.getElementById('linkUrl').value;
-        const desc = document.getElementById('linkDesc').value;
-        const cat = document.getElementById('linkCategory').value;
-        if(!title || !url) return alert("請填寫名稱與網址");
-        userLinks[cat].push({id: Date.now(), title, url, desc, icon: selectedIcon});
-        localStorage.setItem('cz_user_links_v4', JSON.stringify(userLinks));
-        location.reload();
-    }
-
-    const picker = document.getElementById('emojiPicker');
-    emojis.forEach(e => {
-        const div = document.createElement('div');
-        div.style = "font-size:26px; cursor:pointer; text-align:center; padding:10px; border:2px solid #ddd; border-radius:12px; background:rgba(255,255,255,0.3);";
-        div.innerText = e;
-        div.onclick = () => { 
-            document.querySelectorAll('#emojiPicker div').forEach(d => d.style.borderColor = "#ddd");
-            selectedIcon = e; div.style.borderColor = "var(--brand-main)"; 
-        };
-        picker.appendChild(div);
+    userLinks[cat].push({
+        id: Date.now(),
+        title,
+        url,
+        desc,
+        icon:selectedIcon
     });
 
-    function toggleAdminMode() { document.getElementById("adminPanel").classList.toggle("show"); }
-    function closeAdmin() { document.getElementById("adminPanel").classList.remove("show"); }
-    function toggleTheme() {
-        const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-        document.documentElement.setAttribute('data-theme', next);
-        document.getElementById('themeBtn').innerText = next === 'light' ? '🌙' : '☀️';
-        localStorage.setItem('cz_portal_theme', next);
-    }
-    function updateClock() {
-        const now = new Date();
-        document.getElementById("clock").innerText = now.toLocaleTimeString("zh-TW", { hour12: false });
-        const y = now.getFullYear();
-        document.getElementById("date").innerText = `(民${y-1911}) ${y}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')}`;
+    localStorage.setItem(
+        'cz_user_links_v4',
+        JSON.stringify(userLinks)
+    );
+
+    location.reload();
+}
+
+/* =========================
+   Delete Link
+========================= */
+
+function deleteLink(id){
+
+    if(!confirm("確定刪除？")) return;
+
+    userLinks.primary =
+        userLinks.primary.filter(x => x.id != id);
+
+    userLinks.secondary =
+        userLinks.secondary.filter(x => x.id != id);
+
+    localStorage.setItem(
+        'cz_user_links_v4',
+        JSON.stringify(userLinks)
+    );
+
+    location.reload();
+}
+
+/* =========================
+   Emoji Picker
+========================= */
+
+const picker =
+    document.getElementById('emojiPicker');
+
+emojis.forEach(e => {
+
+    const div = document.createElement('div');
+
+    div.innerText = e;
+
+    div.onclick = () => {
+
+        document
+            .querySelectorAll('#emojiPicker div')
+            .forEach(d => d.style.borderColor =
+                "rgba(255,255,255,.08)"
+            );
+
+        selectedIcon = e;
+
+        div.style.borderColor =
+            "var(--brand-main)";
+    };
+
+    picker.appendChild(div);
+});
+
+/* =========================
+   Panel
+========================= */
+
+function toggleAdminMode(){
+    document
+        .getElementById("adminPanel")
+        .classList
+        .toggle("show");
+}
+
+function closeAdmin(){
+    document
+        .getElementById("adminPanel")
+        .classList
+        .remove("show");
+}
+
+/* =========================
+   Theme Toggle
+========================= */
+
+function toggleTheme(){
+
+    const next =
+        document.documentElement
+        .getAttribute('data-theme')
+        === 'light'
+        ? 'dark'
+        : 'light';
+
+    document.documentElement
+        .setAttribute('data-theme', next);
+
+    document.getElementById('themeBtn').innerText =
+        next === 'light'
+        ? '🌙'
+        : '☀️';
+
+    localStorage.setItem(
+        'cz_portal_theme',
+        next
+    );
+}
+
+/* =========================
+   Clock
+========================= */
+
+function updateClock(){
+
+    const now = new Date();
+
+    document.getElementById("clock").innerText =
+        now.toLocaleTimeString(
+            "zh-TW",
+            { hour12:false }
+        );
+
+    const y = now.getFullYear();
+
+    document.getElementById("date").innerText =
+        `${y}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')}`;
+}
+
+/* =========================
+   Init
+========================= */
+
+window.onload = () => {
+
+    const cfg =
+        JSON.parse(
+            localStorage.getItem('cz_ui_config')
+        );
+
+    if(cfg){
+
+        document.getElementById('titleSlider').value =
+            cfg.ts;
+
+        document.getElementById('descSlider').value =
+            cfg.ds;
+
+        document.getElementById('gridColSelect').value =
+            cfg.col;
+
+        applyUIStyle();
     }
 
-    window.onload = () => {
-        const cfg = JSON.parse(localStorage.getItem('cz_ui_config'));
-        if(cfg) {
-            document.getElementById('titleSlider').value = cfg.ts;
-            document.getElementById('descSlider').value = cfg.ds;
-            document.getElementById('gridColSelect').value = cfg.col;
-            applyUIStyle();
-        }
-        const savedColor = localStorage.getItem('cz_theme_color') || 'blue';
-        setColor(savedColor);
-        const savedTheme = localStorage.getItem('cz_portal_theme');
-        if(savedTheme) {
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            document.getElementById('themeBtn').innerText = savedTheme === 'light' ? '🌙' : '☀️';
-        }
-        setInterval(updateClock, 1000); updateClock();
-        fetchCloudData();
-    };
+    const savedColor =
+        localStorage.getItem('cz_theme_color')
+        || 'blue';
+
+    setColor(savedColor);
+
+    const savedTheme =
+        localStorage.getItem('cz_portal_theme');
+
+    if(savedTheme){
+
+        document.documentElement
+            .setAttribute('data-theme', savedTheme);
+
+        document.getElementById('themeBtn').innerText =
+            savedTheme === 'light'
+            ? '🌙'
+            : '☀️';
+    }
+
+    setInterval(updateClock, 1000);
+
+    updateClock();
+
+    fetchCloudData();
+};
 </script>
+
 </body>
 </html>
