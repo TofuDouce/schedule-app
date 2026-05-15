@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" data-theme="light" data-color="purple">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>中正診所 Portal</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
+
+<style>
+:root{
+    --dynamic-title-size:28px;
+    --dynamic-desc-size:17px;
+    --grid-cols:4;
+
+    --gold:#d8b46a;
+    --gold-light:#f8e7b2;
+    --moon:#ebe6ff;
+    --deep:#140f1f;
+    --purple:#6f54c9;
+    --wine:#2a183b;
+    --card:#241533;
+    --line:rgba(255,255,255,0.12);
+    --glow:0 0 25px rgba(212,176,103,0.28);
+}
+
+:root[data-color="blue"]{
+    --accent:#7ec8ff;
+    --accent2:#295fa8;
+}
+:root[data-color="green"]{
+    --accent:#9fe6b1;
+    --accent2:#26734d;
+}
+:root[data-color="purple"]{
+    --accent:#d8c0ff;
+    --accent2:#6f54c9;
+}
+:root[data-color="gray"]{
+    --accent:#d8d8e8;
+    --accent2:#7a7a91;
+}
+
+:root[data-theme="light"]{
+    --bg:
+    radial-gradient(circle at top, rgba(255,255,255,0.08), transparent 30%),
+    linear-gradient(135deg,#f8f1ff 0%,#ede4ff 20%,#1f132c 100%);
+
+    --header-bg:rgba(28,17,41,0.72);
+    --card-bg:rgba(39,22,56,0.72);
+    --text-main:#fff8ef;
+    --text-sub:#e7ddff;
+}
+
+:root[data-theme="dark"]{
+    --bg:
+    radial-gradient(circle at top, rgba(255,255,255,0.05), transparent 30%),
+    linear-gradient(135deg,#0d0815 0%,#1a1025 45%,#09060f 100%);
+
+    --header-bg:rgba(12,8,18,0.82);
+    --card-bg:rgba(22,14,33,0.78);
+    --text-main:#fff8ef;
+    --text-sub:#d9caef;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+body{
+    min-height:100vh;
+    background:var(--bg);
+    background-attachment:fixed;
+    overflow-x:hidden;
+    font-family:"Noto Sans TC",sans-serif;
+    color:var(--text-main);
+    position:relative;
+}
+
+/* ✨ 星空背景 */
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    background-image:
+    radial-gradient(circle at 20% 30%, rgba(255,255,255,0.8) 1px, transparent 1px),
+    radial-gradient(circle at 70% 20%, rgba(255,255,255,0.6) 1px, transparent 1px),
+    radial-gradient(circle at 80% 70%, rgba(255,255,255,0.6) 1px, transparent 1px),
+    radial-gradient(circle at 35% 80%, rgba(255,255,255,0.5) 1px, transparent 1px);
+    background-size:300px 300px;
+    opacity:.5;
+    z-index:-1;
+}
+
+/* 🌙 慕夏花紋 */
+body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    background:
+    radial-gradient(circle at top center, rgba(255,255,255,0.08), transparent 30%);
+    mask-image:
+    linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,.85));
+    z-index:-1;
+}
+
+.header{
+    position:fixed;
+    top:0;
+    left:0;
+    right:0;
+    z-index:999;
+    padding:18px 5%;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    background:var(--header-bg);
+    backdrop-filter:blur(24px);
+
+    border-bottom:1px solid rgba(255,255,255,0.08);
+    box-shadow:
+    0 10px 30px rgba(0,0,0,0.35),
+    inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+.header::after{
+    content:"☾";
+    position:absolute;
+    left:50%;
+    bottom:-18px;
+    transform:translateX(-50%);
+    font-size:24px;
+    color:var(--gold);
+    text-shadow:0 0 10px rgba(255,220,150,0.5);
+}
+
+.title-main{
+    font-family:"Cinzel",serif;
+    font-size:clamp(28px,5vw,48px);
+    font-weight:900;
+    letter-spacing:2px;
+
+    background:linear-gradient(to bottom,#fff8dd,#d8b46a);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+
+    text-shadow:0 0 15px rgba(255,223,162,0.2);
+}
+
+.portal-sub{
+    margin-top:2px;
+    font-size:11px;
+    letter-spacing:5px;
+    color:#e6d6b3;
+    opacity:.85;
+}
+
+#clock{
+    font-family:"Cinzel",serif;
+    font-size:clamp(24px,5vw,40px);
+    font-weight:700;
+    color:#fff7df;
+    text-align:right;
+    text-shadow:0 0 15px rgba(255,255,255,0.15);
+}
+
+#date{
+    margin-top:2px;
+    font-size:13px;
+    color:#d5c5e8;
+    text-align:right;
+}
+
+.main{
+    width:100%;
+    max-width:1500px;
+    margin:auto;
+    padding:130px 28px 120px;
+}
+
+.section-title{
+    position:relative;
+    margin:48px 0 26px;
+    text-align:center;
+
+    font-family:"Cinzel",serif;
+    font-size:30px;
+    font-weight:700;
+    letter-spacing:4px;
+    color:#fff4d2;
+}
+
+.section-title::before,
+.section-title::after{
+    content:"✦";
+    color:var(--gold);
+    margin:0 12px;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(var(--grid-cols),1fr);
+    gap:26px;
+}
+
+/* 🌟 卡片設計 */
+.card{
+    position:relative;
+    overflow:hidden;
+
+    border-radius:34px;
+
+    background:
+    linear-gradient(
+        180deg,
+        rgba(255,255,255,0.10),
+        rgba(255,255,255,0.03)
+    ),
+    var(--card-bg);
+
+    border:1px solid rgba(255,255,255,0.10);
+
+    box-shadow:
+    0 15px 40px rgba(0,0,0,0.35),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+
+    transition:.35s ease;
+}
+
+.card::before{
+    content:"";
+    position:absolute;
+    inset:10px;
+    border-radius:28px;
+    border:1px solid rgba(216,180,106,0.25);
+    pointer-events:none;
+}
+
+.card::after{
+    content:"☽";
+    position:absolute;
+    top:12px;
+    right:16px;
+    font-size:18px;
+    color:rgba(255,230,180,0.7);
+}
+
+.card:hover{
+    transform:translateY(-8px) scale(1.02);
+
+    box-shadow:
+    0 25px 60px rgba(0,0,0,0.45),
+    0 0 30px rgba(216,180,106,0.18);
+}
+
+.card-link{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    text-decoration:none;
+    color:inherit;
+
+    min-height:250px;
+    padding:34px 20px;
+}
+
+.icon-box{
+    font-size:60px;
+    margin-bottom:18px;
+    filter:drop-shadow(0 0 12px rgba(255,255,255,0.15));
+}
+
+.card-title{
+    font-size:var(--dynamic-title-size);
+    font-weight:900;
+    line-height:1.2;
+    margin-bottom:12px;
+
+    color:#fff4d6;
+}
+
+.card-desc{
+    font-size:var(--dynamic-desc-size);
+    line-height:1.6;
+    color:var(--text-sub);
+}
+
+/* ✨重要卡片 */
+.highlight-card{
+    background:
+    linear-gradient(180deg, rgba(255,238,186,0.18), rgba(255,255,255,0.05)),
+    rgba(54,34,18,0.88) !important;
+
+    border:1px solid rgba(255,224,133,0.45) !important;
+
+    box-shadow:
+    0 0 35px rgba(255,216,120,0.18),
+    inset 0 0 25px rgba(255,229,154,0.08);
+}
+
+.highlight-card .card-title{
+    color:#fff3c8 !important;
+}
+
+.highlight-card .card-desc{
+    color:#ffeab8 !important;
+}
+
+/* ⚙️ 控制按鈕 */
+.controls{
+    position:fixed;
+    right:24px;
+    bottom:24px;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+    z-index:999;
+}
+
+.ctrl-btn{
+    width:68px;
+    height:68px;
+    border-radius:50%;
+    border:1px solid rgba(255,255,255,0.15);
+
+    background:
+    linear-gradient(
+        180deg,
+        rgba(255,255,255,0.15),
+        rgba(255,255,255,0.03)
+    ),
+    rgba(29,18,41,0.88);
+
+    backdrop-filter:blur(15px);
+
+    color:#fff;
+    font-size:28px;
+    cursor:pointer;
+
+    box-shadow:
+    0 10px 30px rgba(0,0,0,0.35);
+
+    transition:.25s;
+}
+
+.ctrl-btn:hover{
+    transform:scale(1.08);
+    box-shadow:
+    0 0 30px rgba(255,226,160,0.25);
+}
+
+/* 🌙 管理面板 */
+.admin-panel{
+    position:fixed;
+    top:0;
+    right:-100%;
+    width:500px;
+    max-width:100%;
+    height:100vh;
+    z-index:3000;
+
+    overflow-y:auto;
+
+    background:
+    linear-gradient(
+        180deg,
+        rgba(31,18,46,0.96),
+        rgba(17,10,25,0.98)
+    );
+
+    backdrop-filter:blur(30px);
+
+    border-left:1px solid rgba(255,255,255,0.1);
+
+    transition:.4s ease;
+
+    padding:34px;
+}
+
+.admin-panel.show{
+    right:0;
+    box-shadow:-20px 0 50px rgba(0,0,0,0.5);
+}
+
+.admin-panel h2{
+    font-family:"Cinzel",serif;
+    font-size:34px;
+    color:#ffe8b0;
+    margin-bottom:26px;
+}
+
+.admin-setting-box{
+    border-radius:26px;
+    padding:22px;
+    margin-bottom:30px;
+
+    background:rgba(255,255,255,0.05);
+
+    border:1px solid rgba(255,255,255,0.08);
+}
+
+.admin-label{
+    display:block;
+    margin:18px 0 10px;
+    font-size:17px;
+    font-weight:900;
+    color:#fff4d8;
+}
+
+.input,
+select{
+    width:100%;
+    padding:16px;
+    border-radius:16px;
+    border:1px solid rgba(255,255,255,0.1);
+
+    background:rgba(255,255,255,0.08);
+    color:white;
+    font-size:16px;
+
+    outline:none;
+}
+
+.input::placeholder{
+    color:#d8cae9;
+}
+
+.btn{
+    width:100%;
+    border:none;
+    border-radius:18px;
+    padding:18px;
+
+    font-size:18px;
+    font-weight:900;
+    cursor:pointer;
+
+    background:linear-gradient(to right,#d8b46a,#fff0bf);
+    color:#2d1a10;
+
+    transition:.25s;
+}
+
+.btn:hover{
+    transform:translateY(-2px);
+}
+
+.manage-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    margin-bottom:10px;
+    padding:14px 16px;
+
+    border-radius:16px;
+
+    background:rgba(255,255,255,0.06);
+
+    border:1px solid rgba(255,255,255,0.06);
+}
+
+.mini-del-btn{
+    border:none;
+    border-radius:10px;
+    padding:8px 12px;
+
+    background:#ff5e75;
+    color:white;
+    font-weight:900;
+    cursor:pointer;
+}
+
+/* emoji */
+#emojiPicker div{
+    background:rgba(255,255,255,0.06) !important;
+    border:1px solid rgba(255,255,255,0.08) !important;
+    color:white;
+    transition:.2s;
+}
+
+#emojiPicker div:hover{
+    transform:scale(1.08);
+    background:rgba(255,255,255,0.12) !important;
+}
+
+/* RWD */
+@media(max-width:1200px){
+    .grid{
+        grid-template-columns:repeat(3,1fr);
+    }
+}
+
+@media(max-width:800px){
+    .grid{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .card-link{
+        min-height:220px;
+    }
+}
+
+@media(max-width:540px){
+
+    .main{
+        padding:120px 18px 100px;
+    }
+
+    .grid{
+        grid-template-columns:1fr;
+    }
+
+    .card-link{
+        min-height:190px;
+        padding:28px 18px;
+    }
+
+    .card-title{
+        font-size:24px !important;
+    }
+
+    .card-desc{
+        font-size:16px !important;
+    }
+
+    .admin-panel{
+        width:100%;
+        border-left:none;
+    }
+
+    .controls{
+        right:16px;
+        bottom:16px;
+    }
+
+    .ctrl-btn{
+        width:60px;
+        height:60px;
+    }
+}
+</style>
+</head>
+
+<body id="bodyRoot">
+
+<div class="header">
+    <div class="title-group">
+        <div class="title-main">中正診所</div>
+        <div class="portal-sub">MOONLIGHT PORTAL</div>
+    </div>
+
+    <div>
+        <div id="clock">00:00:00</div>
+        <div id="date"></div>
+    </div>
+</div>
+
+<div class="main" id="mainContainer">
+
+    <div class="section-title">主要入口</div>
+    <div id="primaryGrid" class="grid"></div>
+
+    <div class="section-title">次要工具</div>
+    <div id="secondaryGrid" class="grid"></div>
+
+</div>
+
+<div class="controls">
+    <button class="ctrl-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
+    <button class="ctrl-btn" onclick="toggleAdminMode()">⚙️</button>
+</div>
+
+<div class="admin-panel" id="adminPanel">
+
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+        <h2>Arcane Settings</h2>
+
+        <button
+            onclick="closeAdmin()"
+            style="
+            background:none;
+            border:none;
+            color:#ffb3c3;
+            font-size:42px;
+            cursor:pointer;
+        ">
+            ✕
+        </button>
+    </div>
+
+    <div class="admin-setting-box">
+
+        <h3 style="font-size:22px;color:#ffe2a1;margin-bottom:16px;">
+            ✨ 顯示設定
+        </h3>
+
+        <label class="admin-label">主題顏色</label>
+
+        <div class="color-picker" style="display:flex;gap:16px;margin-bottom:20px;">
+            <div class="color-dot" style="background:#7ec8ff" onclick="setColor('blue')" id="dot-blue"></div>
+            <div class="color-dot" style="background:#9fe6b1" onclick="setColor('green')" id="dot-green"></div>
+            <div class="color-dot" style="background:#d8c0ff" onclick="setColor('purple')" id="dot-purple"></div>
+            <div class="color-dot" style="background:#d8d8e8" onclick="setColor('gray')" id="dot-gray"></div>
+        </div>
+
+        <label class="admin-label">
+            標題大小
+            <span id="ts-val">28px</span>
+        </label>
+
+        <input
+            type="range"
+            id="titleSlider"
+            min="16"
+            max="45"
+            value="28"
+            style="width:100%;"
+            oninput="applyUIStyle()"
+        >
+
+        <label class="admin-label">
+            說明大小
+            <span id="ds-val">17px</span>
+        </label>
+
+        <input
+            type="range"
+            id="descSlider"
+            min="12"
+            max="30"
+            value="17"
+            style="width:100%;"
+            oninput="applyUIStyle()"
+        >
+
+        <label class="admin-label">電腦版排版</label>
+
+        <select id="gridColSelect" onchange="applyUIStyle()">
+            <option value="6">一列 6 張</option>
+            <option value="5">一列 5 張</option>
+            <option value="4" selected>一列 4 張</option>
+        </select>
+
+    </div>
+
+    <h3 style="font-size:22px;margin-bottom:15px;color:#ffe7b5;">
+        🪄 新增自訂書籤
+    </h3>
+
+    <select id="linkCategory" class="input">
+        <option value="primary">主要入口區</option>
+        <option value="secondary" selected>次要工具區</option>
+    </select>
+
+    <div
+        id="emojiPicker"
+        style="
+        display:grid;
+        grid-template-columns:repeat(4,1fr);
+        gap:10px;
+        margin:18px 0;
+    ">
+    </div>
+
+    <input id="linkTitle" class="input" placeholder="名稱">
+    <br><br>
+
+    <input id="linkUrl" class="input" placeholder="網址 https://">
+    <br><br>
+
+    <input id="linkDesc" class="input" placeholder="簡短說明">
+    <br><br>
+
+    <button class="btn" onclick="saveLink()">
+        儲存並新增
+    </button>
+
+    <div
+        id="customLinksList"
+        style="
+        margin-top:35px;
+        padding-top:25px;
+        border-top:1px solid rgba(255,255,255,0.08);
+    ">
+    </div>
+
+    <button
+        class="btn"
+        style="margin-top:30px;"
+        onclick="location.reload()"
+    >
+        🔄 同步雲端資料
+    </button>
+
+</div>
+
+<script>
+
+const SHEET_URL =
+`https://docs.google.com/spreadsheets/d/1uYBA_CncbEAydmzNC1SRnsKJdswNgQh3zg1x6TKo0UU/export?format=csv&gid=0`;
+
+const emojis = [
+"🩺","💉","🏥","💊",
+"📦","💻","🔍","📋",
+"🧪","📅","📝","⭐",
+"👤","⚙️","🔗","🏠"
+];
+
+let selectedIcon = "🔗";
+
+let userLinks =
+JSON.parse(localStorage.getItem('cz_user_links_v4'))
+|| { primary: [], secondary: [] };
+
+function setColor(color){
+
+    document.documentElement.setAttribute('data-color',color);
+
+    document.querySelectorAll('.color-dot')
+    .forEach(d=>d.classList.remove('active'));
+
+    document.getElementById('dot-'+color)
+    .classList.add('active');
+
+    localStorage.setItem('cz_theme_color',color);
+}
+
+async function fetchCloudData(){
+
+    try{
+
+        const res =
+        await fetch(SHEET_URL + "&cb=" + Date.now());
+
+        const text = await res.text();
+
+        const lines =
+        text.split(/\r?\n/).slice(1);
+
+        const pg =
+        document.getElementById("primaryGrid");
+
+        const sg =
+        document.getElementById("secondaryGrid");
+
+        pg.innerHTML = "";
+        sg.innerHTML = "";
+
+        lines.forEach(line=>{
+
+            const cols =
+            line
+            .split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
+            .map(c=>c.replace(/^"|"$/g,'').trim());
+
+            if(cols.length >= 3){
+
+                const [
+                    cat,
+                    title,
+                    url,
+                    desc,
+                    icon
+                ] = cols;
+
+                const html =
+                createCard({
+                    title,
+                    url,
+                    desc,
+                    icon,
+                    isHighlight:title.includes("重要")
+                });
+
+                if(cat.toLowerCase().includes('primary')){
+                    pg.innerHTML += html;
+                }else{
+                    sg.innerHTML += html;
+                }
+            }
+        });
+
+        updateManageList();
+
+        userLinks.primary.forEach(l=>{
+            l.isHighlight =
+            l.title.includes("重要");
+
+            pg.innerHTML += createCard(l);
+        });
+
+        userLinks.secondary.forEach(l=>{
+            l.isHighlight =
+            l.title.includes("重要");
+
+            sg.innerHTML += createCard(l);
+        });
+
+    }catch(e){
+        console.error("Cloud Error");
+    }
+}
+
+function createCard(l){
+
+    return `
+    <div class="card ${l.isHighlight ? 'highlight-card' : ''}">
+        <a class="card-link" href="${l.url}" target="_blank">
+
+            <span class="icon-box">
+                ${l.icon || '🔗'}
+            </span>
+
+            <div class="card-title">
+                ${l.title}
+            </div>
+
+            <div class="card-desc">
+                ${l.desc || ''}
+            </div>
+
+        </a>
+    </div>
+    `;
+}
+
+function updateManageList(){
+
+    const listDiv =
+    document.getElementById("customLinksList");
+
+    listDiv.innerHTML =
+    "<h3 style='margin-bottom:12px;color:#ffe3a8;'>📜 已存書籤</h3>";
+
+    const all = [
+        ...userLinks.primary,
+        ...userLinks.secondary
+    ];
+
+    all.forEach(l=>{
+
+        const item =
+        document.createElement("div");
+
+        item.className = "manage-item";
+
+        item.innerHTML =
+        `
+        <span>${l.icon} ${l.title}</span>
+
+        <button
+            class="mini-del-btn"
+            onclick="deleteLink(${l.id})"
+        >
+            刪除
+        </button>
+        `;
+
+        listDiv.appendChild(item);
+    });
+}
+
+function applyUIStyle(){
+
+    const ts =
+    document.getElementById('titleSlider').value;
+
+    const ds =
+    document.getElementById('descSlider').value;
+
+    const col =
+    document.getElementById('gridColSelect').value;
+
+    document.getElementById('ts-val').innerText =
+    ts + 'px';
+
+    document.getElementById('ds-val').innerText =
+    ds + 'px';
+
+    document.documentElement.style
+    .setProperty('--dynamic-title-size', ts + 'px');
+
+    document.documentElement.style
+    .setProperty('--dynamic-desc-size', ds + 'px');
+
+    document.documentElement.style
+    .setProperty('--grid-cols', col);
+
+    localStorage.setItem(
+        'cz_ui_config',
+        JSON.stringify({ts,ds,col})
+    );
+}
+
+function saveLink(){
+
+    const title =
+    document.getElementById('linkTitle').value;
+
+    const url =
+    document.getElementById('linkUrl').value;
+
+    const desc =
+    document.getElementById('linkDesc').value;
+
+    const cat =
+    document.getElementById('linkCategory').value;
+
+    if(!title || !url){
+        return alert("請填寫名稱與網址");
+    }
+
+    userLinks[cat].push({
+        id:Date.now(),
+        title,
+        url,
+        desc,
+        icon:selectedIcon
+    });
+
+    localStorage.setItem(
+        'cz_user_links_v4',
+        JSON.stringify(userLinks)
+    );
+
+    location.reload();
+}
+
+function deleteLink(id){
+
+    if(!confirm("確定刪除？")) return;
+
+    userLinks.primary =
+    userLinks.primary.filter(x=>x.id != id);
+
+    userLinks.secondary =
+    userLinks.secondary.filter(x=>x.id != id);
+
+    localStorage.setItem(
+        'cz_user_links_v4',
+        JSON.stringify(userLinks)
+    );
+
+    location.reload();
+}
+
+const picker =
+document.getElementById('emojiPicker');
+
+emojis.forEach(e=>{
+
+    const div =
+    document.createElement('div');
+
+    div.style =
+    `
+    font-size:28px;
+    cursor:pointer;
+    text-align:center;
+    padding:12px;
+    border-radius:16px;
+    `;
+
+    div.innerText = e;
+
+    div.onclick = ()=>{
+
+        document
+        .querySelectorAll('#emojiPicker div')
+        .forEach(d=>d.style.borderColor =
+        "rgba(255,255,255,0.08)");
+
+        selectedIcon = e;
+
+        div.style.borderColor =
+        "gold";
+    };
+
+    picker.appendChild(div);
+});
+
+function toggleAdminMode(){
+    document
+    .getElementById("adminPanel")
+    .classList.toggle("show");
+}
+
+function closeAdmin(){
+    document
+    .getElementById("adminPanel")
+    .classList.remove("show");
+}
+
+function toggleTheme(){
+
+    const next =
+    document.documentElement
+    .getAttribute('data-theme')
+    === 'light'
+    ? 'dark'
+    : 'light';
+
+    document.documentElement
+    .setAttribute('data-theme',next);
+
+    document.getElementById('themeBtn')
+    .innerText =
+    next === 'light'
+    ? '🌙'
+    : '☀️';
+
+    localStorage
+    .setItem('cz_portal_theme',next);
+}
+
+function updateClock(){
+
+    const now = new Date();
+
+    document.getElementById("clock")
+    .innerText =
+    now.toLocaleTimeString(
+        "zh-TW",
+        {hour12:false}
+    );
+
+    const y = now.getFullYear();
+
+    document.getElementById("date")
+    .innerText =
+    `${y}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')}`;
+}
+
+window.onload = ()=>{
+
+    const cfg =
+    JSON.parse(localStorage.getItem('cz_ui_config'));
+
+    if(cfg){
+
+        document.getElementById('titleSlider').value =
+        cfg.ts;
+
+        document.getElementById('descSlider').value =
+        cfg.ds;
+
+        document.getElementById('gridColSelect').value =
+        cfg.col;
+
+        applyUIStyle();
+    }
+
+    const savedColor =
+    localStorage.getItem('cz_theme_color')
+    || 'purple';
+
+    setColor(savedColor);
+
+    const savedTheme =
+    localStorage.getItem('cz_portal_theme');
+
+    if(savedTheme){
+
+        document.documentElement
+        .setAttribute('data-theme',savedTheme);
+
+        document.getElementById('themeBtn')
+        .innerText =
+        savedTheme === 'light'
+        ? '🌙'
+        : '☀️';
+    }
+
+    setInterval(updateClock,1000);
+
+    updateClock();
+
+    fetchCloudData();
+};
+
+</script>
+
+</body>
+</html>
