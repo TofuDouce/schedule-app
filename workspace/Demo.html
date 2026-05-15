@@ -33,7 +33,7 @@
         :root {
             --dynamic-title-size: 28px;
             --dynamic-desc-size: 18px;
-            --grid-cols: 4;
+            --grid-cols: 5;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -65,7 +65,10 @@
             -webkit-text-fill-color: transparent;
         }
         
-        .main { width: 100%; max-width: 1600px; margin: auto; padding: 140px 20px 100px; }
+        .main { width: 100%; max-width: 1600px; margin: auto; padding: 140px 20px 100px; transition: 0.4s; }
+        
+        /* 當管理面板開啟時，主視窗稍微往左縮 */
+        .admin-active .main { margin-left: -50px; opacity: 0.6; }
 
         .section-title { 
             font-size: 28px; font-weight: 900; margin: 40px 0 20px; padding-left: 15px; 
@@ -73,21 +76,23 @@
             color: var(--accent-primary);
         }
         
-        /* ✅ 響應式 Grid：電腦用設定值，手機自動改 2 欄 */
         .grid { 
             display: grid; 
-            grid-template-columns: repeat(var(--grid-cols, 4), 1fr); 
+            grid-template-columns: repeat(var(--grid-cols, 5), 1fr); 
             gap: 20px; 
         }
 
         @media (max-width: 768px) {
             .grid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
             .main { padding-top: 120px; }
-            .card-link { padding: 25px 15px; } /* 手機版縮減內距防止變形 */
+            .card-link { padding: 25px 15px; }
             .icon-box { font-size: 45px; margin-bottom: 10px; }
+            
+            /* ✅ 關鍵修正：手機版面板寬度調為 85%，不完全蓋住卡片 */
+            .admin-panel { width: 85% !important; background: rgba(255, 255, 255, 0.95) !important; box-shadow: -10px 0 30px rgba(0,0,0,0.2); }
+            :root[data-theme="dark"] .admin-panel { background: rgba(30, 41, 59, 0.95) !important; }
         }
 
-        /* 重要卡片：黃底紅字 */
         .card.highlight-card {
             background: rgba(255, 243, 205, 0.95) !important;
             border: 3px solid #ffc107 !important;
@@ -107,16 +112,16 @@
             transition: transform 0.2s;
             display: flex; flex-direction: column;
         }
-        
-        .card:active { transform: scale(0.95); }
 
         .del-btn {
             position: absolute; top: 10px; right: 10px;
-            width: 30px; height: 30px; border-radius: 50%;
-            background: #ef4444; color: white; border: none;
-            cursor: pointer; font-size: 14px; display: none;
-            z-index: 10; font-weight: 900;
+            width: 35px; height: 35px; border-radius: 50%;
+            background: #ef4444; color: white; border: 2px solid white;
+            cursor: pointer; font-size: 16px; display: none;
+            z-index: 100; font-weight: 900;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
+        /* 管理模式開啟時才顯示刪除按鈕 */
         .admin-active .del-btn { display: block; }
 
         .card-link { 
@@ -127,12 +132,12 @@
         .card-title { font-size: var(--dynamic-title-size); font-weight: 900; color: var(--accent-primary); margin-bottom: 8px; width: 100%; }
         .card-desc { font-size: var(--dynamic-desc-size); font-weight: 700; color: var(--text-sub); line-height: 1.4; width: 100%; }
 
-        /* 管理面板 */
+        /* 管理面板樣式優化 */
         .admin-panel { 
-            position: fixed; top: 0; right: -100%; width: 100%; max-width: 450px; height: 100vh; 
+            position: fixed; top: 0; right: -100%; width: 450px; height: 100vh; 
             background: var(--card-bg); backdrop-filter: blur(25px); 
             border-left: 8px solid #8b5cf6; padding: 30px; 
-            overflow-y: auto; transition: 0.4s; z-index: 2000;
+            overflow-y: auto; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 2000;
         }
         .admin-panel.show { right: 0; }
         .input { width: 100%; padding: 12px; border: 2px solid #cbd5e1; border-radius: 12px; font-size: 16px; margin-bottom: 10px; background: white; }
@@ -170,8 +175,10 @@
 <div class="admin-panel" id="adminPanel">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
         <h2 style="font-size: 24px; font-weight:900;">介面管理</h2>
-        <button onclick="closeAdmin()" style="font-size:24px; border:none; background:none; cursor:pointer;">✕</button>
+        <button onclick="closeAdmin()" style="font-size:32px; border:none; background:none; cursor:pointer; color:#ef4444;">✕</button>
     </div>
+
+    <p style="font-size:14px; color:#8b5cf6; margin-bottom:15px; font-weight:700;">💡 面板開啟時，點擊左側露出的卡片 🗑️ 即可刪除自訂書籤。</p>
 
     <div style="background: rgba(139, 92, 246, 0.1); padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px dashed #8b5cf6;">
         <h3 style="margin-bottom:10px; font-size:16px;">🎨 顯示設定</h3>
@@ -181,8 +188,9 @@
         <input type="range" id="descSlider" min="12" max="30" value="18" style="width:100%" oninput="applyUIStyle()">
         <label style="font-size:14px;">電腦版一列幾張</label>
         <select id="gridColSelect" class="input" onchange="applyUIStyle()">
-            <option value="5">一列 5 張</option>
-            <option value="4" selected>一列 4 張</option>
+            <option value="6">一列 6 張</option>
+            <option value="5" selected>一列 5 張</option>
+            <option value="4">一列 4 張</option>
             <option value="3">一列 3 張</option>
         </select>
     </div>
@@ -197,7 +205,7 @@
     <input id="linkUrl" class="input" placeholder="網址 (https://...)">
     <input id="linkDesc" class="input" placeholder="簡短說明">
     <button class="btn" style="background:#8b5cf6; color:white;" onclick="saveLink()">儲存書籤</button>
-    <button class="btn" style="background:var(--accent-primary); color:white;" onclick="location.reload()">🔄 同步試算表</button>
+    <button class="btn" style="background:var(--accent-primary); color:white;" onclick="location.reload()">🔄 同步雲端資料</button>
 </div>
 
 <script>
@@ -295,12 +303,12 @@
     });
 
     function toggleAdminMode() {
-        document.getElementById("adminPanel").classList.toggle("show");
-        document.getElementById("mainContainer").classList.toggle("admin-active");
+        const isShow = document.getElementById("adminPanel").classList.toggle("show");
+        document.getElementById("bodyRoot").classList.toggle("admin-active", isShow);
     }
     function closeAdmin() { 
         document.getElementById("adminPanel").classList.remove("show"); 
-        document.getElementById("mainContainer").classList.remove("admin-active");
+        document.getElementById("bodyRoot").classList.remove("admin-active");
     }
     function toggleTheme() {
         const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
