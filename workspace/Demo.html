@@ -6,49 +6,38 @@
     <title>中正診所 Portal</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@900&family=Noto+Sans+TC:wght@700;900&display=swap" rel="stylesheet">
     <style>
+        /* 🎨 核心變數定義 */
         :root {
             --dynamic-title-size: 28px;
             --dynamic-desc-size: 18px;
             --grid-cols: 5;
         }
 
-        /* 🎨 主題配色方案：定義 一般色 / 淺色(夜間用) / 深色(黃卡用) */
-        /* 藍色系 */
+        /* 主題配色：[一般色] / [夜間亮化色] / [黃卡加深色] */
         :root[data-color="blue"] { 
-            --brand-color: #0284c7; 
-            --brand-light: #7dd3fc; 
-            --brand-dark: #075985; /* 強調卡片用的深藍 */
+            --brand-main: #0284c7; --brand-light: #7dd3fc; --brand-dark: #075985; 
         }
-        /* 綠色系 */
         :root[data-color="green"] { 
-            --brand-color: #059669; 
-            --brand-light: #6ee7b7; 
-            --brand-dark: #065f46; /* 強調卡片用的深綠 */
+            --brand-main: #059669; --brand-light: #6ee7b7; --brand-dark: #064e3b; 
         }
-        /* 紫色系 */
         :root[data-color="purple"] { 
-            --brand-color: #8b5cf6; 
-            --brand-light: #c4b5fd; 
-            --brand-dark: #5b21b6; /* 強調卡片用的深紫 */
+            --brand-main: #8b5cf6; --brand-light: #c4b5fd; --brand-dark: #4c1d95; 
         }
-        /* 灰色系 */
         :root[data-color="gray"] { 
-            --brand-color: #475569; 
-            --brand-light: #cbd5e1; 
-            --brand-dark: #1e293b; /* 強調卡片用的深灰 */
+            --brand-main: #475569; --brand-light: #cbd5e1; --brand-dark: #1e293b; 
         }
 
         /* ☀️ 淺色模式 */
         :root[data-theme="light"] {
-            --bg-sky: linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%);
+            --bg-sky: linear-gradient(135deg, #e0f2fe 0%, #ffffff 100%);
             --header-bg: rgba(255, 255, 255, 0.85);
             --card-bg: rgba(255, 255, 255, 0.75);
-            --accent-primary: var(--brand-color); 
+            --accent-primary: var(--brand-main); 
             --accent-secondary: var(--brand-light); 
             --text-main: #0c4a6e; 
             --text-sub: #334155;      
             --border-color: rgba(255, 255, 255, 0.6);
-            --card-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.1);
+            --card-shadow: 0 12px 30px -5px rgba(14, 165, 233, 0.15);
         }
         
         /* 🌙 深色模式 */
@@ -56,8 +45,8 @@
             --bg-sky: #0f172a;
             --header-bg: rgba(15, 23, 42, 0.9);
             --card-bg: #1e293b;
-            --accent-primary: var(--brand-light);
-            --accent-secondary: var(--brand-color);
+            --accent-primary: var(--brand-light); /* 夜間自動亮化 */
+            --accent-secondary: var(--brand-main);
             --text-main: #f1f5f9;
             --text-sub: #cbd5e1;
             --border-color: #334155;
@@ -67,81 +56,117 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body { 
-            min-height: 100vh; background: var(--bg-sky); background-attachment: fixed;
-            color: var(--text-main); font-family: "Inter", "Noto Sans TC", sans-serif; 
-            transition: background 0.4s, color 0.4s; overflow-x: hidden;
+            min-height: 100vh; 
+            background: var(--bg-sky);
+            background-attachment: fixed;
+            color: var(--text-main); 
+            font-family: "Inter", "Noto Sans TC", sans-serif; 
+            transition: background 0.4s, color 0.4s; 
+            overflow-x: hidden;
         }
 
-        /* 標題與版面樣式 */
+        /* 頂部導航 */
         .header { 
             position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
             display: flex; justify-content: space-between; align-items: center; 
-            padding: 15px 5%; background-color: var(--header-bg); backdrop-filter: blur(15px);
+            padding: 15px 5%; 
+            background-color: var(--header-bg);
+            backdrop-filter: blur(15px);
             border-bottom: 4px solid var(--accent-secondary); 
         }
-        .title-main { 
-            font-size: clamp(24px, 5vw, 48px); font-weight: 900;
-            background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        }
-        .main { width: 100%; max-width: 1600px; margin: auto; padding: 140px 20px 100px; }
-        .section-title { 
-            font-size: 28px; font-weight: 900; margin: 40px 0 20px; padding-left: 15px; 
-            border-left: 8px solid var(--accent-secondary); color: var(--accent-primary);
-        }
-        .grid { display: grid; grid-template-columns: repeat(var(--grid-cols, 5), 1fr); gap: 20px; }
 
-        /* ⭐ 重點：強調卡片樣式修正 */
-        .card.highlight-card {
-            background: rgba(255, 243, 205, 1) !important; /* 明亮的黃色背景 */
-            border: 3px solid #ffc107 !important;
-            box-shadow: 0 10px 20px rgba(255, 193, 7, 0.2) !important;
+        .title-main { 
+            font-size: clamp(24px, 5vw, 48px);
+            font-weight: 900;
+            background: linear-gradient(to right, var(--brand-main), var(--brand-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
         
-        /* 當卡片是黃色強調時，標題強制使用該主題的「深色版」 */
+        .main { width: 100%; max-width: 1600px; margin: auto; padding: 140px 20px 100px; }
+
+        .section-title { 
+            font-size: 28px; font-weight: 900; margin: 40px 0 20px; padding-left: 15px; 
+            border-left: 8px solid var(--accent-secondary); 
+            color: var(--accent-primary);
+        }
+        
+        .grid { 
+            display: grid; 
+            grid-template-columns: repeat(var(--grid-cols, 5), 1fr); 
+            gap: 20px; 
+        }
+
+        @media (max-width: 768px) {
+            .grid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
+            .main { padding-top: 120px; }
+            .admin-panel { width: 100% !important; }
+        }
+
+        /* ⭐ 重要卡片樣式修正 */
+        .card.highlight-card {
+            background: #fff9db !important; /* 淺黃背景 */
+            border: 3px solid #fcc419 !important;
+        }
+        
+        /* 解決你說的問題：當背景變黃，標題字體要變深色 */
         .card.highlight-card .card-title {
             color: var(--brand-dark) !important; 
-            text-shadow: none; /* 確保在黃底上清晰 */
+            font-weight: 900;
         }
         
         .card.highlight-card .card-desc {
-            color: #dc2626 !important; /* 說明的紅色也保持醒目 */
+            color: #e03131 !important; /* 強調描述用深紅 */
             font-weight: 900;
         }
 
-        /* 一般卡片樣式 */
         .card { 
-            position: relative; background: var(--card-bg); backdrop-filter: blur(5px);
-            border-radius: 24px; border: 1px solid var(--border-color); 
-            box-shadow: var(--card-shadow); transition: transform 0.2s, border 0.2s;
+            position: relative; 
+            background: var(--card-bg); 
+            backdrop-filter: blur(5px);
+            border-radius: 24px; 
+            border: 1px solid var(--border-color); 
+            box-shadow: var(--card-shadow);
+            transition: transform 0.2s, box-shadow 0.2s;
             display: flex; flex-direction: column;
         }
-        .card:hover { transform: translateY(-5px); border-color: var(--accent-primary); }
+        .card:hover { transform: translateY(-5px); }
+
         .card-link { 
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             padding: 35px 25px; text-decoration: none; color: inherit; text-align: center; height: 100%;
         }
         .icon-box { font-size: 55px; margin-bottom: 15px; display: block; line-height: 1; }
-        .card-title { font-size: var(--dynamic-title-size); font-weight: 900; color: var(--accent-primary); margin-bottom: 8px; transition: color 0.3s; }
+        .card-title { font-size: var(--dynamic-title-size); font-weight: 900; color: var(--accent-primary); margin-bottom: 8px; }
         .card-desc { font-size: var(--dynamic-desc-size); font-weight: 700; color: var(--text-sub); line-height: 1.4; }
 
-        /* 控制面板 */
+        /* 管理面板 */
         .admin-panel { 
             position: fixed; top: 0; right: -100%; width: 450px; height: 100vh; 
             background: var(--card-bg); backdrop-filter: blur(30px); 
-            border-left: 8px solid var(--accent-primary); padding: 30px; 
+            border-left: 8px solid var(--brand-main); padding: 30px; 
             overflow-y: auto; transition: 0.4s; z-index: 2000;
+            box-shadow: -10px 0 30px rgba(0,0,0,0.1);
         }
         .admin-panel.show { right: 0; }
-        .input { width: 100%; padding: 12px; border: 2px solid #cbd5e1; border-radius: 12px; margin-bottom: 10px; }
+        .input { width: 100%; padding: 12px; border: 2px solid #cbd5e1; border-radius: 12px; font-size: 16px; margin-bottom: 10px; background: white; color: black; }
         .btn { width: 100%; padding: 15px; font-size: 18px; font-weight: 900; border: none; border-radius: 12px; cursor: pointer; margin-top: 10px; }
 
-        .controls { position: fixed; bottom: 20px; right: 20px; display: flex; gap: 15px; z-index: 1000; }
-        .ctrl-btn { width: 60px; height: 60px; border-radius: 50%; border: 3px solid var(--accent-secondary); background: var(--card-bg); font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        /* 色彩選擇器 */
+        .color-picker { display: flex; gap: 12px; margin: 10px 0 20px; }
+        .color-dot { width: 35px; height: 35px; border-radius: 50%; cursor: pointer; border: 3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
+        .color-dot.active { outline: 3px solid var(--accent-primary); outline-offset: 2px; }
 
-        .color-picker { display: flex; gap: 12px; margin-top: 10px; }
-        .color-opt { width: 35px; height: 35px; border-radius: 50%; cursor: pointer; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        .color-opt.active { outline: 3px solid var(--accent-primary); outline-offset: 2px; }
+        .manage-list { margin-top: 30px; border-top: 2px solid #ddd; padding-top: 20px; }
+        .manage-item { 
+            display: flex; justify-content: space-between; align-items: center; 
+            background: rgba(255,255,255,0.5); padding: 12px 15px; border-radius: 12px; margin-bottom: 10px;
+            border: 1px solid #ddd; color: #334155;
+        }
+        .mini-del-btn { background: #ef4444; color: white; border: none; padding: 5px 12px; border-radius: 8px; cursor: pointer; font-weight: 900; }
+
+        .controls { position: fixed; bottom: 20px; right: 20px; display: flex; gap: 15px; z-index: 1000; }
+        .ctrl-btn { width: 60px; height: 60px; border-radius: 50%; border: 3px solid var(--accent-secondary); background: var(--card-bg); font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body id="bodyRoot">
@@ -149,7 +174,7 @@
 <div class="header">
     <div class="title-group">
         <div class="title-main">中正診所</div>
-        <div style="font-size: 12px; color: var(--accent-primary); font-weight: 700; letter-spacing: 2px;">PORTAL SYSTEM</div>
+        <div style="font-size: 12px; color: var(--brand-main); font-weight: 700; letter-spacing: 2px;">PORTAL SYSTEM</div>
     </div>
     <div style="text-align: right;">
         <div id="clock" style="font-size: clamp(24px, 4vw, 40px); font-weight: 900; color: var(--accent-primary); font-variant-numeric: tabular-nums;">00:00:00</div>
@@ -175,33 +200,61 @@
         <button onclick="closeAdmin()" style="font-size:32px; border:none; background:none; cursor:pointer; color:#ef4444;">✕</button>
     </div>
 
-    <div style="background: rgba(120, 120, 120, 0.1); padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px dashed var(--accent-primary);">
-        <h3 style="margin-bottom:12px; font-size:16px;">🎨 主題配色</h3>
-        <div class="color-picker" id="colorPicker">
-            <div class="color-opt" style="background:#0284c7;" onclick="changeBrandColor('blue')" data-c="blue"></div>
-            <div class="color-opt" style="background:#059669;" onclick="changeBrandColor('green')" data-c="green"></div>
-            <div class="color-opt" style="background:#8b5cf6;" onclick="changeBrandColor('purple')" data-c="purple"></div>
-            <div class="color-opt" style="background:#475569;" onclick="changeBrandColor('gray')" data-c="gray"></div>
+    <div style="background: rgba(120, 120, 120, 0.1); padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px dashed var(--brand-main);">
+        <h3 style="margin-bottom:10px; font-size:16px;">🎨 顯示設定</h3>
+        
+        <label style="font-size:14px;">主題顏色</label>
+        <div class="color-picker">
+            <div class="color-dot" style="background:#0284c7" onclick="setColor('blue')" id="dot-blue"></div>
+            <div class="color-dot" style="background:#059669" onclick="setColor('green')" id="dot-green"></div>
+            <div class="color-dot" style="background:#8b5cf6" onclick="setColor('purple')" id="dot-purple"></div>
+            <div class="color-dot" style="background:#475569" onclick="setColor('gray')" id="dot-gray"></div>
         </div>
-        <hr style="margin:20px 0; border:0; border-top:1px solid var(--border-color);">
+
         <label style="font-size:14px;">標題大小 <span id="ts-val">28px</span></label>
         <input type="range" id="titleSlider" min="16" max="50" value="28" style="width:100%" oninput="applyUIStyle()">
+        <label style="font-size:14px;">內容大小 <span id="ds-val">18px</span></label>
+        <input type="range" id="descSlider" min="12" max="30" value="18" style="width:100%" oninput="applyUIStyle()">
+        <label style="font-size:14px;">電腦版一列幾張</label>
+        <select id="gridColSelect" class="input" onchange="applyUIStyle()">
+            <option value="6">一列 6 張</option>
+            <option value="5" selected>一列 5 張</option>
+            <option value="4">一列 4 張</option>
+            <option value="3">一列 3 張</option>
+        </select>
     </div>
 
-    <button class="btn" style="background:var(--accent-primary); color:white;" onclick="saveLink()">新增書籤</button>
+    <h3 style="margin-bottom:10px; font-size:18px;">🆕 新增自訂書籤</h3>
+    <select id="linkCategory" class="input">
+        <option value="primary">主要入口</option>
+        <option value="secondary" selected>次要工具</option>
+    </select>
+    <div id="emojiPicker" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 10px;"></div>
+    <input id="linkTitle" class="input" placeholder="名稱 (含「重要」會變色)">
+    <input id="linkUrl" class="input" placeholder="網址 (https://...)">
+    <input id="linkDesc" class="input" placeholder="簡短說明">
+    <button class="btn" style="background:var(--brand-main); color:white;" onclick="saveLink()">儲存書籤</button>
+    
+    <div class="manage-list">
+        <h3 style="margin-bottom:15px; font-size:18px;">📋 管理已存書籤</h3>
+        <div id="customLinksList"></div>
+    </div>
+
     <button class="btn" style="background:#8b5cf6; color:white; margin-top:30px;" onclick="location.reload()">🔄 同步雲端資料</button>
 </div>
 
 <script>
     const SHEET_URL = `https://docs.google.com/spreadsheets/d/1uYBA_CncbEAydmzNC1SRnsKJdswNgQh3zg1x6TKo0UU/export?format=csv&gid=0`;
+    const emojis = ["🩺", "💉", "🏥", "💊", "☁️", "📦", "💻", "🔍", "📋", "🏠", "🧪", "📅", "📝", "⭐", "👤", "⚙️"];
+    let selectedIcon = "🔗";
     let userLinks = JSON.parse(localStorage.getItem('cz_user_links_v4')) || { primary: [], secondary: [] };
 
-    function changeBrandColor(color) {
+    // --- 主題色彩控制 ---
+    function setColor(color) {
         document.documentElement.setAttribute('data-color', color);
-        document.querySelectorAll('.color-opt').forEach(opt => {
-            opt.classList.toggle('active', opt.dataset.c === color);
-        });
-        localStorage.setItem('cz_brand_color', color);
+        document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+        document.getElementById('dot-' + color).classList.add('active');
+        localStorage.setItem('cz_theme_color', color);
     }
 
     async function fetchCloudData() {
@@ -217,16 +270,29 @@
                 const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim());
                 if (cols.length >= 3) {
                     const [cat, title, url, desc, icon] = cols;
-                    const isHigh = title.includes("重要");
-                    const html = createCard({title, url, desc, icon, isHighlight: isHigh});
+                    const html = createCard({title, url, desc, icon, isHighlight: title.includes("重要")});
                     if (cat.toLowerCase().includes('primary')) pg.innerHTML += html;
                     else sg.innerHTML += html;
                 }
             });
-            // 處理自訂連結
+
+            updateManageList();
             userLinks.primary.forEach(l => { l.isHighlight = l.title.includes("重要"); pg.innerHTML += createCard(l); });
             userLinks.secondary.forEach(l => { l.isHighlight = l.title.includes("重要"); sg.innerHTML += createCard(l); });
         } catch (e) { console.error("Cloud Error"); }
+    }
+
+    function updateManageList() {
+        const listDiv = document.getElementById("customLinksList");
+        listDiv.innerHTML = "";
+        const all = [...userLinks.primary, ...userLinks.secondary];
+        if (all.length === 0) { listDiv.innerHTML = "<p style='color:#999; font-size:14px;'>尚無自訂書籤</p>"; return; }
+        all.forEach(l => {
+            const item = document.createElement("div");
+            item.className = "manage-item";
+            item.innerHTML = `<span>${l.icon} ${l.title}</span><button class="mini-del-btn" onclick="deleteLink(${l.id})">刪除</button>`;
+            listDiv.appendChild(item);
+        });
     }
 
     function createCard(l) {
@@ -240,21 +306,61 @@
             </div>`;
     }
 
+    function deleteLink(id) {
+        if(!confirm("確定要刪除嗎？")) return;
+        userLinks.primary = userLinks.primary.filter(x => x.id != id);
+        userLinks.secondary = userLinks.secondary.filter(x => x.id != id);
+        localStorage.setItem('cz_user_links_v4', JSON.stringify(userLinks));
+        location.reload();
+    }
+
     function applyUIStyle() {
         const ts = document.getElementById('titleSlider').value;
+        const ds = document.getElementById('descSlider').value;
+        const col = document.getElementById('gridColSelect').value;
         document.getElementById('ts-val').innerText = ts + 'px';
+        document.getElementById('ds-val').innerText = ds + 'px';
         document.documentElement.style.setProperty('--dynamic-title-size', ts + 'px');
-        localStorage.setItem('cz_ui_config', JSON.stringify({ts}));
+        document.documentElement.style.setProperty('--dynamic-desc-size', ds + 'px');
+        document.documentElement.style.setProperty('--grid-cols', col);
+        localStorage.setItem('cz_ui_config', JSON.stringify({ts, ds, col}));
     }
+
+    function saveLink() {
+        const title = document.getElementById('linkTitle').value;
+        const url = document.getElementById('linkUrl').value;
+        const desc = document.getElementById('linkDesc').value;
+        const cat = document.getElementById('linkCategory').value;
+        if(!title || !url) return alert("請輸入名稱與網址");
+        userLinks[cat].push({id: Date.now(), title, url, desc, icon: selectedIcon});
+        localStorage.setItem('cz_user_links_v4', JSON.stringify(userLinks));
+        location.reload();
+    }
+
+    // 表情符號選擇器初始化
+    const picker = document.getElementById('emojiPicker');
+    emojis.forEach(e => {
+        const div = document.createElement('div');
+        div.style = "font-size:24px; cursor:pointer; text-align:center; padding:5px; border:1px solid #ddd; border-radius:10px; background:#fff;";
+        div.innerText = e;
+        div.onclick = () => { 
+            document.querySelectorAll('#emojiPicker div').forEach(d => d.style.borderColor = "#ddd");
+            selectedIcon = e; 
+            div.style.borderColor = "var(--brand-main)"; 
+        };
+        picker.appendChild(div);
+    });
 
     function toggleAdminMode() { document.getElementById("adminPanel").classList.toggle("show"); }
     function closeAdmin() { document.getElementById("adminPanel").classList.remove("show"); }
+    
     function toggleTheme() {
         const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
         document.documentElement.setAttribute('data-theme', next);
         document.getElementById('themeBtn').innerText = next === 'light' ? '🌙' : '☀️';
-        localStorage.setItem('cz_theme', next);
+        localStorage.setItem('cz_portal_theme', next);
     }
+
     function updateClock() {
         const now = new Date();
         document.getElementById("clock").innerText = now.toLocaleTimeString("zh-TW", { hour12: false });
@@ -263,10 +369,23 @@
     }
 
     window.onload = () => {
-        const savedColor = localStorage.getItem('cz_brand_color') || 'blue';
-        changeBrandColor(savedColor);
-        const savedTheme = localStorage.getItem('cz_theme');
-        if(savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
+        // 載入 UI 尺寸
+        const cfg = JSON.parse(localStorage.getItem('cz_ui_config'));
+        if(cfg) {
+            document.getElementById('titleSlider').value = cfg.ts;
+            document.getElementById('descSlider').value = cfg.ds;
+            document.getElementById('gridColSelect').value = cfg.col;
+            applyUIStyle();
+        }
+        // 載入顏色主題
+        const savedColor = localStorage.getItem('cz_theme_color') || 'blue';
+        setColor(savedColor);
+        // 載入深淺模式
+        const savedTheme = localStorage.getItem('cz_portal_theme');
+        if(savedTheme) {
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            document.getElementById('themeBtn').innerText = savedTheme === 'light' ? '🌙' : '☀️';
+        }
         setInterval(updateClock, 1000); updateClock();
         fetchCloudData();
     };
