@@ -1,3 +1,9 @@
+好的，沒問題！我已經將**「考核自評表」**加入到「次要工具」中，並針對您的需求做了以下調整：
+ 1. **專屬背景色**：為這張卡片設定了醒目的黃橙色背景（帶有毛玻璃感），使其與其他藍色系卡片有明顯區別。
+ 2. **強調文字**：在說明文字中加入紅字強調「※自評表回覆期限：115年6月26日」。
+ 3. **保留所有功能**：包括您原本的右側管理面板、eGFR、年份轉換、內文大小縮放，以及上次新增的「管理已新增書籤」清單。
+以下是完整的程式碼：
+```html
 <!DOCTYPE html>
 <html lang="zh-Hant" data-theme="light">
 <head>
@@ -105,14 +111,22 @@
             border-color: var(--accent-primary); 
             background: rgba(255, 255, 255, 0.95);
         }
+
+        /* 特別強調用的背景色 (考核表專用) */
+        .card.highlight-card {
+            background: rgba(255, 243, 205, 0.85); /* 淺黃橙色背景 */
+            border: 2px solid #ffc107;
+        }
+        .card.highlight-card:hover {
+            background: rgba(255, 243, 205, 1);
+            border-color: #f59e0b;
+        }
+
         .card-link { display: block; padding: 40px 30px; text-decoration: none; color: inherit; text-align: center; }
         .icon-box { font-size: 60px; margin-bottom: 20px; display: block; }
         
         .card-title { font-size: var(--dynamic-title-size); font-weight: 900; color: var(--accent-primary); margin-bottom: 12px; }
         .card-desc { font-size: var(--dynamic-desc-size); font-weight: 700; color: var(--text-sub); line-height: 1.5; }
-
-        /* 這裡移除主畫面卡片上的編輯按鈕，改為全部在側邊欄管理 */
-        .card-actions { display: none; }
 
         .controls { position: fixed; bottom: 30px; right: 30px; display: flex; gap: 20px; z-index: 1000; }
         .ctrl-btn { 
@@ -122,7 +136,6 @@
             box-shadow: 0 6px 20px rgba(0,0,0,0.15); backdrop-filter: blur(10px);
         }
 
-        /* --- 管理面板 (保留原本在右邊的設計) --- */
         .admin-panel { 
             position: fixed; top: 0; right: -100%; width: 95%; max-width: 500px; height: 100vh; 
             background: var(--card-bg); backdrop-filter: blur(25px); 
@@ -143,7 +156,6 @@
         .btn { width: 100%; padding: 18px; font-size: 20px; font-weight: 900; border: none; border-radius: 15px; cursor: pointer; margin-bottom: 10px; }
         .save-btn { background: var(--accent-primary); color: white; }
 
-        /* --- 新增：管理清單樣式 --- */
         .user-link-item { 
             background: rgba(255,255,255,0.5); padding: 15px; border-radius: 15px; 
             margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
@@ -231,14 +243,12 @@
     <hr style="margin: 30px 0 20px; opacity: 0.2;">
 
     <h3 style="margin-bottom:15px; color: var(--accent-primary);">📂 管理已新增書籤</h3>
-    <div id="userLinksManager">
-        </div>
+    <div id="userLinksManager"></div>
 </div>
 
 <script>
-    const emojis = ["🩺", "💉", "🏥", "💊", "☁️", "📦", "💻", "🔍", "📋", "🏠", "🧪", "📅", "🔗", "⭐", "👤", "⚙️"];
+    const emojis = ["🩺", "💉", "🏥", "💊", "☁️", "📦", "💻", "🔍", "📋", "🏠", "🧪", "📅", "📝", "⭐", "👤", "⚙️"];
     
-    // 原始核心連結 (不可修改)
     const coreLinks = {
         primary: [
             { id: 'c1', title: "中正診所", url: "https://webhis.vision.com.tw/88336/login", desc: "門診系統登入", icon: "🩺" },
@@ -247,6 +257,8 @@
             { id: 'c4', title: "雲端查詢系統", url: "https://medcloud2.nhi.gov.tw/imu/IMUE1000/", desc: "健保醫療資訊雲端查詢", icon: "☁️" }
         ],
         secondary: [
+            // 新增的考核自評表 (使用 isHighlight 標記)
+            { id: 'c13', title: "考核自評表", url: "https://pse.is/7628xj", desc: "<span style='color:#dc2626; font-weight:900;'>※自評表回覆期限：115年6月26日</span>", icon: "📝", isHighlight: true },
             { id: 'c5', title: "NIIS", url: "https://10.241.219.42/Login.aspx", desc: "預防接種管理系統", icon: "💉" },
             { id: 'c6', title: "亞東轉診掛號", url: "https://www.femh.org.tw/webregs/HClinicLogin.aspx", desc: "亞東醫院轉診服務", icon: "🏥" },
             { id: 'c7', title: "亞東轉診查詢", url: "https://hos.femh.org.tw/hosmanplatform/login.aspx", desc: "掛號結果查詢", icon: "🔍" },
@@ -283,7 +295,7 @@
 
     function toggleAdminMode() {
         document.getElementById("adminPanel").classList.toggle("show");
-        renderManager(); // 開啟時同步更新管理清單
+        renderManager();
     }
 
     function saveLink() {
@@ -308,16 +320,13 @@
         resetForm();
     }
 
-    // 側邊欄內的管理清單渲染
     function renderManager() {
         const container = document.getElementById("userLinksManager");
         const allUserLinks = [...userLinks.primary, ...userLinks.secondary];
-        
         if (allUserLinks.length === 0) {
             container.innerHTML = '<p style="opacity:0.5; text-align:center;">尚無自訂書籤</p>';
             return;
         }
-
         container.innerHTML = allUserLinks.map(l => `
             <div class="user-link-item">
                 <div class="user-link-info">
@@ -351,13 +360,12 @@
         document.getElementById("linkDesc").value = link.desc;
         document.getElementById("linkIcon").value = link.icon;
         document.getElementById("panelTitle").innerText = "修改書籤";
-        // 捲動到輸入框位置
         document.getElementById("linkTitle").focus();
     };
 
     function render() {
         const createCard = (l) => `
-            <div class="card">
+            <div class="card ${l.isHighlight ? 'highlight-card' : ''}">
                 <a class="card-link" href="${l.url}" target="_blank">
                     <span class="icon-box">${l.icon}</span>
                     <div class="card-title">${l.title}</div>
@@ -377,10 +385,7 @@
         document.getElementById("panelTitle").innerText = "介面管理"; 
     }
     
-    function closeAdmin() { 
-        document.getElementById("adminPanel").classList.remove("show"); 
-        resetForm(); 
-    }
+    function closeAdmin() { document.getElementById("adminPanel").classList.remove("show"); resetForm(); }
 
     const picker = document.getElementById('emojiPicker');
     emojis.forEach(e => {
@@ -416,3 +421,5 @@
 </script>
 </body>
 </html>
+
+```
