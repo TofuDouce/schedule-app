@@ -6,7 +6,7 @@
     <title>中正診所 Portal</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@900&family=Noto+Sans+TC:wght@700;900&display=swap" rel="stylesheet">
     <style>
-        /* 採用你原版的變數與配色 */
+        /* 100% 採用你提供的原版設計配色 */
         :root[data-theme="light"] {
             --bg-sky: linear-gradient(135deg, #e0f2fe 0%, #ffffff 100%);
             --header-bg: rgba(255, 255, 255, 0.85);
@@ -55,6 +55,7 @@
             background-color: var(--header-bg);
             backdrop-filter: blur(15px);
             border-bottom: 4px solid var(--accent-secondary); 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
 
         .title-main { 
@@ -79,6 +80,16 @@
             gap: 25px; 
         }
 
+        /* 重要卡片樣式：黃底紅字 */
+        .card.highlight-card {
+            background: rgba(255, 243, 205, 0.95) !important;
+            border: 3px solid #ffc107 !important;
+        }
+        .card.highlight-card .card-desc {
+            color: #dc2626 !important;
+            font-weight: 900;
+        }
+
         .card { 
             position: relative; 
             background: var(--card-bg); 
@@ -88,14 +99,7 @@
             box-shadow: var(--card-shadow);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
         }
-        
-        /* 考核表專用黃色醒目效果 */
-        .card.highlight-card {
-            background: rgba(255, 243, 205, 0.9) !important;
-            border: 3px solid #ffc107 !important;
-        }
 
-        /* 刪除按鈕 */
         .del-btn {
             position: absolute; top: 15px; right: 15px;
             width: 35px; height: 35px; border-radius: 50%;
@@ -158,9 +162,9 @@
 
     <div style="background: rgba(139, 92, 246, 0.1); padding: 20px; border-radius: 20px; margin-bottom: 25px; border: 1px dashed #8b5cf6;">
         <h3 style="margin-bottom:15px; font-size:18px;">🎨 顯示設定</h3>
-        <label>卡片標題字體 <span id="ts-val">28px</span></label>
+        <label>卡片標題 <span id="ts-val">28px</span></label>
         <input type="range" id="titleSlider" min="16" max="60" value="28" style="width:100%" oninput="applyUIStyle()">
-        <label>卡片內容字體 <span id="ds-val">18px</span></label>
+        <label>內容文字 <span id="ds-val">18px</span></label>
         <input type="range" id="descSlider" min="12" max="40" value="18" style="width:100%" oninput="applyUIStyle()">
         <label>一列顯示幾張</label>
         <select id="gridColSelect" class="input" onchange="applyUIStyle()">
@@ -176,20 +180,18 @@
         <option value="secondary" selected>次要工具</option>
     </select>
     <div id="emojiPicker" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 10px;"></div>
-    <input id="linkTitle" class="input" placeholder="網站名稱">
+    <input id="linkTitle" class="input" placeholder="網站名稱 (包含「重要」二字會變色)">
     <input id="linkUrl" class="input" placeholder="網址 (https://...)">
     <input id="linkDesc" class="input" placeholder="內容說明">
     <button class="btn" style="background:#8b5cf6; color:white;" onclick="saveLink()">儲存書籤</button>
-    <button class="btn" style="background:var(--accent-primary); color:white;" onclick="location.reload()">🔄 立即更新雲端資料</button>
+    <button class="btn" style="background:var(--accent-primary); color:white;" onclick="location.reload()">🔄 同步雲端試算表</button>
 </div>
 
 <script>
-    // 試算表 CSV 匯出網址
     const SHEET_URL = `https://docs.google.com/spreadsheets/d/1uYBA_CncbEAydmzNC1SRnsKJdswNgQh3zg1x6TKo0UU/export?format=csv&gid=0`;
     const emojis = ["🩺", "💉", "🏥", "💊", "☁️", "📦", "💻", "🔍", "📋", "🏠", "🧪", "📅", "📝", "⭐", "👤", "⚙️"];
     let selectedIcon = "🔗";
 
-    // ✅ 這裡完全清空，所有連結都從雲端讀取或 localStorage 讀取
     let userLinks = JSON.parse(localStorage.getItem('cz_user_links_v4')) || { primary: [], secondary: [] };
 
     async function fetchCloudData() {
@@ -200,25 +202,30 @@
             
             const pg = document.getElementById("primaryGrid");
             const sg = document.getElementById("secondaryGrid");
-            pg.innerHTML = ""; // 清空舊資料
-            sg.innerHTML = "";
+            pg.innerHTML = ""; sg.innerHTML = "";
 
             lines.forEach(line => {
                 const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim());
                 if (cols.length >= 3) {
                     const [cat, title, url, desc, icon] = cols;
-                    // 如果標題包含「考核」，自動套用黃色醒目效果
-                    const isHigh = title.includes("考核");
+                    // ✅ 核心修改：只要標題包含「重要」就變色
+                    const isHigh = title.includes("重要");
                     const html = createCard({title, url, desc, icon, isHighlight: isHigh}, false);
                     if (cat.toLowerCase().includes('primary')) pg.innerHTML += html;
                     else sg.innerHTML += html;
                 }
             });
 
-            // 加上自訂連結
-            userLinks.primary.forEach(l => pg.innerHTML += createCard(l, true));
-            userLinks.secondary.forEach(l => sg.innerHTML += createCard(l, true));
-        } catch (e) { alert("讀取雲端資料失敗，請檢查網路或試算表權限"); }
+            // 自訂書籤也套用一樣的判斷
+            userLinks.primary.forEach(l => {
+                l.isHighlight = l.title.includes("重要");
+                pg.innerHTML += createCard(l, true);
+            });
+            userLinks.secondary.forEach(l => {
+                l.isHighlight = l.title.includes("重要");
+                sg.innerHTML += createCard(l, true);
+            });
+        } catch (e) { console.error("雲端讀取失敗"); }
     }
 
     function createCard(l, isLocal = false) {
@@ -234,7 +241,7 @@
     }
 
     function deleteLink(id) {
-        if(!confirm("確定要刪除這個自訂書籤嗎？")) return;
+        if(!confirm("確定要刪除嗎？")) return;
         userLinks.primary = userLinks.primary.filter(x => x.id != id);
         userLinks.secondary = userLinks.secondary.filter(x => x.id != id);
         localStorage.setItem('cz_user_links_v4', JSON.stringify(userLinks));
@@ -258,13 +265,12 @@
         const url = document.getElementById('linkUrl').value;
         const desc = document.getElementById('linkDesc').value;
         const cat = document.getElementById('linkCategory').value;
-        if(!title || !url) return alert("請填寫名稱與網址");
+        if(!title || !url) return alert("請輸入名稱與網址");
         userLinks[cat].push({id: Date.now(), title, url, desc, icon: selectedIcon});
         localStorage.setItem('cz_user_links_v4', JSON.stringify(userLinks));
         location.reload();
     }
 
-    // Emoji 選擇器
     const picker = document.getElementById('emojiPicker');
     emojis.forEach(e => {
         const div = document.createElement('div');
