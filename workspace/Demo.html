@@ -1,18 +1,9 @@
-沒問題！我已經將您的 Google 試算表（ID: 1uYBA_CncbEAydmzNC1SRnsKJdswNgQh3zg1x6TKo0UU）整合進去了。
-這份完整程式碼包含了**自動讀取雲端資料**的功能。您以後只需要在試算表中填寫資料，網頁重新整理就會同步。
-### ⚠️ 使用前必做（非常重要）：
- 1. 打開您的 Google 試算表。
- 2. 點擊 **「檔案」** > **「共用」** > **「發佈到網路」**。
- 3. 點擊 **「發佈」** 按鈕並確定。
- 4. 試算表的欄位請按照這五個順序填寫：**分類、標題、網址、說明、圖示**（從第二列開始填資料）。
-### 完整版網頁程式碼
-```html
 <!DOCTYPE html>
 <html lang="zh-Hant" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中正診所雲端 Portal</title>
+    <title>中正診所 Portal - 雲端同步版</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@900&family=Noto+Sans+TC:wght@700;900&display=swap" rel="stylesheet">
     <style>
         :root[data-theme="light"] {
@@ -26,259 +17,112 @@
             --border-color: rgba(255, 255, 255, 0.6);
             --card-shadow: 0 12px 30px -5px rgba(14, 165, 233, 0.15);
         }
-        
-        :root[data-theme="dark"] {
-            --bg-sky: #0f172a;
-            --header-bg: rgba(15, 23, 42, 0.9);
-            --card-bg: #1e293b;
-            --accent-primary: #38bdf8;
-            --accent-secondary: #0ea5e9;
-            --text-main: #f1f5f9;
-            --text-sub: #cbd5e1;
-            --border-color: #334155;
-            --card-shadow: 0 4px 20px rgba(0,0,0,0.3);
-        }
-
-        :root {
-            --dynamic-title-size: 28px;
-            --dynamic-desc-size: 18px;
-            --grid-cols: 4;
-        }
-
+        :root { --dynamic-title-size: 28px; --dynamic-desc-size: 18px; --grid-cols: 4; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body { 
-            min-height: 100vh; 
-            background: var(--bg-sky);
-            background-attachment: fixed;
-            color: var(--text-main); 
-            font-family: "Inter", "Noto Sans TC", sans-serif; 
-            transition: background 0.4s, color 0.4s; 
-        }
-
-        .header { 
-            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
-            display: flex; justify-content: space-between; align-items: center; 
-            padding: 20px 5%; 
-            background-color: var(--header-bg);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border-bottom: 4px solid var(--accent-secondary); 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        }
-
-        .title-group { display: flex; flex-direction: column; }
-        .title-main { 
-            font-size: clamp(32px, 5vw, 48px);
-            font-weight: 900; line-height: 1.1; 
-            background: linear-gradient(to right, #0369a1, #0ea5e9);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .title-sub { font-size: 16px; color: var(--accent-primary); font-weight: 700; letter-spacing: 3px; margin-top: 5px; }
-        
-        .clock-area { text-align: right; }
-        .clock { font-size: clamp(32px, 5vw, 52px); font-weight: 900; color: var(--accent-primary); line-height: 1; font-variant-numeric: tabular-nums; }
-        .date-display { font-size: 18px; font-weight: 700; color: var(--text-sub); margin-top: 4px; }
-
+        body { min-height: 100vh; background: var(--bg-sky); background-attachment: fixed; color: var(--text-main); font-family: "Inter", "Noto Sans TC", sans-serif; }
+        .header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; display: flex; justify-content: space-between; align-items: center; padding: 20px 5%; background-color: var(--header-bg); backdrop-filter: blur(15px); border-bottom: 4px solid var(--accent-secondary); }
+        .title-main { font-size: clamp(32px, 5vw, 48px); font-weight: 900; background: linear-gradient(to right, #0369a1, #0ea5e9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .clock { font-size: clamp(32px, 5vw, 52px); font-weight: 900; color: var(--accent-primary); }
         .main { width: 100%; max-width: 1600px; margin: auto; padding: 180px 30px 100px; }
-
-        .section-title { 
-            font-size: 32px; font-weight: 900; margin: 50px 0 25px; padding-left: 20px; 
-            border-left: 10px solid var(--accent-secondary); 
-            color: var(--accent-primary);
-        }
-        
-        .grid { 
-            display: grid; 
-            grid-template-columns: repeat(var(--grid-cols, 4), 1fr); 
-            gap: 25px; 
-            width: 100%;
-        }
-
-        @media (max-width: 800px) { 
-            .grid { grid-template-columns: repeat(2, 1fr); } 
-        }
-
-        .card { 
-            position: relative; 
-            background: var(--card-bg); 
-            backdrop-filter: blur(5px);
-            border-radius: 28px; 
-            border: 1px solid var(--border-color); 
-            box-shadow: var(--card-shadow);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-        }
-        .card:hover { 
-            transform: translateY(-10px); 
-            border-color: var(--accent-primary); 
-            background: rgba(255, 255, 255, 0.95);
-        }
-
-        .card.highlight-card {
-            background: rgba(255, 243, 205, 0.85);
-            border: 2px solid #ffc107;
-        }
-
+        .section-title { font-size: 32px; font-weight: 900; margin: 50px 0 25px; padding-left: 20px; border-left: 10px solid var(--accent-secondary); color: var(--accent-primary); }
+        .grid { display: grid; grid-template-columns: repeat(var(--grid-cols, 4), 1fr); gap: 25px; }
+        .card { background: var(--card-bg); border-radius: 28px; border: 1px solid var(--border-color); box-shadow: var(--card-shadow); transition: 0.3s; }
+        .card:hover { transform: translateY(-10px); border-color: var(--accent-primary); background: white; }
+        .highlight-card { background: rgba(255, 243, 205, 0.9) !important; border: 2px solid #ffc107 !important; }
         .card-link { display: block; padding: 40px 30px; text-decoration: none; color: inherit; text-align: center; }
         .icon-box { font-size: 60px; margin-bottom: 20px; display: block; }
-        
         .card-title { font-size: var(--dynamic-title-size); font-weight: 900; color: var(--accent-primary); margin-bottom: 12px; }
         .card-desc { font-size: var(--dynamic-desc-size); font-weight: 700; color: var(--text-sub); line-height: 1.5; }
-
-        .controls { position: fixed; bottom: 30px; right: 30px; display: flex; gap: 20px; z-index: 1000; }
-        .ctrl-btn { 
-            width: 70px; height: 70px; border-radius: 50%; 
-            background: var(--card-bg); border: 3px solid var(--accent-secondary); 
-            font-size: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center; 
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15); backdrop-filter: blur(10px);
-        }
-
-        .admin-panel { 
-            position: fixed; top: 0; right: -100%; width: 95%; max-width: 500px; height: 100vh; 
-            background: var(--card-bg); backdrop-filter: blur(25px); 
-            border-left: 8px solid var(--accent-primary); padding: 40px; 
-            overflow-y: auto; transition: 0.4s; z-index: 2000; color: var(--text-main); 
-        }
-        .admin-panel.show { right: 0; }
-        
-        .input { width: 100%; padding: 12px; border: 2px solid #cbd5e1; border-radius: 12px; font-size: 18px; margin-bottom: 10px; background: rgba(255,255,255,0.7); }
-
-        .loading-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.8); display: flex; justify-content: center;
-            align-items: center; z-index: 9999; font-weight: 900; color: var(--accent-primary);
-        }
+        #status-msg { position: fixed; bottom: 10px; left: 10px; font-size: 12px; color: #666; }
+        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; justify-content: center; align-items: center; z-index: 9999; font-weight: 900; }
     </style>
 </head>
-<body id="bodyRoot">
+<body>
 
-<div id="loader" class="loading-overlay">正在同步雲端資料...</div>
+<div id="loader" class="loading-overlay">正在讀取雲端資料，請稍候...</div>
+<div id="status-msg">初始化中...</div>
 
 <div class="header">
     <div class="title-group">
         <div class="title-main">中正診所</div>
-        <div class="title-sub">PORTAL SYSTEM (CLOUD)</div>
+        <div style="font-size:16px; color:var(--accent-primary); font-weight:700; letter-spacing:3px;">PORTAL SYSTEM</div>
     </div>
-    <div class="clock-area">
+    <div style="text-align:right;">
         <div class="clock" id="clock">00:00:00</div>
-        <div class="date-display" id="date"></div>
+        <div id="date" style="font-weight:700; color:var(--text-sub);"></div>
     </div>
 </div>
 
 <div class="main">
     <div class="section-title">主要入口</div>
     <div id="primaryGrid" class="grid"></div>
-
     <div class="section-title">次要工具</div>
     <div id="secondaryGrid" class="grid"></div>
 </div>
 
-<div class="controls">
-    <button class="ctrl-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
-    <button class="ctrl-btn" onclick="toggleAdminMode()">⚙️</button>
-</div>
-
-<div class="admin-panel" id="adminPanel">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <h2>介面設定</h2>
-        <button onclick="toggleAdminMode()" style="font-size:30px; border:none; background:none; cursor:pointer;">✕</button>
-    </div>
-    
-    <div style="background: #e0f2fe; padding: 15px; border-radius: 15px; margin-bottom: 20px; color: #0369a1; font-size: 14px;">
-        💡 <b>提示：</b> 書籤清單目前由 Google 試算表同步。如需修改，請直接前往試算表更新。
-    </div>
-
-    <div>
-        <label>卡片標題大小</label>
-        <input type="range" id="titleSlider" min="16" max="60" value="28" style="width:100%" oninput="applyUIStyle()">
-        <label>卡片內容大小</label>
-        <input type="range" id="descSlider" min="12" max="40" value="18" style="width:100%" oninput="applyUIStyle()">
-        <label>一列顯示幾張</label>
-        <select id="gridColSelect" class="input" onchange="applyUIStyle()">
-            <option value="3">3 張</option>
-            <option value="4" selected>4 張</option>
-            <option value="5">5 張</option>
-        </select>
-    </div>
-    <button class="input" style="margin-top:20px; background:var(--accent-primary); color:white; font-weight:bold; cursor:pointer;" onclick="location.reload()">手動同步雲端資料</button>
-</div>
-
 <script>
-    // 試算表設定
+    // 你的試算表網址
     const SPREADSHEET_ID = '1uYBA_CncbEAydmzNC1SRnsKJdswNgQh3zg1x6TKo0UU';
-    const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv`;
+    // 改用公開的 GID 0 (第一張工作表) 的 CSV 導出網址
+    const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv&gid=0`;
 
-    let coreLinks = { primary: [], secondary: [] };
-    let uiSettings = JSON.parse(localStorage.getItem('cz_ui_config')) || { titleSize: 28, descSize: 18, cols: 4 };
-
-    // 從 Google 試算表抓取資料
-    async function fetchSheetData() {
+    async function fetchData() {
+        const msg = document.getElementById('status-msg');
         try {
+            msg.innerText = "正在連線到 Google Sheets...";
             const response = await fetch(SHEET_URL);
-            const csvText = await response.text();
+            if (!response.ok) throw new Error("網路回應不正確");
             
-            // 簡單解析 CSV (處理引號與逗號)
-            const rows = csvText.split('\n').slice(1); 
-            coreLinks.primary = [];
-            coreLinks.secondary = [];
+            const data = await response.text();
+            msg.innerText = "資料下載成功，解析中...";
+            
+            const rows = data.split('\n').map(row => {
+                // 處理 CSV 複雜的逗號引號邏輯
+                return row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || [];
+            });
 
-            rows.forEach((row, index) => {
-                const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim());
+            const primaryContainer = document.getElementById("primaryGrid");
+            const secondaryContainer = document.getElementById("secondaryGrid");
+            primaryContainer.innerHTML = "";
+            secondaryContainer.innerHTML = "";
+
+            let count = 0;
+            // 從第二列 (index 1) 開始抓資料
+            for (let i = 1; i < rows.length; i++) {
+                let cols = rows[i].map(c => c.replace(/^"|"$/g, '').trim());
                 
                 if (cols.length >= 3) {
                     const [cat, title, url, desc, icon] = cols;
-                    if (!title || !url) return;
+                    if (!title || !url) continue;
 
-                    const item = {
-                        id: 's-' + index,
-                        title: title,
-                        url: url,
-                        desc: desc || "",
-                        icon: icon || "🔗",
-                        isHighlight: (title.includes("考核") || desc.includes("期限"))
-                    };
+                    const isHighlight = (title.includes("考核") || (desc && desc.includes("期限")));
+                    const cardHtml = `
+                        <div class="card ${isHighlight ? 'highlight-card' : ''}">
+                            <a class="card-link" href="${url}" target="_blank">
+                                <span class="icon-box">${icon || '🔗'}</span>
+                                <div class="card-title">${title}</div>
+                                <div class="card-desc">${desc || ''}</div>
+                            </a>
+                        </div>`;
 
                     if (cat.toLowerCase() === 'primary') {
-                        coreLinks.primary.push(item);
+                        primaryContainer.innerHTML += cardHtml;
                     } else {
-                        coreLinks.secondary.push(item);
+                        secondaryContainer.innerHTML += cardHtml;
                     }
+                    count++;
                 }
-            });
-            
-            render();
+            }
+
+            msg.innerText = `同步完成！共載入 ${count} 個連結。`;
             document.getElementById('loader').style.display = 'none';
-        } catch (error) {
-            console.error("同步失敗:", error);
-            alert("雲端同步失敗，請檢查試算表是否已『發佈到網路』");
-            document.getElementById('loader').innerText = "同步失敗，請檢查網路或設定";
+            if (count === 0) {
+                msg.innerText = "警告：抓到 0 筆資料。請確認試算表 A 欄是否填寫 primary 或 secondary";
+            }
+        } catch (err) {
+            msg.innerText = "錯誤: " + err.message;
+            console.error(err);
         }
-    }
-
-    function render() {
-        const createCard = (l) => `
-            <div class="card ${l.isHighlight ? 'highlight-card' : ''}">
-                <a class="card-link" href="${l.url}" target="_blank">
-                    <span class="icon-box">${l.icon}</span>
-                    <div class="card-title">${l.title}</div>
-                    <div class="card-desc">${l.desc}</div>
-                </a>
-            </div>`;
-        
-        document.getElementById("primaryGrid").innerHTML = coreLinks.primary.map(l => createCard(l)).join('');
-        document.getElementById("secondaryGrid").innerHTML = coreLinks.secondary.map(l => createCard(l)).join('');
-    }
-
-    function applyUIStyle() {
-        const titleS = document.getElementById('titleSlider').value;
-        const descS = document.getElementById('descSlider').value;
-        const colV = document.getElementById('gridColSelect').value;
-        document.documentElement.style.setProperty('--dynamic-title-size', titleS + 'px');
-        document.documentElement.style.setProperty('--dynamic-desc-size', descS + 'px');
-        document.documentElement.style.setProperty('--grid-cols', colV);
-        uiSettings = { titleSize: titleS, descSize: descS, cols: colV };
-        localStorage.setItem('cz_ui_config', JSON.stringify(uiSettings));
     }
 
     function updateClock() {
@@ -288,35 +132,11 @@
         document.getElementById("date").innerText = `(民${y-1911}) ${y}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')}`;
     }
 
-    function toggleTheme() {
-        const root = document.documentElement;
-        const next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-        root.setAttribute('data-theme', next);
-        localStorage.setItem('cz_theme', next);
-        document.getElementById('themeBtn').innerText = next === 'light' ? '🌙' : '☀️';
-    }
-
-    function toggleAdminMode() {
-        document.getElementById("adminPanel").classList.toggle("show");
-    }
-
-    // 初始化
     window.onload = () => {
-        document.getElementById('titleSlider').value = uiSettings.titleSize;
-        document.getElementById('descSlider').value = uiSettings.descSize;
-        document.getElementById('gridColSelect').value = uiSettings.cols;
-        applyUIStyle();
-        
-        const savedTheme = localStorage.getItem('cz_theme') || 'light';
-        document.documentElement.setAttribute('data-theme', savedTheme);
-        document.getElementById('themeBtn').innerText = savedTheme === 'light' ? '🌙' : '☀️';
-
-        setInterval(updateClock, 1000);
         updateClock();
-        fetchSheetData(); 
+        setInterval(updateClock, 1000);
+        fetchData();
     };
 </script>
 </body>
 </html>
-
-```
