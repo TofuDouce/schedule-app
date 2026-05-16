@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<title>一年股息估算器</title>
+
+<style>
+:root{
+    --bg:#070b14;
+    --card:#111827cc;
+    --border:#d4af3740;
+    --gold:#f5d487;
+    --text:#f3f4f6;
+    --sub:#9ca3af;
+    --purple:#7c3aed;
+    --blue:#2563eb;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:
+    "Noto Sans TC",
+    sans-serif;
+
+    background:
+    radial-gradient(circle at top,
+    #1a1f35 0%,
+    #070b14 45%);
+
+    min-height:100vh;
+    color:var(--text);
+    padding:30px 18px;
+}
+
+.container{
+    max-width:1200px;
+    margin:auto;
+}
+
+.title{
+    text-align:center;
+    margin-bottom:30px;
+}
+
+.title h1{
+    font-size:42px;
+    color:var(--gold);
+    margin-bottom:10px;
+    letter-spacing:2px;
+}
+
+.title p{
+    color:var(--sub);
+    font-size:15px;
+}
+
+.main-card{
+    background:var(--card);
+    backdrop-filter:blur(18px);
+
+    border:1px solid var(--border);
+
+    border-radius:28px;
+
+    padding:28px;
+
+    box-shadow:
+    0 0 40px #00000070,
+    inset 0 0 30px #ffffff08;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:16px;
+}
+
+.input-card{
+    background:#0f172acc;
+
+    border:
+    1px solid #ffffff10;
+
+    border-radius:22px;
+
+    padding:18px;
+
+    transition:0.3s;
+}
+
+.input-card:hover{
+    transform:translateY(-3px);
+
+    border-color:#d4af3760;
+}
+
+.label{
+    color:var(--gold);
+    margin-bottom:10px;
+    font-size:14px;
+}
+
+.input-group{
+    display:flex;
+    gap:10px;
+}
+
+input{
+    width:100%;
+    background:#060b16;
+
+    border:1px solid #ffffff12;
+
+    color:white;
+
+    padding:14px;
+
+    border-radius:14px;
+
+    font-size:16px;
+    outline:none;
+}
+
+input:focus{
+    border-color:#d4af37;
+    box-shadow:0 0 15px #d4af3740;
+}
+
+button{
+    width:100%;
+    margin-top:24px;
+
+    border:none;
+
+    background:
+    linear-gradient(
+    135deg,
+    var(--purple),
+    var(--blue));
+
+    color:white;
+
+    padding:18px;
+
+    border-radius:18px;
+
+    font-size:18px;
+
+    cursor:pointer;
+
+    transition:0.3s;
+
+    font-weight:bold;
+}
+
+button:hover{
+    transform:translateY(-2px);
+    opacity:0.92;
+}
+
+.results{
+    margin-top:30px;
+
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:18px;
+}
+
+.result-card{
+    background:#0b1220;
+
+    border:1px solid #ffffff10;
+
+    border-radius:22px;
+
+    padding:22px;
+
+    position:relative;
+
+    overflow:hidden;
+}
+
+.result-card::before{
+    content:"";
+
+    position:absolute;
+
+    inset:0;
+
+    background:
+    linear-gradient(
+    135deg,
+    #ffffff05,
+    transparent);
+
+    pointer-events:none;
+}
+
+.stock-name{
+    font-size:24px;
+    color:var(--gold);
+    margin-bottom:6px;
+}
+
+.stock-code{
+    color:var(--sub);
+    margin-bottom:20px;
+}
+
+.info{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:12px;
+
+    border-bottom:1px solid #ffffff08;
+    padding-bottom:12px;
+}
+
+.info span:first-child{
+    color:#cbd5e1;
+}
+
+.info span:last-child{
+    font-weight:bold;
+}
+
+.summary{
+    margin-top:28px;
+
+    background:
+    linear-gradient(
+    135deg,
+    #1e293b,
+    #0f172a);
+
+    border-radius:24px;
+
+    padding:28px;
+
+    border:1px solid #d4af3740;
+
+    text-align:center;
+}
+
+.summary-title{
+    color:var(--gold);
+    font-size:22px;
+    margin-bottom:16px;
+}
+
+.big{
+    font-size:42px;
+    font-weight:bold;
+    margin-bottom:10px;
+}
+
+.small{
+    color:var(--sub);
+    font-size:16px;
+}
+
+.loading{
+    text-align:center;
+    margin-top:20px;
+    color:var(--sub);
+}
+
+@media(max-width:768px){
+
+    .grid{
+        grid-template-columns:1fr;
+    }
+
+    .results{
+        grid-template-columns:1fr;
+    }
+
+    .title h1{
+        font-size:30px;
+    }
+
+    .big{
+        font-size:34px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="title">
+        <h1>一年股息估算器</h1>
+        <p>輸入 ETF 代號與投資金額，自動估算被動收入</p>
+    </div>
+
+    <div class="main-card">
+
+        <div class="grid">
+
+            <div class="input-card">
+                <div class="label">ETF 1</div>
+                <div class="input-group">
+                    <input id="code1" placeholder="0050">
+                    <input id="money1" placeholder="100000">
+                </div>
+            </div>
+
+            <div class="input-card">
+                <div class="label">ETF 2</div>
+                <div class="input-group">
+                    <input id="code2" placeholder="0056">
+                    <input id="money2" placeholder="50000">
+                </div>
+            </div>
+
+            <div class="input-card">
+                <div class="label">ETF 3</div>
+                <div class="input-group">
+                    <input id="code3" placeholder="00929">
+                    <input id="money3" placeholder="30000">
+                </div>
+            </div>
+
+            <div class="input-card">
+                <div class="label">ETF 4</div>
+                <div class="input-group">
+                    <input id="code4" placeholder="00878">
+                    <input id="money4" placeholder="20000">
+                </div>
+            </div>
+
+        </div>
+
+        <button onclick="calculateDividend()">
+            開始計算
+        </button>
+
+        <div class="loading" id="loading"></div>
+
+        <div class="results" id="results"></div>
+
+        <div class="summary" id="summary" style="display:none;">
+            <div class="summary-title">總被動收入</div>
+
+            <div class="big" id="yearTotal">
+                NT$ 0
+            </div>
+
+            <div class="small" id="monthTotal">
+                月均 NT$ 0
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+const dividendYield = {
+    "0050":0.035,
+    "0056":0.10,
+    "00878":0.08,
+    "00919":0.11,
+    "00929":0.12,
+    "006208":0.04
+};
+
+async function getETFData(code){
+
+    try{
+
+        const url =
+        `https://query1.finance.yahoo.com/v8/finance/chart/${code}.TW`;
+
+        const response = await fetch(url);
+
+        const data = await response.json();
+
+        const result = data.chart.result[0].meta;
+
+        return{
+            price:result.regularMarketPrice,
+            name:result.longName || code
+        };
+
+    }catch(err){
+
+        return null;
+    }
+}
+
+async function calculateDividend(){
+
+    const resultsDiv =
+    document.getElementById("results");
+
+    const loading =
+    document.getElementById("loading");
+
+    const summary =
+    document.getElementById("summary");
+
+    resultsDiv.innerHTML = "";
+
+    loading.innerHTML = "正在抓取即時資料...";
+
+    let totalYear = 0;
+
+    for(let i=1;i<=4;i++){
+
+        const code =
+        document.getElementById(`code${i}`)
+        .value.trim();
+
+        const money =
+        parseFloat(
+        document.getElementById(`money${i}`)
+        .value);
+
+        if(!code || !money) continue;
+
+        const data =
+        await getETFData(code);
+
+        if(!data){
+
+            resultsDiv.innerHTML += `
+            <div class="result-card">
+                <div class="stock-name">${code}</div>
+                <div class="stock-code">
+                無法取得資料
+                </div>
+            </div>
+            `;
+
+            continue;
+        }
+
+        const yieldRate =
+        dividendYield[code] || 0.05;
+
+        const shares =
+        Math.floor(money / data.price);
+
+        const yearly =
+        Math.round(money * yieldRate);
+
+        const monthly =
+        Math.round(yearly / 12);
+
+        totalYear += yearly;
+
+        resultsDiv.innerHTML += `
+        <div class="result-card">
+
+            <div class="stock-name">
+                ${data.name}
+            </div>
+
+            <div class="stock-code">
+                ${code}
+            </div>
+
+            <div class="info">
+                <span>即時股價</span>
+                <span>NT$ ${data.price.toFixed(2)}</span>
+            </div>
+
+            <div class="info">
+                <span>可買股數</span>
+                <span>${shares} 股</span>
+            </div>
+
+            <div class="info">
+                <span>預估殖利率</span>
+                <span>${(yieldRate*100).toFixed(1)}%</span>
+            </div>
+
+            <div class="info">
+                <span>年股息</span>
+                <span>NT$ ${yearly.toLocaleString()}</span>
+            </div>
+
+            <div class="info">
+                <span>月均股息</span>
+                <span>NT$ ${monthly.toLocaleString()}</span>
+            </div>
+
+        </div>
+        `;
+    }
+
+    loading.innerHTML = "";
+
+    document.getElementById("yearTotal")
+    .innerHTML =
+    `NT$ ${totalYear.toLocaleString()}`;
+
+    document.getElementById("monthTotal")
+    .innerHTML =
+    `月均 NT$ ${Math.round(totalYear/12).toLocaleString()}`;
+
+    summary.style.display = "block";
+}
+</script>
+
+</body>
+</html>
