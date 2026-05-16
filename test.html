@@ -12,7 +12,7 @@
             --card-border: rgba(255, 255, 255, 0.4);
             --text-main: #1e293b;
             --text-muted: #64748b;
-            --accent-primary: #0284c7; /* 預設天空藍 */
+            --accent-primary: #0284c7; 
             --glass-blur: 16px;
             --font-scale: 1;
         }
@@ -29,7 +29,7 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
         body {
@@ -44,7 +44,7 @@
             font-size: calc(16px * var(--font-scale));
         }
 
-        /* 自訂背景覆蓋層 */
+        /* 🌌 自訂背景圖片覆蓋層 */
         .custom-bg-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -60,7 +60,7 @@
             margin: 0 auto;
         }
 
-        /* 頂部標題與時間 */
+        /* 頂部時鐘與標題 - 消除跳動 */
         header {
             display: flex;
             justify-content: space-between;
@@ -75,10 +75,10 @@
 
         .clock-box {
             text-align: right;
-            font-variant-numeric: tabular-nums;
+            font-variant-numeric: tabular-nums; /* 消除時間抖動 */
         }
 
-        /* 響應式網格與卡片設計 */
+        /* 網格區塊 */
         .grid-section {
             margin-bottom: 2.5rem;
         }
@@ -97,6 +97,7 @@
             gap: 1.25rem;
         }
 
+        /* 書籤卡片設計 */
         .link-card {
             background: var(--card-bg);
             backdrop-filter: blur(var(--glass-blur));
@@ -133,56 +134,82 @@
             color: var(--text-muted);
         }
 
-        /* 醒目提醒樣式 (如 C13 考核表) */
+        /* 醒目提醒樣式 */
         .card-highlight {
             border: 2px solid #eab308 !important;
             background: rgba(234, 179, 8, 0.1) !important;
         }
 
-        /* 右側管理面板 */
-        .admin-panel {
-            position: fixed;
-            top: 0; right: -360px;
-            width: 340px; height: 100vh;
+        /* 📱 原地編輯模式：控制按鈕 */
+        .card-actions {
+            position: absolute;
+            top: 0.5rem; right: 0.5rem;
+            display: none;
+            gap: 0.25rem;
+            z-index: 10;
+        }
+        body.admin-mode .card-actions {
+            display: flex;
+        }
+        .action-btn {
+            background: rgba(255,255,255,0.9);
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 2px 6px;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+        .action-btn.btn-del { color: #ef4444; }
+
+        /* 📱 手機優化：整合型底部管理區塊 */
+        .admin-footer-panel {
+            margin-top: 3rem;
             background: var(--card-bg);
-            backdrop-filter: blur(24px);
-            border-left: 1px solid var(--card-border);
-            box-shadow: -10px 0 30px rgba(0,0,0,0.1);
-            z-index: 100;
+            backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
             padding: 2rem 1.5rem;
-            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            overflow-y: auto;
+            display: none; /* 點擊齒輪才展開 */
+        }
+        .admin-footer-panel.open {
+            display: block;
         }
 
-        .admin-panel.open { right: 0; }
+        .panel-grid {
+            display: grid;
+            grid-template-cols: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
 
         .panel-section {
-            margin-bottom: 1.5rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 1rem;
         }
 
         .panel-title {
             font-weight: bold;
-            margin-bottom: 0.75rem;
+            margin-bottom: 1rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            font-size: 1.1rem;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 0.5rem;
         }
 
-        /* 按鈕與輸入框共用樣式 */
+        /* 表單元素 */
         input, select, textarea {
             width: 100%;
-            padding: 0.5rem 0.75rem;
+            padding: 0.6rem 0.75rem;
             border-radius: 8px;
             border: 1px solid var(--card-border);
             background: rgba(255,255,255,0.2);
             color: var(--text-main);
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
         }
 
         .btn {
-            padding: 0.5rem 1rem;
+            padding: 0.6rem 1rem;
             border-radius: 8px;
             border: none;
             background: var(--accent-primary);
@@ -192,9 +219,9 @@
             width: 100%;
             transition: opacity 0.2s;
         }
-
         .btn:hover { opacity: 0.9; }
 
+        /* 右下角浮動齒輪 */
         .btn-trigger {
             position: fixed;
             bottom: 2rem; right: 2rem;
@@ -203,18 +230,25 @@
             font-size: 1.5rem;
             z-index: 99;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* 🎨 色彩切換器圓圈 */
+        /* 🎨 優化後的晝夜通用調色盤 */
         .color-picker {
             display: flex; gap: 0.5rem; margin-bottom: 1rem;
         }
         .color-dot {
-            width: 1.5rem; height: 1.5rem; border-radius: 50%; cursor: pointer; border: 2px solid transparent;
+            width: 1.75rem; height: 1.75rem; border-radius: 50%; cursor: pointer; border: 2px solid transparent;
         }
         .color-dot.active { border-color: var(--text-main); }
 
-        /* ✨ 擴充：底部小工具群組樣式 */
+        /* ✨ 新功能：底部獨立小工具模組樣式 */
         .widget-section {
             margin-top: 3rem;
             display: grid;
@@ -233,7 +267,6 @@
             gap: 1rem;
         }
 
-        /* 待辦清單專用樣式 */
         .todo-item {
             display: flex;
             align-items: center;
@@ -248,17 +281,7 @@
             color: var(--text-muted);
         }
 
-        /* 刪除小按鈕 */
-        .del-sm {
-            background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.875rem;
-        }
-
-        /* 記憶控制按鈕 */
-        .card-actions {
-            position: absolute; top: 0.5rem; right: 0.5rem; display: none; gap: 0.25rem;
-        }
-        body.admin-mode .card-actions { display: flex; }
-        .action-btn { background: rgba(255,255,255,0.7); border: none; border-radius: 4px; padding: 2px 6px; cursor: pointer; font-size: 0.75rem;}
+        .del-sm { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.875rem; }
 
         @media (max-width: 768px) {
             .card-grid { grid-template-cols: repeat(2, 1fr); }
@@ -275,7 +298,7 @@
         <header>
             <div>
                 <h1>中正診所 Portal</h1>
-                <p style="color: var(--text-muted); font-size: 0.875rem;">醫療行政快速整合首頁</p>
+                <p style="color: var(--text-muted); font-size: 0.875rem;">醫療行政雲端整合首頁</p>
             </div>
             <div class="clock-box">
                 <div id="clockTime" style="font-size: 1.5rem; font-weight: bold;">00:00:00</div>
@@ -285,7 +308,7 @@
 
         <main>
             <div class="grid-section">
-                <h2 class="section-title">📌 核心公用系統</h2>
+                <h2 class="section-title">📌 核心公用系統 <span id="syncStatus" style="font-size:0.8rem; color:var(--text-muted); font-weight:normal;">(雲端同步中...)</span></h2>
                 <div class="card-grid" id="primaryGrid"></div>
             </div>
 
@@ -297,115 +320,162 @@
 
         <section class="widget-section">
             <div class="widget-card">
-                <h3 class="panel-title">✅ 每日待辦事項</h3>
+                <h3 class="panel-title" style="border:none; margin:0;">✅ 每日待辦事項</h3>
                 <div style="display: flex; gap: 0.5rem;">
                     <input type="text" id="todoInput" placeholder="新增今日任務..." style="margin:0;">
                     <button class="btn" id="addTodoBtn" style="width: auto; white-space: nowrap;">新增</button>
                 </div>
-                <div id="todoList" style="max-height: 200px; overflow-y: auto;"></div>
+                <div id="todoList" style="max-height: 180px; overflow-y: auto;"></div>
             </div>
 
             <div class="widget-card">
-                <h3 class="panel-title">⏳ 重要日子倒數</h3>
+                <h3 class="panel-title" style="border:none; margin:0;">⏳ 重要日子倒數</h3>
                 <div style="display: flex; flex-direction: column; gap: 0.25rem;">
                     <input type="text" id="cdName" placeholder="活動名稱 (如：督導考核)">
                     <input type="date" id="cdDate">
                     <button class="btn" id="saveCountDown">設定倒數日</button>
                 </div>
                 <div id="countdownDisplay" style="text-align: center; padding: 0.5rem; background: rgba(255,255,255,0.15); border-radius:8px;">
-                    <div id="cdTitle" style="font-weight: bold;">未設定倒數活動</div>
-                    <div id="cdDays" style="font-size: 2rem; font-weight: bold; color: var(--accent-primary);">0</div>
+                    <div id="cdTitle" style="font-weight: bold; font-size:0.9rem;">未設定倒數活動</div>
+                    <div id="cdDays" style="font-size: 1.5rem; font-weight: bold; color: var(--accent-primary);">0</div>
                 </div>
             </div>
 
             <div class="widget-card">
-                <h3 class="panel-title">📝 臨時快速筆記</h3>
-                <textarea id="quickNote" rows="6" placeholder="此處文字會隨時自動儲存，適合臨時抄寫交班事項、電話或病歷號..." style="resize: none;"></textarea>
-                <div style="text-align: right; font-size: 0.75rem; color: var(--text-muted);">已自動同步到本地瀏覽器</div>
+                <h3 class="panel-title" style="border:none; margin:0;">📝 臨時快速筆記</h3>
+                <textarea id="quickNote" rows="5" placeholder="此處文字會自動隨時儲存，適合臨時抄寫電話或交班事項..." style="resize: none; margin:0;"></textarea>
+                <div style="text-align: right; font-size: 0.725rem; color: var(--text-muted);">離開或重整皆會留存</div>
+            </div>
+        </section>
+
+        <section class="admin-footer-panel" id="adminPanel">
+            <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom: 1.5rem; border-bottom:2px solid var(--card-border); padding-bottom:0.5rem;">
+                <h2>⚙️ 系統整合控制中心</h2>
+                <button onclick="toggleAdminPanel()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-main);">✕</button>
+            </div>
+
+            <div class="panel-grid">
+                <div class="panel-section">
+                    <div class="panel-title">🎨 顯示與主題設定</div>
+                    <div class="color-picker">
+                        <div class="color-dot" style="background: #0284c7;" onclick="setAccent('#0284c7')" title="天空藍"></div>
+                        <div class="color-dot" style="background: #10b981;" onclick="setAccent('#10b981')" title="翡翠綠"></div>
+                        <div class="color-dot" style="background: #a855f7;" onclick="setAccent('#a855f7')" title="丁香紫"></div>
+                        <div class="color-dot" style="background: #64748b;" onclick="setAccent('#64748b')" title="磨砂灰"></div>
+                    </div>
+                    <button class="btn" id="themeToggle" onclick="toggleDarkTheme()" style="margin-bottom: 1rem;">🌗 切換白晝 / 夜間模式</button>
+                    
+                    <label style="font-size: 0.875rem; display:block; margin-bottom: 0.25rem;">內文縮放大小：</label>
+                    <input type="range" id="fontSlider" min="0.8" max="1.4" step="0.05" value="1" oninput="adjustFont(this.value)" style="margin-bottom: 1.5rem;">
+
+                    <div class="panel-title">🌌 自訂背景圖片</div>
+                    <input type="file" id="bgUploader" accept="image/*" style="font-size: 0.875rem;">
+                    <button class="btn" onclick="resetBackground()" style="background: #64748b; margin-top: 0.25rem;">回復預設背景</button>
+                </div>
+
+                <div class="panel-section" id="bookmarkFormContainer">
+                    <div class="panel-title">➕ 新增 / 編輯自訂網頁書籤</div>
+                    <input type="hidden" id="editIndex" value="-1">
+                    <input type="text" id="newTitle" placeholder="網站名稱 (如：健保抽審系統)">
+                    <input type="text" id="newUrl" placeholder="網址 (https://...)">
+                    <input type="text" id="newDesc" placeholder="簡短說明文字">
+                    <input type="text" id="newIcon" placeholder="圖示 Emoji (如：🏥)" value="🔗">
+                    <button class="btn" onclick="saveCustomLink()" id="saveBtn" style="margin-top:0.25rem;">儲存並新增至畫面</button>
+                    <button class="btn" onclick="toggleEditMode()" style="background:#eab308; margin-top:0.5rem;" id="editModeBtn">進入原地編輯 / 刪除模式</button>
+                </div>
+
+                <div class="panel-section">
+                    <div class="panel-title">🧮 醫學計算：eGFR (CKD-EPI 2021)</div>
+                    <select id="egfrGender"><option value="male">男</option><option value="female">女</option></select>
+                    <input type="number" id="egfrCr" step="0.01" placeholder="Creatinine (血清肌酸酐)">
+                    <input type="number" id="egfrAge" placeholder="年齡">
+                    <button class="btn" onclick="calcEGFR()">開始計算</button>
+                    <div id="egfrResult" style="margin-top:0.75rem; font-weight:bold; color:var(--accent-primary); text-align:center; min-height:24px;"></div>
+                </div>
             </div>
         </section>
     </div>
 
     <button class="btn btn-trigger" onclick="toggleAdminPanel()">⚙️</button>
 
-    <div class="admin-panel" id="adminPanel">
-        <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom: 1.5rem;">
-            <h3>⚙️ 系統整合控制台</h3>
-            <button onclick="toggleAdminPanel()" style="background:none; border:none; font-size:1.25rem; cursor:pointer; color:var(--text-main);">✕</button>
-        </div>
-
-        <div class="panel-section">
-            <div class="panel-title">🎨 顯示與主題設定</div>
-            <div class="color-picker">
-                <div class="color-dot" style="background: #0284c7;" onclick="setAccent('#0284c7')" title="天空藍"></div>
-                <div class="color-dot" style="background: #10b981;" onclick="setAccent('#10b981')" title="翡翠綠"></div>
-                <div class="color-dot" style="background: #a855f7;" onclick="setAccent('#a855f7')" title="丁香紫"></div>
-                <div class="color-dot" style="background: #64748b;" onclick="setAccent('#64748b')" title="磨砂灰"></div>
-            </div>
-            <button class="btn" id="themeToggle" onclick="toggleDarkTheme()" style="margin-bottom: 0.75rem;">🌗 切換晝夜模式</button>
-            <label style="font-size: 0.875rem; display:block; margin-bottom: 0.25rem;">內文縮放大小：</label>
-            <input type="range" id="fontSlider" min="0.8" max="1.4" step="0.05" value="1" oninput="adjustFont(this.value)">
-        </div>
-
-        <div class="panel-section">
-            <div class="panel-title">🌌 自訂背景圖片</div>
-            <input type="file" id="bgUploader" accept="image/*" style="font-size: 0.875rem;">
-            <button class="btn" onclick="resetBackground()" style="background: #64748b; margin-top: 0.25rem;">回復預設背景</button>
-        </div>
-
-        <div class="panel-section">
-            <div class="panel-title">➕ 新增自訂網頁書籤</div>
-            <input type="text" id="newTitle" placeholder="網站名稱 (如：健保抽審系統)">
-            <input type="text" id="newUrl" placeholder="網址 (https://...)">
-            <input type="text" id="newDesc" placeholder="簡短說明文字">
-            <input type="text" id="newIcon" placeholder="圖示 Emoji (如：🏥)" value="🔗">
-            <button class="btn" onclick="addCustomLink()" style="margin-top:0.5rem;">儲存並新增至畫面</button>
-            <button class="btn" onclick="toggleEditMode()" style="background:#eab308; margin-top:0.5rem;" id="editModeBtn">進入書籤卡片刪除模式</button>
-        </div>
-
-        <div class="panel-section">
-            <div class="panel-title">🧮 醫學計算：eGFR (CKD-EPI 2021)</div>
-            <select id="egfrGender"><option value="male">男</option><option value="female">女</option></select>
-            <input type="number" id="egfrCr" step="0.01" placeholder="Creatinine (血清肌酸酐)">
-            <input type="number" id="egfrAge" placeholder="年齡">
-            <button class="btn" onclick="calcEGFR()">開始計算</button>
-            <div id="egfrResult" style="margin-top:0.5rem; font-weight:bold; color:var(--accent-primary); text-align:center;"></div>
-        </div>
-    </div>
-
     <script>
-        // 1. 內建公用核心書籤 (不能被使用者隨意刪除)
-        const coreLinks = [
+        // 📊 雲端同步設定：請在下方填入您發佈到網路的 Google Sheets JSON/CSV 連結
+        // 若尚未設定或連線失敗，系統會全自動啟用安全降級機制，確保核心功能依然完全正常。
+        const SPREADSHEET_URL = "YOUR_GOOGLE_SHEET_PUBLISHED_URL_HERE";
+
+        // 內建核心備用書籤（不能被任何人刪除，防呆權限）
+        const fallbackCoreLinks = [
             { category: 'primary', title: '診所雲端試算表', url: 'https://docs.google.com', desc: '診所排班與聯絡排程總表', icon: '📊' },
-            { category: 'primary', title: 'C13 考核自評表', url: 'https://example.com/c13', desc: '年度自我評分指標考核系統', icon: '📝', highlight: true }, // 已補齊逗號修正
+            { category: 'primary', title: 'C13 考核自評表', url: 'https://example.com/c13', desc: '年度自我評分指標考核系統', icon: '📝', highlight: true },
             { category: 'primary', title: 'NIIS 疫苗系統', url: 'https://niis.cdc.gov.tw', desc: '全國預防接種資訊管理系統', icon: '💉' }
         ];
 
+        let coreLinks = [...fallbackCoreLinks];
         let customLinks = JSON.parse(localStorage.getItem('cc_portal_custom')) || [];
 
-        // 2. 初始化與渲染邏輯
+        // 初始化
         function init() {
-            renderGrids();
+            fetchCloudLinks();
             updateClock();
             setInterval(updateClock, 1000);
             loadSettings();
-            initWidgets(); // 初始化小工具
+            initWidgets();
         }
 
+        // 📊 讀取 Google Sheets 雲端同步邏輯
+        async function fetchCloudLinks() {
+            const statusEl = document.getElementById('syncStatus');
+            if (!SPREADSHEET_URL || SPREADSHEET_URL.includes("YOUR_GOOGLE_SHEET")) {
+                statusEl.innerText = "(本地記憶體模式)";
+                renderGrids();
+                return;
+            }
+            try {
+                const response = await fetch(SPREADSHEET_URL);
+                if (!response.ok) throw new Error('網路錯誤');
+                const text = await response.text();
+                
+                // 解析 CSV 資料格式
+                const rows = text.split('\n').map(row => row.split(','));
+                if (rows.length > 1) {
+                    coreLinks = [];
+                    for (let i = 1; i < rows.length; i++) {
+                        if (rows[i].length >= 3 && rows[i][1]) {
+                            coreLinks.push({
+                                category: rows[i][0].trim() || 'primary',
+                                title: rows[i][1].trim(),
+                                url: rows[i][2].trim(),
+                                desc: rows[i][3] ? rows[i][3].trim() : '',
+                                icon: rows[i][4] ? rows[i][4].trim() : '🔗',
+                                highlight: rows[i][5] ? rows[i][5].trim().toLowerCase() === 'true' : false
+                            });
+                        }
+                    }
+                    statusEl.innerText = "(雲端同步成功)";
+                }
+            } catch (error) {
+                console.error("雲端讀取失敗，已自動降級使用內建預設書籤：", error);
+                statusEl.innerText = "(同步失敗，已載入備用快取)";
+                coreLinks = [...fallbackCoreLinks];
+            }
+            renderGrids();
+        }
+
+        // 渲染書籤網格
         function renderGrids() {
             const pGrid = document.getElementById('primaryGrid');
             const sGrid = document.getElementById('secondaryGrid');
             pGrid.innerHTML = '';
             sGrid.innerHTML = '';
 
-            // 渲染內建
+            // 1. 渲染雲端/內建核心書籤
             coreLinks.forEach(link => {
                 const html = createCardHtml(link, false);
                 if(link.category === 'primary') pGrid.innerHTML += html;
                 else sGrid.innerHTML += html;
             });
 
-            // 渲染使用者手動新增的自訂連結
+            // 2. 渲染手動新增的自訂連結
             customLinks.forEach((link, index) => {
                 const html = createCardHtml(link, true, index);
                 sGrid.innerHTML += html;
@@ -417,7 +487,8 @@
                 <a href="${link.url}" target="_blank" class="link-card ${link.highlight ? 'card-highlight' : ''}">
                     ${isCustom ? `
                         <div class="card-actions">
-                            <button class="action-btn" onclick="deleteLink(event, ${index})">🗑️</button>
+                            <button class="action-btn" onclick="editLink(event, ${index})">✏️</button>
+                            <button class="action-btn btn-del" onclick="deleteLink(event, ${index})">🗑️</button>
                         </div>
                     ` : ''}
                     <div class="card-header">
@@ -429,40 +500,77 @@
             `;
         }
 
-        // 3. 齒輪與管理控制邏輯
+        // 📱 原地編輯模式與手機優化管理面板開關
         function toggleAdminPanel() {
-            document.getElementById('adminPanel').classList.toggle('open');
+            const panel = document.getElementById('adminPanel');
+            panel.classList.toggle('open');
+            if(panel.classList.contains('open')) {
+                // 自動平滑捲動到最底部的管理表單區，絕不遮擋上方內容
+                panel.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                // 關閉控制台時同步關閉編輯狀態
+                document.body.classList.remove('admin-mode');
+                document.getElementById('editModeBtn').innerText = '進入原地編輯 / 刪除模式';
+                document.getElementById('editModeBtn').style.background = '#eab308';
+                clearForm();
+            }
         }
 
         function toggleEditMode() {
             document.body.classList.toggle('admin-mode');
             const btn = document.getElementById('editModeBtn');
             if(document.body.classList.contains('admin-mode')) {
-                btn.innerText = '結束卡片刪除模式';
+                btn.innerText = '結束編輯模式';
                 btn.style.background = '#ef4444';
+                window.scrollTo({ top: 0, behavior: 'smooth' }); // 自動捲回上方讓使用者直接點卡片
             } else {
-                btn.innerText = '進入書籤卡片刪除模式';
+                btn.innerText = '進入原地編輯 / 刪除模式';
                 btn.style.background = '#eab308';
+                clearForm();
             }
         }
 
-        function addCustomLink() {
+        // 儲存或更新自訂連結
+        function saveCustomLink() {
             const title = document.getElementById('newTitle').value.trim();
             const url = document.getElementById('newUrl').value.trim();
             const desc = document.getElementById('newDesc').value.trim();
             const icon = document.getElementById('newIcon').value.trim();
+            const editIndex = parseInt(document.getElementById('editIndex').value);
 
-            if(!title || !url) return alert('請填寫書籤名稱與網址！');
+            if(!title || !url) return alert('請完整填寫書籤名稱與網址！');
 
-            customLinks.push({ category: 'secondary', title, url, desc, icon });
+            const itemData = { category: 'secondary', title, url, desc, icon };
+
+            if(editIndex >= 0) {
+                customLinks[editIndex] = itemData;
+                alert('書籤修改成功！');
+            } else {
+                customLinks.push(itemData);
+                alert('自訂書籤新增成功！');
+            }
+
             localStorage.setItem('cc_portal_custom', JSON.stringify(customLinks));
-            
-            // 清空表格並重新渲染
-            document.getElementById('newTitle').value = '';
-            document.getElementById('newUrl').value = '';
-            document.getElementById('newDesc').value = '';
+            clearForm();
             renderGrids();
-            alert('自訂書籤新增成功！');
+        }
+
+        function editLink(event, index) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            const link = customLinks[index];
+            document.getElementById('editIndex').value = index;
+            document.getElementById('newTitle').value = link.title;
+            document.getElementById('newUrl').value = link.url;
+            document.getElementById('newDesc').value = link.desc || '';
+            document.getElementById('newIcon').value = link.icon || '🔗';
+            
+            document.getElementById('saveBtn').innerText = '儲存修改項目';
+            document.getElementById('saveBtn').style.background = '#10b981';
+            
+            // 畫面流暢移動到下方輸入框區
+            document.getElementById('bookmarkFormContainer').scrollIntoView({ behavior: 'smooth' });
         }
 
         function deleteLink(event, index) {
@@ -471,11 +579,22 @@
             if(confirm('確定要刪除此自訂書籤嗎？')) {
                 customLinks.splice(index, 1);
                 localStorage.setItem('cc_portal_custom', JSON.stringify(customLinks));
+                clearForm();
                 renderGrids();
             }
         }
 
-        // 4. 西元/民國時鐘
+        function clearForm() {
+            document.getElementById('editIndex').value = "-1";
+            document.getElementById('newTitle').value = "";
+            document.getElementById('newUrl').value = "";
+            document.getElementById('newDesc').value = "";
+            document.getElementById('newIcon').value = "🔗";
+            document.getElementById('saveBtn').innerText = "儲存並新增至畫面";
+            document.getElementById('saveBtn').style.background = "var(--accent-primary)";
+        }
+
+        // 西元/民國雙時鐘邏輯
         function updateClock() {
             const now = new Date();
             const h = String(now.getHours()).padStart(2, '0');
@@ -494,7 +613,7 @@
             document.getElementById('clockDate').innerText = `民國 ${twYear} 年 ${month} 月 ${date} 日 (星期${dayName}) / 西元 ${year} 年`;
         }
 
-        // 5. 主題色、夜間模式、字型縮放
+        // 主題色、夜間模式與內文縮放
         function setAccent(color) {
             document.documentElement.style.setProperty('--accent-primary', color);
             localStorage.setItem('portal_accent', color);
@@ -515,7 +634,7 @@
             localStorage.setItem('portal_font_scale', val);
         }
 
-        // ✨ 擴充：自訂背景讀取與處理
+        // ✨ 新功能：自訂背景讀取與緩存回復
         document.getElementById('bgUploader').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
@@ -544,10 +663,9 @@
             localStorage.removeItem('portal_custom_bg');
             applyBackground(null);
             document.getElementById('bgUploader').value = '';
-            alert('已回復系統預設毛玻璃漸層背景！');
+            alert('已成功回復原始系統美感毛玻璃漸層背景！');
         }
 
-        // 讀取設定檔
         function loadSettings() {
             const savedAccent = localStorage.getItem('portal_accent');
             if(savedAccent) setAccent(savedAccent);
@@ -565,7 +683,7 @@
             if(savedBg) applyBackground(savedBg);
         }
 
-        // 6. 醫學計算：eGFR
+        // 醫學計算：eGFR (CKD-EPI 2021 公式)
         function calcEGFR() {
             const gender = document.getElementById('egfrGender').value;
             const scr = parseFloat(document.getElementById('egfrCr').value);
@@ -585,22 +703,22 @@
             document.getElementById('egfrResult').innerText = `計算結果 eGFR: ${egfr.toFixed(1)} mL/min/1.73m²`;
         }
 
-        // ✨ 擴充：底端小工具模組資料綁定 (Todo, 倒數日, 筆記本)
+        // ✨ 新功能：底端三大獨立小工具邏輯
         let todos = JSON.parse(localStorage.getItem('portal_todos')) || [];
         let countdownData = JSON.parse(localStorage.getItem('portal_countdown')) || null;
 
         function initWidgets() {
-            // A. 初始化待辦事項
+            // A. 待辦事項
             renderTodos();
             document.getElementById('addTodoBtn').addEventListener('click', addTodo);
             document.getElementById('todoInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') addTodo(); });
 
-            // B. 初始化倒數日
+            // B. 倒數日
             document.getElementById('saveCountDown').addEventListener('click', saveCountdown);
             renderCountdown();
-            setInterval(renderCountdown, 60000); // 每分鐘更新一次倒數日
+            setInterval(renderCountdown, 60000); 
 
-            // C. 初始化快速筆記 (隨打隨存)
+            // C. 快速隨手筆記（隨打隨存防遺失）
             const noteArea = document.getElementById('quickNote');
             noteArea.value = localStorage.getItem('portal_quick_note') || '';
             noteArea.addEventListener('input', function() {
@@ -608,22 +726,21 @@
             });
         }
 
-        // 待辦事項邏輯
         function renderTodos() {
             const list = document.getElementById('todoList');
             list.innerHTML = '';
             if(todos.length === 0) {
-                list.innerHTML = `<div style="color:var(--text-muted); font-size:0.875rem; text-align:center; padding:1rem;">暫無今日待辦事項</div>`;
+                list.innerHTML = `<div style="color:var(--text-muted); font-size:0.85rem; text-align:center; padding:1rem;">暫無今日公務待辦事項</div>`;
                 return;
             }
             todos.forEach((todo, idx) => {
                 list.innerHTML += `
                     <div class="todo-item ${todo.done ? 'done' : ''}">
-                        <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                        <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; width:80%;">
                             <input type="checkbox" ${todo.done ? 'checked' : ''} onchange="toggleTodo(${idx})" style="width:auto; margin:0;">
-                            <span>${todo.text}</span>
+                            <span style="word-break:break-all;">${todo.text}</span>
                         </label>
-                        <button class="del-sm" onclick="deleteTodo(${idx})">🗑目</button>
+                        <button class="del-sm" onclick="deleteTodo(${idx})">🗑️</button>
                     </div>
                 `;
             });
@@ -651,7 +768,6 @@
             renderTodos();
         }
 
-        // 倒數日邏輯
         function saveCountdown() {
             const name = document.getElementById('cdName').value.trim();
             const dateVal = document.getElementById('cdDate').value;
@@ -667,19 +783,16 @@
 
         function renderCountdown() {
             if(!countdownData) return;
-            
             document.getElementById('cdTitle').innerText = countdownData.name;
             const target = new Date(countdownData.targetDate + "T00:00:00");
             const today = new Date();
-            
-            // 消除時分秒干擾，純計算日期天數
             target.setHours(0,0,0,0);
             today.setHours(0,0,0,0);
 
             const diffTime = target - today;
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
             const daysDisplay = document.getElementById('cdDays');
+
             if(diffDays > 0) {
                 daysDisplay.innerText = `倒數 ${diffDays} 天`;
                 daysDisplay.style.color = 'var(--accent-primary)';
@@ -692,7 +805,6 @@
             }
         }
 
-        // 啟動
         window.onload = init;
     </script>
 </body>
