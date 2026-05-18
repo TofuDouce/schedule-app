@@ -7,10 +7,20 @@
 <title>門診病代速查</title>
 
 <style>
+
 :root{
+  --bg:#f3f4f6;
+  --card:#ffffff;
+  --text:#111827;
+  --sub:#6b7280;
+  --accent:#2563eb;
+  --border:#d1d5db;
+}
+
+body.dark{
   --bg:#111827;
   --card:#1f2937;
-  --text:#f3f4f6;
+  --text:#f9fafb;
   --sub:#9ca3af;
   --accent:#60a5fa;
   --border:#374151;
@@ -25,89 +35,94 @@ body{
   background:var(--bg);
   color:var(--text);
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  padding:18px;
+  padding:14px;
+  transition:.25s;
 }
 
 .title{
-  font-size:28px;
+  font-size:24px;
   font-weight:700;
   margin-bottom:4px;
 }
 
 .subtitle{
   color:var(--sub);
-  margin-bottom:18px;
+  font-size:14px;
+  margin-bottom:14px;
 }
 
 .search{
   width:100%;
-  padding:14px 16px;
+  padding:12px 14px;
   border:none;
   border-radius:14px;
-  background:#0f172a;
-  color:white;
-  font-size:18px;
+  background:var(--card);
+  color:var(--text);
+  font-size:16px;
   outline:none;
-  margin-bottom:20px;
+  margin-bottom:18px;
+  border:1px solid var(--border);
 }
 
 .section{
-  margin-bottom:28px;
+  margin-bottom:24px;
 }
 
 .section-title{
-  font-size:20px;
+  font-size:18px;
   font-weight:700;
-  margin-bottom:12px;
-  color:#93c5fd;
+  margin-bottom:10px;
+  color:var(--accent);
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(165px,1fr));
+  gap:10px;
 }
 
 .card{
   background:var(--card);
   border:1px solid var(--border);
-  border-radius:16px;
-  padding:14px 16px;
-  margin-bottom:10px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+  border-radius:14px;
+  padding:10px;
   cursor:pointer;
-  transition:.2s;
+  transition:.18s;
+  min-height:82px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
 }
 
 .card:hover{
-  transform:scale(1.01);
+  transform:scale(1.02);
   border-color:var(--accent);
 }
 
 .code{
   font-weight:700;
-  font-size:18px;
-  color:#93c5fd;
+  color:var(--accent);
+  margin-bottom:4px;
 }
 
 .name{
-  font-size:18px;
-}
-
-.copy{
-  color:var(--sub);
-  font-size:14px;
+  line-height:1.35;
+  word-break:break-word;
 }
 
 .toast{
   position:fixed;
-  bottom:90px;
+  bottom:85px;
   left:50%;
   transform:translateX(-50%);
-  background:#2563eb;
+  background:var(--accent);
   color:white;
-  padding:10px 18px;
+  padding:10px 16px;
   border-radius:999px;
-  font-size:15px;
+  font-size:14px;
   opacity:0;
   pointer-events:none;
-  transition:.3s;
+  transition:.25s;
 }
 
 .toast.show{
@@ -116,28 +131,28 @@ body{
 
 .settings-btn{
   position:fixed;
-  left:18px;
+  right:18px;
   bottom:18px;
   width:58px;
   height:58px;
-  border-radius:50%;
   border:none;
-  background:#2563eb;
+  border-radius:50%;
+  background:var(--accent);
   color:white;
-  font-size:28px;
+  font-size:26px;
   cursor:pointer;
-  box-shadow:0 8px 20px rgba(0,0,0,.35);
+  box-shadow:0 10px 24px rgba(0,0,0,.25);
 }
 
 .settings-panel{
   position:fixed;
-  left:18px;
+  right:18px;
   bottom:88px;
-  background:#1e293b;
-  border:1px solid #334155;
+  width:240px;
+  background:var(--card);
+  border:1px solid var(--border);
   border-radius:18px;
   padding:16px;
-  width:220px;
   display:none;
 }
 
@@ -145,32 +160,45 @@ body{
   display:block;
 }
 
-.range{
-  width:100%;
-}
-
 .setting-title{
-  margin-bottom:10px;
-  font-size:16px;
+  font-size:15px;
+  margin-bottom:8px;
   font-weight:700;
 }
 
-.footer-space{
-  height:80px;
+.range{
+  width:100%;
+  margin-bottom:18px;
 }
+
+.mode-btn{
+  width:100%;
+  border:none;
+  border-radius:12px;
+  padding:12px;
+  font-size:15px;
+  background:var(--accent);
+  color:white;
+  cursor:pointer;
+}
+
+.footer-space{
+  height:90px;
+}
+
 </style>
 </head>
 
 <body>
 
 <div class="title">門診病代速查</div>
-<div class="subtitle">點擊病代即可複製</div>
+<div class="subtitle">點一下即可複製病代</div>
 
 <input
   type="text"
   class="search"
   id="searchInput"
-  placeholder="搜尋病代或中文..."
+  placeholder="搜尋病代 / 中文"
 />
 
 <div id="container"></div>
@@ -184,16 +212,24 @@ body{
 </button>
 
 <div class="settings-panel" id="settingsPanel">
-  <div class="setting-title">字體大小</div>
+
+  <div class="setting-title">
+    字體大小
+  </div>
 
   <input
     type="range"
-    min="14"
-    max="30"
-    value="18"
+    min="12"
+    max="28"
+    value="16"
     class="range"
     id="fontSlider"
   />
+
+  <button class="mode-btn" id="modeBtn">
+    切換深色模式
+  </button>
+
 </div>
 
 <div class="footer-space"></div>
@@ -207,121 +243,47 @@ const data = {
 ["M25511","右側肩部關節痛"],
 ["M25512","左側肩部關節痛"],
 ["M25519","未明示側性肩部"],
-
 ["M25521","右側肘部關節痛"],
 ["M25522","左側肘部"],
 ["M25529","未明示側性肘部"],
-
 ["M25531","右側腕部關節痛"],
 ["M25532","左側腕部"],
 ["M25539","未明示側性"],
-
 ["M25551","右側髖部關節痛"],
 ["M25552","左側髖部"],
 ["M25559","未明示側性"],
-
 ["M25561","右側膝部關節痛"],
 ["M25562","左側膝部"],
 ["M25569","未明示"],
-
-["M25571","右側踝部及足部關節痛"],
-["M25572","左側踝部及足部"],
-["M25579","未明示側性"],
-
 ["M791","肌痛"],
 ["M609","肌炎"],
-["M79609","肢體疼痛"],
-
-["M79601","右側手部疼痛"],
-["M79602","左側手部疼痛"],
-["M79603","未明示側性手部疼痛"],
-
-["M79604","右側腿部疼痛"],
-["M79605","左側腿部疼痛"],
-["M79606","未明示側性腿部疼痛"],
-
-["M79621","右側上臂疼痛"],
-["M79622","左側上臂疼痛"],
-["M79629","未明示側性上臂疼痛"],
-
-["M79631","右側前臂疼痛"],
-["M79632","左側前臂疼痛"],
-["M79639","未明示側性前臂疼痛"],
-
-["M79641","右側手部疼痛"],
-["M79642","左側手部疼痛"],
-["M79643","未明示側性手部疼痛"],
-
-["M79644","右側手指疼痛"],
-["M79645","左側手指疼痛"],
-["M79646","未明示側性手指疼痛"],
-
-["M79651","右側大腿疼痛"],
-["M79652","左側大腿疼痛"],
-["M79659","未明示側性大腿疼痛"],
-
-["M79661","右側小腿疼痛"],
-["M79662","左側小腿疼痛"],
-["M79669","未明示側性小腿疼痛"],
-
-["M79671","右側足部疼痛"],
-["M79672","左側足部疼痛"],
-["M79673","未明示側性足部疼痛"],
-
-["M79674","右側腳趾疼痛"],
-["M79675","左側腳趾疼痛"],
-["M79676","未明示側性腳趾疼痛"],
+["M79609","肢體疼痛"]
 ],
 
 "R 症狀":[
-["R000","心搏過速"],
-["R001","心搏過慢"],
 ["R002","心悸"],
-["R008","其他心搏異常"],
-["R009","心搏異常"],
-
-["R040","鼻出血"],
-["R070","喉嚨痛"],
 ["R05","咳嗽"],
-["R0600","呼吸困難"],
-["R066","打嗝"],
-["R069","呼吸異常"],
+["R070","喉嚨痛"],
 ["R509","發燒"],
-
 ["R319","血尿"],
 ["R350","頻尿"],
-["R300","排尿困難"],
-["R309","排尿疼痛"],
-
-["R071","呼吸時胸痛"],
-["R072","胸口疼痛"],
-["R0781","肋膜痛"],
-["R0782","肋間疼痛"],
-["R0789","其他胸痛"],
 ["R079","胸痛"]
 ],
 
 "L 皮膚":[
-["L98","其他皮膚疾"],
-["L99","搔癢症"],
 ["L309","皮膚炎"],
 ["L209","異位性皮膚炎"],
 ["L219","脂漏性皮膚炎"],
-["L282","其他癢疹"],
-["L408","其他乾癬"],
 ["L409","乾癬"],
-["L508","其他蕁麻疹"],
 ["L509","蕁麻疹"]
 ],
 
 "J 呼吸道":[
-["J00","急性鼻咽炎（感冒）"],
-["J0190","急性鼻竇炎"],
+["J00","急性鼻咽炎"],
 ["J029","急性咽炎"],
 ["J0390","急性扁桃腺炎"],
-["J0391","急性復發性扁桃腺炎"],
 ["J040","急性喉炎"],
-["J0410","急性氣管炎－未伴有阻塞"]
+["J0410","急性氣管炎"]
 ]
 
 };
@@ -335,10 +297,12 @@ function render(keyword=""){
   Object.keys(data).forEach(section=>{
 
     const filtered = data[section].filter(item=>{
-      return (
+
+      return(
         item[0].toLowerCase().includes(keyword.toLowerCase()) ||
         item[1].includes(keyword)
       );
+
     });
 
     if(filtered.length===0) return;
@@ -348,30 +312,31 @@ function render(keyword=""){
 
     sec.innerHTML=`
       <div class="section-title">${section}</div>
+      <div class="grid"></div>
     `;
+
+    const grid = sec.querySelector(".grid");
 
     filtered.forEach(item=>{
 
       const card = document.createElement("div");
+
       card.className="card";
 
       card.innerHTML=`
-        <div>
-          <div class="code">${item[0]}</div>
-          <div class="name">${item[1]}</div>
-        </div>
-
-        <div class="copy">
-          點擊複製
-        </div>
+        <div class="code">${item[0]}</div>
+        <div class="name">${item[1]}</div>
       `;
 
       card.onclick=()=>{
+
         navigator.clipboard.writeText(item[0]);
+
         showToast();
+
       };
 
-      sec.appendChild(card);
+      grid.appendChild(card);
 
     });
 
@@ -385,28 +350,40 @@ render();
 
 document.getElementById("searchInput")
 .addEventListener("input",(e)=>{
+
   render(e.target.value);
+
 });
 
 function showToast(){
 
-  const toast=document.getElementById("toast");
+  const toast = document.getElementById("toast");
 
   toast.classList.add("show");
 
   setTimeout(()=>{
+
     toast.classList.remove("show");
-  },1200);
+
+  },1000);
 
 }
 
 const slider = document.getElementById("fontSlider");
 
-const savedSize = localStorage.getItem("fontSize");
+const savedFont = localStorage.getItem("fontSize");
 
-if(savedSize){
-  document.body.style.fontSize = savedSize + "px";
-  slider.value = savedSize;
+if(savedFont){
+
+  document.documentElement.style.setProperty(
+    '--mainFontSize',
+    savedFont + 'px'
+  );
+
+  document.body.style.fontSize = savedFont + 'px';
+
+  slider.value = savedFont;
+
 }
 
 slider.addEventListener("input",(e)=>{
@@ -414,6 +391,14 @@ slider.addEventListener("input",(e)=>{
   const size = e.target.value;
 
   document.body.style.fontSize = size + "px";
+
+  document.querySelectorAll(".code").forEach(el=>{
+    el.style.fontSize = size + "px";
+  });
+
+  document.querySelectorAll(".name").forEach(el=>{
+    el.style.fontSize = size + "px";
+  });
 
   localStorage.setItem("fontSize",size);
 
@@ -425,6 +410,38 @@ const settingsPanel = document.getElementById("settingsPanel");
 settingsBtn.onclick=()=>{
 
   settingsPanel.classList.toggle("show");
+
+};
+
+const modeBtn = document.getElementById("modeBtn");
+
+const savedTheme = localStorage.getItem("theme");
+
+if(savedTheme==="dark"){
+
+  document.body.classList.add("dark");
+
+  modeBtn.innerText="切換日間模式";
+
+}
+
+modeBtn.onclick=()=>{
+
+  document.body.classList.toggle("dark");
+
+  if(document.body.classList.contains("dark")){
+
+    localStorage.setItem("theme","dark");
+
+    modeBtn.innerText="切換日間模式";
+
+  }else{
+
+    localStorage.setItem("theme","light");
+
+    modeBtn.innerText="切換深色模式";
+
+  }
 
 };
 
