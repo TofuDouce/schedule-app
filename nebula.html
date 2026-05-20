@@ -20,6 +20,7 @@
             margin:0;
             padding:0;
             box-sizing:border-box;
+
             transition:
                 font-size .2s ease,
                 transform .4s ease,
@@ -58,6 +59,7 @@
 
         body{
             min-height:100vh;
+
             overflow-x:hidden;
 
             color:var(--text);
@@ -507,6 +509,7 @@
             word-break:break-word;
         }
 
+        /* 只顯示檔名 */
         .card-file{
             color:#bba9e8;
 
@@ -516,8 +519,6 @@
             margin-bottom:10px;
 
             opacity:.75;
-
-            word-break:break-all;
 
             display:inline-block;
         }
@@ -683,7 +684,7 @@
     <div class="title">
 
         <h1 class="main-title">
-            Dream Archive
+            Lazy Dream Archive
         </h1>
 
         <p class="subtitle">
@@ -696,28 +697,6 @@
 
         <div class="loading">
             正在喚醒星宿試算表...
-        </div>
-
-    </div>
-
-    <div class="footer">
-
-        <div class="footer-line"></div>
-
-        <div class="footer-inner">
-
-            <span class="sparkle">✦</span>
-
-            <span class="dream">
-                Lazy Dream
-            </span>
-
-            <span class="sparkle">✦</span>
-
-        </div>
-
-        <div class="creator">
-            Crafted with moonlight & dream magic
         </div>
 
     </div>
@@ -797,47 +776,32 @@ const sheetId =
 const categories = {
 
     wealth:{
-        title:
-            "🪙 財富煉金術 ✦ Wealth Alchemy",
-
+        title:"🪙 財富煉金術 ✦ Wealth Alchemy",
         symbols:["❂","🪙"],
-
         cards:[]
     },
 
     inspiration:{
-        title:
-            "📜 靈感編織界 ✦ Inspiration Weaver",
-
+        title:"📜 靈感編織界 ✦ Inspiration Weaver",
         symbols:["✧","📜"],
-
         cards:[]
     },
 
     mirage:{
-        title:
-            "🎭 幻影擬態坊 ✦ Mirage Workshop",
-
+        title:"🎭 幻影擬態坊 ✦ Mirage Workshop",
         symbols:["☾","🎭"],
-
         cards:[]
     },
 
     chaos:{
-        title:
-            "🌀 混沌試煉場 ✦ Chaos Trial",
-
+        title:"🌀 混沌試煉場 ✦ Chaos Trial",
         symbols:["✶","🌀"],
-
         cards:[]
     },
 
     unknown:{
-        title:
-            "✨ 未分界星軌 ✦ Uncharted Orbit",
-
+        title:"✨ 未分界星軌 ✦ Uncharted Orbit",
         symbols:["✦","☽"],
-
         cards:[]
     }
 };
@@ -988,24 +952,27 @@ async function loadProjectsFromSheet(){
                     catSymbols.length
                 ];
 
-            let cleanDisplayUrl =
-                webUrl
-                    .replace(
-                        "https://",
-                        ""
-                    )
-                    .replace(
-                        "http://",
-                        ""
-                    );
+            /* ===== 只顯示檔名 ===== */
 
-            if(cleanDisplayUrl.length > 32){
+            let cleanDisplayUrl = "";
+
+            try {
+
+                const urlObj = new URL(webUrl);
 
                 cleanDisplayUrl =
-                    cleanDisplayUrl.substring(
-                        0,
-                        30
-                    ) + "...";
+                    urlObj.pathname
+                        .split('/')
+                        .pop();
+
+                if (!cleanDisplayUrl) {
+                    cleanDisplayUrl =
+                        urlObj.hostname;
+                }
+
+            } catch {
+
+                cleanDisplayUrl = webUrl;
             }
 
             categories[targetCategory]
@@ -1118,26 +1085,6 @@ async function loadProjectsFromSheet(){
             <div class="loading">
 
                 無法動態連結至星宿試算表 😭
-
-                <br><br>
-
-                <span style="
-                    font-size:14px;
-                    color:rgba(255,255,255,.5);
-                ">
-
-                    請確認：
-
-                    <br><br>
-
-                    1. 試算表有「發佈到網路」
-
-                    <br>
-
-                    2. 權限設成
-                    「知道連結的任何人都可查看」
-
-                </span>
 
             </div>
 
