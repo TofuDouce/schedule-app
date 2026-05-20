@@ -3,150 +3,309 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 小說大綱產生器 2.0</title>
-    <!-- 引入 Tailwind CSS -->
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <title>AI 小說大綱產生器 2.0 穩定版</title>
     <style>
-        .selected {
+        /* 內建所有網頁樣式，不依賴網路，絕對保證能正常顯示 */
+        body {
+            background-color: #0f172a;
+            color: #e2e8f0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #1e293b;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            border: 1px solid #334155;
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #db2777 100%);
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: #ffffff;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            color: #e0e7ff;
+            font-size: 15px;
+        }
+        .main-content {
+            padding: 30px;
+        }
+        .name-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            background-color: #111827;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border: 1px solid #334155;
+        }
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+        .input-group input {
+            width: 100%;
+            box-sizing: border-box;
+            background-color: #334155;
+            border: 1px solid #475569;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .option-section {
+            margin-bottom: 25px;
+        }
+        .option-section h3 {
+            font-size: 16px;
+            color: #818cf8;
+            margin-top: 0;
+            margin-bottom: 12px;
+        }
+        .btn-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .btn {
+            background-color: #334155;
+            color: #cbd5e1;
+            border: 1px solid #475569;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .btn:hover {
+            border-color: #818cf8;
+            color: white;
+        }
+        /* 被選中時的發光藍色樣式 */
+        .btn.selected {
             background-color: #6366f1 !important;
             color: white !important;
             border-color: #6366f1 !important;
-            box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.4);
+            box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
+        }
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(to right, #6366f1, #a855f7);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: opacity 0.2s;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+        .submit-btn:hover {
+            opacity: 0.9;
+        }
+        #loading {
+            display: none;
+            text-align: center;
+            padding: 40px 0;
+            color: #94a3b8;
+        }
+        .spinner {
+            border: 4px solid rgba(255,255,255,0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #6366f1;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #result-box {
+            display: none;
+            margin-top: 30px;
+            border-top: 1px solid #334155;
+            padding-top: 30px;
+        }
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .result-header h2 {
+            margin: 0;
+            font-size: 20px;
+            color: #38bdf8;
+        }
+        .badge {
+            background-color: #1e1b4b;
+            color: #818cf8;
+            border: 1px solid #312e81;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .copy-btn {
+            background-color: #475569;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .copy-btn:hover { background-color: #576b85; }
+        #output-content {
+            background-color: #0f172a;
+            border: 1px solid #334155;
+            padding: 25px;
+            border-radius: 12px;
+            line-height: 1.7;
+            color: #cbd5e1;
+            white-space: pre-line; /* 保留換行 */
+            max-height: 600px;
+            overflow-y: auto;
         }
     </style>
 </head>
-<body class="bg-slate-900 min-h-screen py-10 px-4 font-sans text-slate-100 selection:bg-indigo-500 selection:text-white">
+<body>
 
-    <div class="max-w-5xl mx-auto bg-slate-800 rounded-2xl shadow-2xl overflow-hidden border border-slate-700">
-        <!-- 頂部 Banner -->
-        <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 p-8 text-center text-white relative">
-            <div class="absolute inset-0 bg-black/10 backdrop-blur-[1px]"></div>
-            <div class="relative z-10">
-                <h1 class="text-4xl font-extrabold tracking-wider drop-shadow-md">🔮 靈感原力：長篇小說大綱產生器 2.0</h1>
-                <p class="text-indigo-100 mt-3 text-lg font-light">自訂世界觀與情感走向，一鍵解鎖兩千字架構藍圖</p>
-            </div>
+    <div class="container">
+        <div class="header">
+            <h1>🔮 小說大綱產生器（完美修復版）</h1>
+            <p>點選標籤、輸入名字，一鍵生成兩千字長篇結構</p>
         </div>
 
-        <div class="p-6 md:p-10 space-y-8">
-            <!-- 自訂姓名區 -->
-            <div class="bg-slate-850 p-6 rounded-xl border border-slate-700/50 shadow-inner grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-slate-400 mb-2">🧑‍頭號男主角姓名（選填）</label>
-                    <input type="text" id="custom-male" placeholder="預設隨機姓名" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-indigo-500">
+        <div class="main-content">
+            <!-- 名字自訂區 -->
+            <div class="name-section">
+                <div class="input-group">
+                    <label>🧑 男主角名字 (選填)</label>
+                    <input type="text" id="custom-male" placeholder="例：顧修">
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-400 mb-2">👩‍頭號女主角姓名（選填）</label>
-                    <input type="text" id="custom-female" placeholder="預設隨機姓名" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-indigo-500">
+                <div class="input-group">
+                    <label>👩 女主角名字 (選填)</label>
+                    <input type="text" id="custom-female" placeholder="例：沈清秋">
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-400 mb-2">🦹 主要反派/幕後黑手（選填）</label>
-                    <input type="text" id="custom-vile" placeholder="預設隨機姓名" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-indigo-500">
-                </div>
-            </div>
-
-            <!-- 選項區 -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- 左側：背景與結局 -->
-                <div class="space-y-6">
-                    <div>
-                        <h3 class="text-lg font-bold text-indigo-400 mb-3 flex items-center">🗺️ 1. 故事時空背景 <span class="text-xs text-slate-500 ml-2">(單選)</span></h3>
-                        <div class="flex flex-wrap gap-25" id="style-group">
-                            <button class="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg hover:border-indigo-400 transition-all text-sm" onclick="selectOption('style', '古典修仙')">古典修仙</button>
-                            <button class="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg hover:border-indigo-400 transition-all text-sm" onclick="selectOption('style', '現代都市')">現代都市</button>
-                            <button class="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg hover:border-indigo-400 transition-all text-sm" onclick="selectOption('style', '東方宮廷')">東方宮廷</button>
-                            <button class="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg hover:border-indigo-400 transition-all text-sm" onclick="selectOption('style', '日式異世界')">日式異世界</button>
-                            <button class="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg hover:border-indigo-400 transition-all text-sm" onclick="selectOption('style', '西方史詩奇幻')">西方史詩奇幻</button>
-                            <button class="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg hover:border-indigo-400 transition-all text-sm" onclick="selectOption('style', '末日賽博龐克')">末日賽博龐克</button>
-                        </div>
-                    </div>
-
-                    <div>
-                        <h3 class="text-lg font-bold text-purple-400 mb-3 flex items-center">🏁 2. 最終結局走向 <span class="text-xs text-slate-500 ml-2">(單選)</span></h3>
-                        <div class="flex flex-wrap gap-2" id="ending-group">
-                            <button class="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg hover:border-purple-400 transition-all text-sm" onclick="selectOption('ending', '大圓滿 (Happy Ending)')">大圓滿 (HE)</button>
-                            <button class="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg hover:border-purple-400 transition-all text-sm" onclick="selectOption('ending', '極致悲劇 (Bad Ending)')">極致悲劇 (BE)</button>
-                            <button class="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg hover:border-purple-400 transition-all text-sm" onclick="selectOption('ending', '開放式留白結局')">開放式留白結局</button>
-                            <button class="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg hover:border-purple-400 transition-all text-sm" onclick="selectOption('ending', '神級核心大反轉')">神級核心大反轉</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 右側：基調與元素 -->
-                <div class="space-y-6">
-                    <div>
-                        <h3 class="text-lg font-bold text-pink-400 mb-3 flex items-center">💔 3. 情感糾葛基調 <span class="text-xs text-slate-500 ml-2">(單選)</span></h3>
-                        <div class="flex flex-wrap gap-2" id="tone-group">
-                            <button class="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg hover:border-pink-400 transition-all text-sm" onclick="selectOption('tone', '剜心虐戀')">剜心虐戀</button>
-                            <button class="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg hover:border-pink-400 transition-all text-sm" onclick="selectOption('tone', '高甜無虐')">高甜無虐</button>
-                            <button class="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg hover:border-pink-400 transition-all text-sm" onclick="selectOption('tone', '相愛相殺')">相愛相殺</button>
-                            <button class="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg hover:border-pink-400 transition-all text-sm" onclick="selectOption('tone', '強強聯手')">強強聯手</button>
-                            <button class="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg hover:border-pink-400 transition-all text-sm" onclick="selectOption('tone', '宿命錯過')">宿命錯過</button>
-                        </div>
-                    </div>
-
-                    <div>
-                        <h3 class="text-lg font-bold text-emerald-400 mb-3 flex items-center">🧬 4. 核心故事元素 <span class="text-xs text-slate-500 ml-2">(可多選)</span></h3>
-                        <div class="flex flex-wrap gap-2" id="elements-group">
-                            <button class="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg hover:border-emerald-400 transition-all text-sm" onclick="toggleElement(this, '重生復仇')">重生復仇</button>
-                            <button class="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg hover:border-emerald-400 transition-all text-sm" onclick="toggleElement(this, '跨時空穿梭')">跨時空穿梭</button>
-                            <button class="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg hover:border-emerald-400 transition-all text-sm" onclick="toggleElement(this, '降智系統真相')">系統真相</button>
-                            <button class="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg hover:border-emerald-400 transition-all text-sm" onclick="toggleElement(this, '硬核破案懸疑')">破案懸疑</button>
-                            <button class="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg hover:border-emerald-400 transition-all text-sm" onclick="toggleElement(this, '破鏡無法重圓')">破鏡無法重圓</button>
-                            <button class="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg hover:border-emerald-400 transition-all text-sm" onclick="toggleElement(this, '隱藏身分掉馬')">隱藏身分掉馬</button>
-                        </div>
-                    </div>
+                <div class="input-group">
+                    <label>🦹 反派/黑手名字 (選填)</label>
+                    <input type="text" id="custom-vile" placeholder="例：神祕人">
                 </div>
             </div>
 
-            <!-- 生成按鈕 -->
-            <div class="pt-4">
-                <button onclick="generateOutline()" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg transition-all transform hover:-translate-y-0.5 active:translate-y-0 text-xl tracking-widest cursor-pointer">
-                    ✨ 啟動矩陣・演算兩千字史詩大綱
-                </button>
+            <!-- 風格單選 -->
+            <div class="option-section">
+                <h3>🗺️ 1. 故事風格與背景 (必選單選)</h3>
+                <div class="btn-grid" id="style-group">
+                    <button class="btn" onclick="selectOption('style', '古典修仙', this)">古典修仙</button>
+                    <button class="btn" onclick="selectOption('style', '現代都市', this)">現代都市</button>
+                    <button class="btn" onclick="selectOption('style', '東方宮廷', this)">東方宮廷</button>
+                    <button class="btn" onclick="selectOption('style', '日式輕小說', this)">日式輕小說</button>
+                    <button class="btn" onclick="selectOption('style', '西方奇幻', this)">西方奇幻</button>
+                    <button class="btn" onclick="selectOption('style', '賽博龐克', this)">賽博龐克</button>
+                </div>
             </div>
 
-            <!-- 讀取畫面 -->
-            <div id="loading" class="hidden text-center py-16">
-                <div class="inline-block animate-spin rounded-full h-14 w-14 border-t-4 border-b-4 border-indigo-500 mb-4"></div>
-                <p class="text-slate-400 text-lg animate-pulse tracking-wide">正在構築宏觀世界觀、注入角色靈魂、編織命運線...</p>
+            <!-- 基調單選 -->
+            <div class="option-section">
+                <h3>💔 2. 情感糾葛基調 (必選單選)</h3>
+                <div class="btn-grid" id="tone-group">
+                    <button class="btn" onclick="selectOption('tone', '極致虐戀', this)">極致虐戀</button>
+                    <button class="btn" onclick="selectOption('tone', '甜寵無虐', this)">甜寵無虐</button>
+                    <button class="btn" onclick="selectOption('tone', '相愛相殺', this)">相愛相殺</button>
+                    <button class="btn" onclick="selectOption('tone', '強強聯手', this)">強強聯手</button>
+                    <button class="btn" onclick="selectOption('tone', '宿命錯過', this)">宿命錯過</button>
+                </div>
             </div>
 
-            <!-- 結果呈現區 -->
-            <div id="result-box" class="hidden space-y-4 border-t border-slate-700 pt-8 animate-fade-in">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <h2 class="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-indigo-400" id="output-title">【故事大綱】</h2>
-                    <div class="flex gap-2 w-full sm:w-auto">
-                        <span id="word-count" class="bg-indigo-950/80 text-indigo-400 border border-indigo-800 text-sm font-semibold px-4 py-1.5 rounded-lg flex items-center">字數計量中</span>
-                        <button onclick="copyToClipboard()" class="bg-slate-700 hover:bg-slate-600 text-white text-sm px-4 py-1.5 rounded-lg border border-slate-600 transition-colors cursor-pointer">📋 複製大綱</button>
+            <!-- 結局單選 -->
+            <div class="option-section">
+                <h3>🏁 3. 結局走向 (必選單選)</h3>
+                <div class="btn-grid" id="ending-group">
+                    <button class="btn" onclick="selectOption('ending', '圓滿結局 (HE)', this)">圓滿結局 (HE)</button>
+                    <button class="btn" onclick="selectOption('ending', '悲劇收場 (BE)', this)">悲劇收場 (BE)</button>
+                    <button class="btn" onclick="selectOption('ending', '開放式結局', this)">開放式結局</button>
+                    <button class="btn" onclick="selectOption('ending', '神反轉結局', this)">神反轉結局</button>
+                </div>
+            </div>
+
+            <!-- 元素多選 -->
+            <div class="option-section">
+                <h3>🧬 4. 核心故事元素 (可多選)</h3>
+                <div class="btn-grid" id="elements-group">
+                    <button class="btn" onclick="toggleElement(this, '重生復仇')">重生復仇</button>
+                    <button class="btn" onclick="toggleElement(this, '跨時空穿梭')">跨時空穿梭</button>
+                    <button class="btn" onclick="toggleElement(this, '宮廷權謀')">宮廷權謀</button>
+                    <button class="btn" onclick="toggleElement(this, '系統加持')">系統加持</button>
+                    <button class="btn" onclick="toggleElement(this, '破案懸疑')">破案懸疑</button>
+                    <button class="btn" onclick="toggleElement(this, '破鏡重圓')">破鏡重圓</button>
+                </div>
+            </div>
+
+            <!-- 觸發按鈕 -->
+            <button onclick="generateOutline()" class="submit-btn">✨ 演算兩千字史詩大綱</button>
+
+            <!-- 載入中 -->
+            <div id="loading">
+                <div class="spinner"></div>
+                <div>正在編織命運線、撰寫長篇情節中，請稍候...</div>
+            </div>
+
+            <!-- 結果顯示 -->
+            <div id="result-box">
+                <div class="result-header">
+                    <h2 id="output-title">【故事大綱】</h2>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <span id="word-count" class="badge">0 字</span>
+                        <button onclick="copyToClipboard()" class="copy-btn">📋 複製文字</button>
                     </div>
                 </div>
-                
-                <!-- 大綱本文 -->
-                <div id="output-content" class="text-slate-300 leading-relaxed whitespace-pre-line bg-slate-900/60 p-6 md:p-8 rounded-xl border border-slate-700/80 shadow-inner overflow-y-auto max-h-[700px] text-base space-y-4">
-                    <!-- 內文由 JS 生成 -->
-                </div>
+                <div id="output-content"></div>
             </div>
         </div>
     </div>
 
-    <!-- 邏輯引擎 -->
     <script>
+        // 資料儲存儲
         let selections = { style: '', tone: '', ending: '', elements: [] };
 
-        function selectOption(type, value) {
+        // 單選修正邏輯
+        function selectOption(type, value, element) {
+            selections[type] = value;
             const container = document.getElementById(`${type}-group`);
-            const buttons = container.getElementsByTagName('button');
+            const buttons = container.getElementsByClassName('btn');
             for (let btn of buttons) {
                 btn.classList.remove('selected');
-                if (btn.innerText.includes(value) || value.includes(btn.innerText)) {
-                    btn.classList.add('selected');
-                }
             }
-            selections[type] = value;
+            element.classList.add('selected');
         }
 
-        function toggleElement(btn, value) {
-            btn.classList.toggle('selected');
+        // 多選邏輯
+        function toggleElement(element, value) {
+            element.classList.toggle('selected');
             if (selections.elements.includes(value)) {
                 selections.elements = selections.elements.filter(item => item !== value);
             } else {
@@ -154,112 +313,106 @@
             }
         }
 
+        // 大綱生成引擎
         function generateOutline() {
             if (!selections.style || !selections.tone || !selections.ending) {
-                alert("🔮 提示：請先選取「故事背景」、「結局走向」與「情感基調」再進行演算喔！");
+                alert("請檢查：【風格】、【情感】、【結局】三個大項都必須各點選一個標籤喔！");
                 return;
             }
 
-            document.getElementById('result-box').classList.add('hidden');
-            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('result-box').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
 
             setTimeout(() => {
                 const style = selections.style;
                 const tone = selections.tone;
                 const ending = selections.ending;
-                const elems = selections.elements.length > 0 ? selections.elements.join(' × ') : '命運絲線';
+                const elems = selections.elements.length > 0 ? selections.elements.join('與') : '因果糾葛';
 
-                // 名字池
+                // 預設隨機姓名庫
                 const defaultNames = {
-                    '古典修仙': {m: '墨蒼溟', f: '葉琉璃', v: '太上長老·玄霄'},
-                    '現代都市': {m: '厲夜寒', f: '白惜弱', v: '跨國財閥·霍天擎'},
-                    '東方宮廷': {m: '容瑕', f: '謝長歌', v: '攝政王·宇文拓'},
-                    '日式異世界': {m: '萊恩·克洛斯', f: '希爾薇婭', v: '墮落災厄·魔皇'},
-                    '西方史詩奇幻': {m: '雷恩·奧古斯都', f: '艾莉西亞', v: '不朽巫妖·卡爾薩斯'},
-                    '末日賽博龐克': {m: 'V-零號', f: '霓虹', v: '荒坂義體巨頭'}
+                    '古典修仙': {m: '墨蒼溟', f: '葉琉璃', v: '玄霄真人'},
+                    '現代都市': {m: '厲夜寒', f: '白惜弱', v: '霍天擎'},
+                    '東方宮廷': {m: '容瑕', f: '謝長歌', v: '宇文拓'},
+                    '日式輕小說': {m: '博人', f: '結衣', v: '魔王阿茲爾'},
+                    '西方奇幻': {m: '雷恩', f: '艾莉西亞', v: '卡爾薩斯'},
+                    '賽博龐克': {m: '凱伊-01', f: '霓虹', v: '荒坂高層'}
                 };
 
                 const mName = document.getElementById('custom-male').value.trim() || defaultNames[style].m;
                 const fName = document.getElementById('custom-female').value.trim() || defaultNames[style].f;
                 const vName = document.getElementById('custom-vile').value.trim() || defaultNames[style].v;
 
-                let title = `《${style}檔案：在${tone}的深淵裡，與${elems}奔向${ending}》`;
+                let title = `《在${style}世界遇見${tone}：由${elems}寫下的${ending}》`;
                 
-                // 龐大文本庫拼接（模擬 2000 字細緻大綱）
-                let txt = `### 🌌 一、 世界觀架構與世界底層邏輯\n`;
-                txt += `故事發生在一個將【${style}】美學發揮到極致的巨型舞台。這裡的生存法則極其殘酷，核心驅動力在於對【${elems}】這股神祕力量的爭奪。在這個世界中，高層統治者（如${vName}）掌控了絕對的話語權，而普通個體或底層階級只能在夾縫中求生存。\n`;
-                txt += `此處的世界觀不僅是背景，更是推動【${tone}】情感的核心引擎。環境的冰冷與制度的沉重，讓${mName}與${fName}之間的每一次接觸、每一場抉擇都顯得無比昂貴與驚心動魄。空氣中瀰漫著陰謀與宿命的味道，從序幕開始，一場涉及整個世界底牌的權力洗牌就已經悄然展開。\n\n`;
+                // 拼接產生大量厚實的文本（完美達成約 2000 字巨量大綱需求）
+                let txt = `### 🌌 第一章：世界觀底層邏輯與背景設定\n`;
+                txt += `本故事扎根於一個極具【${style}】美學色彩的宏大時空中。在這個世界，社會階級壁壘森嚴，資源與權力被以【${vName}】為首的既得利益集團死死壟斷。這個世界表面繁華，暗地裡卻遵循著冷酷的叢林法則，而這一切的核心驅動力，都與【${elems}】緊密相連。\n`;
+                txt += `在這種高壓、窒息的大背景下，個人的命運被高度工具化。環境的冰冷無情，直接催生並放大了男女主角之間的【${tone}】。每一段看似不經意的交集，都是他們在時代巨輪下的垂死掙扎。空氣中永遠瀰漫著宿命與反叛的氣息，這也為最終走向【${ending}】埋下了不可逆轉的伏筆。\n\n`;
 
-                txt += `### 👥 二、 核心核心人物矩陣與命運鎖鏈\n`;
+                txt += `### 👥 第二章：主要核心人物矩陣與性格剖析\n`;
                 txt += `**■ 男主角：${mName}**\n`;
-                txt += `擁有頂級實力與極深城府的上位者或潛伏者。他背負著滅族之仇或逆天改命的終極任務。在冷酷殘忍的外表下，隱藏著對世界底層規律的絕望。他的性格缺陷在於極度的「不信任感」，直到遇見${fName}，這顆冰封的心才被強行撕開一道裂痕。但在這世界中，動心往往等同於有了軟肋。\n\n`;
+                txt += `背負著沉重血海深仇或天道使命的潛伏者。性格冷峻孤傲，行事狠辣不留餘地，是這個世界頂尖的戰力或權謀家。他的致命缺陷在於靈魂深處的「信任缺失」，在遇見女主角之前，他是一把只為復仇而生的冰冷兵器。\n\n`;
                 txt += `**■ 女主角：${fName}**\n`;
-                txt += `靈魂具有極高純度與破局關鍵的女性。她可能看似柔弱，但內心的韌性與精神內核遠超常人。她不甘於淪為【${elems}】巨輪下的祭品，在直面命運的多次絞殺時，她選擇用最決絕、最智慧的方式迎擊。她是${mName}生命中的唯一變數，也是刺破黑暗的一道極光。\n\n`;
-                txt += `**■ 核心反派/命運推手：${vName}**\n`;
-                txt else `龐大體制或古老禁忌的實體化身。他沒有絕對的善惡，只有絕對的利益與對權力的極致貪婪。他布下了跨越百年的大局，將男女主角玩弄於股掌之間，是造成【${tone}】衝突以及最終迎來【${ending}】的關鍵骨牌。\n\n`;
+                txt += `體質特殊或掌握命運核心解碼器的女性。她看似溫柔無害，內心卻擁有鋼鐵般的意志。面對命運的層層絞殺，她從不妥協，更不願淪為既得利益者的祭品。她的出現，是${mName}原本精準的復仇計畫中最不可控的變數。\n\n`;
+                txt += `**■ 主要反派/核心推手：${vName}**\n`;
+                txt += `龐大體制或古老禁忌的具象化身。城府深不可測，將世間萬物視為棋子。正是他一手策劃了涉及【${elems}】的巨大陰謀，一步步將${mName}與${fName}逼上絕路，是整部故事矛盾與衝突的總源頭。\n\n`;
 
-                txt += `### 📜 三、 五幕式長篇正文劇情核心大綱\n\n`;
+                txt += `### 📜 第三章：五幕式長篇正文情節大綱\n\n`;
                 
-                txt += `#### 🎬 【第一幕：宿命漩渦的起始點（約350字）】\n`;
-                txt += `序幕拉開，${fName}在一次關於【${elems}】的突發變故中，意外撞破了${vName}的驚天陰謀。在逃亡過程中，她與正在執行祕密任務、隱藏身分的${mName}不期而遇。兩人的初次見面伴隨著極高的張力與致命的試探。${mName}本欲將其作為棋子或直接抹除，卻被${fName}身上展現出的特殊特質所震撼。在【${style}】特有的灰暗色調與生存高壓下，兩人被迫達成了利益綁定的短暫同盟。此時，命運的齒輪開始瘋狂加速，兩人在並肩逃過第一波追殺後，心防各自漏出了一拍，卻不知這正是萬劫不復的深淵起點。\n\n`;
+                txt += `#### 【第一幕：命運齒輪的初次咬合（約350字）】\n`;
+                txt += `故事伊始，${fName}因為一場關於【${elems}】的意外，無意中撞破了隱藏在黑暗中的絕密。在被黑衣人追殺至絕路時，撞見了正在暗中調查、隱藏身分的${mName}。此處在【${style}】場景的烘托下，兩人的初遇充滿了刀光劍影與極致的情感張力。${mName}原本打算封口或將其當成替死鬼，卻意外發現${fName}身上的祕密與他要尋找的真相不謀而合。被迫之下，兩人在危機重重的暗夜中達成了暫時的利益結盟。在互相試探與並肩作戰中，兩人的心防首次出現了裂痕，然而，這段危險關係的建立，恰恰是悲劇大幕落下的前奏。\n\n`;
 
-                txt += `#### 🎬 【第二幕：情愫裂變與殘酷真相的剝離（約450字）】\n`;
-                txt += `隨著劇情的深度推進，兩人深入到了世界的核心地帶。在無數次生死邊緣的拉扯中，【${tone}】的特質開始瘋狂肆虐。如果這是虐戀，兩人會在相愛中發現彼此隔著血海深仇；如果是強強聯手，則是各自戴著假面在黑夜中熱烈交鋒。${mName}數次在生死關頭暴露出他唯一的溫柔，而${fName}也用自己的智慧幫助${mName}突破瓶頸。然而，就在感情達到沸點時，${vName}冷酷地揭開了最殘酷的真相：原來${fName}的靈魂（或身分）本身就是啟動【${elems}】的最終祭品，而${mName}最初的接近，竟然也夾雜著不可告人的目的。信任在一瞬間化為齏粉。\n\n`;
+                txt += `#### 【第二幕：情愫裂變與殘酷真相的剝離（約450字）】\n`;
+                txt += `隨著劇情的推進，兩人開始聯手深入敵方核心。在經歷了一連串生死考驗後，【${tone}】的情感主線迎來爆發。如果是虐戀，兩人在深愛彼此時卻驚覺雙方的家族竟有著無法化解的血仇；如果是強強聯手，則是兩人在黑夜中各自戴著假面博弈。${mName}無數次在最危險的時刻用肉身為${fName}擋下致命一擊，其冰冷的心徹底被執著的${fName}融化。然而，就在兩人準備互訴衷腸的關鍵時刻，${vName}冷酷地撕開了殘酷真相：原來這場相遇從一開始就是被設計好的陷阱，而${fName}，竟然是啟動【${elems}】計畫所必須被獻祭的唯一「鑰匙」。信任在頃刻間崩塌，留下無盡的痛楚。\n\n`;
 
-                txt += `#### 🎬 【第三幕：絕望高潮與命運的決裂一擊（約500字）】\n`;
-                txt += `這是整部小說最狂暴的情感與劇情高潮點。所有隱瞞的祕密全數曝光，世界底層的矛盾全面暴走。在${vName}的逼迫與整個世界的冷眼旁觀下，${mName}與${fName}迎來了最痛苦的決裂。在漫天大雨（或賽博霓虹、修仙雷劫）中，兩人刀劍相向。${fName}為了證明自己的道，或者為了保護內心深處的愛，做出了震驚全場的瘋狂舉動——她親手震碎了自己的本源（或自願墜入深淵）；而${mName}在目睹這一幕時，內心的理智瞬間崩潰，他的力量在極致的痛苦中瘋狂覺醒，甚至不惜祭出禁忌之術，將整個【${style}】世界的半數勢力生生葬送。血色染紅了蒼穹。\n\n`;
+                txt += `#### 【第三幕：絕望巔峰與命運的決裂一擊（約500字）】\n`;
+                txt += `這是全書情感與衝突的最高潮。所有埋藏的線索在這一刻全面引爆，世界底層的矛盾徹底失控。在${vName}的逼迫與整個世界的圍剿之下，${mName}與${fName}被迫站在了對立面。在暴雨雷鳴（或賽博霓虹廢墟）中，兩人迎來了最痛心的決裂決戰。為了大局不被摧毀，也為了給${mName}留下一線生機，${fName}做出了最決絕的選擇——她含淚自願墜入無底深淵或震碎自己的神魂。親眼目睹這一幕的${mName}理智瞬間徹底崩潰，他在極致的痛苦中完成力量的終極魔化，當場祭出毀天滅地的禁忌術法，生生血洗了現場過半的敵方勢力。血色的大雨，下滿了整個世界。\n\n`;
 
-                txt += `#### 🎬 【第四幕：深淵潛伏與絕地逆襲的密謀（約400字）】\n`;
-                txt += `大戰過後，世界陷入了漫長的死寂。${mName}化身為徹頭徹尾的冷血暴君或復仇幽靈，在暗中發了瘋似地尋找挽回的方法，他瘋狂清算著${vName}的所有羽翼，讓所有人為當年的代價陪葬。而另一邊，墜入深淵的${fName}並未真正死去，她在死亡邊緣參透了【${elems}】的終極奧義，完成了靈魂的浴火重生。雖然身處不同的空間或陣營，但兩人透過命運的絲線，依然在暗中進行著無言的默契配合。隨著最終神廟/核心主機的開啟，決戰的號角再度吹響，他們將在因果的終點迎來最終審判。\n\n`;
+                txt += `#### 【第四幕：深淵沉淪與絕地逆襲的密謀（約400字）】\n`;
+                txt += `大決戰後，情節進入沉澱與蓄力期。整個世界因為上一幕的浩劫而陷入了死寂。${mName}化身為沒有感情的復仇暴君，在暗中發了瘋似地尋找復活${fName}的方法，他的手段變得無比冷血，瘋狂拔除${vName}的所有羽翼，讓整個世界為她的離去陪葬。而另一邊，墜入深淵的${fName}並未真正死去，她在死亡的邊緣參透了【${elems}】的核心神髓，靈魂完成了浴火重生。雖然兩人此時身處不同陣營與空間，但心靈的羈絆從未斷絕，他們隔著虛空展開了完美的默契配合。隨著終極核心的大門緩緩開啟，最後的戰歌響起，他們將在終點迎來宿命的清算。\n\n`;
 
-                txt += `#### 🎬 【第五幕：終局之戰與命運的歸宿——${ending}（約300字）】\n`;
+                txt += `#### 【第五幕：終局之戰與命運的歸宿——${ending}（約300字）】\n`;
                 
                 if(ending.includes('HE')) {
-                    txt += `在最終的因果聖殿中，${mName}與${fName}實現了真正的靈魂共鳴。他們徹底看穿了${vName}的虛妄，聯手使出驚世駭俗的終極底牌，將束縛了這個世界數千年的命運矩陣徹底擊碎！【${elems}】的力量化為了漫天反哺世界的雨露。經歷了【${tone}】的萬般折磨，兩人的手終於穿越了血與火，死死扣在了一起。他們放下了所有的權利與仇恨，隱姓埋名，消失在重獲新生的晨曦之中。長風萬里，此生不負。\n\n`;
+                    txt += `在最終的因果聖殿中，${mName}與${fName}終於再度相聚。他們展現了無與倫比的默契，聯手使出驚世駭俗的底牌，將作惡多端的${vName}徹底抹殺，並生生擊碎了束縛世界千年的宿命矩陣！【${elems}】的力量化為甘霖福澤萬物。歷經了【${tone}】的重重折磨，兩人的手跨越了血與火，死死扣在了一起。他們選擇放下一切權位，隱姓埋名於重獲新生的山河都市之中。長風萬里，朝暮相守，為這段史詩劃下了最完美的圓滿句點。\n\n`;
                 } else if(ending.includes('BE')) {
-                    txt += `命運終究是一場無法擺脫的黑色幽默。雖然${mName}拼盡全力重創了${vName}，但世界底層邏輯的運轉必須有人獻祭。在最後一刻，${fName}展現了最淒美的微笑，她選擇用自己的身軀封印了即將崩塌的【${elems}】核心。在${mName}撕心裂肺的怒吼聲中，她化為了無數星光，消散在冷冽的風中。多年後，${mName}孤身一人登上了世界的權力頂峰，他受萬人景仰，卻活成了一座沒有靈魂的冰冷雕像。每當大雪紛飛，他總會握著那枚冰冷的信物，獨自走向無終點的黑夜。\n\n`;
-                } else if(ending.includes('留白')) {
-                    txt += `最後的戰場上，核心能量全面失控，時空發生了無法逆轉的坍塌。${mName}、${fName}與宿敵${vName}一同被捲入了無盡的黑洞與虛無之中。當光芒散去，世界重歸平靜，但兩人的身影卻徹底消失了。多年以後，江湖上、都市的街角裡，流傳著各種關於他們的傳說。有人說曾看過一位斷臂的劍客身旁跟著一位白衣女子；有人說在平行時空裡他們才剛相遇。故事在最懸疑、最唯美的那一瞬間戛然而止，留下讀者在無盡的遐想中品味這份深刻的餘韻。\n\n`;
+                    txt += `命運的判決書終究是殘酷的。儘管${mName}拼盡最後一絲氣力重創了${vName}，但世界崩塌的代價必須有人承擔。在最後關頭，${fName}看著滿身是血的${mName}，露出了最淒美溫柔的微笑，她決然選擇用自己剛重生的靈魂去永恆封印即將自爆的【${elems}】核心。在${mName}撕心裂肺、絕望的怒吼聲中，她化作滿天星光永遠消散。多年後，${mName}孤身一人登上了世界的權力巔峰，受萬人景仰，但他卻活成了一座沒有靈魂的冰冷墓碑。每當夜深大雪紛飛，他總會握著那枚殘留她氣息的信物，孤身走向無盡的黑夜。\n\n`;
+                } else if(ending.includes('開放')) {
+                    txt += `在決戰的最後一秒，核心能量爆發出了毀天滅地的光芒，時空發生了劇烈的坍塌。${mName}、${fName}與宿敵${vName}一同被捲入了無盡的時空亂流與虛無之中。當光芒散去，世界重歸平靜，但兩人的身影卻徹徹底底消失了。許多年後，在江湖的客棧裡、在繁華都市的街角，流傳著無數關於他們的傳說。有人說曾看過一位冷峻男子牽著一位白衣女子隱居山林；有人說他們仍在不同維度裡尋找彼此。情節在最唯美、最令人懸念的那一瞬間戛然而止，留下了無盡的遐想餘韻。\n\n`;
                 } else {
-                    txt += `在決戰的最後一秒，劇情發生了驚天大逆轉！原來，一直引導著兩人的【${elems}】系統，才是真正的最終Boss；而那個看似無惡不作的${vName}，其實是上一代為了保護世界而化身惡魔的守護者。${mName}與${fName}在瞬間得知了世界的真相——原來他們所有人，都只是高維度生物筆下的一段程式碼（或一場夢境）。面對這荒誕的真相，兩人在最後關頭相視一笑，做出了最瘋狂的決定：引爆自身全部的靈魂，徹底抹除這個世界在宇宙中的坐標。畫面歸於純白，震撼靈魂。\n\n`;
+                    txt += `在決戰的終點，情節迎來了顛覆性的驚天大反轉！原來，一直引導主角前進的【${elems}】系統，才是真正的吞噬世界的幕後主使；而看似無惡不作的${vName}，其實是背負著萬世罵名、獨自對抗系統的上一代守護者。${mName}與${fName}在這一刻得知了世界的終極荒謬真相——他們的一生，不過是高等文明筆下的一段代碼。面對這無可扭轉的虛無，男女主角相視一笑，選擇了最瘋狂的燃燒，他們引爆了自身全部的因果，徹底抹除了這個時空在宇宙中的坐標。畫面歸於純白，震撼靈魂。\n\n`;
                 }
 
-                txt += `### 💡 四、 衍生寫作指南與商業價值分析\n`;
-                txt += `1. **核心爽點與賣點**：本大綱完美融合了【${style}】的獨特氛圍與【${elems}】的創新設定。劇情節奏跌宕起伏，極具網文的吸睛特質。\n`;
-                txt += `2. **人物情緒張力**：在處理【${tone}】情節時，切忌無病呻吟。必須將角色的痛苦與大背景的逼迫結合（如：為了拯救大局不得不親手封印愛人），這種「被迫的決裂」最能引發讀者強烈的共鳴與淚點。\n`;
-                txt += `3. **場景視覺錘**：建議在小說中設定3個核心視覺意象（如：不滅的黑火、崩潰的霓虹大樓、染血的玉珮）。每當情感發生重大轉折時就讓該意象出現，能極大加深讀者的記憶點。`;
-
-                // 隨機動態擴充，生成長篇細分章節，確保穩穩撐出長篇厚重感
-                let chapterGuide = `\n\n### 🗺️ 五、 全書實戰章節細分指引（20章黃金結構）\n`;
+                txt += `### 💡 第四章：寫作實戰建議與黃金章節細分架構（20章）\n`;
+                txt += `1. **情緒掌控**：刻畫【${tone}】時要層層遞進，利用【${style}】環境的冰冷襯托出兩人情感的熾熱。\n`;
+                txt += `2. **黃金 20 章大綱指引**：\n`;
                 for(let i=1; i<=20; i++) {
-                    let focus = "";
-                    if(i<=4) focus = "【開局鋪墊】著重描寫男女主角在時空背景下的各自困境與危局，鋪陳核心元素。";
-                    else if(i<=8) focus = "【情感升溫】兩人被迫聯手，在世界暗流中碰撞出強烈火花，反派陰謀初顯。";
-                    else if(i<=12) focus = "【核心轉折】驚天秘密引爆，信任崩塌，迎來全書最關鍵的決裂與痛感巔峰。";
-                    else if(i<=16) focus = "【觸底反彈】主角在深淵中各自覺醒、蛻變，蓄積向宿命與反派復仇的終極力量。";
-                    else focus = "【終局收線】雙方底牌盡出，世界格局全面洗牌，迎來震撼人心的終極結局。";
-                    
-                    chapterGuide += `*   **第 ${i} 章核心情節**：圍繞【${tone}】與【${elems}】展開。${focus}（預估本章寫作字數：3500字）\n`;
+                    let sectionNote = "【開局危局】男女主角意外邂逅，核心元素彰顯。";
+                    if(i > 4 && i <= 8) sectionNote = "【情愫滋長】利益同盟建立，並肩對抗反派勢力，感情升溫。";
+                    if(i > 8 && i <= 13) sectionNote = "【衝突引爆】殘酷真相曝光，面臨最大考驗，迎來虐點與決裂高潮。";
+                    if(i > 13 && i <= 17) sectionNote = "【觸底蛻變】主角在黑暗中各自變強，密謀最終的絕地大逆襲。";
+                    if(i > 17) sectionNote = "【終局大決戰】底牌盡出，擊敗反派，迎來宿命結局。";
+                    txt += `   * 第 ${i} 章：圍繞 ${elems} 展開情節，${sectionNote} (預估字數：3000字)\n`;
                 }
-                txt += chapterGuide;
 
-                // 渲染與計算
+                // 渲染與計量
                 document.getElementById('output-title').innerText = title;
-                document.getElementById('output-content').innerHTML = txt.replace(/\n/g, '<br>');
-                document.getElementById('word-count').innerText = `計量：約 ${txt.length} 字`;
+                document.getElementById('output-content').innerText = txt;
+                document.getElementById('word-count').innerText = `約 ${txt.length} 字`;
                 
-                document.getElementById('loading').classList.add('hidden');
-                document.getElementById('result-box').classList.remove('hidden');
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('result-box').style.display = 'block';
                 document.getElementById('result-box').scrollIntoView({ behavior: 'smooth' });
-            }, 1800);
+            }, 1000);
         }
 
         function copyToClipboard() {
             const text = document.getElementById('output-content').innerText;
             navigator.clipboard.writeText(text).then(() => {
-                alert("📋 大綱已成功複製到剪貼簿！可以自由貼到 Word 或 Notion 囉！");
+                alert("📋 大綱複製成功！可以貼到你的寫作軟體裡囉！");
             }).catch(err => {
-                alert("複製失敗，請手動全選複製。");
+                alert("瀏覽器不支援自動複製，請用滑鼠全選內容手動複製。");
             });
         }
     </script>
