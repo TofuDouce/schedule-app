@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>貓巫醫的垃圾桶 🐈‍⬛ 負能量黑洞宣洩口</title>
+    <style>
+        :root {
+            --bg-purple: #0f0c1b;
+            --space-purple: #1a103c;
+            --magic-gold: #d4af37;
+            --magic-glow: #9d4edd;
+            --text-light: #e0daf5;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: radial-gradient(circle at center, var(--space-purple) 0%, var(--bg-purple) 70%);
+            background-attachment: fixed;
+            color: var(--text-light);
+            font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* 星空背景微光粒子效果 */
+        body::before {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px),
+                radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px);
+            background-size: 550px 550px, 350px 350px;
+            background-position: 0 0, 40px 60px;
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 600px;
+            background: rgba(15, 12, 27, 0.75);
+            border: 2px solid var(--magic-gold);
+            box-shadow: 0 0 25px rgba(157, 78, 221, 0.4), inset 0 0 15px rgba(212, 175, 55, 0.2);
+            border-radius: 15px;
+            padding: 2.5rem;
+            text-align: center;
+            backdrop-filter: blur(8px);
+            z-index: 1;
+            position: relative;
+            transition: all 0.5s ease;
+        }
+
+        /* 古典魔法裝飾邊角 */
+        .container::before, .container::after {
+            content: "✦";
+            position: absolute;
+            color: var(--magic-gold);
+            font-size: 1.2rem;
+        }
+        .container::before { top: 10px; left: 15px; }
+        .container::after { bottom: 10px; right: 15px; }
+
+        h1 {
+            font-size: 1.8rem;
+            color: var(--magic-gold);
+            margin-bottom: 0.5rem;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            color: #b39ddb;
+            margin-bottom: 2rem;
+        }
+
+        /* 貓巫醫魔法陣 / 黑洞區 */
+        .altar-zone {
+            position: relative;
+            width: 160px;
+            height: 160px;
+            margin: 0 auto 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .magic-circle {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 1px dashed var(--magic-gold);
+            border-radius: 50%;
+            animation: rotateCircle 20s linear infinite;
+            opacity: 0.6;
+        }
+
+        .black-hole {
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, #000 40%, var(--magic-glow) 80%, transparent 100%);
+            border-radius: 50%;
+            box-shadow: 0 0 30px var(--magic-glow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.5rem;
+            z-index: 2;
+            cursor: default;
+            transition: transform 0.3s ease;
+        }
+
+        .black-hole.active {
+            animation: pulseHole 0.5s infinite alternate;
+        }
+
+        /* 垃圾輸入框 */
+        .trash-input-container {
+            position: relative;
+            width: 100%;
+            margin-bottom: 1.5rem;
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            background: rgba(26, 16, 60, 0.6);
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            border-radius: 8px;
+            padding: 1rem;
+            color: var(--text-light);
+            font-size: 1rem;
+            resize: none;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        textarea:focus {
+            border-color: var(--magic-gold);
+            box-shadow: 0 0 15px rgba(157, 78, 221, 0.5);
+            background: rgba(26, 16, 60, 0.8);
+        }
+
+        /* 被吸入的文字分身模擬層 */
+        .suck-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .ghost-text {
+            position: absolute;
+            color: #d8b4fe;
+            font-size: 1rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+            transform-origin: center;
+            transition: all 1.5s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        /* 魔法按鈕 */
+        .magic-btn {
+            background: linear-gradient(135deg, #7b2cbf, #5a189a);
+            border: 1px solid var(--magic-gold);
+            color: var(--magic-gold);
+            padding: 0.8rem 2rem;
+            font-size: 1.1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            transition: all 0.3s ease;
+        }
+
+        .magic-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(157, 78, 221, 0.6);
+            color: #fff;
+            background: linear-gradient(135deg, #9d4edd, #7b2cbf);
+        }
+
+        .magic-btn:disabled {
+            background: #2a2538;
+            border-color: #555;
+            color: #777;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* 貓巫醫的低語開關與對話框 */
+        .whisper-box {
+            margin-top: 1.5rem;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cat-dialogue {
+            background: rgba(212, 175, 55, 0.1);
+            border-left: 3px solid var(--magic-gold);
+            padding: 0.6rem 1rem;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.95rem;
+            color: #e0aaff;
+            font-style: italic;
+            display: none;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        /* 動畫效果定義 */
+        @keyframes rotateCircle {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulseHole {
+            0% { transform: scale(1); box-shadow: 0 0 25px var(--magic-glow); }
+            100% { transform: scale(1.1); box-shadow: 0 0 45px #c77dff, 0 0 15px #fff; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🐈 貓巫醫的垃圾桶</h1>
+        <div class="subtitle">把不快化為祭品，餵食給深淵吧。</div>
+
+        <!-- 魔法核心黑洞區 -->
+        <div class="altar-zone">
+            <div class="magic-circle"></div>
+            <div id="blackHole" class="black-hole">🐈‍⬛</div>
+        </div>
+
+        <!-- 輸入區域 -->
+        <div class="trash-input-container" id="inputContainer">
+            <textarea id="trashInput" placeholder="在此寫下你的怨念、委屈或任何負能量...（別擔心，它們將永遠消失）"></textarea>
+            <div class="suck-layer" id="suckLayer"></div>
+        </div>
+
+        <!-- 施法按鈕 -->
+        <button id="castBtn" class="magic-btn" onclick="destroyNegativity()">施法・黑洞湮滅</button>
+
+        <!-- 貓巫醫的開導語錄 -->
+        <div class="whisper-box">
+            <div id="catDialogue" class="cat-dialogue"></div>
+        </div>
+    </div>
+
+    <script>
+        // 貓巫醫的治癒/傲嬌語錄庫
+        const catWhispers = [
+            "「呼嚕嚕...剛才那些垃圾，本巫醫已經幫你撕碎吞進深淵了。去喝口水吧。」",
+            "「喵嗚。既然已經丟進來了，回頭路就塌了，不准再想囉！」",
+            "「哼，那種傢伙的智商不值得你耗費魔力生氣。本巫醫賞你一個肉墊祝福。」",
+            "「垃圾清空了，你的心靈核心現在又是純淨的魔法晶石了。伸個懶腰吧。」",
+            "「吸入了飽滿的負能量，本巫醫的毛色好像更亮了。謝謝你的款待，喵。」",
+            "「（拍拍你的頭）好啦，壞事都被黑洞碾碎了，明天又是充滿星光的一天。」",
+            "「那些讓你受委屈的事，已經被深淵長眠的觸手拖走了，沒事了喵。」"
+        ];
+
+        function destroyNegativity() {
+            const input = document.getElementById('trashInput');
+            const text = input.value.trim();
+            
+            if (!text) {
+                alert('巫醫提示：空無一物的虛無是無法當作祭品的，多多少少寫點什麼吧。');
+                return;
+            }
+
+            const btn = document.getElementById('castBtn');
+            const hole = document.getElementById('blackHole');
+            const container = document.getElementById('inputContainer');
+            const suckLayer = document.getElementById('suckLayer');
+            const dialogue = document.getElementById('catDialogue');
+
+            // 禁用按鈕與輸入
+            btn.disabled = true;
+            input.disabled = true;
+            dialogue.style.display = 'none';
+
+            // 取得輸入框當下的絕對座標與尺寸
+            const rect = input.getBoundingClientRect();
+            const holeRect = hole.getBoundingClientRect();
+
+            // 建立一個文字分身用於吸入特效
+            const ghost = document.createElement('div');
+            ghost.className = 'ghost-text';
+            ghost.textContent = text;
+            ghost.style.left = input.offsetLeft + 'px';
+            ghost.style.top = input.offsetTop + 'px';
+            ghost.style.width = input.offsetWidth + 'px';
+            ghost.style.height = input.offsetHeight + 'px';
+            suckLayer.appendChild(ghost);
+
+            // 清空原本的輸入框，讓視覺焦點轉移到分身上
+            input.value = '';
+            hole.classList.add('active');
+
+            // 計算黑洞中心相對於文字框的偏移量
+            const deltaX = (holeRect.left + holeRect.width / 2) - (rect.left + rect.width / 2);
+            const deltaY = (holeRect.top + holeRect.height / 2) - (rect.top + rect.height / 2);
+
+            // 觸發黑洞吸入動畫 (縮小、旋轉、平移、淡出)
+            setTimeout(() => {
+                ghost.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(0) rotate(720deg)`;
+                ghost.style.opacity = '0';
+            }, 50);
+
+            // 動畫結束後的復原與貓咪低語
+            setTimeout(() => {
+                ghost.remove();
+                hole.classList.remove('active');
+                
+                // 亂數挑選貓巫醫的治癒台詞
+                const randomWhisper = catWhispers[Math.floor(Math.random() * catWhispers.length)];
+                dialogue.textContent = randomWhisper;
+                dialogue.style.display = 'block';
+
+                // 重新啟用輸入框與按鈕
+                input.disabled = false;
+                btn.disabled = false;
+                input.placeholder = "又有一點不開心了嗎？這裡隨時為你敞開...";
+            }, 1550);
+        }
+    </script>
+</body>
+</html>
