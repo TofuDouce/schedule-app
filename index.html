@@ -1,390 +1,1101 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dream Archive</title>
 
-<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+    <meta name="googlebot" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+    <meta name="bingbot" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
 
-<style>
-body{
-  margin:0;padding:10px;font-family:sans-serif;background:#f5f5f5;
-  overscroll-behavior:none;
-}
-input{display:none}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-/* 工具列 */
-.topbar{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.topbar button{height:48px;border:none;border-radius:12px;background:#fff;font-size:20px}
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:wght@400;500;600&display=swap" rel="stylesheet">
 
-/* 選單 */
-#menu{
-  display:none;
-  background:#fff;
-  border-radius:12px;
-  padding:10px;
-  margin-top:8px;
-  flex-wrap:wrap;
-  gap:6px;
-}
-#menu.active{display:flex}
+    <style>
 
-#menu button{
-  padding:8px 14px;
-  border:none;
-  border-radius:8px;
-  background:#eee;
-  color:#000;
-}
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
 
-/* 班表切換 */
-.sheetBtn{background:#ddd !important}
-.sheetBtn.active{background:#bbb !important}
+            transition:
+                font-size .2s ease,
+                transform .4s ease,
+                box-shadow .4s ease;
+        }
 
-/* ⭐ 截圖區（關鍵） */
-#captureArea{
-  position:relative;
-  border-radius:24px;
-  overflow:hidden;
-}
+        :root{
+            --bg1:#171320;
+            --bg2:#241a35;
+            --bg3:#31244d;
 
-/* ⭐ 背景（固定最底層） */
-#bg{
-  position:absolute;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  z-index:0;
-}
+            --gold:#d8bf8a;
+            --text:#f4efff;
 
-/* ⭐ 所有內容強制在上層 */
-.header,
-.weekRow,
-.calendar{
-  position:relative;
-  z-index:2;
-}
+            --card:rgba(29,24,44,.72);
 
-/* header */
-.header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:10px;
-}
+            /* 手機 */
+            --base-font-size:17px;
+        }
 
-/* 星期 */
-.weekRow{
-  display:grid;
-  grid-template-columns:repeat(7,1fr);
-  padding:0 10px;
-}
-.weekRow div{text-align:center;font-weight:bold}
+        /* 平板 */
+        @media (min-width:768px){
 
-/* 日曆 */
-.calendar{
-  display:grid;
-  grid-template-columns:repeat(7,1fr);
-  gap:8px;
-  padding:10px;
-}
+            :root{
+                --base-font-size:18px;
+            }
+        }
 
-/* 日期 */
-.day{
-  min-height:70px;
-  border-radius:14px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  padding-top:4px;
-  background:rgba(255,255,255,var(--alpha,1));
-}
+        /* 電腦 */
+        @media (min-width:1200px){
 
-/* 班別 */
-.shift{
-  width:80%;
-  border-radius:8px;
-  margin-top:2px;
-  text-align:center;
-  font-size:11px;
-}
+            :root{
+                --base-font-size:20px;
+            }
+        }
 
-.morning{background:#f7e7a9}
-.noon{background:#f5c6aa}
-.night{background:#B7E1FF}
-.full{background:#d6c2f0}
-.off{background:#bfe3d0}
+        body{
+            min-height:100vh;
 
-.sunday{color:red}
+            overflow-x:hidden;
 
-/* 貼圖 */
-.sticker{
-  position:absolute;
-  width:80px;
-  z-index:9999;
-  touch-action:none;
-}
+            color:var(--text);
 
-/* 底部 */
-.bottom{display:flex;gap:6px;margin-top:10px}
-.bottom button{flex:1;padding:10px;border:none;border-radius:20px;color:#000}
-.bottom button:nth-child(1){background:#f7e7a9}
-.bottom button:nth-child(2){background:#f5c6aa}
-.bottom button:nth-child(3){background:#B7E1FF}
-.bottom button:nth-child(4){background:#d6c2f0}
-.bottom button:nth-child(5){background:#bfe3d0}
-.bottom button.active{outline:2px solid #333}
+            font-family:"Cormorant Garamond", serif;
 
-#preview img{width:100%;margin-top:10px;border-radius:12px}
-</style>
+            background:
+                radial-gradient(
+                    circle at top,
+                    rgba(180,150,255,.14),
+                    transparent 30%
+                ),
+
+                linear-gradient(
+                    180deg,
+                    var(--bg1),
+                    var(--bg2),
+                    var(--bg3)
+                );
+
+            padding:20px;
+
+            position:relative;
+
+            font-size:var(--base-font-size);
+        }
+
+        .stars{
+            position:fixed;
+            inset:0;
+
+            overflow:hidden;
+
+            z-index:-3;
+        }
+
+        .star{
+            position:absolute;
+
+            width:2px;
+            height:2px;
+
+            background:white;
+
+            border-radius:50%;
+
+            opacity:.7;
+
+            animation:twinkle 4s infinite;
+        }
+
+        @keyframes twinkle{
+
+            0%,100%{
+                opacity:.15;
+                transform:scale(.7);
+            }
+
+            50%{
+                opacity:1;
+                transform:scale(1.4);
+            }
+        }
+
+        .frame{
+            position:fixed;
+            inset:10px;
+
+            border:1.5px solid rgba(216,191,138,.48);
+
+            border-radius:26px;
+
+            pointer-events:none;
+
+            z-index:999;
+        }
+
+        .frame::before{
+            content:"";
+
+            position:absolute;
+            inset:8px;
+
+            border:1px solid rgba(216,191,138,.18);
+
+            border-radius:20px;
+        }
+
+        .corner{
+            position:fixed;
+
+            width:90px;
+            height:90px;
+
+            pointer-events:none;
+
+            z-index:1000;
+        }
+
+        .corner::before{
+            content:"";
+
+            position:absolute;
+            inset:0;
+
+            border:1.5px solid rgba(216,191,138,.45);
+
+            border-radius:50%;
+        }
+
+        .corner::after{
+            content:"✦";
+
+            position:absolute;
+
+            color:rgba(216,191,138,.85);
+
+            font-size:22px;
+        }
+
+        .tl{
+            top:14px;
+            left:14px;
+        }
+
+        .tl::before{
+            clip-path:polygon(0 0,100% 0,0 100%);
+        }
+
+        .tl::after{
+            top:14px;
+            left:14px;
+        }
+
+        .tr{
+            top:14px;
+            right:14px;
+        }
+
+        .tr::before{
+            clip-path:polygon(0 0,100% 0,100% 100%);
+        }
+
+        .tr::after{
+            top:14px;
+            right:14px;
+        }
+
+        .bl{
+            bottom:14px;
+            left:14px;
+        }
+
+        .bl::before{
+            clip-path:polygon(0 0,0 100%,100% 100%);
+        }
+
+        .bl::after{
+            bottom:14px;
+            left:14px;
+        }
+
+        .br{
+            bottom:14px;
+            right:14px;
+        }
+
+        .br::before{
+            clip-path:polygon(100% 0,0 100%,100% 100%);
+        }
+
+        .br::after{
+            bottom:14px;
+            right:14px;
+        }
+
+        .container{
+            max-width:1320px;
+
+            margin:auto;
+
+            position:relative;
+
+            z-index:2;
+        }
+
+        .font-control{
+            display:flex;
+
+            justify-content:flex-end;
+
+            gap:10px;
+
+            margin-bottom:5px;
+
+            position:relative;
+
+            z-index:1010;
+        }
+
+        .font-btn{
+            background:rgba(255,255,255,.05);
+
+            border:1px solid rgba(216,191,138,.3);
+
+            color:var(--text);
+
+            padding:5px 12px;
+
+            border-radius:20px;
+
+            cursor:pointer;
+
+            font-family:"Cinzel", serif;
+
+            font-size:13px;
+
+            backdrop-filter:blur(5px);
+        }
+
+        .font-btn:hover{
+            background:rgba(216,191,138,.2);
+
+            color:var(--gold);
+
+            border-color:var(--gold);
+        }
+
+        .font-btn.active{
+            background:var(--gold);
+
+            color:var(--bg1);
+
+            font-weight:bold;
+
+            border-color:var(--gold);
+        }
+
+        .moon{
+            text-align:center;
+
+            margin-top:5px;
+
+            position:relative;
+        }
+
+        .moon::before{
+            content:"";
+
+            position:absolute;
+
+            left:50%;
+            top:-45px;
+
+            width:1px;
+            height:45px;
+
+            background:rgba(216,191,138,.35);
+        }
+
+        .moon-symbol{
+            font-size:36px;
+
+            color:var(--gold);
+
+            text-shadow:0 0 18px rgba(216,191,138,.25);
+
+            animation:floatMoon 4s ease-in-out infinite;
+        }
+
+        @keyframes floatMoon{
+
+            0%,100%{
+                transform:translateY(0px);
+            }
+
+            50%{
+                transform:translateY(5px);
+            }
+        }
+
+        .title{
+            text-align:center;
+
+            margin-top:10px;
+            margin-bottom:30px;
+        }
+
+        .main-title{
+            font-family:"Cinzel", serif;
+
+            font-weight:700;
+
+            letter-spacing:4px;
+
+            line-height:1.1;
+
+            font-size:clamp(42px,7vw,78px);
+
+            background:
+                linear-gradient(
+                    180deg,
+                    #ffffff 0%,
+                    #f1e8ff 40%,
+                    #d8bf8a 100%
+                );
+
+            -webkit-background-clip:text;
+            -webkit-text-fill-color:transparent;
+        }
+
+        .subtitle{
+            margin-top:12px;
+
+            color:#cfc1f7;
+
+            font-size:1.1em;
+
+            letter-spacing:1px;
+        }
+
+        .category-section{
+            margin-bottom:40px;
+
+            background:rgba(255,255,255,.02);
+
+            padding:24px;
+
+            border-radius:24px;
+
+            border:1px solid rgba(216,191,138,.08);
+        }
+
+        .category-title{
+            font-family:"Cinzel", serif;
+
+            font-size:calc(var(--base-font-size) * 1.3);
+
+            color:var(--gold);
+
+            letter-spacing:2px;
+
+            margin-bottom:18px;
+
+            display:flex;
+
+            align-items:center;
+
+            gap:10px;
+
+            border-bottom:
+                1px solid rgba(216,191,138,.2);
+
+            padding-bottom:10px;
+        }
+
+        .category-title span{
+            font-size:18px;
+
+            color:#bba9e8;
+        }
+
+        .grid{
+            display:grid;
+
+            grid-template-columns:
+                repeat(
+                    auto-fit,
+                    minmax(260px,1fr)
+                );
+
+            gap:18px;
+        }
+
+        .card{
+            background:rgba(29,24,44,.72);
+
+            border:
+                1px solid rgba(255,255,255,.06);
+
+            border-radius:18px;
+
+            padding:18px;
+
+            backdrop-filter:blur(16px);
+
+            text-decoration:none;
+
+            color:white;
+
+            position:relative;
+
+            overflow:hidden;
+
+            display:flex;
+
+            flex-direction:column;
+
+            justify-content:space-between;
+
+            min-height:160px;
+        }
+
+        .card:hover{
+            transform:
+                translateY(-4px)
+                scale(1.02);
+
+            box-shadow:
+                0 10px 25px rgba(0,0,0,.4);
+
+            border-color:
+                rgba(216,191,138,.4);
+        }
+
+        .card-header-row{
+            display:flex;
+
+            justify-content:space-between;
+
+            align-items:flex-start;
+
+            gap:8px;
+
+            margin-bottom:6px;
+        }
+
+        .card-symbol{
+            font-size:
+                calc(var(--base-font-size) * 1.1);
+
+            color:var(--gold);
+
+            flex-shrink:0;
+        }
+
+        .card-title{
+            font-family:"Cinzel", serif;
+
+            font-size:
+                calc(var(--base-font-size) * 1.18);
+
+            font-weight:600;
+
+            line-height:1.3;
+
+            word-break:break-word;
+        }
+
+        /* 只顯示檔名 */
+        .card-file{
+            color:#bba9e8;
+
+            font-size:
+                calc(var(--base-font-size) * .82);
+
+            margin-bottom:10px;
+
+            opacity:.75;
+
+            display:inline-block;
+        }
+
+        .card-desc{
+            color:#d6c8f5;
+
+            line-height:1.6;
+
+            font-size:
+                calc(var(--base-font-size) * .95);
+
+            display:-webkit-box;
+
+            -webkit-line-clamp:2;
+
+            -webkit-box-orient:vertical;
+
+            overflow:hidden;
+
+            margin-bottom:12px;
+        }
+
+        .card-footer{
+            color:#b89ef0;
+
+            font-size:
+                calc(var(--base-font-size) * .78);
+
+            text-align:right;
+        }
+
+        .footer{
+            text-align:center;
+
+            margin-top:60px;
+            margin-bottom:50px;
+        }
+
+        .footer-line{
+            width:120px;
+            height:1px;
+
+            margin:auto;
+            margin-bottom:16px;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    transparent,
+                    rgba(216,191,138,.6),
+                    transparent
+                );
+        }
+
+        .footer-inner{
+            display:flex;
+
+            align-items:center;
+
+            justify-content:center;
+
+            gap:14px;
+        }
+
+        .sparkle{
+            color:#f6d98f;
+
+            font-size:20px;
+        }
+
+        .dream{
+            font-family:"Cinzel", serif;
+
+            font-size:32px;
+
+            letter-spacing:4px;
+
+            color:#eadfff;
+        }
+
+        .creator{
+            margin-top:8px;
+
+            font-size:15px;
+
+            color:#a897c9;
+
+            font-style:italic;
+        }
+
+        .loading{
+            text-align:center;
+
+            color:#c9b8f1;
+
+            font-size:22px;
+
+            padding:40px 0;
+        }
+
+        @media(max-width:640px){
+
+            .grid{
+
+                grid-template-columns:
+                    repeat(
+                        auto-fit,
+                        minmax(190px,1fr)
+                    );
+            }
+
+            .card{
+                min-height:135px;
+            }
+        }
+
+    </style>
 </head>
 
 <body>
 
-<div class="topbar">
-  <button onclick="exportImage()">📸</button>
-  <button onclick="stickerInput.click()">🖼️</button>
-  <button onclick="bgInput.click()">🎨</button>
-  <button onclick="toggleMenu()">⚙️</button>
+<div class="stars" id="stars"></div>
+
+<div class="frame"></div>
+
+<div class="corner tl"></div>
+<div class="corner tr"></div>
+<div class="corner bl"></div>
+<div class="corner br"></div>
+
+<div class="container">
+
+    <div class="font-control">
+
+        <button
+            class="font-btn"
+            onclick="changeFontSize('small', this)"
+        >
+            A -
+        </button>
+
+        <button
+            class="font-btn active"
+            onclick="changeFontSize('medium', this)"
+        >
+            A
+        </button>
+
+        <button
+            class="font-btn"
+            onclick="changeFontSize('large', this)"
+        >
+            A +
+        </button>
+
+    </div>
+
+    <div class="moon">
+        <div class="moon-symbol">☾</div>
+    </div>
+
+    <div class="title">
+
+        <h1 class="main-title">
+            Dream Archive
+        </h1>
+
+        <p class="subtitle">
+            連結星宿試算表，開啟魔法星雲 ✦
+        </p>
+
+    </div>
+
+    <div id="archive-lobby">
+
+        <div class="loading">
+            正在喚醒星宿試算表...
+        </div>
+
+    </div>
+
 </div>
-
-<div id="menu">
-
-  <button class="sheetBtn" onclick="switchSheet(1)">班表❶</button>
-  <button class="sheetBtn" onclick="switchSheet(2)">班表❷</button>
-  <button class="sheetBtn" onclick="switchSheet(3)">班表❸</button>
-
-  <button onclick="clearBg()">清除背景</button>
-  <button onclick="clearStickers()">清除貼圖</button>
-
-  <button onclick="setOpacity(1)">不透明</button>
-  <button onclick="setOpacity(0.6)">60%透明</button>
-  <button onclick="setOpacity(0.9)">90%透明</button>
-
-  <button onclick="clearAll()">清空班表</button>
-  <button onclick="exportICS()">輸出行事曆</button>
-
-</div>
-
-<input id="stickerInput" type="file">
-<input id="bgInput" type="file">
-
-<div id="captureArea">
-
-  <div class="header">
-    <button onclick="changeMonth(-1)">←</button>
-    <h2 id="title"></h2>
-    <button onclick="changeMonth(1)">→</button>
-  </div>
-
-  <div class="weekRow">
-    <div>一</div><div>二</div><div>三</div>
-    <div>四</div><div>五</div><div>六</div><div>日</div>
-  </div>
-
-  <div class="calendar" id="calendar"></div>
-
-</div>
-
-<div class="bottom">
-  <button onclick="setType(event,'morning')">早</button>
-  <button onclick="setType(event,'noon')">午</button>
-  <button onclick="setType(event,'night')">晚</button>
-  <button onclick="setType(event,'full')">全</button>
-  <button onclick="setType(event,'off')">休</button>
-</div>
-
-<div id="preview"></div>
 
 <script>
-let selected="";
-let currentDate=new Date(2026,1);
-let alpha=1;
-let currentSheet=1;
-let data={};
 
-function save(){
-  localStorage.setItem("sheet"+currentSheet,JSON.stringify(data));
-}
-function load(){
-  let saved=localStorage.getItem("sheet"+currentSheet);
-  data=saved?JSON.parse(saved):{};
-}
+/* ===== 星空 ===== */
 
-function switchSheet(n){
-  currentSheet=n;
-  load();
-  document.querySelectorAll(".sheetBtn").forEach(b=>b.classList.remove("active"));
-  event.target.classList.add("active");
-  render();
-}
+const stars =
+    document.getElementById("stars");
 
-function setType(e,t){
-  selected=t;
-  document.querySelectorAll(".bottom button").forEach(b=>b.classList.remove("active"));
-  e.target.classList.add("active");
+for(let i = 0; i < 140; i++){
+
+    const star =
+        document.createElement("div");
+
+    star.className = "star";
+
+    star.style.left =
+        Math.random() * 100 + "%";
+
+    star.style.top =
+        Math.random() * 100 + "%";
+
+    star.style.animationDelay =
+        Math.random() * 4 + "s";
+
+    stars.appendChild(star);
 }
 
-function changeMonth(n){
-  currentDate.setMonth(currentDate.getMonth()+n);
-  render();
-}
+/* ===== 字體大小 ===== */
 
-function render(){
-  calendar.innerHTML="";
-  const y=currentDate.getFullYear();
-  const m=currentDate.getMonth();
-  title.innerText=y+"年"+(m+1)+"月";
+function changeFontSize(size, btnElement){
 
-  let first=(new Date(y,m,1).getDay()+6)%7;
-  let days=new Date(y,m+1,0).getDate();
+    const root =
+        document.documentElement;
 
-  for(let i=0;i<first;i++) calendar.appendChild(document.createElement("div"));
+    document
+        .querySelectorAll('.font-btn')
+        .forEach(btn =>
+            btn.classList.remove('active')
+        );
 
-  for(let i=1;i<=days;i++){
-    let d=document.createElement("div");
-    d.className="day";
+    btnElement.classList.add('active');
 
-    let idx=(first+i-1)%7;
-
-    if(idx==5) d.style.background=`rgba(214,238,236,${alpha})`;
-    if(idx==6){
-      d.style.background=`rgba(249,221,229,${alpha})`;
-      d.classList.add("sunday");
+    if(size === 'small'){
+        root.style.setProperty(
+            '--base-font-size',
+            '15px'
+        );
     }
 
-    d.innerHTML=`<div>${i}</div>`;
-    let key=y+"-"+m+"-"+i;
+    else if(size === 'medium'){
+        root.style.setProperty(
+            '--base-font-size',
+            '18px'
+        );
+    }
 
-    (data[key]||[]).forEach(t=>{
-      let s=document.createElement("div");
-      s.className="shift "+t;
-      s.innerText={morning:"早",noon:"午",night:"晚",full:"全",off:"休"}[t];
-      d.appendChild(s);
-    });
-
-    d.onclick=()=>{
-      if(!selected)return;
-
-      let arr=data[key]||[];
-
-      if(selected==="full") arr=["full"];
-      else{
-        arr=arr.filter(x=>x!=="full");
-        if(arr.includes(selected)) arr=arr.filter(x=>x!==selected);
-        else arr.push(selected);
-      }
-
-      data[key]=arr;
-      save();
-      render();
-    };
-
-    calendar.appendChild(d);
-  }
+    else if(size === 'large'){
+        root.style.setProperty(
+            '--base-font-size',
+            '22px'
+        );
+    }
 }
 
-/* ⭐ 背景正常 */
-bgInput.onchange=e=>{
-  let file=e.target.files[0];
-  if(!file)return;
+/* ===== Google 試算表 ID ===== */
 
-  let bg=document.getElementById("bg");
-  if(!bg){
-    bg=document.createElement("img");
-    bg.id="bg";
-    captureArea.prepend(bg);
-  }
-  bg.src=URL.createObjectURL(file);
+const sheetId =
+    "1ArEA8jn79n4mLu4kaH7VqAPNMTQwFa8ttLRHDk7hALg";
+
+/* ===== 分類 ===== */
+
+const categories = {
+
+    wealth:{
+        title:"🪙 財富煉金術 ✦ Wealth Alchemy",
+        symbols:["❂","🪙"],
+        cards:[]
+    },
+
+    inspiration:{
+        title:"📜 靈感編織界 ✦ Inspiration Weaver",
+        symbols:["✧","📜"],
+        cards:[]
+    },
+
+    mirage:{
+        title:"🎭 幻影擬態坊 ✦ Mirage Workshop",
+        symbols:["☾","🎭"],
+        cards:[]
+    },
+
+    chaos:{
+        title:"🌀 混沌試煉場 ✦ Chaos Trial",
+        symbols:["✶","🌀"],
+        cards:[]
+    },
+
+    unknown:{
+        title:"✨ 未分界星軌 ✦ Uncharted Orbit",
+        symbols:["✦","☽"],
+        cards:[]
+    }
 };
 
-function clearBg(){document.getElementById("bg")?.remove()}
+/* ===== 載入試算表 ===== */
 
-/* 貼圖 */
-function clearStickers(){
-  document.querySelectorAll(".sticker").forEach(s=>s.remove());
+async function loadProjectsFromSheet(){
+
+    const lobby =
+        document.getElementById(
+            "archive-lobby"
+        );
+
+    const url =
+        `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json`;
+
+    try{
+
+        const response =
+            await fetch(url);
+
+        if(!response.ok){
+
+            throw new Error(
+                "試算表連線失敗"
+            );
+        }
+
+        const text =
+            await response.text();
+
+        const jsonString =
+            text.substring(
+                text.indexOf('{'),
+                text.lastIndexOf('}') + 1
+            );
+
+        const data =
+            JSON.parse(jsonString);
+
+        const rows =
+            data.table.rows;
+
+        Object.keys(categories)
+            .forEach(key =>
+                categories[key].cards = []
+            );
+
+        rows.forEach((row, index)=>{
+
+            const webUrl =
+                row.c[0]
+                    ? row.c[0].v
+                    : "";
+
+            let title =
+                row.c[1]
+                    ? row.c[1].v
+                    : "";
+
+            let desc =
+                row.c[2]
+                    ? row.c[2].v
+                    : "傳送門";
+
+            let tag =
+                row.c[3]
+                    ? row.c[3].v.toString().trim()
+                    : "";
+
+            if(!webUrl) return;
+
+            if(!title){
+
+                try{
+
+                    const urlObj =
+                        new URL(webUrl);
+
+                    title =
+                        urlObj.pathname
+                            .split('/')
+                            .pop()
+                            .replace('.html','')
+                        || urlObj.hostname;
+
+                }catch(e){
+
+                    title = "未命名宇宙";
+                }
+            }
+
+            let targetCategory =
+                "unknown";
+
+            if(
+                tag.includes("財富") ||
+                tag.includes("計") ||
+                tag.includes("股") ||
+                tag.includes("錢")
+            ){
+
+                targetCategory =
+                    "wealth";
+            }
+
+            else if(
+                tag.includes("靈感") ||
+                tag.includes("小說") ||
+                tag.includes("文")
+            ){
+
+                targetCategory =
+                    "inspiration";
+            }
+
+            else if(
+                tag.includes("幻影") ||
+                tag.includes("產生") ||
+                tag.includes("名片") ||
+                tag.includes("圖片") ||
+                tag.includes("製造") ||
+                tag.includes("ID")
+            ){
+
+                targetCategory =
+                    "mirage";
+            }
+
+            else if(
+                tag.includes("混沌") ||
+                tag.includes("失敗") ||
+                tag.includes("工事") ||
+                tag.includes("暫停")
+            ){
+
+                targetCategory =
+                    "chaos";
+            }
+
+            const catSymbols =
+                categories[targetCategory]
+                    .symbols;
+
+            const currentSymbol =
+                catSymbols[
+                    index %
+                    catSymbols.length
+                ];
+
+            /* ===== 只顯示檔名 ===== */
+
+            let cleanDisplayUrl = "";
+
+            try {
+
+                const urlObj = new URL(webUrl);
+
+                cleanDisplayUrl =
+                    urlObj.pathname
+                        .split('/')
+                        .pop();
+
+                if (!cleanDisplayUrl) {
+                    cleanDisplayUrl =
+                        urlObj.hostname;
+                }
+
+            } catch {
+
+                cleanDisplayUrl = webUrl;
+            }
+
+            categories[targetCategory]
+                .cards.push(`
+
+                <a
+                    class="card"
+                    href="${webUrl}"
+                    target="_blank"
+                >
+
+                    <div>
+
+                        <div class="card-header-row">
+
+                            <div class="card-title">
+                                ${title}
+                            </div>
+
+                            <div class="card-symbol">
+                                ${currentSymbol}
+                            </div>
+
+                        </div>
+
+                        <div class="card-file">
+                            ${cleanDisplayUrl}
+                        </div>
+
+                        <div class="card-desc">
+                            ${desc}
+                        </div>
+
+                    </div>
+
+                    <div class="card-footer">
+                        PORTAL →
+                    </div>
+
+                </a>
+
+            `);
+        });
+
+        let lobbyHTML = "";
+
+        let hasAnyCards = false;
+
+        Object.keys(categories)
+            .forEach(key=>{
+
+            const cat =
+                categories[key];
+
+            if(cat.cards.length > 0){
+
+                hasAnyCards = true;
+
+                lobbyHTML += `
+
+                    <div class="category-section">
+
+                        <h2 class="category-title">
+
+                            ${cat.title}
+
+                            <span>
+                                (${cat.cards.length})
+                            </span>
+
+                        </h2>
+
+                        <div class="grid">
+
+                            ${cat.cards.join("")}
+
+                        </div>
+
+                    </div>
+
+                `;
+            }
+        });
+
+        if(!hasAnyCards){
+
+            lobby.innerHTML = `
+
+                <div class="loading">
+
+                    試算表中目前沒有任何魔法連線 🔮
+
+                </div>
+
+            `;
+        }
+
+        else{
+
+            lobby.innerHTML =
+                lobbyHTML;
+        }
+
+    }catch(err){
+
+        console.error(err);
+
+        lobby.innerHTML = `
+
+            <div class="loading">
+
+                無法動態連結至星宿試算表 😭
+
+            </div>
+
+        `;
+    }
 }
 
-stickerInput.onchange=e=>{
-  let file=e.target.files[0];
-  if(!file)return;
+/* ===== 啟動 ===== */
 
-  let img=document.createElement("img");
-  img.src=URL.createObjectURL(file);
-  img.className="sticker";
+loadProjectsFromSheet();
 
-  img.style.left="50%";
-  img.style.top="50%";
-
-  let drag=false,ox,oy;
-
-  img.ontouchstart=e=>{
-    e.preventDefault();
-    drag=true;
-    ox=e.touches[0].clientX-img.offsetLeft;
-    oy=e.touches[0].clientY-img.offsetTop;
-  };
-
-  img.ontouchmove=e=>{
-    e.preventDefault();
-    if(!drag)return;
-    img.style.left=(e.touches[0].clientX-ox)+"px";
-    img.style.top=(e.touches[0].clientY-oy)+"px";
-  };
-
-  img.ontouchend=()=>drag=false;
-
-  captureArea.appendChild(img);
-};
-
-function toggleMenu(){menu.classList.toggle("active")}
-function clearAll(){data={};save();render()}
-
-function setOpacity(v){
-  alpha=v;
-  document.documentElement.style.setProperty('--alpha',v);
-  render();
-}
-
-function exportImage(){
-  html2canvas(captureArea).then(canvas=>{
-    let img=new Image();
-    img.src=canvas.toDataURL();
-    preview.innerHTML="";
-    preview.appendChild(img);
-  });
-}
-
-function exportICS(){
-  let text="BEGIN:VCALENDAR\nVERSION:2.0\n";
-
-  for(let key in data){
-    data[key].forEach(type=>{
-      if(type==="off") return;
-
-      let [y,m,d]=key.split("-");
-      let date=`${y}${String(+m+1).padStart(2,'0')}${String(d).padStart(2,'0')}`;
-
-      text+=`BEGIN:VEVENT
-DTSTART;VALUE=DATE:${date}
-SUMMARY:${{morning:"早",noon:"午",night:"晚",full:"全"}[type]}
-END:VEVENT\n`;
-    });
-  }
-
-  text+="END:VCALENDAR";
-
-  let blob=new Blob([text]);
-  let a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="schedule.ics";
-  a.click();
-}
-
-load();
-render();
 </script>
 
 </body>
