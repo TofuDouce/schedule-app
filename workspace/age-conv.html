@@ -15,6 +15,8 @@
             --text-sub: #64748b;      
             --border-color: #e2e8f0;
             --shadow: rgba(14, 165, 233, 0.1);
+            --age-bg: rgba(14, 165, 233, 0.05);
+            --age-text: #0284c7;
         }
         :root[data-theme="dark"] {
             --bg-color: #0f172a;
@@ -25,6 +27,8 @@
             --text-sub: #94a3b8;
             --border-color: #334155;
             --shadow: rgba(0, 0, 0, 0.3);
+            --age-bg: rgba(56, 189, 248, 0.1);
+            --age-text: #38bdf8;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -37,7 +41,6 @@
         }
 
         .container { width: 100%; max-width: 500px; flex: 1; }
-        
         .header { text-align: center; margin-bottom: 40px; }
         .header h1 { 
             font-size: 42px; 
@@ -59,7 +62,6 @@
 
         .input-group { margin-bottom: 20px; position: relative; }
         .label { display: block; font-size: 16px; font-weight: 800; margin-bottom: 10px; color: var(--text-main); letter-spacing: 1px; }
-        
         .input-wrapper { display: flex; align-items: center; background: var(--bg-color); border-radius: 15px; border: 2px solid var(--border-color); transition: 0.3s; }
         .input-wrapper:focus-within { border-color: var(--accent-primary); box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.15); }
 
@@ -73,6 +75,20 @@
 
         .swap-icon { text-align: center; font-size: 30px; margin: -10px 0 10px; color: var(--text-sub); opacity: 0.5; }
 
+        /* 新增：年齡顯示面板的樣式 */
+        .age-display-box {
+            background: var(--age-bg);
+            border: 1.5px dashed var(--accent-primary);
+            border-radius: 16px;
+            padding: 15px;
+            text-align: center;
+            margin: 25px 0 15px;
+            transition: 0.3s;
+        }
+        .age-title { font-size: 14px; font-weight: 800; color: var(--text-sub); margin-bottom: 4px; }
+        .age-result { font-size: 28px; font-weight: 900; color: var(--age-text); }
+        .age-result span { font-size: 18px; font-weight: 800; color: var(--text-main); margin-left: 2px; }
+
         .info-text { text-align: center; font-size: 14px; color: var(--text-sub); font-weight: 700; margin-top: 10px; }
 
         .theme-toggle { margin-top: 30px; background: none; border: 1.5px solid var(--border-color); color: var(--text-sub); padding: 10px 20px; border-radius: 30px; cursor: pointer; font-weight: 800; transition: 0.3s; }
@@ -85,7 +101,7 @@
 <div class="container">
     <div class="header">
         <h1>年份轉換器</h1>
-        <div style="background: rgba(14, 165, 233, 0.08); padding: 6px 16px; border-radius: 50px; display: inline-block; font-weight: 800; color: var(--text-sub);">西元 ⇄ 民國 快速對照</div>
+        <div style="background: rgba(14, 165, 233, 0.08); padding: 6px 16px; border-radius: 50px; display: inline-block; font-weight: 800; color: var(--text-sub);">西元 ⇄ 民國 ⇄ 年齡 快速對照</div>
     </div>
 
     <div class="card">
@@ -107,7 +123,12 @@
             </div>
         </div>
 
-        <div class="info-text">輸入其中一項，另一項會自動計算</div>
+        <div class="age-display-box" id="ageBox">
+            <div class="age-title" id="ageTitle">若此年為出生年，於今年 (2026) 滿：</div>
+            <div class="age-result" id="ageOutput">0 <span>歲</span></div>
+        </div>
+
+        <div class="info-text">輸入其中一項，另兩項會自動計算</div>
     </div>
 
     <center><button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙 切換模式</button></center>
@@ -116,13 +137,39 @@
 <footer class="footer">Made with ✨ by <span>中正小幫手</span></footer>
 
 <script>
+    // 獲取當前年份 (2026)
+    const currentYear = new Date().getFullYear();
+
+    // 更新年齡顯示的共用函式
+    function updateAge(birthYearAD) {
+        const ageOutput = document.getElementById('ageOutput');
+        const ageBox = document.getElementById('ageBox');
+        
+        if (birthYearAD) {
+            const birth = parseInt(birthYearAD);
+            const age = currentYear - birth;
+            
+            if (age >= 0) {
+                ageOutput.innerHTML = `${age} <span>歲</span>`;
+                ageBox.style.opacity = '1';
+            } else {
+                // 如果輸入的年份大於今年（未來年分）
+                ageOutput.innerHTML = `<span style="font-size:18px; color:var(--text-sub);">尚未出生</span>`;
+            }
+        } else {
+            ageOutput.innerHTML = `0 <span>歲</span>`;
+        }
+    }
+
     function convAD() {
         const ad = document.getElementById('adYear').value;
         const rocInput = document.getElementById('rocYear');
         if (ad) {
             rocInput.value = parseInt(ad) - 1911;
+            updateAge(ad); // 同步計算年齡
         } else {
             rocInput.value = '';
+            updateAge('');
         }
     }
 
@@ -130,9 +177,12 @@
         const roc = document.getElementById('rocYear').value;
         const adInput = document.getElementById('adYear');
         if (roc) {
-            adInput.value = parseInt(roc) + 1911;
+            const calculatedAD = parseInt(roc) + 1911;
+            adInput.value = calculatedAD;
+            updateAge(calculatedAD); // 同步計算年齡
         } else {
             adInput.value = '';
+            updateAge('');
         }
     }
 
@@ -145,7 +195,8 @@
 
     // 預設填入今年
     window.onload = () => {
-        const currentYear = new Date().getFullYear();
+        // 動態將網頁提示標題修正為當前年度
+        document.getElementById('ageTitle').innerText = `若此年為出生年，於今年 (${currentYear}) 滿：`;
         document.getElementById('adYear').value = currentYear;
         convAD();
     };
