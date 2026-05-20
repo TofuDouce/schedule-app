@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>命運之書｜AI 小說生成器</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"PingFang TC","Noto Sans TC",sans-serif;
+}
+
+body{
+    background:
+    radial-gradient(circle at top, rgba(120,80,255,.25), transparent 40%),
+    linear-gradient(180deg,#07070d,#0f1020,#090912);
+
+    color:#f5f2ff;
+    min-height:100vh;
+    overflow-x:hidden;
+}
+
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+
+    background-image:
+    linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
+
+    background-size:40px 40px;
+    pointer-events:none;
+}
+
+.container{
+    width:min(1200px,92%);
+    margin:auto;
+    padding:40px 0 100px;
+}
+
+.title{
+    text-align:center;
+    margin-bottom:40px;
+}
+
+.title h1{
+    font-size:56px;
+    letter-spacing:6px;
+
+    background:linear-gradient(
+        90deg,
+        #fff,
+        #c6b3ff,
+        #8ba7ff
+    );
+
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+
+    margin-bottom:12px;
+}
+
+.title p{
+    color:#cfc9e8;
+    line-height:1.8;
+}
+
+.panel{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:28px;
+}
+
+.card{
+    background:rgba(255,255,255,.05);
+
+    border:1px solid rgba(255,255,255,.08);
+
+    border-radius:28px;
+
+    padding:28px;
+
+    backdrop-filter:blur(14px);
+
+    box-shadow:0 10px 40px rgba(0,0,0,.35);
+}
+
+.card h2{
+    margin-bottom:20px;
+    font-size:24px;
+    color:#fff;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:16px;
+}
+
+label{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+
+    font-size:14px;
+    color:#d5d0eb;
+}
+
+select,
+input,
+textarea{
+
+    background:rgba(255,255,255,.08);
+
+    border:1px solid rgba(255,255,255,.08);
+
+    color:white;
+
+    padding:14px;
+
+    border-radius:16px;
+
+    outline:none;
+}
+
+textarea{
+    min-height:120px;
+    resize:vertical;
+}
+
+button{
+
+    width:100%;
+
+    margin-top:20px;
+
+    border:none;
+
+    border-radius:20px;
+
+    padding:18px;
+
+    font-size:18px;
+
+    cursor:pointer;
+
+    color:white;
+
+    background:linear-gradient(
+        90deg,
+        #745dff,
+        #9a6dff,
+        #5a8cff
+    );
+
+    transition:.3s;
+
+    box-shadow:0 10px 30px rgba(114,94,255,.35);
+}
+
+button:hover{
+    transform:translateY(-2px) scale(1.01);
+}
+
+.output{
+
+    margin-top:36px;
+
+    background:rgba(255,255,255,.04);
+
+    border:1px solid rgba(255,255,255,.08);
+
+    border-radius:30px;
+
+    padding:34px;
+
+    line-height:2;
+
+    white-space:pre-wrap;
+
+    min-height:500px;
+
+    font-size:17px;
+
+    color:#ece8ff;
+}
+
+.typing::after{
+    content:"▋";
+    animation:blink .8s infinite;
+}
+
+@keyframes blink{
+    50%{
+        opacity:0;
+    }
+}
+
+.glow{
+    position:fixed;
+
+    width:300px;
+    height:300px;
+
+    background:rgba(123,88,255,.2);
+
+    border-radius:50%;
+
+    filter:blur(100px);
+
+    z-index:-1;
+}
+
+.glow1{
+    top:-100px;
+    left:-80px;
+}
+
+.glow2{
+    bottom:-120px;
+    right:-100px;
+}
+
+.footer{
+    margin-top:24px;
+    text-align:center;
+    color:#9f97bf;
+    font-size:14px;
+}
+
+@media(max-width:900px){
+
+    .panel{
+        grid-template-columns:1fr;
+    }
+
+    .title h1{
+        font-size:40px;
+    }
+
+    .grid{
+        grid-template-columns:1fr;
+    }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="glow glow1"></div>
+<div class="glow glow2"></div>
+
+<div class="container">
+
+    <div class="title">
+        <h1>命運之書</h1>
+
+        <p>
+            AI 小說大綱生成器｜古典敘事 × 宿命感 × 情感史詩
+        </p>
+    </div>
+
+    <div class="panel">
+
+        <div class="card">
+
+            <h2>世界設定</h2>
+
+            <div class="grid">
+
+                <label>
+                    小說風格
+
+                    <select id="style">
+                        <option>古典</option>
+                        <option>現代</option>
+                        <option>東方仙俠</option>
+                        <option>日式物語</option>
+                        <option>西方奇幻</option>
+                        <option>蒸氣龐克</option>
+                        <option>黑暗哥德</option>
+                        <option>宮廷權謀</option>
+                    </select>
+                </label>
+
+                <label>
+                    感情類型
+
+                    <select id="love">
+                        <option>虐戀</option>
+                        <option>甜虐交織</option>
+                        <option>宿命感</option>
+                        <option>相愛相殺</option>
+                        <option>禁忌戀</option>
+                        <option>破鏡重圓</option>
+                        <option>主僕戀</option>
+                        <option>敵國戀人</option>
+                    </select>
+                </label>
+
+                <label>
+                    結局
+
+                    <select id="ending">
+                        <option>HE 圓滿</option>
+                        <option>BE 悲劇</option>
+                        <option>雙死結局</option>
+                        <option>轉世重逢</option>
+                        <option>開放式結局</option>
+                    </select>
+                </label>
+
+                <label>
+                    敘事風格
+
+                    <select id="tone">
+                        <option>古典文學</option>
+                        <option>史詩感</option>
+                        <option>黑暗壓抑</option>
+                        <option>電影感</option>
+                        <option>詩意敘述</option>
+                    </select>
+                </label>
+
+                <label>
+                    主角身份
+
+                    <select id="hero">
+                        <option>王子</option>
+                        <option>流浪劍士</option>
+                        <option>魔法師</option>
+                        <option>狐妖</option>
+                        <option>神官</option>
+                        <option>騎士</option>
+                        <option>亡國公主</option>
+                    </select>
+                </label>
+
+                <label>
+                    另一位主角
+
+                    <select id="heroine">
+                        <option>刺客</option>
+                        <option>皇女</option>
+                        <option>龍族後裔</option>
+                        <option>醫者</option>
+                        <option>惡魔</option>
+                        <option>精靈</option>
+                        <option>敵國將軍</option>
+                    </select>
+                </label>
+
+            </div>
+
+            <label style="margin-top:20px;">
+                額外關鍵字
+
+                <textarea
+                    id="keywords"
+                    placeholder="例如：銀白長髮、命運詛咒、王城陷落、雪夜、龍焰"
+                ></textarea>
+            </label>
+
+            <button onclick="generateNovel()">
+                ✦ 生成 2000 字小說大綱
+            </button>
+
+        </div>
+
+        <div class="card">
+
+            <h2>生成結果</h2>
+
+            <div id="output" class="output typing">
+命運尚未被書寫……
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="footer">
+        命運之書｜高級 AI 小說生成器
+    </div>
+
+</div>
+
+<script>
+
+function random(arr){
+    return arr[Math.floor(Math.random()*arr.length)];
+}
+
+function generateNovel(){
+
+    const style =
+        document.getElementById("style").value;
+
+    const love =
+        document.getElementById("love").value;
+
+    const ending =
+        document.getElementById("ending").value;
+
+    const tone =
+        document.getElementById("tone").value;
+
+    const hero =
+        document.getElementById("hero").value;
+
+    const heroine =
+        document.getElementById("heroine").value;
+
+    const keywords =
+        document.getElementById("keywords").value;
+
+    const kingdoms = [
+
+        "被冰雪覆蓋的北境王朝",
+
+        "漂浮於天空的古老帝國",
+
+        "以龍焰維持文明的聖都",
+
+        "早已腐朽卻仍歌舞昇平的王城",
+
+        "被神遺棄的永夜國度"
+
+    ];
+
+    const conflicts = [
+
+        "王權鬥爭",
+
+        "古神甦醒",
+
+        "國家戰爭",
+
+        "禁忌詛咒",
+
+        "血脈秘密",
+
+        "世界崩壞"
+
+    ];
+
+    const emotional = [
+
+        "他們明明彼此深愛，卻始終站在命運兩端。",
+
+        "兩人的感情像雪夜中的火焰，越熾烈便越接近毀滅。",
+
+        "他們在長久的戰爭中逐漸理解彼此，也逐漸失去彼此。",
+
+        "愛意在沉默與犧牲之中緩慢滋長。",
+
+        "那份感情從一開始便注定無法被世人允許。"
+
+    ];
+
+    const climax = [
+
+        "王城在火焰中崩塌",
+
+        "古龍從深淵甦醒",
+
+        "整個帝國陷入暴雪",
+
+        "神明降下最後的審判",
+
+        "黑海吞沒了大陸"
+
+    ];
+
+    let outline = `
+
+【小說類型】
+${style} × ${love} × ${ending}
+
+【整體氛圍】
+本作採用「${tone}」風格進行敘述，
+整體帶有濃厚的宿命感與長篇史詩氣息。
+
+故事的文字將偏向細膩而沉重，
+情感不會被直接宣洩，
+而是隱藏在人物的沉默、
+目光與選擇之中。
+
+【世界觀設定】
+故事發生於${random(kingdoms)}。
+
+這個世界長年被「${random(conflicts)}」所籠罩。
+
+舊時代的秩序早已腐朽，
+貴族、神殿與軍團彼此牽制，
+而人民則在動盪與飢荒中艱難生存。
+
+傳說中，
+若古老封印徹底崩潰，
+世界將重新回到黑暗紀元。
+
+在這樣的時代裡，
+主角是一名${hero}，
+而另一位重要角色則是${heroine}。
+
+【主角設定】
+主角從小便背負著無法逃避的命運。
+
+他外表冷靜克制，
+實際上內心始終被孤獨與責任侵蝕。
+
+他明知自己的選擇可能導致無數人死亡，
+卻仍必須一步步走向早已預定的道路。
+
+另一位主角則與他截然不同。
+
+對方看似冷漠甚至危險，
+卻在某些時刻展現出近乎溫柔的脆弱。
+
+兩人最初彼此敵視，
+甚至數次刀劍相向，
+但在一次次生死之中，
+他們開始無法忽視彼此的存在。
+
+【感情主線】
+${random(emotional)}
+
+故事前期，
+兩人因立場不同而互相利用。
+
+主角試圖從對方口中取得關於世界真相的線索，
+而對方則希望藉由主角接近王城核心。
+
+然而，
+在共同經歷戰爭、
+逃亡與背叛後，
+他們逐漸建立起比信任更加危險的情感。
+
+尤其是在一場雪夜中的長談後，
+主角第一次意識到，
+自己真正害怕的並不是死亡，
+而是失去對方。
+
+但感情越深，
+命運的枷鎖便越沉重。
+
+【中期轉折】
+故事中段，
+主角意外得知：
+
+真正導致世界崩壞的根源，
+其實與自己的血脈有關。
+
+他一直以來所追尋的真相，
+正是毀滅世界的鑰匙。
+
+與此同時，
+另一位主角也隱瞞了最重要的秘密——
+
+對方其實早已知道最後的結局。
+
+為了阻止災厄降臨，
+兩人開始走向不同道路。
+
+一人選擇犧牲自己，
+另一人則選擇與命運對抗。
+
+兩人的裂痕也因此逐漸擴大。
+
+【高潮】
+最終篇章中，
+${random(climax)}。
+
+戰火覆蓋整個世界，
+王城化為廢墟，
+舊神與人類的戰爭全面爆發。
+
+主角終於明白，
+所謂命運並不是神明的安排，
+而是人們在恐懼之中不斷重複的選擇。
+
+於是，
+他決定親手終結一切。
+
+在最後決戰裡，
+兩位主角重新相遇。
+
+他們早已遍體鱗傷，
+也早已無法回到最初。
+
+但即使如此，
+他們仍選擇站在彼此身旁。
+
+【結局】
+本作採用「${ending}」作為故事收束。
+
+最後，
+世界雖然付出了巨大代價，
+卻終於迎來改變。
+
+曾經高高在上的王座崩毀，
+新的時代在灰燼中誕生。
+
+至於兩位主角——
+
+他們的名字或許終將被歷史遺忘，
+但那份曾在黑暗中燃燒過的感情，
+卻會像傳說一樣，
+被後世長久流傳。
+
+【額外元素】
+${keywords || "無"}
+
+【可延伸章節方向】
+
+1. 王城陰謀篇
+2. 北境戰爭篇
+3. 古神復甦篇
+4. 情感決裂篇
+5. 最終犧牲篇
+6. 新世界篇
+
+`;
+
+    typeWriter(outline);
+}
+
+function typeWriter(text){
+
+    const output =
+        document.getElementById("output");
+
+    output.innerHTML = "";
+
+    output.classList.add("typing");
+
+    let i = 0;
+
+    const timer = setInterval(()=>{
+
+        output.innerHTML += text.charAt(i);
+
+        i++;
+
+        if(i >= text.length){
+
+            clearInterval(timer);
+
+            output.classList.remove("typing");
+        }
+
+    },5);
+
+}
+
+</script>
+
+</body>
+</html>
