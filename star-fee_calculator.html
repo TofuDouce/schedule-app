@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stellar Ledger ✦ 交易成本占星儀</title>
+
+    <meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+    <meta name="googlebot" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+    <meta name="bingbot" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: font-size 0.2s ease, transform 0.4s ease, box-shadow 0.4s ease, background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        :root {
+            --bg1: #171320;
+            --bg2: #241a35;
+            --bg3: #31244d;
+            --gold: #d8bf8a;
+            --text: #f4efff;
+            --card: rgba(29, 24, 44, .72);
+            --gold-low: rgba(216, 191, 138, 0.15);
+            
+            /* 文字大小基礎設定級距 */
+            --base-font-size: 16px;
+        }
+
+        body {
+            min-height: 100vh;
+            color: var(--text);
+            font-family: "Cormorant Garamond", serif;
+            background: radial-gradient(circle at top, rgba(180,150,255,.14), transparent 40%),
+                        linear-gradient(180deg, var(--bg1), var(--bg2), var(--bg3));
+            padding: 28px;
+            position: relative;
+            font-size: var(--base-font-size);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 星空背景 */
+        .stars {
+            position: fixed;
+            inset: 0;
+            overflow: hidden;
+            z-index: -3;
+            pointer-events: none;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            opacity: .7;
+            animation: twinkle 4s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: .15; transform: scale(.7); }
+            50% { opacity: 1; transform: scale(1.4); }
+        }
+
+        /* 魔法古典外框 */
+        .frame {
+            position: fixed;
+            inset: 14px;
+            border: 1.5px solid rgba(216,191,138,.48);
+            border-radius: 38px;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        .frame::before {
+            content: "";
+            position: absolute;
+            inset: 12px;
+            border: 1px solid rgba(216,191,138,.18);
+            border-radius: 30px;
+        }
+
+        /* 四角裝飾 */
+        .corner {
+            position: fixed;
+            width: 120px;
+            height: 120px;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .corner::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border: 1.5px solid rgba(216,191,138,.45);
+            border-radius: 50%;
+        }
+
+        .corner::after {
+            content: "✦";
+            position: absolute;
+            color: rgba(216,191,138,.85);
+            font-size: 26px;
+        }
+
+        .tl { top: 18px; left: 18px; }
+        .tl::before { clip-path: polygon(0 0, 100% 0, 0 100%); }
+        .tl::after { top: 18px; left: 18px; }
+
+        .tr { top: 18px; right: 18px; }
+        .tr::before { clip-path: polygon(0 0, 100% 0, 100% 100%); }
+        .tr::after { top: 18px; right: 18px; }
+
+        .bl { bottom: 18px; left: 18px; }
+        .bl::before { clip-path: polygon(0 0, 0 100%, 100% 100%); }
+        .bl::after { bottom: 18px; left: 18px; }
+
+        .br { bottom: 18px; right: 18px; }
+        .br::before { clip-path: polygon(100% 0, 0 100%, 100% 100%); }
+        .br::after { bottom: 18px; right: 18px; }
+
+        /* 主內容區容器 */
+        .container {
+            width: 100%;
+            max-width: 960px;
+            margin: auto;
+            position: relative;
+            z-index: 2;
+            padding: 20px 0;
+        }
+
+        /* 文字大小控制列 */
+        .font-control {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-bottom: -10px;
+            position: relative;
+            z-index: 1010;
+        }
+
+        .font-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(216, 191, 138, 0.3);
+            color: var(--text);
+            padding: 6px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: "Cinzel", serif;
+            font-size: 14px;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .font-btn:hover {
+            background: rgba(216, 191, 138, 0.2);
+            color: var(--gold);
+            border-color: var(--gold);
+        }
+
+        .font-btn.active {
+            background: var(--gold);
+            color: var(--bg1);
+            font-weight: bold;
+            border-color: var(--gold);
+        }
+
+        /* 懸浮月亮 */
+        .moon {
+            text-align: center;
+            margin-top: 10px;
+            position: relative;
+        }
+
+        .moon::before {
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: -50px;
+            width: 1px;
+            height: 50px;
+            background: rgba(216,191,138,.35);
+        }
+
+        .moon-symbol {
+            font-size: 42px;
+            color: var(--gold);
+            text-shadow: 0 0 18px rgba(216,191,138,.25);
+            animation: floatMoon 4s ease-in-out infinite;
+        }
+
+        @keyframes floatMoon {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(6px); }
+        }
+
+        /* 標題與核心主視覺 */
+        .title-block {
+            text-align: center;
+            margin-top: 15px;
+            margin-bottom: 35px;
+        }
+
+        .main-title {
+            font-family: "Cinzel", serif;
+            font-weight: 700;
+            letter-spacing: 4px;
+            line-height: 1.2;
+            font-size: clamp(32px, 6vw, 54px);
+            background: linear-gradient(180deg, #ffffff 0%, #f1e8ff 40%, #d8bf8a 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+        }
+
+        /* 雙欄響應式布局 */
+        .layout-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+
+        @media (min-width: 900px) {
+            .layout-grid {
+                flex-direction: row;
+                align-items: stretch;
+            }
+        }
+
+        /* 核心算盤卡片架構 */
+        .main-calculator {
+            flex: 1;
+            background: var(--card);
+            border: 1px solid rgba(255,255,255,.06);
+            border-radius: 34px;
+            padding: 32px;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: 0 20px 50px rgba(0,0,0,.3);
+        }
+
+        /* 側邊級距對照表卡片 */
+        .sidebar-panel {
+            width: 100%;
+            background: var(--card);
+            border: 1px solid rgba(255,255,255,.06);
+            border-radius: 34px;
+            padding: 28px;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: 0 20px 50px rgba(0,0,0,.3);
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (min-width: 900px) {
+            .sidebar-panel {
+                width: 320px;
+            }
+        }
+
+        /*古典表單元素*/
+        .form-label {
+            display: block;
+            font-size: calc(var(--base-font-size) * 0.9);
+            color: #bba9e8;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        /* 買賣切換按鈕古典化 */
+        .trade-toggle-container {
+            display: flex;
+            gap: 14px;
+        }
+
+        .trade-label {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(216, 191, 138, 0.2);
+            padding: 12px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: calc(var(--base-font-size) * 1.05);
+        }
+
+        .trade-label input[type="radio"] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border: 1px solid var(--gold);
+            border-radius: 50%;
+            outline: none;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .trade-label input[type="radio"]:checked::after {
+            content: "";
+            width: 8px;
+            height: 8px;
+            background-color: var(--gold);
+            border-radius: 50%;
+            display: block;
+        }
+
+        /* 買進選中狀態 */
+        .trade-label.buy-type { color: #8ae0be; }
+        .trade-label.buy-type:has(input:checked) {
+            background: rgba(138, 224, 190, 0.12);
+            border-color: #8ae0be;
+            box-shadow: 0 0 15px rgba(138, 224, 190, 0.1);
+        }
+
+        /* 賣出選中狀態 */
+        .trade-label.sell-type { color: #f29494; }
+        .trade-label.sell-type:has(input:checked) {
+            background: rgba(242, 148, 148, 0.12);
+            border-color: #f29494;
+            box-shadow: 0 0 15px rgba(242, 148, 148, 0.1);
+        }
+
+        /* 數字輸入框古典化 */
+        .input-wrapper {
+            position: relative;
+        }
+
+        .currency-symbol {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gold);
+            font-family: "Cinzel", serif;
+            font-size: calc(var(--base-font-size) * 1.1);
+        }
+
+        .classic-input {
+            width: 100%;
+            background: rgba(15, 11, 25, 0.5);
+            border: 1px solid rgba(216, 191, 138, 0.25);
+            border-radius: 16px;
+            padding: 12px 16px 12px 32px;
+            color: #ffffff;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: 600;
+            font-size: calc(var(--base-font-size) * 1.1);
+        }
+
+        .classic-input:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 12px rgba(216, 191, 138, 0.2);
+        }
+
+        /* 微調摺疊選單 */
+        .classic-details {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 12px;
+        }
+
+        .classic-summary {
+            font-size: calc(var(--base-font-size) * 0.85);
+            color: #a897c9;
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .arrow-icon {
+            font-size: 10px;
+            transition: transform 0.3s;
+        }
+
+        .classic-details[open] .arrow-icon {
+            transform: rotate(180deg);
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: 140fb4a5 1fr;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-t: 1px dashed rgba(216, 191, 138, 0.15);
+        }
+
+        .sub-input {
+            width: 100%;
+            background: rgba(15, 11, 25, 0.7);
+            border: 1px solid rgba(216, 191, 138, 0.2);
+            border-radius: 10px;
+            padding: 8px 10px;
+            color: white;
+            font-size: calc(var(--base-font-size) * 0.9);
+            font-family: monospace;
+        }
+
+        .sub-input:focus {
+            outline: none;
+            border-color: var(--gold);
+        }
+
+        /* 分隔線 */
+        .classic-hr {
+            margin: 24px 0;
+            border: none;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(216,191,138,.4), transparent);
+        }
+
+        /* 結算報告面板 */
+        .report-panel {
+            background: rgba(15, 11, 25, 0.4);
+            border: 1px solid rgba(216, 191, 138, 0.15);
+            border-radius: 20px;
+            padding: 20px;
+        }
+
+        .report-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: calc(var(--base-font-size) * 0.95);
+            color: #d6c8f5;
+        }
+
+        .report-row:last-of-type {
+            margin-bottom: 0;
+        }
+
+        .val-style {
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: 600;
+        }
+
+        .total-row {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-t: 1px solid rgba(216, 191, 138, 0.25);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .total-label {
+            font-family: "Cinzel", serif;
+            font-weight: 600;
+            font-size: calc(var(--base-font-size) * 1.1);
+        }
+
+        .total-val {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: calc(var(--base-font-size) * 1.45);
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(216,191,138,0.2);
+        }
+
+        /* 顏色語意 */
+        .color-gold { color: var(--gold); }
+        .color-rose { color: #f29494; }
+        .color-mint { color: #8ae0be; }
+        .color-text { color: var(--text); }
+
+        /* 隱藏元素屬性 */
+        .hidden-row {
+            display: none !important;
+        }
+
+        /* 古典側邊表格設定 */
+        .sidebar-title {
+            font-family: "Cinzel", serif;
+            font-size: calc(var(--base-font-size) * 1.15);
+            color: var(--gold);
+            text-align: center;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .sidebar-desc {
+            font-size: 13px;
+            color: #a897c9;
+            text-align: center;
+            line-height: 1.5;
+            margin-bottom: 16px;
+            font-style: italic;
+        }
+
+        .table-container {
+            border: 1px solid rgba(216, 191, 138, 0.15);
+            border-radius: 16px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.15);
+        }
+
+        .classic-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .classic-table th {
+            background: rgba(216, 191, 138, 0.08);
+            font-size: 13px;
+            color: #bba9e8;
+            padding: 10px;
+            font-weight: 500;
+            border-bottom: 1px solid rgba(216, 191, 138, 0.15);
+        }
+
+        .classic-table td {
+            padding: 10px;
+            font-size: 14px;
+            font-family: 'Courier New', Courier, monospace;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .classic-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .classic-table tr:hover td {
+            background: rgba(216, 191, 138, 0.05);
+        }
+
+        .table-note {
+            margin-top: 12px;
+            font-size: 11px;
+            color: #7a6b99;
+            text-align: center;
+            line-height: 1.4;
+        }
+
+        /* 頁尾 */
+        .footer {
+            text-align: center;
+            margin-top: 35px;
+        }
+
+        .footer-line {
+            width: 100px;
+            height: 1px;
+            margin: auto;
+            margin-bottom: 14px;
+            background: linear-gradient(90deg, transparent, rgba(216,191,138,.5), transparent);
+        }
+
+        .footer-inner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            font-family: "Cinzel", serif;
+            font-size: 20px;
+            letter-spacing: 2px;
+            color: #eadfff;
+        }
+
+        .creator {
+            margin-top: 6px;
+            font-size: 13px;
+            color: #a897c9;
+            letter-spacing: 1px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+<div class="frame"></div>
+<div class="corner tl"></div>
+<div class="corner tr"></div>
+<div class="corner bl"></div>
+<div class="corner br"></div>
+
+<div class="container">
+    <div class="font-control">
+        <button class="font-btn" onclick="changeFontSize('small', this)">A -</button>
+        <button class="font-btn active" onclick="changeFontSize('medium', this)">A</button>
+        <button class="font-btn" onclick="changeFontSize('large', this)">A +</button>
+    </div>
+
+    <div class="moon">
+        <div class="moon-symbol">☾</div>
+    </div>
+
+    <div class="title-block">
+        <h1 class="main-title">Stellar Ledger</h1>
+    </div>
+
+    <div class="layout-grid">
+        
+        <div class="main-calculator">
+            <div class="form-group">
+                <label class="form-label">交易類別 ✦</label>
+                <div class="trade-toggle-container">
+                    <label class="trade-label buy-type">
+                        <input type="radio" name="tradeType" value="buy" checked onchange="calculate()">
+                        <span>買進</span>
+                    </label>
+                    <label class="trade-label sell-type">
+                        <input type="radio" name="tradeType" value="sell" onchange="calculate()">
+                        <span>賣出</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="amount" class="form-label">成交金額 (價金) ✦</label>
+                <div class="input-wrapper">
+                    <span class="currency-symbol">$</span>
+                    <input type="number" id="amount" placeholder="請輸入成交金額" class="classic-input" oninput="calculate()">
+                </div>
+            </div>
+
+            <details class="classic-details">
+                <summary class="classic-summary">
+                    <span>⚙️ 券商參數微調 (預設 6 折 / 低消 1 元)</span>
+                    <span class="arrow-icon">▼</span>
+                </summary>
+                <div class="details-grid">
+                    <div>
+                        <label for="discount" class="form-label" style="font-size:12px;">手續費折扣 (折)</label>
+                        <input type="number" id="discount" value="6" step="0.1" min="0" max="10" class="sub-input" oninput="calculate()">
+                    </div>
+                    <div>
+                        <label for="minFee" class="form-label" style="font-size:12px;">最低手續費 (元)</label>
+                        <input type="number" id="minFee" value="1" min="0" class="sub-input" oninput="calculate()">
+                    </div>
+                </div>
+            </details>
+
+            <hr class="classic-hr">
+
+            <div class="report-panel">
+                <div class="report-row">
+                    <span>原始成交價金：</span>
+                    <span id="resAmount" class="val-style color-text">$0</span>
+                </div>
+                <div class="report-row">
+                    <span>券商手續費：</span>
+                    <span id="resFee" class="val-style color-gold">$0</span>
+                </div>
+                <div id="taxRow" class="report-row hidden-row">
+                    <span>證券交易稅 (0.3%)：</span>
+                    <span id="resTax" class="val-style color-rose">$0</span>
+                </div>
+                
+                <div class="total-row">
+                    <span id="totalLabel" class="total-label color-text">總計應付款項：</span>
+                    <span id="resTotal" class="total-val color-mint">$0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-panel">
+            <h3 class="sidebar-title">📋 手續費級距表</h3>
+            <p class="sidebar-desc">實測費率（6 折 / 低消 1 元）<br>之無條件捨去區間值</p>
+            
+            <div class="table-container">
+                <table class="classic-table">
+                    <thead>
+                        <tr>
+                            <th style="text-align: center; width: 80px;">手續費</th>
+                            <th>成交價金區間</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="text-align: center; font-weight: bold; color: #8ae0be; background: rgba(138,224,190,0.04);">1 元</td>
+                            <td style="color: #eadfff;">1 ~ 2,339 元</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-weight: bold; color: var(--gold); background: rgba(216,191,138,0.04);">2 元</td>
+                            <td style="color: #ffffff; font-weight: 600; background: rgba(255,255,255,0.02);">2,340 ~ 3,508 元</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-weight: bold; color: var(--gold); background: rgba(216,191,138,0.04);">3 元</td>
+                            <td style="color: #eadfff;">3,509 ~ 4,678 元</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-weight: bold; color: var(--gold); background: rgba(216,191,138,0.04);">4 元</td>
+                            <td style="color: #eadfff;">4,679 ~ 5,847 元</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-weight: bold; color: var(--gold); background: rgba(216,191,138,0.04);">5 元</td>
+                            <td style="color: #eadfff;">5,848 ~ 7,017 元</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-weight: bold; color: var(--gold); background: rgba(216,191,138,0.04);">6 元</td>
+                            <td style="color: #eadfff;">7,018 ~ 8,187 元</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-weight: bold; color: #9dafff; background: rgba(157,175,255,0.04);">7 元</td>
+                            <td style="color: #eadfff;">8,188 ~ 9,356 元</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="table-note">
+                ※ 註：每多約 1,170 元手續費遞增 1 元。
+            </div>
+        </div>
+
+    </div>
+
+    <div class="footer">
+        <div class="footer-line"></div>
+        <div class="footer-inner">
+            <span>✦ Lazy Dream ✦</span>
+        </div>
+        <div class="creator">Crafted with moonlight & ledger magic</div>
+    </div>
+</div>
+
+<script>
+/* ===== 星空隨機位置背景生成 ===== */
+const stars = document.getElementById("stars");
+for (let i = 0; i < 140; i++) {
+    const star = document.createElement("div");
+    star.className = "star";
+    star.style.left = Math.random() * 100 + "%";
+    star.style.top = Math.random() * 100 + "%";
+    star.style.animationDelay = Math.random() * 4 + "s";
+    stars.appendChild(star);
+}
+
+/* ===== 魔法字體級距縮放切換 ===== */
+function changeFontSize(size, btnElement) {
+    const root = document.documentElement;
+    document.querySelectorAll('.font-btn').forEach(btn => btn.classList.remove('active'));
+    btnElement.classList.add('active');
+    
+    if (size === 'small') {
+        root.style.setProperty('--base-font-size', '13px');
+    } else if (size === 'medium') {
+        root.style.setProperty('--base-font-size', '16px');
+    } else if (size === 'large') {
+        root.style.setProperty('--base-font-size', '20px');
+    }
+}
+
+/* ===== 核心計算法則：完美契合對帳單扣款邏輯 ===== */
+function calculate() {
+    const amount = parseFloat(document.getElementById('amount').value) || 0;
+    const discount = parseFloat(document.getElementById('discount').value) || 6;
+    const minFee = parseFloat(document.getElementById('minFee').value) || 1;
+    const tradeType = document.querySelector('input[name="tradeType"]:checked').value;
+
+    // 元大扣款邏輯：原始手續費打折後，直接執行無條件捨去小數點 (Math.floor)
+    let fee = Math.floor(amount * 0.001425 * (discount / 10));
+    
+    // 最低手續費限制 (低消保障保護機制)
+    if (amount > 0 && fee < minFee) {
+        fee = minFee;
+    }
+
+    // 計算證券交易稅 (賣出收 0.3%，一樣採用無條件捨去法)
+    let tax = 0;
+    const taxRow = document.getElementById('taxRow');
+    const totalLabel = document.getElementById('totalLabel');
+    const resTotal = document.getElementById('resTotal');
+
+    if (tradeType === 'sell') {
+        tax = Math.floor(amount * 0.003);
+        taxRow.classList.remove('hidden-row');
+        totalLabel.innerText = '總計應收款項 ✦';
+        totalLabel.className = 'total-label color-mint';
+        resTotal.className = 'total-val color-mint';
+    } else {
+        taxRow.classList.add('hidden-row');
+        totalLabel.innerText = '總計應付款項 ✦';
+        totalLabel.className = 'total-label color-text';
+        resTotal.className = 'total-val color-gold';
+    }
+
+    // 計算最後的總和：買進要加成本，賣出要扣除成本
+    const total = (tradeType === 'buy') ? (amount + fee) : (amount - fee - tax);
+
+    // 將數值格式化回填至前端網頁上
+    document.getElementById('resAmount').innerText = '$' + amount.toLocaleString();
+    document.getElementById('resFee').innerText = '$' + fee.toLocaleString();
+    document.getElementById('resTax').innerText = '$' + tax.toLocaleString();
+    resTotal.innerText = '$' + total.toLocaleString();
+}
+</script>
+
+</body>
+</html>
