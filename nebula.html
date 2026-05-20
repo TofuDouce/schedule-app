@@ -43,7 +43,6 @@
             font-size: var(--base-font-size);
         }
 
-        /* 星空背景 */
         .stars {
             position: fixed;
             inset: 0;
@@ -66,7 +65,6 @@
             50% { opacity: 1; transform: scale(1.4); }
         }
 
-        /* 魔法古典外框 */
         .frame {
             position: fixed;
             inset: 10px;
@@ -84,7 +82,6 @@
             border-radius: 20px;
         }
 
-        /* 四角裝飾 */
         .corner {
             position: fixed;
             width: 90px;
@@ -131,7 +128,6 @@
             z-index: 2;
         }
 
-        /* 文字大小控制列 */
         .font-control {
             display: flex;
             justify-content: flex-end;
@@ -151,7 +147,6 @@
             font-family: "Cinzel", serif;
             font-size: 13px;
             backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
         }
 
         .font-btn:hover {
@@ -167,7 +162,6 @@
             border-color: var(--gold);
         }
 
-        /* 懸浮月亮 */
         .moon {
             text-align: center;
             margin-top: 5px;
@@ -211,10 +205,15 @@
             background: linear-gradient(180deg, #ffffff 0%, #f1e8ff 40%, #d8bf8a 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            position: relative;
         }
 
-        /* 🔮 大分類區塊美化 */
+        .subtitle {
+            margin-top: 12px;
+            color: #cfc1f7;
+            font-size: 18px;
+            letter-spacing: 1px;
+        }
+
         .category-section {
             margin-bottom: 40px;
             background: rgba(255, 255, 255, 0.02);
@@ -241,7 +240,6 @@
             color: #bba9e8;
         }
 
-        /* 緊湊型網格排版 */
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
@@ -249,12 +247,11 @@
         }
 
         .card {
-            background: var(--card);
+            background: rgba(29, 24, 44, .72);
             border: 1px solid rgba(255,255,255,.06);
             border-radius: 18px;
             padding: 14px 16px;
             backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
             text-decoration: none;
             color: white;
             position: relative;
@@ -269,14 +266,6 @@
             transform: translateY(-4px) scale(1.02);
             box-shadow: 0 10px 25px rgba(0,0,0,.4);
             border-color: rgba(216, 191, 138, 0.4);
-        }
-
-        .card::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(circle at top, rgba(255,255,255,.04), transparent 60%);
-            pointer-events: none;
         }
 
         .card-header-row {
@@ -304,7 +293,6 @@
         .card-file {
             color: #bba9e8;
             font-size: calc(var(--base-font-size) * 0.78);
-            letter-spacing: 0.5px;
             margin-bottom: 8px;
             opacity: .75;
             word-break: break-all;
@@ -325,12 +313,7 @@
         .card-footer {
             color: #b89ef0;
             font-size: calc(var(--base-font-size) * 0.75);
-            letter-spacing: 1px;
             text-align: right;
-        }
-
-        .card:hover .card-footer {
-            color: var(--gold);
         }
 
         .footer {
@@ -370,7 +353,6 @@
             margin-top: 8px;
             font-size: 14px;
             color: #a897c9;
-            letter-spacing: 1px;
             font-style: italic;
         }
 
@@ -382,13 +364,9 @@
         }
 
         @media(max-width: 640px) {
-            .frame { inset: 8px; }
-            .category-section { padding: 14px; margin-bottom: 25px; }
             .grid {
                 grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-                gap: 10px;
             }
-            .card { padding: 12px 14px; min-height: 110px; }
         }
     </style>
 </head>
@@ -397,12 +375,14 @@
 
 <div class="stars" id="stars"></div>
 <div class="frame"></div>
+
 <div class="corner tl"></div>
 <div class="corner tr"></div>
 <div class="corner bl"></div>
 <div class="corner br"></div>
 
 <div class="container">
+
     <div class="font-control">
         <button class="font-btn" onclick="changeFontSize('small', this)">A -</button>
         <button class="font-btn active" onclick="changeFontSize('medium', this)">A</button>
@@ -419,163 +399,332 @@
     </div>
 
     <div id="archive-lobby">
-        <div class="loading">正在喚醒星宿試算表，排定各學派星軌...</div>
+        <div class="loading">正在喚醒星宿試算表...</div>
     </div>
 
     <div class="footer">
         <div class="footer-line"></div>
+
         <div class="footer-inner">
             <span class="sparkle">✦</span>
             <span class="dream">Lazy Dream</span>
             <span class="sparkle">✦</span>
         </div>
-        <div class="creator">Crafted with moonlight & dream magic</div>
+
+        <div class="creator">
+            Crafted with moonlight & dream magic
+        </div>
     </div>
+
 </div>
 
 <script>
-/* ===== 星空背景生成 ===== */
+/* ===== 星空 ===== */
 const stars = document.getElementById("stars");
+
 for (let i = 0; i < 140; i++) {
     const star = document.createElement("div");
+
     star.className = "star";
     star.style.left = Math.random() * 100 + "%";
     star.style.top = Math.random() * 100 + "%";
     star.style.animationDelay = Math.random() * 4 + "s";
+
     stars.appendChild(star);
 }
 
-/* ===== 文字大小切換控制功能 ===== */
+/* ===== 字體大小 ===== */
 function changeFontSize(size, btnElement) {
+
     const root = document.documentElement;
-    document.querySelectorAll('.font-btn').forEach(btn => btn.classList.remove('active'));
+
+    document.querySelectorAll('.font-btn')
+        .forEach(btn => btn.classList.remove('active'));
+
     btnElement.classList.add('active');
-    
-    if (size === 'small') { root.style.setProperty('--base-font-size', '13px'); } 
-    else if (size === 'medium') { root.style.setProperty('--base-font-size', '16px'); } 
-    else if (size === 'large') { root.style.setProperty('--base-font-size', '19px'); }
+
+    if (size === 'small') {
+        root.style.setProperty('--base-font-size', '13px');
+    }
+
+    else if (size === 'medium') {
+        root.style.setProperty('--base-font-size', '16px');
+    }
+
+    else if (size === 'large') {
+        root.style.setProperty('--base-font-size', '19px');
+    }
 }
 
-/* ===== 🌌 核心修改：四大星雲分類系統 ===== */
-// ✨ 請把下方的引號內換成你自己的「Google 試算表 ID」
-const sheetId = "const sheetId = "1ArEA8jn79n4mLu4kaH7VqAPNMTQwFa8ttLRHDk7hALg";"; 
+/* ===== Google 試算表 ID ===== */
+const sheetId = "1ArEA8jn79n4mLu4kaH7VqAPNMTQwFa8ttLRHDk7hALg";
 
-// 定義方案 A 的四大魔法分類與對應配置
+/* ===== 分類 ===== */
 const categories = {
-    "wealth": { title: "🪙 財富煉金術 ✦ Wealth Alchemy", symbols: ["❂", "🪙"], cards: [] },
-    "inspiration": { title: "📜 靈感編織界 ✦ Inspiration Weaver", symbols: ["✧", "📜"], cards: [] },
-    "mirage": { title: "🎭 幻影擬態坊 ✦ Mirage Workshop", symbols: ["☾", "🎭"], cards: [] },
-    "chaos": { title: "🌀 混沌試煉場 ✦ Chaos Trial", symbols: ["✶", "🌀"], cards: [] },
-    "unknown": { title: "✨ 未分界星軌 ✦ Uncharted Orbit", symbols: ["✦", "☽"], cards: [] }
+
+    wealth: {
+        title: "🪙 財富煉金術 ✦ Wealth Alchemy",
+        symbols: ["❂", "🪙"],
+        cards: []
+    },
+
+    inspiration: {
+        title: "📜 靈感編織界 ✦ Inspiration Weaver",
+        symbols: ["✧", "📜"],
+        cards: []
+    },
+
+    mirage: {
+        title: "🎭 幻影擬態坊 ✦ Mirage Workshop",
+        symbols: ["☾", "🎭"],
+        cards: []
+    },
+
+    chaos: {
+        title: "🌀 混沌試煉場 ✦ Chaos Trial",
+        symbols: ["✶", "🌀"],
+        cards: []
+    },
+
+    unknown: {
+        title: "✨ 未分界星軌 ✦ Uncharted Orbit",
+        symbols: ["✦", "☽"],
+        cards: []
+    }
 };
 
+/* ===== 載入試算表 ===== */
 async function loadProjectsFromSheet() {
+
     const lobby = document.getElementById("archive-lobby");
-    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json`;
+
+    const url =
+        `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json`;
 
     try {
+
         const response = await fetch(url);
-        if (!response.ok) throw new Error("試算表連線失敗");
-        
+
+        if (!response.ok) {
+            throw new Error("試算表連線失敗");
+        }
+
         const text = await response.text();
-        const jsonString = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
+
+        const jsonString =
+            text.substring(
+                text.indexOf('{'),
+                text.lastIndexOf('}') + 1
+            );
+
         const data = JSON.parse(jsonString);
+
         const rows = data.table.rows;
 
-        // 清空之前的分類卡片紀錄，避免重複累加
-        Object.keys(categories).forEach(key => categories[key].cards = []);
+        Object.keys(categories)
+            .forEach(key => categories[key].cards = []);
 
         rows.forEach((row, index) => {
-            const webUrl = row.c[0] ? row.c[0].v : "";
-            let title = row.c[1] ? row.c[1].v : "";
-            let desc = row.c[2] ? row.c[2].v : "通往另一個宇宙的入口";
-            let tag = row.c[3] ? row.c[3].v.toString().trim() : ""; // 讀取第四欄（D欄）的分類標籤
 
-            if (!webUrl) return; // 沒網址就跳過
+            const webUrl =
+                row.c[0] ? row.c[0].v : "";
 
-            // 防呆自動標題
+            let title =
+                row.c[1] ? row.c[1].v : "";
+
+            let desc =
+                row.c[2] ? row.c[2].v : "通往另一個宇宙的入口";
+
+            let tag =
+                row.c[3]
+                    ? row.c[3].v.toString().trim()
+                    : "";
+
+            if (!webUrl) return;
+
             if (!title) {
+
                 try {
+
                     const urlObj = new URL(webUrl);
-                    title = urlObj.pathname.split('/').pop().replace('.html', '') || urlObj.hostname;
-                } catch(e) { title = "未命名宇宙"; }
+
+                    title =
+                        urlObj.pathname
+                            .split('/')
+                            .pop()
+                            .replace('.html', '')
+                        || urlObj.hostname;
+
+                } catch (e) {
+
+                    title = "未命名宇宙";
+                }
             }
 
-            // 判斷該分類到哪一個魔法星雲
             let targetCategory = "unknown";
-            if (tag.includes("財富") || tag.includes("計") || tag.includes("股") || tag.includes("錢")) {
+
+            if (
+                tag.includes("財富") ||
+                tag.includes("計") ||
+                tag.includes("股") ||
+                tag.includes("錢")
+            ) {
                 targetCategory = "wealth";
-            } else if (tag.includes("靈感") || tag.includes("小說") || tag.includes("文")) {
+            }
+
+            else if (
+                tag.includes("靈感") ||
+                tag.includes("小說") ||
+                tag.includes("文")
+            ) {
                 targetCategory = "inspiration";
-            } else if (tag.includes("幻影") || tag.includes("產") || tag.includes("名片") || tag.includes("圖片") || tag.includes("id") || tag.includes("ID")) {
+            }
+
+            else if (
+                tag.includes("幻影") ||
+                tag.includes("產") ||
+                tag.includes("名片") ||
+                tag.includes("圖片") ||
+                tag.includes("id") ||
+                tag.includes("ID")
+            ) {
                 targetCategory = "mirage";
-            } else if (tag.includes("混沌") || tag.includes("失敗") || tag.includes("毛") || tag.includes("塔")) {
+            }
+
+            else if (
+                tag.includes("混沌") ||
+                tag.includes("失敗") ||
+                tag.includes("毛") ||
+                tag.includes("塔")
+            ) {
                 targetCategory = "chaos";
             }
 
-            // 隨機或輪流配對該分類專屬的神秘塔羅符號
-            const catSymbols = categories[targetCategory].symbols;
-            const currentSymbol = catSymbols[index % catSymbols.length];
+            const catSymbols =
+                categories[targetCategory].symbols;
 
-            // 網址字數簡化縮寫
-            let cleanDisplayUrl = webUrl.replace("https://", "").replace("http://", "");
-            if(cleanDisplayUrl.length > 32) { cleanDisplayUrl = cleanDisplayUrl.substring(0, 30) + "..."; }
+            const currentSymbol =
+                catSymbols[index % catSymbols.length];
 
-            // 將生成好的 HTML 卡片推進對應的分類陣列裡
+            let cleanDisplayUrl =
+                webUrl
+                    .replace("https://", "")
+                    .replace("http://", "");
+
+            if (cleanDisplayUrl.length > 32) {
+
+                cleanDisplayUrl =
+                    cleanDisplayUrl.substring(0, 30) + "...";
+            }
+
             categories[targetCategory].cards.push(`
+
                 <a class="card" href="${webUrl}" target="_blank">
+
                     <div>
+
                         <div class="card-header-row">
-                            <div class="card-title">${title}</div>
-                            <div class="card-symbol">${currentSymbol}</div>
+
+                            <div class="card-title">
+                                ${title}
+                            </div>
+
+                            <div class="card-symbol">
+                                ${currentSymbol}
+                            </div>
+
                         </div>
-                        <div class="card-file">${cleanDisplayUrl}</div>
-                        <div class="card-desc">${desc}</div>
+
+                        <div class="card-file">
+                            ${cleanDisplayUrl}
+                        </div>
+
+                        <div class="card-desc">
+                            ${desc}
+                        </div>
+
                     </div>
-                    <div class="card-footer">PORTAL →</div>
+
+                    <div class="card-footer">
+                        PORTAL →
+                    </div>
+
                 </a>
+
             `);
         });
 
-        // 開始把各分類渲染上網頁
         let lobbyHTML = "";
         let hasAnyCards = false;
 
         Object.keys(categories).forEach(key => {
+
             const cat = categories[key];
-            // 如果這個分類裡面有卡片，才把這個分類區塊顯示出來，完全不占空間！
+
             if (cat.cards.length > 0) {
+
                 hasAnyCards = true;
+
                 lobbyHTML += `
+
                     <div class="category-section">
-                        <h2 class="category-title">${cat.title} <span>(${cat.cards.length})</span></h2>
+
+                        <h2 class="category-title">
+                            ${cat.title}
+                            <span>(${cat.cards.length})</span>
+                        </h2>
+
                         <div class="grid">
                             ${cat.cards.join("")}
                         </div>
+
                     </div>
+
                 `;
             }
         });
 
         if (!hasAnyCards) {
-            lobby.innerHTML = `<div class="loading">試算表中目前沒有任何魔法連線 🔮</div>`;
-        } else {
+
+            lobby.innerHTML = `
+                <div class="loading">
+                    試算表中目前沒有任何魔法連線 🔮
+                </div>
+            `;
+        }
+
+        else {
+
             lobby.innerHTML = lobbyHTML;
         }
 
     } catch (err) {
+
         console.error(err);
+
         lobby.innerHTML = `
-        <div class="loading">
-            無法動態連結至星宿試算表 😭 <br>
-            <span style="font-size: 14px; color: rgba(255,255,255,0.4);">請檢查試算表 ID 是否正確，且是否有將其「發佈到網路」。</span>
-        </div>
+            <div class="loading">
+                無法動態連結至星宿試算表 😭 <br><br>
+
+                <span style="
+                    font-size:14px;
+                    color:rgba(255,255,255,0.5);
+                ">
+                    請確認：
+                    <br><br>
+
+                    1. 試算表有「發佈到網路」
+                    <br>
+                    2. 權限設成「知道連結的任何人都可查看」
+                </span>
+            </div>
         `;
     }
 }
 
-// 啟動魔法大廳
+/* ===== 啟動 ===== */
 loadProjectsFromSheet();
+
 </script>
 
 </body>
