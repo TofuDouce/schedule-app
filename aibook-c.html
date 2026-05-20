@@ -2,9 +2,9 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-<title>命運之書｜AI 小說生成器</title>
+<title>Middle Earth Story Generator</title>
 
 <style>
 
@@ -15,13 +15,27 @@
     font-family:"PingFang TC","Noto Sans TC",sans-serif;
 }
 
+:root{
+
+    --bg1:#09090f;
+    --bg2:#10131d;
+    --card:rgba(255,255,255,.05);
+
+    --gold:#d8c08c;
+    --text:#ece8ff;
+    --sub:#b9b3d3;
+
+    --line:rgba(255,255,255,.08);
+
+}
+
 body{
 
     background:
-    radial-gradient(circle at top, rgba(120,80,255,.25), transparent 40%),
-    linear-gradient(180deg,#07070d,#0f1020,#090912);
+    radial-gradient(circle at top, rgba(110,80,255,.18), transparent 35%),
+    linear-gradient(180deg,var(--bg1),var(--bg2));
 
-    color:#f5f2ff;
+    color:var(--text);
 
     min-height:100vh;
 
@@ -45,64 +59,97 @@ body::before{
     pointer-events:none;
 }
 
+.glow{
+
+    position:fixed;
+
+    width:350px;
+    height:350px;
+
+    border-radius:50%;
+
+    filter:blur(120px);
+
+    z-index:-1;
+}
+
+.glow1{
+
+    top:-100px;
+    left:-100px;
+
+    background:rgba(121,91,255,.18);
+}
+
+.glow2{
+
+    right:-120px;
+    bottom:-120px;
+
+    background:rgba(70,130,255,.18);
+}
+
 .container{
 
-    width:min(1300px,92%);
+    width:min(1450px,94%);
 
     margin:auto;
 
-    padding:40px 0 100px;
+    padding:40px 0 80px;
 }
 
-.title{
+.hero{
 
     text-align:center;
 
-    margin-bottom:40px;
+    margin-bottom:35px;
 }
 
-.title h1{
+.hero h1{
 
-    font-size:58px;
+    font-size:68px;
 
     letter-spacing:8px;
 
-    background:linear-gradient(
+    margin-bottom:14px;
+
+    background:
+    linear-gradient(
         90deg,
-        #fff,
-        #c6b3ff,
-        #8ba7ff
+        #ffffff,
+        #e5d3a5,
+        #b8c7ff
     );
 
     -webkit-background-clip:text;
     -webkit-text-fill-color:transparent;
-
-    margin-bottom:14px;
 }
 
-.title p{
+.hero p{
 
-    color:#cfc9e8;
+    color:var(--sub);
 
-    line-height:1.8;
+    line-height:1.9;
+
+    font-size:16px;
 }
 
-.panel{
+.layout{
 
     display:grid;
 
-    grid-template-columns:420px 1fr;
+    grid-template-columns:430px 1fr;
 
     gap:28px;
 }
 
 .card{
 
-    background:rgba(255,255,255,.05);
+    background:var(--card);
 
-    border:1px solid rgba(255,255,255,.08);
+    border:1px solid var(--line);
 
-    border-radius:28px;
+    border-radius:30px;
 
     padding:28px;
 
@@ -113,7 +160,7 @@ body::before{
 
 .card h2{
 
-    margin-bottom:20px;
+    margin-bottom:22px;
 
     font-size:24px;
 
@@ -139,14 +186,13 @@ label{
 
     font-size:14px;
 
-    color:#d5d0eb;
+    color:#d2caea;
 }
 
 select,
-textarea,
-input{
+textarea{
 
-    background:rgba(255,255,255,.08);
+    background:rgba(255,255,255,.07);
 
     border:1px solid rgba(255,255,255,.08);
 
@@ -163,39 +209,39 @@ input{
 
 textarea{
 
-    min-height:120px;
-
     resize:vertical;
+
+    min-height:120px;
 }
 
 button{
 
     width:100%;
 
-    margin-top:16px;
-
     border:none;
 
-    border-radius:20px;
+    border-radius:18px;
 
-    padding:18px;
+    padding:17px;
 
-    font-size:17px;
+    margin-top:16px;
+
+    font-size:16px;
 
     cursor:pointer;
 
     color:white;
 
-    background:linear-gradient(
+    background:
+    linear-gradient(
         90deg,
-        #745dff,
-        #9a6dff,
-        #5a8cff
+        #7d63ff,
+        #5e8cff
     );
 
-    transition:.3s;
+    transition:.25s;
 
-    box-shadow:0 10px 30px rgba(114,94,255,.35);
+    box-shadow:0 8px 25px rgba(103,95,255,.35);
 }
 
 button:hover{
@@ -203,27 +249,53 @@ button:hover{
     transform:translateY(-2px);
 }
 
+.resultTop{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    gap:12px;
+
+    flex-wrap:wrap;
+}
+
+.smallBtn{
+
+    width:auto;
+
+    margin:0;
+
+    padding:11px 16px;
+
+    font-size:14px;
+
+    border-radius:14px;
+}
+
 .output{
 
     margin-top:18px;
 
-    background:rgba(255,255,255,.04);
+    min-height:800px;
 
-    border:1px solid rgba(255,255,255,.08);
+    background:rgba(255,255,255,.03);
 
-    border-radius:30px;
+    border:1px solid rgba(255,255,255,.06);
+
+    border-radius:28px;
 
     padding:34px;
 
-    line-height:2;
+    line-height:2.15;
 
     white-space:pre-wrap;
 
-    min-height:700px;
-
     font-size:17px;
 
-    color:#ece8ff;
+    overflow:auto;
 }
 
 .typing::after{
@@ -240,78 +312,24 @@ button:hover{
     }
 }
 
-.glow{
-
-    position:fixed;
-
-    width:300px;
-    height:300px;
-
-    background:rgba(123,88,255,.2);
-
-    border-radius:50%;
-
-    filter:blur(100px);
-
-    z-index:-1;
-}
-
-.glow1{
-
-    top:-100px;
-    left:-80px;
-}
-
-.glow2{
-
-    bottom:-120px;
-    right:-100px;
-}
-
-.result-top{
-
-    display:flex;
-
-    justify-content:space-between;
-
-    align-items:center;
-
-    flex-wrap:wrap;
-
-    gap:12px;
-}
-
-.small-btn{
-
-    width:auto;
-
-    margin:0;
-
-    padding:12px 18px;
-
-    border-radius:14px;
-
-    font-size:14px;
-}
-
 .footer{
-
-    margin-top:24px;
 
     text-align:center;
 
-    color:#9f97bf;
+    margin-top:26px;
+
+    color:#8f89aa;
 
     font-size:14px;
 }
 
-@media(max-width:1000px){
+@media(max-width:1100px){
 
-    .panel{
+    .layout{
         grid-template-columns:1fr;
     }
 
-    .title h1{
+    .hero h1{
         font-size:42px;
     }
 
@@ -331,17 +349,18 @@ button:hover{
 
 <div class="container">
 
-    <div class="title">
+    <div class="hero">
 
         <h1>命運之書</h1>
 
         <p>
-            AI 小說生成器｜宿命感 × 古典敘事 × 黑暗史詩
+            西方中土奇幻小說生成器<br>
+            黑暗史詩 × 宿命感 × 長篇冒險 × 戰爭與愛情
         </p>
 
     </div>
 
-    <div class="panel">
+    <div class="layout">
 
         <!-- 左側設定 -->
 
@@ -352,33 +371,17 @@ button:hover{
             <div class="grid">
 
                 <label>
-                    小說風格
-
-                    <select id="style">
-
-                        <option>古典</option>
-                        <option>現代</option>
-                        <option>東方仙俠</option>
-                        <option>日式物語</option>
-                        <option>西方奇幻</option>
-                        <option>蒸氣龐克</option>
-                        <option>黑暗哥德</option>
-                        <option>宮廷權謀</option>
-
-                    </select>
-                </label>
-
-                <label>
-                    感情類型
+                    感情主題
 
                     <select id="love">
 
                         <option>虐戀</option>
-                        <option>甜虐交織</option>
                         <option>宿命感</option>
                         <option>相愛相殺</option>
+                        <option>救贖</option>
                         <option>禁忌戀</option>
-                        <option>破鏡重圓</option>
+                        <option>主僕關係</option>
+                        <option>政治聯姻</option>
                         <option>敵國戀人</option>
 
                     </select>
@@ -392,74 +395,8 @@ button:hover{
                         <option>HE 圓滿</option>
                         <option>BE 悲劇</option>
                         <option>雙死結局</option>
+                        <option>犧牲式結局</option>
                         <option>轉世重逢</option>
-                        <option>開放式結局</option>
-
-                    </select>
-                </label>
-
-                <label>
-                    敘事風格
-
-                    <select id="tone">
-
-                        <option>古典文學</option>
-                        <option>史詩感</option>
-                        <option>黑暗壓抑</option>
-                        <option>電影感</option>
-                        <option>詩意敘述</option>
-
-                    </select>
-                </label>
-
-                <label>
-                    主角身份
-
-                    <select id="hero">
-
-                        <option>王子</option>
-                        <option>流浪劍士</option>
-                        <option>魔法師</option>
-                        <option>狐妖</option>
-                        <option>神官</option>
-                        <option>騎士</option>
-                        <option>亡國公主</option>
-
-                    </select>
-                </label>
-
-                <label>
-                    另一位主角
-
-                    <select id="heroine">
-
-                        <option>刺客</option>
-                        <option>皇女</option>
-                        <option>龍族後裔</option>
-                        <option>醫者</option>
-                        <option>惡魔</option>
-                        <option>精靈</option>
-                        <option>敵國將軍</option>
-
-                    </select>
-                </label>
-
-                <label>
-                    字數長度
-
-                    <select id="length">
-
-                        <option value="3000">
-                            短篇（3000字）
-                        </option>
-
-                        <option value="6000">
-                            中篇（6000字）
-                        </option>
-
-                        <option value="10000">
-                            長篇（10000字）
-                        </option>
 
                     </select>
                 </label>
@@ -472,20 +409,80 @@ button:hover{
                         <option>普通</option>
                         <option>壓抑</option>
                         <option>黑暗</option>
-                        <option>極致致鬱</option>
+                        <option>絕望史詩</option>
+
+                    </select>
+                </label>
+
+                <label>
+                    篇幅
+
+                    <select id="length">
+
+                        <option value="4000">
+                            短篇（4000字）
+                        </option>
+
+                        <option value="8000">
+                            中篇（8000字）
+                        </option>
+
+                        <option value="15000">
+                            長篇（15000字）
+                        </option>
+
+                        <option value="30000">
+                            史詩級（30000字）
+                        </option>
+
+                    </select>
+                </label>
+
+                <label>
+                    男主身份
+
+                    <select id="hero">
+
+                        <option>流亡王子</option>
+                        <option>黑騎士</option>
+                        <option>龍語者</option>
+                        <option>北境領主</option>
+                        <option>聖殿騎士</option>
+                        <option>白銀劍士</option>
+                        <option>亡國繼承人</option>
+                        <option>被詛咒的王</option>
+                        <option>森林遊俠</option>
+
+                    </select>
+                </label>
+
+                <label>
+                    女主身份
+
+                    <select id="heroine">
+
+                        <option>精靈祭司</option>
+                        <option>龍族後裔</option>
+                        <option>王國公主</option>
+                        <option>黑魔女</option>
+                        <option>預言者</option>
+                        <option>雪原巫女</option>
+                        <option>聖女</option>
+                        <option>敵國女王</option>
+                        <option>月神侍女</option>
 
                     </select>
                 </label>
 
             </div>
 
-            <label style="margin-top:20px;">
+            <label style="margin-top:18px;">
 
                 額外關鍵字
 
                 <textarea
                     id="keywords"
-                    placeholder="例如：銀白長髮、命運詛咒、王城陷落、雪夜、龍焰"
+                    placeholder="例如：白銀王城、暴雪、巨龍、古神、黑海、月光、長劍、命運詛咒"
                 ></textarea>
 
             </label>
@@ -494,8 +491,8 @@ button:hover{
                 ✦ 隨機命運
             </button>
 
-            <button onclick="generateNovel()">
-                ✦ 生成小說
+            <button onclick="generateStory()">
+                ✦ 生成史詩故事
             </button>
 
         </div>
@@ -504,7 +501,7 @@ button:hover{
 
         <div class="card">
 
-            <div class="result-top">
+            <div class="resultTop">
 
                 <h2 style="margin:0;">
                     生成結果
@@ -518,16 +515,16 @@ button:hover{
                 ">
 
                     <div style="
-                    color:#cfc9e8;
+                    color:#d0c8ea;
                     font-size:14px;
                     ">
                         全文字數：
-                        <span id="wordCount">0</span> 字
+                        <span id="wordCount">0</span>
                     </div>
 
                     <button
-                        class="small-btn"
-                        onclick="copyText()"
+                        class="smallBtn"
+                        onclick="copyStory()"
                     >
                         一鍵複製
                     </button>
@@ -537,7 +534,7 @@ button:hover{
             </div>
 
             <div id="output" class="output typing">
-命運尚未被書寫……
+命運尚未開始轉動……
             </div>
 
         </div>
@@ -545,7 +542,7 @@ button:hover{
     </div>
 
     <div class="footer">
-        命運之書｜高級 AI 小說生成器
+        命運之書｜Western Fantasy Generator
     </div>
 
 </div>
@@ -568,208 +565,22 @@ function randomAll(){
 
         select.selectedIndex =
             Math.floor(
-                Math.random() * select.options.length
+                Math.random()*select.options.length
             );
 
     });
 
-    generateNovel();
+    generateStory();
 }
 
-function generateNovel(){
+function copyStory(){
 
-    const style =
-        document.getElementById("style").value;
+    const text =
+        document.getElementById("output").innerText;
 
-    const love =
-        document.getElementById("love").value;
+    navigator.clipboard.writeText(text);
 
-    const ending =
-        document.getElementById("ending").value;
-
-    const tone =
-        document.getElementById("tone").value;
-
-    const hero =
-        document.getElementById("hero").value;
-
-    const heroine =
-        document.getElementById("heroine").value;
-
-    const length =
-        parseInt(
-            document.getElementById("length").value
-        );
-
-    const darkness =
-        document.getElementById("darkness").value;
-
-    const keywords =
-        document.getElementById("keywords").value;
-
-    const kingdoms = [
-
-        "被冰雪覆蓋的北境王朝",
-        "漂浮於天空的古老帝國",
-        "以龍焰維持文明的聖都",
-        "早已腐朽卻仍歌舞昇平的王城",
-        "被神遺棄的永夜國度"
-
-    ];
-
-    const conflicts = [
-
-        "王權鬥爭",
-        "古神甦醒",
-        "國家戰爭",
-        "禁忌詛咒",
-        "血脈秘密",
-        "世界崩壞"
-
-    ];
-
-    const emotional = [
-
-        "他們明明彼此深愛，卻始終站在命運兩端。",
-
-        "兩人的感情像雪夜中的火焰，越熾烈便越接近毀滅。",
-
-        "他們在長久的戰爭中逐漸理解彼此，也逐漸失去彼此。",
-
-        "愛意在沉默與犧牲之中緩慢滋長。",
-
-        "那份感情從一開始便注定無法被世人允許。"
-
-    ];
-
-    const chapterEvents = [
-
-        "暴雪覆蓋整座北境王城。",
-        "古老神殿深處傳來鐘聲。",
-        "邊境戰爭全面爆發。",
-        "王族內部出現背叛者。",
-        "龍焰照亮了整片黑夜。",
-        "古神的低語逐漸甦醒。",
-        "帝國陷入飢荒與混亂。",
-        "血色月亮升上天空。",
-        "封印逐漸崩壞。",
-        "深海開始吞噬大陸。"
-
-    ];
-
-    let outline = `
-
-【小說類型】
-${style} × ${love} × ${ending}
-
-【預計篇幅】
-約 ${length} 字
-
-【黑暗程度】
-${darkness}
-
-【整體氛圍】
-本作採用「${tone}」風格進行敘述，
-整體帶有濃厚宿命感與史詩氛圍。
-
-【世界觀設定】
-故事發生於${random(kingdoms)}。
-
-這個世界被「${random(conflicts)}」長年籠罩。
-
-主角是一名${hero}，
-而另一位重要角色則是${heroine}。
-
-【感情主軸】
-${random(emotional)}
-
-`;
-
-    let chapter = 1;
-
-    while(outline.length < length){
-
-        outline += `
-
-══════════════════
-
-【第 ${chapter} 章】
-
-${random(chapterEvents)}
-
-主角在旅途中逐漸理解世界真正的殘酷。
-
-他開始發現，
-真正可怕的並不是戰爭，
-而是人心深處對權力與恐懼的渴望。
-
-而另一位主角，
-似乎始終隱瞞著某個秘密。
-
-兩人的關係也在一次次衝突中逐漸改變。
-
-他們曾在雪夜中互相依靠，
-也曾在王城崩塌時彼此背離。
-
-然而，
-命運卻始終將兩人重新拉回彼此身旁。
-
-在這段旅途中，
-主角逐漸得知自己的血脈，
-竟與古老封印有關。
-
-若封印崩潰，
-世界將再次陷入黑暗。
-
-但若選擇拯救世界，
-他或許必須親手失去最重要的人。
-
-這份痛苦逐漸侵蝕他的內心。
-
-而另一位主角，
-也終於第一次坦白自己的過去。
-
-原來，
-對方從很久以前便知道這場災厄的結局。
-
-只是從未說出口。
-
-${random(emotional)}
-
-`;
-
-        chapter++;
-    }
-
-    outline += `
-
-══════════════════
-
-【最終結局】
-
-本作採用「${ending}」作為結局。
-
-最終，
-世界雖然付出了巨大代價，
-卻終於迎來新的時代。
-
-王座崩毀，
-舊神消亡，
-而新的黎明終於降臨。
-
-至於兩位主角——
-
-他們或許再也無法回到最初，
-但那份曾在黑暗中燃燒過的感情，
-卻會像傳說一樣，
-被後世永遠記得。
-
-【額外元素】
-${keywords || "無"}
-
-`;
-
-    typeWriter(outline);
+    alert("已複製故事！");
 }
 
 function typeWriter(text){
@@ -782,6 +593,8 @@ function typeWriter(text){
     output.classList.add("typing");
 
     let i = 0;
+
+    const speed = 1;
 
     const timer = setInterval(()=>{
 
@@ -799,17 +612,252 @@ function typeWriter(text){
             output.classList.remove("typing");
         }
 
-    },1);
+    },speed);
 }
 
-function copyText(){
+function generateStory(){
 
-    const text =
-        document.getElementById("output").innerText;
+    const love =
+        document.getElementById("love").value;
 
-    navigator.clipboard.writeText(text);
+    const ending =
+        document.getElementById("ending").value;
 
-    alert("已複製小說內容！");
+    const darkness =
+        document.getElementById("darkness").value;
+
+    const hero =
+        document.getElementById("hero").value;
+
+    const heroine =
+        document.getElementById("heroine").value;
+
+    const length =
+        parseInt(
+            document.getElementById("length").value
+        );
+
+    const keywords =
+        document.getElementById("keywords").value;
+
+    const kingdoms = [
+
+        "艾德蘭王國",
+        "霜狼北境",
+        "白銀聖都",
+        "黑海帝國",
+        "永夜森林",
+        "龍脊山脈",
+        "灰燼荒原",
+        "月影王城"
+
+    ];
+
+    const factions = [
+
+        "白銀騎士團",
+        "黑龍議會",
+        "深淵法師塔",
+        "舊神信徒",
+        "月神教廷",
+        "北境狼族",
+        "王室審判庭"
+
+    ];
+
+    const disasters = [
+
+        "古龍甦醒",
+        "亡靈軍團南下",
+        "天空出現血色紅月",
+        "封印千年的古神重新睜眼",
+        "黑海吞噬大陸",
+        "世界樹開始枯萎",
+        "魔法失控暴走"
+
+    ];
+
+    const emotionalLines = [
+
+        "他們彼此深愛，卻始終無法真正靠近。",
+        "兩人的感情像暴風雪中的火焰，越熾烈越接近毀滅。",
+        "愛意在戰爭與死亡中逐漸滋長。",
+        "從一開始，他們便註定無法得到幸福。",
+        "那份感情比信仰更危險。"
+
+    ];
+
+    const chapterEvents = [
+
+        "北境長城崩塌。",
+        "白銀王城陷入瘟疫。",
+        "巨龍掠過夜空。",
+        "教廷宣布異端審判。",
+        "古老神殿傳來鐘聲。",
+        "王族爆發繼承戰爭。",
+        "精靈森林燃起黑火。",
+        "亡靈軍團跨越雪原。",
+        "封印逐漸破裂。",
+        "天空裂開巨大的紅月。"
+
+    ];
+
+    let story = `
+
+══════════════════
+
+【世界觀】
+
+故事發生於「${random(kingdoms)}」。
+
+這片大陸長年被「${random(disasters)}」所籠罩。
+
+而「${random(factions)}」與
+「${random(factions)}」
+之間的戰爭，
+也正在逐漸失控。
+
+男主是一名${hero}。
+
+而女主則是${heroine}。
+
+【感情主題】
+
+${love}
+
+${random(emotionalLines)}
+
+【黑暗程度】
+
+${darkness}
+
+══════════════════
+
+`;
+
+    let chapter = 1;
+
+    while(story.length < length){
+
+        story += `
+
+【第 ${chapter} 章】
+
+${random(chapterEvents)}
+
+男主逐漸發現，
+真正腐朽的並不是王國，
+而是人們內心深處對恐懼與權力的渴望。
+
+在旅途中，
+他與女主被迫同行。
+
+他們曾在暴雪中逃亡，
+也曾於深夜裡討論命運。
+
+然而，
+兩人之間始終隔著某種無法跨越的距離。
+
+女主似乎隱瞞著某個秘密。
+
+而那個秘密，
+很可能與世界即將毀滅的真相有關。
+
+隨著旅程深入，
+男主逐漸得知：
+
+自己體內流淌的血脈，
+竟與遠古封印相連。
+
+若封印徹底崩潰，
+整個世界都將墜入黑暗。
+
+然而，
+若想阻止災厄，
+他或許必須親手失去女主。
+
+這份痛苦開始逐漸侵蝕他的內心。
+
+${random(emotionalLines)}
+
+而遠方的戰火，
+也正在迅速逼近。
+
+${random(factions)}
+開始進軍北境。
+
+無數城市陷入火海。
+
+王國開始崩塌。
+
+人民在飢荒與恐懼中死去。
+
+曾經輝煌的文明，
+如今只剩殘骸。
+
+══════════════════
+
+`;
+
+        chapter++;
+    }
+
+    story += `
+
+【最終篇章】
+
+最後，
+「${random(disasters)}」
+徹底降臨。
+
+整個世界陷入戰火。
+
+王城崩毀。
+
+舊神甦醒。
+
+天空被黑暗吞噬。
+
+而男主終於明白：
+
+所謂命運，
+並不是神明的安排。
+
+而是人們一次次在痛苦中做出的選擇。
+
+於是，
+他決定親手終結一切。
+
+在最終決戰裡，
+男主與女主重新相遇。
+
+他們早已遍體鱗傷。
+
+卻仍選擇站在彼此身旁。
+
+══════════════════
+
+【結局】
+
+本作採用「${ending}」作為收束。
+
+最後，
+新的時代終於在灰燼中誕生。
+
+至於那段曾燃燒於黑暗中的感情——
+
+將會像古老史詩一樣，
+被後世永遠傳唱。
+
+══════════════════
+
+【額外元素】
+
+${keywords || "無"}
+
+`;
+
+    typeWriter(story);
 }
 
 </script>
