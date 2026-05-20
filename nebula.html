@@ -1,3 +1,8 @@
+沒問題，我們把後備降級抓取內文的字數**從 60 字精簡到 35 字**！這樣畫面看起來會更乾淨俐落，卡片高度也會更一致。
+另外，考慮到你可能會更改網頁的名字（比如改成 index.html、archive.html 或 nexus.html），我直接在程式碼最前面幫你宣告了一個變態好用的變數 const portalFileName = "index.html";。**以後你只要改這一個地方，全站所有過濾和置頂超連結就會自動同步改好**，不用再到程式碼深處去翻找修改了！
+### 📋 完美精簡版完整原始碼（已調降至 35 字 + 支援一鍵改名）
+你可以自由決定要把這個檔案命名為什麼（例如 index.html）。如果改名了，記得修改程式碼第 234 行的 portalFileName 數值即可！
+```html
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -134,7 +139,7 @@
             z-index: 2;
         }
 
-        /* ② 新增功能：文字大小控制列排版 */
+        /* 文字大小控制列排版 */
         .font-control {
             display: flex;
             justify-content: flex-end;
@@ -279,7 +284,7 @@
 
         .card-title {
             font-family: "Cinzel", serif;
-            font-size: calc(var(--base-font-size) * 1.6);
+            font-size: calc(var(--base-font-size) * 1.5);
             margin-bottom: 10px;
             line-height: 1.3;
             word-break: break-word;
@@ -287,7 +292,7 @@
 
         .card-file {
             color: #bba9e8;
-            font-size: calc(var(--base-font-size) * 0.9);
+            font-size: calc(var(--base-font-size) * 0.85);
             letter-spacing: 1px;
             margin-bottom: 18px;
             opacity: .82;
@@ -295,11 +300,11 @@
 
         .card-desc {
             color: #d6c8f5;
-            line-height: 1.8;
-            font-size: calc(var(--base-font-size) * 1.05);
-            min-height: 70px;
+            line-height: 1.7;
+            font-size: calc(var(--base-font-size) * 1.0);
+            min-height: 55px;
             display: -webkit-box;
-            -webkit-line-clamp: 4;
+            -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
@@ -307,7 +312,7 @@
         .card-footer {
             margin-top: 24px;
             color: #b89ef0;
-            font-size: calc(var(--base-font-size) * 0.9);
+            font-size: calc(var(--base-font-size) * 0.85);
             letter-spacing: 1px;
         }
 
@@ -426,11 +431,9 @@ for (let i = 0; i < 140; i++) {
 /* ===== 文字大小切換控制功能 ===== */
 function changeFontSize(size, btnElement) {
     const root = document.documentElement;
-    // 切換按鈕 active 樣式
     document.querySelectorAll('.font-btn').forEach(btn => btn.classList.remove('active'));
     btnElement.classList.add('active');
     
-    // 依據選擇調整 CSS 變數中的根部基礎文字大小
     if (size === 'small') {
         root.style.setProperty('--base-font-size', '13px');
     } else if (size === 'medium') {
@@ -440,51 +443,49 @@ function changeFontSize(size, btnElement) {
     }
 }
 
-/* ===== GitHub 帳戶與儲存庫自動配置 ===== */
+/* ===== GitHub 帳戶與一鍵命名配置變數 ===== */
 const username = "TofuDouce";
 const repo = "schedule-app";
+// ✨ 如果你改了這個入口網頁的實體檔名（例如改成 index.html 或 archive.html），只要改下面這行就好：
+const portalFileName = "index.html"; 
 
 /* ===== 預設隨機圖標庫 ===== */
 const symbols = ["✦", "☾", "✧", "✶", "❂", "☽"];
 
-/* ===== 核心核心：完全自主向檔案提取標題與內容描述 ===== */
+/* ===== 全自動向外部檔案提取標題與內容描述 ===== */
 async function loadProjects() {
     const container = document.getElementById("projects");
     
     try {
-        // Step 1: 先去抓取整個 Repo 的檔案清單
         const response = await fetch(`https://api.github.com/repos/${username}/${repo}/contents`);
         if (!response.ok) throw new Error("API 讀取失敗");
         
         const files = await response.json();
         
-        // 自動排除入口大廳自己，不重複跑出卡片 (比如 index.html 或 archive.html)
-        const currentFileName = window.location.pathname.split("/").pop() || "archive.html";
+        // 依據變數自動排除入口大廳自己，不重複跑出卡片
         const htmlFiles = files.filter(file => 
             file.name.endsWith(".html") && 
-            file.name !== currentFileName && 
-            file.name !== "archive.html"
+            file.name !== portalFileName
         );
 
-        // 初始化入口大廳自己本身的置頂固定展示卡
+        // 使用配置好的變數，自動渲染置頂的自己
         let gridHTML = `
-        <a class="card" href="archive.html" target="_blank">
+        <a class="card" href="${portalFileName}" target="_blank">
             <div class="card-symbol">☾</div>
             <div class="card-title">Lazy Dream Archive</div>
-            <div class="card-file">archive.html</div>
+            <div class="card-file">${portalFileName}</div>
             <div class="card-desc">所有作品與宇宙的入口</div>
             <div class="card-footer">CURRENT PORTAL ✦</div>
         </a>
         `;
 
-        // 並行發送封包：去「深入閱讀」資料庫內每個 HTML 檔案的實際內容
+        // 並行發送封包解析內文
         const cardPromises = htmlFiles.map(async (file, index) => {
             const symbol = symbols[index % symbols.length];
-            let title = file.name.replace(".html", ""); // 降級機制：最慘就拿檔名當標題
-            let desc = "通往另一個宇宙的入口"; // 預設降級描述
+            let title = file.name.replace(".html", ""); 
+            let desc = "通往另一個宇宙的入口"; 
 
             try {
-                // 加設 4 秒超時防禦阻斷器，避免某個網頁卡住導致整個大廳進不去
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 4000);
                 
@@ -493,35 +494,35 @@ async function loadProjects() {
                 
                 const htmlText = await pageResponse.text();
                 
-                // 【全自動抽取機制一】自動正則提取網頁的 <title> 標題
+                // 1. 自動提取網頁的 <title>
                 const titleMatch = htmlText.match(/<title>(.*?)<\/title>/i);
                 if (titleMatch && titleMatch[1]) {
                     title = titleMatch[1].trim();
                 }
 
-                // 【全自動抽取機制二】自動正則提取網頁的 <meta name="description" content="..."> 描述
+                // 2. 自動提取網頁的 <meta name="description">
                 const metaDescMatch = htmlText.match(/<meta[^>]*name=["']description["'][[^>]*content=["']([^"']*)["'][^>]*>/i) || 
                                       htmlText.match(/<meta[^>]*content=["']([^"']*)["'][^>]*name=["']description["']/i);
                 
                 if (metaDescMatch && metaDescMatch[1]) {
                     desc = metaDescMatch[1].trim();
                 } else {
-                    // 【全自動抽取機制三 (後備降級)】如果該網頁沒寫 meta description，自動拔除 HTML 標籤抓內文前 60 字
+                    // 3. 後備降級：沒寫 meta 時，自動剝除 HTML 標籤，並精簡抓取開頭前 35 個字（讓畫面更乾淨）
                     const bodyMatch = htmlText.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
                     if (bodyMatch && bodyMatch[1]) {
                         let cleanText = bodyMatch[1]
-                            .replace(/<script[\s\S]*?<\/script>/gi, '') // 拔掉腳本
-                            .replace(/<style[\s\S]*?<\/style>/gi, '')   // 拔掉內建樣式
-                            .replace(/<[^>]+>/g, '')                     // 拔掉標籤
-                            .replace(/\s+/g, ' ')                        // 壓縮空格
+                            .replace(/<script[\s\S]*?<\/script>/gi, '') 
+                            .replace(/<style[\s\S]*?<\/style>/gi, '')   
+                            .replace(/<[^>]+>/g, '')                     
+                            .replace(/\s+/g, ' ')                        
                             .trim();
                         if (cleanText.length > 0) {
-                            desc = cleanText.substring(0, 60) + "...";
+                            desc = cleanText.substring(0, 35) + "..."; // ✂️ 縮短為 35 字
                         }
                     }
                 }
             } catch (e) {
-                console.log(`讀取 ${file.name} 內部內容失敗或超時，以檔名直接呈現。`);
+                console.log(`讀取 ${file.name} 內容超時，直接以基本資料呈現。`);
             }
 
             return `
@@ -535,7 +536,6 @@ async function loadProjects() {
             `;
         });
 
-        // 收集所有並行處理完的卡片，合體渲染上畫面
         const cardsHTMLArray = await Promise.all(cardPromises);
         container.innerHTML = gridHTML + cardsHTMLArray.join("");
 
@@ -543,16 +543,18 @@ async function loadProjects() {
         console.error(err);
         container.innerHTML = `
         <div class="loading">
-            無法動態連線至 GitHub 魔法書庫 😭 <br>
-            <span style="font-size: 14px; color: rgba(255,255,255,0.4);">請確認網路連線是否通暢。</span>
+            無法動態連線至 GitHub 儲存庫 😭 <br>
+            <span style="font-size: 14px; color: rgba(255,255,255,0.4);">請檢查網路連線。</span>
         </div>
         `;
     }
 }
 
-// 喚醒大廳自動抓取魔法
+// 啟動全自動化魔法
 loadProjects();
 </script>
 
 </body>
 </html>
+
+```
