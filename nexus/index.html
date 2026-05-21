@@ -1,1 +1,1077 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
+    <title>Dream Archive</title>
+
+    <meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+
+            transition:
+                font-size .2s ease,
+                transform .4s ease,
+                box-shadow .4s ease;
+        }
+
+        :root{
+
+            --bg1:#171320;
+            --bg2:#241a35;
+            --bg3:#31244d;
+
+            --gold:#d8bf8a;
+            --text:#f4efff;
+
+            --card:rgba(29,24,44,.72);
+
+            /* 手機 */
+            --base-font-size:17px;
+        }
+
+        /* 平板 */
+        @media (min-width:768px){
+
+            :root{
+                --base-font-size:18px;
+            }
+        }
+
+        /* 電腦 */
+        @media (min-width:1200px){
+
+            :root{
+                --base-font-size:20px;
+            }
+        }
+
+        body{
+
+            min-height:100vh;
+
+            overflow-x:hidden;
+
+            color:var(--text);
+
+            font-family:"Cormorant Garamond", serif;
+
+            background:
+                radial-gradient(
+                    circle at top,
+                    rgba(180,150,255,.14),
+                    transparent 30%
+                ),
+
+                linear-gradient(
+                    180deg,
+                    var(--bg1),
+                    var(--bg2),
+                    var(--bg3)
+                );
+
+            padding:20px;
+
+            position:relative;
+
+            font-size:var(--base-font-size);
+        }
+
+        .stars{
+            position:fixed;
+            inset:0;
+
+            overflow:hidden;
+
+            z-index:-3;
+        }
+
+        .star{
+
+            position:absolute;
+
+            width:2px;
+            height:2px;
+
+            background:white;
+
+            border-radius:50%;
+
+            opacity:.7;
+
+            animation:twinkle 4s infinite;
+        }
+
+        @keyframes twinkle{
+
+            0%,100%{
+                opacity:.15;
+                transform:scale(.7);
+            }
+
+            50%{
+                opacity:1;
+                transform:scale(1.4);
+            }
+        }
+
+        .frame{
+
+            position:fixed;
+            inset:10px;
+
+            border:1.5px solid rgba(216,191,138,.48);
+
+            border-radius:26px;
+
+            pointer-events:none;
+
+            z-index:999;
+        }
+
+        .frame::before{
+
+            content:"";
+
+            position:absolute;
+            inset:8px;
+
+            border:1px solid rgba(216,191,138,.18);
+
+            border-radius:20px;
+        }
+
+        .corner{
+
+            position:fixed;
+
+            width:90px;
+            height:90px;
+
+            pointer-events:none;
+
+            z-index:1000;
+        }
+
+        .corner::before{
+
+            content:"";
+
+            position:absolute;
+            inset:0;
+
+            border:1.5px solid rgba(216,191,138,.45);
+
+            border-radius:50%;
+        }
+
+        .corner::after{
+
+            content:"✦";
+
+            position:absolute;
+
+            color:rgba(216,191,138,.85);
+
+            font-size:22px;
+        }
+
+        .tl{
+            top:14px;
+            left:14px;
+        }
+
+        .tl::before{
+            clip-path:polygon(0 0,100% 0,0 100%);
+        }
+
+        .tl::after{
+            top:14px;
+            left:14px;
+        }
+
+        .tr{
+            top:14px;
+            right:14px;
+        }
+
+        .tr::before{
+            clip-path:polygon(0 0,100% 0,100% 100%);
+        }
+
+        .tr::after{
+            top:14px;
+            right:14px;
+        }
+
+        .bl{
+            bottom:14px;
+            left:14px;
+        }
+
+        .bl::before{
+            clip-path:polygon(0 0,0 100%,100% 100%);
+        }
+
+        .bl::after{
+            bottom:14px;
+            left:14px;
+        }
+
+        .br{
+            bottom:14px;
+            right:14px;
+        }
+
+        .br::before{
+            clip-path:polygon(100% 0,0 100%,100% 100%);
+        }
+
+        .br::after{
+            bottom:14px;
+            right:14px;
+        }
+
+        .container{
+
+            max-width:1320px;
+
+            margin:auto;
+
+            position:relative;
+
+            z-index:2;
+        }
+
+        .font-control{
+
+            display:flex;
+
+            justify-content:flex-end;
+
+            gap:10px;
+
+            margin-bottom:5px;
+
+            position:relative;
+
+            z-index:1010;
+        }
+
+        .font-btn{
+
+            background:rgba(255,255,255,.05);
+
+            border:1px solid rgba(216,191,138,.3);
+
+            color:var(--text);
+
+            padding:5px 12px;
+
+            border-radius:20px;
+
+            cursor:pointer;
+
+            font-family:"Cinzel", serif;
+
+            font-size:13px;
+
+            backdrop-filter:blur(5px);
+        }
+
+        .font-btn:hover{
+
+            background:rgba(216,191,138,.2);
+
+            color:var(--gold);
+
+            border-color:var(--gold);
+        }
+
+        .font-btn.active{
+
+            background:var(--gold);
+
+            color:var(--bg1);
+
+            font-weight:bold;
+
+            border-color:var(--gold);
+        }
+
+        .moon{
+
+            text-align:center;
+
+            margin-top:5px;
+
+            position:relative;
+        }
+
+        .moon::before{
+
+            content:"";
+
+            position:absolute;
+
+            left:50%;
+            top:-45px;
+
+            width:1px;
+            height:45px;
+
+            background:rgba(216,191,138,.35);
+        }
+
+        .moon-symbol{
+
+            font-size:36px;
+
+            color:var(--gold);
+
+            text-shadow:0 0 18px rgba(216,191,138,.25);
+
+            animation:floatMoon 4s ease-in-out infinite;
+        }
+
+        @keyframes floatMoon{
+
+            0%,100%{
+                transform:translateY(0px);
+            }
+
+            50%{
+                transform:translateY(5px);
+            }
+        }
+
+        .title{
+
+            text-align:center;
+
+            margin-top:10px;
+            margin-bottom:30px;
+        }
+
+        .main-title{
+
+            font-family:"Cinzel", serif;
+
+            font-weight:700;
+
+            letter-spacing:4px;
+
+            line-height:1.1;
+
+            font-size:clamp(42px,7vw,78px);
+
+            background:
+                linear-gradient(
+                    180deg,
+                    #ffffff 0%,
+                    #f1e8ff 40%,
+                    #d8bf8a 100%
+                );
+
+            -webkit-background-clip:text;
+            -webkit-text-fill-color:transparent;
+        }
+
+        .subtitle{
+
+            margin-top:12px;
+
+            color:#cfc1f7;
+
+            font-size:1.1em;
+
+            letter-spacing:1px;
+        }
+
+        .category-section{
+
+            margin-bottom:40px;
+
+            background:rgba(255,255,255,.02);
+
+            padding:24px;
+
+            border-radius:24px;
+
+            border:1px solid rgba(216,191,138,.08);
+        }
+
+        .category-title{
+
+            font-family:"Cinzel", serif;
+
+            font-size:calc(var(--base-font-size) * 1.3);
+
+            color:var(--gold);
+
+            letter-spacing:2px;
+
+            margin-bottom:18px;
+
+            display:flex;
+
+            align-items:center;
+
+            gap:10px;
+
+            border-bottom:
+                1px solid rgba(216,191,138,.2);
+
+            padding-bottom:10px;
+        }
+
+        .category-title span{
+
+            font-size:18px;
+
+            color:#bba9e8;
+        }
+
+        .grid{
+
+            display:grid;
+
+            grid-template-columns:
+                repeat(
+                    auto-fit,
+                    minmax(260px,1fr)
+                );
+
+            gap:18px;
+        }
+
+        .card{
+
+            background:rgba(29,24,44,.72);
+
+            border:
+                1px solid rgba(255,255,255,.06);
+
+            border-radius:18px;
+
+            padding:18px;
+
+            backdrop-filter:blur(16px);
+
+            text-decoration:none;
+
+            color:white;
+
+            position:relative;
+
+            overflow:hidden;
+
+            display:flex;
+
+            flex-direction:column;
+
+            justify-content:space-between;
+
+            min-height:160px;
+        }
+
+        .card:hover{
+
+            transform:
+                translateY(-4px)
+                scale(1.02);
+
+            box-shadow:
+                0 10px 25px rgba(0,0,0,.4);
+
+            border-color:
+                rgba(216,191,138,.4);
+        }
+
+        .card-header-row{
+
+            display:flex;
+
+            justify-content:space-between;
+
+            align-items:flex-start;
+
+            gap:8px;
+
+            margin-bottom:6px;
+        }
+
+        .card-symbol{
+
+            font-size:
+                calc(var(--base-font-size) * 1.1);
+
+            color:var(--gold);
+
+            flex-shrink:0;
+        }
+
+        .card-title{
+
+            font-family:"Cinzel", serif;
+
+            font-size:
+                calc(var(--base-font-size) * 1.18);
+
+            font-weight:600;
+
+            line-height:1.3;
+
+            word-break:break-word;
+        }
+
+        .card-file{
+
+            color:#bba9e8;
+
+            font-size:
+                calc(var(--base-font-size) * .82);
+
+            margin-bottom:10px;
+
+            opacity:.75;
+
+            display:inline-block;
+        }
+
+        .card-desc{
+
+            color:#d6c8f5;
+
+            line-height:1.6;
+
+            font-size:
+                calc(var(--base-font-size) * .95);
+
+            display:-webkit-box;
+
+            -webkit-line-clamp:2;
+
+            -webkit-box-orient:vertical;
+
+            overflow:hidden;
+
+            margin-bottom:12px;
+        }
+
+        .card-footer{
+
+            color:#b89ef0;
+
+            font-size:
+                calc(var(--base-font-size) * .78);
+
+            text-align:right;
+        }
+
+        .loading{
+
+            text-align:center;
+
+            color:#c9b8f1;
+
+            font-size:22px;
+
+            padding:40px 0;
+        }
+
+        @media(max-width:640px){
+
+            .grid{
+
+                grid-template-columns:
+                    repeat(
+                        auto-fit,
+                        minmax(190px,1fr)
+                    );
+            }
+
+            .card{
+                min-height:135px;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="stars" id="stars"></div>
+
+<div class="frame"></div>
+
+<div class="corner tl"></div>
+<div class="corner tr"></div>
+<div class="corner bl"></div>
+<div class="corner br"></div>
+
+<div class="container">
+
+    <div class="font-control">
+
+        <button
+            class="font-btn"
+            onclick="changeFontSize('small', this)"
+        >
+            A -
+        </button>
+
+        <button
+            class="font-btn active"
+            onclick="changeFontSize('medium', this)"
+        >
+            A
+        </button>
+
+        <button
+            class="font-btn"
+            onclick="changeFontSize('large', this)"
+        >
+            A +
+        </button>
+
+    </div>
+
+    <div class="moon">
+        <div class="moon-symbol">☾</div>
+    </div>
+
+    <div class="title">
+
+        <h1 class="main-title">
+            Dream Archive
+        </h1>
+
+        <p class="subtitle">
+            連結星宿試算表，開啟魔法星雲 ✦
+        </p>
+
+    </div>
+
+    <div id="archive-lobby">
+
+        <div class="loading">
+            正在喚醒星宿試算表...
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+/* ===== 星空 ===== */
+
+const stars =
+    document.getElementById("stars");
+
+for(let i = 0; i < 140; i++){
+
+    const star =
+        document.createElement("div");
+
+    star.className = "star";
+
+    star.style.left =
+        Math.random() * 100 + "%";
+
+    star.style.top =
+        Math.random() * 100 + "%";
+
+    star.style.animationDelay =
+        Math.random() * 4 + "s";
+
+    stars.appendChild(star);
+}
+
+/* ===== 字體大小 ===== */
+
+function changeFontSize(size, btnElement){
+
+    const root =
+        document.documentElement;
+
+    document
+        .querySelectorAll('.font-btn')
+        .forEach(btn =>
+            btn.classList.remove('active')
+        );
+
+    btnElement.classList.add('active');
+
+    if(size === 'small'){
+
+        root.style.setProperty(
+            '--base-font-size',
+            '15px'
+        );
+    }
+
+    else if(size === 'medium'){
+
+        root.style.setProperty(
+            '--base-font-size',
+            '18px'
+        );
+    }
+
+    else if(size === 'large'){
+
+        root.style.setProperty(
+            '--base-font-size',
+            '22px'
+        );
+    }
+}
+
+/* ===== Google 試算表 ID ===== */
+
+const sheetId =
+    "1ArEA8jn79n4mLu4kaH7VqAPNMTQwFa8ttLRHDk7hALg";
+
+/* ===== 分類 ===== */
+
+const categories = {
+
+    wealth:{
+        title:"🪙 財富煉金術 ✦ Wealth Alchemy",
+        symbols:["❂","🪙"],
+        cards:[]
+    },
+
+    inspiration:{
+        title:"📜 靈感編織界 ✦ Inspiration Weaver",
+        symbols:["✧","📜"],
+        cards:[]
+    },
+
+    mirage:{
+        title:"🎭 幻影擬態坊 ✦ Mirage Workshop",
+        symbols:["☾","🎭"],
+        cards:[]
+    },
+
+    chaos:{
+        title:"🌀 混沌試煉場 ✦ Chaos Trial",
+        symbols:["✶","🌀"],
+        cards:[]
+    },
+
+    unknown:{
+        title:"✨ 未分界星軌 ✦ Uncharted Orbit",
+        symbols:["✦","☽"],
+        cards:[]
+    }
+};
+
+/* ===== 載入試算表 ===== */
+
+async function loadProjectsFromSheet(){
+
+    const lobby =
+        document.getElementById(
+            "archive-lobby"
+        );
+
+    const url =
+        `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json`;
+
+    try{
+
+        const response =
+            await fetch(url);
+
+        if(!response.ok){
+
+            throw new Error(
+                "試算表連線失敗"
+            );
+        }
+
+        const text =
+            await response.text();
+
+        const jsonString =
+            text.substring(
+                text.indexOf('{'),
+                text.lastIndexOf('}') + 1
+            );
+
+        const data =
+            JSON.parse(jsonString);
+
+        const rows =
+            data.table.rows;
+
+        Object.keys(categories)
+            .forEach(key =>
+                categories[key].cards = []
+            );
+
+        rows.forEach((row, index)=>{
+
+            /* ===== 防止空白列炸掉 ===== */
+
+            if(!row.c) return;
+
+            const webUrl =
+                row.c?.[0]?.v || "";
+
+            let title =
+                row.c?.[1]?.v || "";
+
+            let desc =
+                row.c?.[2]?.v || "傳送門";
+
+            let tag =
+                row.c?.[3]?.v
+                    ?.toString()
+                    .trim() || "";
+
+            if(!webUrl) return;
+
+            if(!title){
+
+                try{
+
+                    const urlObj =
+                        new URL(webUrl);
+
+                    title =
+                        urlObj.pathname
+                            .split('/')
+                            .pop()
+                            .replace('.html','')
+                        || urlObj.hostname;
+
+                }catch(e){
+
+                    title = "未命名宇宙";
+                }
+            }
+
+            let targetCategory =
+                "unknown";
+
+            if(
+                tag.includes("財富") ||
+                tag.includes("計") ||
+                tag.includes("股") ||
+                tag.includes("錢")
+            ){
+
+                targetCategory =
+                    "wealth";
+            }
+
+            else if(
+                tag.includes("靈感") ||
+                tag.includes("小說") ||
+                tag.includes("文")
+            ){
+
+                targetCategory =
+                    "inspiration";
+            }
+
+            else if(
+                tag.includes("幻影") ||
+                tag.includes("產生") ||
+                tag.includes("名片") ||
+                tag.includes("圖片") ||
+                tag.includes("製造") ||
+                tag.includes("ID")
+            ){
+
+                targetCategory =
+                    "mirage";
+            }
+
+            else if(
+                tag.includes("混沌") ||
+                tag.includes("失敗") ||
+                tag.includes("工事") ||
+                tag.includes("暫停")
+            ){
+
+                targetCategory =
+                    "chaos";
+            }
+
+            const catSymbols =
+                categories[targetCategory]
+                    .symbols;
+
+            const currentSymbol =
+                catSymbols[
+                    index %
+                    catSymbols.length
+                ];
+
+            /* ===== 只顯示檔名 ===== */
+
+            let cleanDisplayUrl = "";
+
+            try{
+
+                const urlObj =
+                    new URL(webUrl);
+
+                cleanDisplayUrl =
+                    urlObj.pathname
+                        .split('/')
+                        .pop();
+
+                if(!cleanDisplayUrl){
+
+                    cleanDisplayUrl =
+                        urlObj.hostname;
+                }
+
+            }catch{
+
+                cleanDisplayUrl =
+                    webUrl;
+            }
+
+            categories[targetCategory]
+                .cards.push(`
+
+                <a
+                    class="card"
+                    href="${webUrl}"
+                    target="_blank"
+                >
+
+                    <div>
+
+                        <div class="card-header-row">
+
+                            <div class="card-title">
+                                ${title}
+                            </div>
+
+                            <div class="card-symbol">
+                                ${currentSymbol}
+                            </div>
+
+                        </div>
+
+                        <div class="card-file">
+                            ${cleanDisplayUrl}
+                        </div>
+
+                        <div class="card-desc">
+                            ${desc}
+                        </div>
+
+                    </div>
+
+                    <div class="card-footer">
+                        PORTAL →
+                    </div>
+
+                </a>
+
+            `);
+        });
+
+        let lobbyHTML = "";
+
+        let hasAnyCards = false;
+
+        Object.keys(categories)
+            .forEach(key=>{
+
+            const cat =
+                categories[key];
+
+            if(cat.cards.length > 0){
+
+                hasAnyCards = true;
+
+                lobbyHTML += `
+
+                    <div class="category-section">
+
+                        <h2 class="category-title">
+
+                            ${cat.title}
+
+                            <span>
+                                (${cat.cards.length})
+                            </span>
+
+                        </h2>
+
+                        <div class="grid">
+
+                            ${cat.cards.join("")}
+
+                        </div>
+
+                    </div>
+
+                `;
+            }
+        });
+
+        if(!hasAnyCards){
+
+            lobby.innerHTML = `
+
+                <div class="loading">
+
+                    試算表中目前沒有任何魔法連線 🔮
+
+                </div>
+
+            `;
+        }
+
+        else{
+
+            lobby.innerHTML =
+                lobbyHTML;
+        }
+
+    }catch(err){
+
+        console.error(err);
+
+        lobby.innerHTML = `
+
+            <div class="loading">
+
+                無法動態連結至星宿試算表 😭
+
+            </div>
+
+        `;
+    }
+}
+
+/* ===== 啟動 ===== */
+
+loadProjectsFromSheet();
+
+</script>
+
+</body>
+</html>
