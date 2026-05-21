@@ -1,520 +1,680 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>太極鰲車輪餅點餐系統</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <title>✦ 太極鰲車輪餅．團購 by ChuChu ✦</title>
+
+    <meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+    <meta name="googlebot" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
+
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; transition: font-size 0.2s ease, transform 0.2s ease; }
+
         :root {
-            --primary-color: #e67e22;
-            --secondary-color: #d35400;
-            --bg-color: #fdf6f0;
-            --card-bg: #ffffff;
-            --text-color: #2c3e50;
+            --bg-base: #fff9f6; 
+            --bg-gradient-end: #ffebe3; 
+            --card-bg: #ffffff; 
+            --text-main: #54433a; 
+            --text-sub: #8e7a70; 
+            --flavor-bg: #fffbf9; 
+            --butter-gold: #f6c86c; 
+            --butter-gold-hover: #f3b946;
+            --berry-pink: #f79999;
+            --base-font-size: 16px;
         }
 
         body {
-            font-family: 'Helvetica Neue', Arial, 'Noto Sans TC', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 900px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        @media (max-width: 768px) {
-            .container { grid-template-columns: 1fr; }
-        }
-
-        .card {
-            background: var(--card-bg);
-            border-radius: 16px;
+            min-height: 100vh;
+            color: var(--text-main);
+            font-family: "Zen Maru Gothic", "Quicksand", "Microsoft JhengHei", sans-serif;
+            background: linear-gradient(180deg, var(--bg-base) 0%, var(--bg-gradient-end) 100%);
             padding: 24px;
-            box-shadow: 0 8px 24px rgba(230, 126, 34, 0.1);
-            border: 1px solid #fadbd8;
-        }
-
-        h1, h2, h3 {
-            color: var(--secondary-color);
-            margin-top: 0;
-        }
-
-        .header-title {
-            grid-column: 1 / -1;
-            text-align: center;
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
-
-        /* 表單設計 */
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-
-        input[type="text"], input[type="number"], select {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #f5cba7;
-            border-radius: 8px;
-            box-sizing: border-box;
-            font-size: 1rem;
-        }
-
-        input:focus, select:focus {
-            outline: none;
-            border-color: var(--primary-color);
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.2s;
-        }
-
-        .btn-primary { background-color: var(--primary-color); color: white; }
-        .btn-primary:hover { background-color: var(--secondary-color); }
-        .btn-danger { background-color: #e74c3c; color: white; }
-        .btn-danger:hover { background-color: #c0392b; }
-        .btn-dark { background-color: #34495e; color: white; }
-        .btn-dark:hover { background-color: #2c3e50; }
-
-        /* 帳本明細樣式 */
-        .order-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            border-bottom: 1px solid #fadbd8;
-        }
-
-        .order-actions button {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 1.1rem;
-            margin-left: 5px;
-        }
-
-        /* 篩選器樣式 */
-        .filter-section {
-            background: #fef5ef;
-            border: 2px dashed var(--primary-color);
-            border-radius: 12px;
-            padding: 15px;
-            margin: 20px 0;
-        }
-
-        .checkbox-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-top: 10px;
-        }
-
-        .checkbox-label {
             display: flex;
             align-items: center;
-            gap: 8px;
-            cursor: pointer;
+            justify-content: center;
+            position: relative;
         }
 
-        /* 圖卡預覽與隱藏 */
-        #capture-area {
-            background: linear-gradient(135deg, #fff5eb 0%, #ffede0 100%);
-            padding: 30px;
-            border-radius: 20px;
-            border: 4px solid #e67e22;
-            color: #4a2700;
-            margin-top: 20px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-        }
+        .decor-border { position: fixed; inset: 12px; border: 2px dashed rgba(142, 122, 112, 0.15); border-radius: 24px; pointer-events: none; z-index: 999; }
+        .container { width: 100%; max-width: 1040px; margin: auto; position: relative; z-index: 2; padding: 10px 0; padding-bottom: 50px; }
 
-        .card-brand {
-            font-size: 1.8rem;
-            font-weight: bold;
-            text-align: center;
-            color: var(--secondary-color);
-            border-bottom: 2px dashed #e67e22;
-            padding-bottom: 10px;
-            margin-bottom: 15px;
-        }
+        .font-control { display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 12px; }
+        .font-btn { background: var(--card-bg); border: 1px solid rgba(142, 122, 112, 0.2); color: var(--text-main); padding: 6px 14px; border-radius: 30px; cursor: pointer; font-size: 13px; font-weight: bold; box-shadow: 0 2px 6px rgba(0,0,0,0.03); }
+        .font-btn:hover { background: #fff5f0; border-color: var(--butter-gold); }
+        .font-btn.active { background: var(--butter-gold); color: var(--text-main); border-color: var(--butter-gold); box-shadow: 0 2px 8px rgba(246, 200, 108, 0.4); }
 
-        .card-section {
-            margin-bottom: 20px;
-        }
+        .title-block { text-align: center; margin-bottom: 30px; }
+        .main-title { font-size: clamp(24px, 4.5vw, 36px); font-weight: 700; color: var(--text-main); letter-spacing: 1px; line-height: 1.4; }
+        .title-badge { display: inline-block; background: rgba(246, 200, 108, 0.2); color: #bd8619; font-size: 13px; padding: 4px 12px; border-radius: 20px; margin-bottom: 8px; font-weight: 700; }
 
-        .card-section h4 {
-            margin: 0 0 8px 0;
-            color: #d35400;
-            font-size: 1.1rem;
-            border-left: 4px solid #e67e22;
-            padding-left: 8px;
-        }
+        .layout-grid { display: flex; flex-direction: column; gap: 24px; margin-bottom: 30px; }
+        @media (min-width: 950px) { .layout-grid { flex-direction: row; align-items: stretch; } }
 
-        .hidden { display: none !important; }
+        .main-calculator, .sidebar-panel { background: var(--card-bg); border: 1px solid rgba(142, 122, 112, 0.12); border-radius: 24px; padding: 28px; box-shadow: 0 10px 30px rgba(84, 67, 58, 0.05); display: flex; flex-direction: column; }
+        @media (min-width: 950px) { .sidebar-panel { width: 380px; } }
 
-        #image-result {
-            text-align: center;
-            margin-top: 20px;
-        }
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; font-size: calc(var(--base-font-size) * 0.9); font-weight: 700; color: var(--text-main); margin-bottom: 8px; }
+        .classic-input { width: 100%; background: #fffbf9; border: 1.5px solid rgba(142, 122, 112, 0.18); border-radius: 14px; padding: 12px 16px; color: var(--text-main); font-size: calc(var(--base-font-size) * 1.0); font-family: inherit; }
+        .classic-input:focus { outline: none; border-color: var(--butter-gold); background: #ffffff; box-shadow: 0 0 0 3px rgba(246, 200, 108, 0.25); }
 
-        #image-result img {
-            max-width: 100%;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        .category-tabs { display: flex; gap: 6px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 4px; }
+        .tab-btn { background: #f7f3f0; border: 1px solid transparent; color: var(--text-sub); padding: 8px 14px; border-radius: 12px; cursor: pointer; font-size: 13px; font-weight: 700; white-space: nowrap; font-family: inherit; }
+        .tab-btn:hover { color: var(--text-main); background: #eee7e2; }
+        .tab-btn.active { background: #fff4dd; border-color: rgba(246, 200, 108, 0.5); color: #b07910; }
+
+        .flavor-scroll-area { max-height: 380px; overflow-y: auto; padding-right: 4px; margin-bottom: 15px; }
+        .flavor-group-pane { display: none; }
+        .flavor-group-pane.active { display: block; }
+        .flavor-row { display: flex; align-items: center; justify-content: space-between; background: var(--flavor-bg); padding: 12px 16px; border-radius: 16px; margin-bottom: 8px; border: 1px solid rgba(142, 122, 112, 0.06); }
+        .flavor-name { font-size: calc(var(--base-font-size) * 0.95); color: var(--text-main); font-weight: 700; }
+        .flavor-price { font-size: 12px; color: var(--text-sub); }
+
+        .counter-controls { display: flex; align-items: center; gap: 12px; }
+        .counter-btn { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid rgba(142, 122, 112, 0.2); background: #ffffff; color: var(--text-main); cursor: pointer; font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+        .counter-btn:hover { border-color: var(--butter-gold); color: var(--butter-gold-hover); }
+        .counter-value { font-size: calc(var(--base-font-size) * 1.0); font-weight: 700; width: 20px; text-align: center; color: var(--text-main); }
+
+        .magic-btn { width: 100%; background: var(--butter-gold); border: none; color: var(--text-main); padding: 14px; border-radius: 16px; cursor: pointer; font-family: inherit; font-weight: 700; font-size: calc(var(--base-font-size) * 1.0); box-shadow: 0 4px 12px rgba(246, 200, 108, 0.3); margin-top: auto; }
+        .magic-btn:hover { background: var(--butter-gold-hover); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(246, 200, 108, 0.4); }
+
+        .ledger-list { max-height: 240px; overflow-y: auto; margin-bottom: 15px; padding-right: 4px; }
+        .ledger-item { padding: 12px 0; border-bottom: 1px dashed rgba(142, 122, 112, 0.15); font-size: calc(var(--base-font-size) * 0.85); display: flex; justify-content: space-between; align-items: center; }
+        .ledger-name { color: var(--text-main); font-weight: 700; }
+        .ledger-detail { color: var(--text-sub); }
+        
+        /* 修改與刪除小操作區 */
+        .ledger-actions { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+        .edit-record { color: #2980b9; cursor: pointer; font-size: 13px; font-weight: 700; }
+        .edit-record:hover { text-decoration: underline; }
+        .delete-record { color: var(--berry-pink); cursor: pointer; font-size: 13px; font-weight: 700; }
+        .delete-record:hover { transform: scale(1.15); }
+
+        .filter-box { background: #fdfaf7; border: 1px dashed rgba(142, 122, 112, 0.25); border-radius: 14px; padding: 10px 12px; margin-bottom: 12px; }
+        .filter-title { font-size: 12px; font-weight: 700; color: var(--text-sub); margin-bottom: 6px; display: flex; align-items: center; gap: 4px; }
+        .filter-options { display: flex; flex-direction: column; gap: 6px; }
+        .filter-label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-main); font-weight: 700; cursor: pointer; }
+        .filter-label input[type="checkbox"] { width: 15px; height: 15px; accent-color: #d96a6a; cursor: pointer; }
+
+        .summary-box { background: #fffbf5; border: 1.5px solid rgba(246, 200, 108, 0.3); border-radius: 16px; padding: 14px; margin-bottom: 12px; }
+        .summary-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: calc(var(--base-font-size) * 0.9); }
+        .smooth-hr { margin: 18px 0; border: none; height: 1px; background: rgba(142, 122, 112, 0.12); }
+        .sidebar-title { font-size: calc(var(--base-font-size) * 1.1); font-weight: 700; color: var(--text-main); text-align: center; }
+        .sidebar-desc { font-size: 12px; color: var(--text-sub); text-align: center; margin-bottom: 16px; }
+
+        /* 按鈕區 */
+        .action-btn-group { display: flex; flex-direction: column; gap: 8px; margin-top: auto; }
+        .copy-all-btn { width: 100%; background: #4a3b32; border: none; color: #ffffff; padding: 11px; border-radius: 12px; cursor: pointer; font-family: inherit; font-weight: 700; font-size: 13px; box-shadow: 0 4px 10px rgba(74, 59, 50, 0.15); }
+        .copy-all-btn:hover { background: #5c4a3f; }
+        .gen-image-btn { width: 100%; background: #e67e22; border: none; color: #ffffff; padding: 11px; border-radius: 12px; cursor: pointer; font-family: inherit; font-weight: 700; font-size: 13px; box-shadow: 0 4px 10px rgba(230, 126, 34, 0.2); }
+        .gen-image-btn:hover { background: #d35400; }
+        .clear-btn { width: 100%; background: #fdf2f2; border: 1px dashed var(--berry-pink); color: #c0392b; padding: 8px; border-radius: 12px; cursor: pointer; font-family: inherit; font-weight: 700; font-size: 12px; }
+        .clear-btn:hover { background: #fce4e4; }
+
+        /* 📸 下方實體圖片區塊樣式 */
+        .image-card-container { background: var(--card-bg); border: 1px solid rgba(142, 122, 112, 0.12); border-radius: 24px; padding: 24px; text-align: center; box-shadow: 0 10px 30px rgba(84, 67, 58, 0.05); max-width: 480px; margin: 24px auto 0 auto; }
+        .image-card-container h4 { font-size: 15px; color: var(--text-main); margin-bottom: 4px; font-weight: 700; }
+        .image-card-container p { font-size: 12px; color: var(--text-sub); margin-bottom: 16px; }
+        .output-real-image { width: 100%; height: auto; border-radius: 16px; border: 1px solid rgba(142, 122, 112, 0.15); box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: none; }
+        .image-placeholder { padding: 40px 20px; border: 2px dashed rgba(142, 122, 112, 0.15); border-radius: 16px; color: var(--text-sub); font-size: 13px; }
+
+        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: #4a3b32; color: #ffffff; padding: 12px 24px; border-radius: 12px; z-index: 2000; opacity: 0; transition: all 0.3s ease; font-size: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); text-align: center; }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        #captureCanvas { display: none; }
+
+        .footer { text-align: center; margin-top: 35px; color: var(--text-sub); font-size: 13px; }
+        .footer-inner { margin-bottom: 4px; font-weight: 700; color: var(--text-main); }
+        
+        .copy-watermark {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            font-family: "Quicksand", sans-serif;
+            font-size: 11px;
+            color: rgba(142, 122, 112, 0.45);
+            letter-spacing: 0.5px;
+            pointer-events: none;
+            z-index: 1001;
         }
     </style>
 </head>
 <body>
 
+<div class="decor-border"></div>
+
+<div class="copy-watermark"> Made with yummy thoughts by <b>ChuChu</b> ✦</div>
+
 <div class="container">
-    <div class="header-title">太極鰲車輪餅</div>
-
-    <div class="card">
-        <h2>點餐工作台 🛠️</h2>
-        <input type="hidden" id="edit-index" value="-1">
-        
-        <div class="form-group">
-            <label for="user-name">訂購人姓名：</label>
-            <input type="text" id="user-name" placeholder="例如：小明">
-        </div>
-
-        <div class="form-group">
-            <label for="flavor">選擇口味：</label>
-            <select id="flavor">
-                <option value="紅豆" data-price="15">紅豆 ($15)</option>
-                <option value="奶油" data-price="15">奶油 ($15)</option>
-                <option value="芋頭" data-price="20">芋頭 ($20)</option>
-                <option value="起司蛋" data-price="21">起司蛋 ($21)</option>
-                <option value="雙餡(紅豆+奶油)" data-price="18">雙餡(紅豆+奶油) ($18)</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="quantity">數量：</label>
-            <input type="number" id="quantity" value="1" min="1">
-        </div>
-
-        <div class="btn-group">
-            <button class="btn btn-primary" onclick="submitOrder()" id="btn-submit">送出點餐</button>
-            <button class="btn btn-danger" onclick="clearAllOrders()">清除帳本 🧹</button>
-        </div>
+    <div class="font-control">
+        <button id="font-small" class="font-btn" onclick="changeFontSize('small')">A -</button>
+        <button id="font-medium" class="font-btn active" onclick="changeFontSize('medium')">A</button>
+        <button id="font-large" class="font-btn" onclick="changeFontSize('large')">A +</button>
     </div>
 
-    <div class="card">
-        <h2>📋 今日全體點餐明細大帳本</h2>
-        <p style="color: #666; margin-top: -10px;">目前已匯整的清單。</p>
-        
-        <div id="order-list" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px;">
-            </div>
-
-        <div class="filter-section">
-            <h3>🔮 魔法圖卡與文字生成篩選器</h3>
-            <p style="font-size: 0.85rem; color: #7f8c8d; margin: -5px 0 10px 0;">勾選決定下方圖卡與複製文字要出現什麼內容：</p>
-            <div class="checkbox-group">
-                <label class="checkbox-label">
-                    <input type="checkbox" id="chk-detail" checked onchange="renderAll()"> 顯示【A】個人明細（各自多少錢）
-                </label>
-                <label class="checkbox-label">
-                    <input type="checkbox" id="chk-summary" checked onchange="renderAll()"> 顯示【B】全體品項加總（廚房方便做）
-                </label>
-                <label class="checkbox-label">
-                    <input type="checkbox" id="chk-total" checked onchange="renderAll()"> 顯示【C】今日應付總金額
-                </label>
-            </div>
-        </div>
-
-        <div class="btn-group" style="flex-direction: column; gap: 10px;">
-            <button class="btn btn-dark" onclick="copyFilteredText()">📋 依篩選條件複製大帳本文字</button>
-            <button class="btn btn-primary" style="background-color: #27ae60;" onclick="generateCardImage()">📸 產生圖片大圖卡</button>
-        </div>
+    <div class="title-block">
+        <div class="title-badge">下午茶開團應緣神隊友 🥞</div>
+        <h1 class="main-title">太極鰲車輪餅</h1>
     </div>
 
-    <div class="card" style="grid-column: 1 / -1;">
-        <h2>📸 結算大圖卡預覽區</h2>
-        <p style="color: #666; margin-top: -10px;">點擊「產生圖片大圖卡」後，會在下方生成可長按儲存的精美圖片。</p>
-        
-        <div id="capture-area">
-            <div class="card-brand">🥮 太極鰲車輪餅 結算報表</div>
+    <div class="layout-grid">
+        <div class="main-calculator" id="mainCorePanel">
+            <input type="hidden" id="editIndex" value="-1">
+
+            <div class="form-group">
+                <label class="form-label">Step 1. 輸入你的名字或暱稱</label>
+                <input type="text" id="memberInput" class="classic-input" placeholder="請輸入名字，主揪才找得到人喔..." autocomplete="off">
+            </div>
+
+            <label class="form-label">Step 2. 選擇口味與數量</label>
             
-            <div id="card-a-sec" class="card-section">
-                <h4>【A】個人訂購明細</h4>
-                <div id="card-detail-content"></div>
+            <div class="category-tabs" id="tabBar">
+                <button id="btn-cat15" class="tab-btn active" onclick="switchCategory('cat15')">15元超值經典系列</button>
+                <button id="btn-cat18-19" class="tab-btn" onclick="switchCategory('cat18-19')">18-19元雙餡與芝麻</button>
+                <button id="btn-cat20" class="tab-btn" onclick="switchCategory('cat20')">20元地瓜麻吉軍團</button>
+                <button id="btn-cat21-25" class="tab-btn" onclick="switchCategory('cat21-25')">21-25元豪華特製頂級</button>
             </div>
 
-            <div id="card-b-sec" class="card-section">
-                <h4>【B】全體品項加總</h4>
-                <div id="card-summary-content"></div>
+            <div class="flavor-scroll-area" id="flavorScrollArea"></div>
+
+            <div class="smooth-hr"></div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <span class="form-label" style="margin: 0;">您的本次點餐小計：</span>
+                <span style="font-size: 26px; font-weight: 700; color: #d96a6a;" id="singleTotal">$ 0</span>
             </div>
 
-            <div id="card-c-sec" class="card-section" style="margin-bottom: 0;">
-                <h4>【C】今日應付總額</h4>
-                <div id="card-total-content" style="font-size: 1.4rem; font-weight: bold; color: #c0392b;"></div>
-            </div>
+            <button class="magic-btn" onclick="submitOrder()" id="submitBtn">送出點餐</button>
         </div>
 
-        <div id="image-result"></div>
+        <div class="sidebar-panel" id="sidebarPanel">
+            <h3 class="sidebar-title">📋 今日全體點餐明細大帳本</h3>
+            <p class="sidebar-desc">目前已匯整的清單。</p>
+            
+            <div class="ledger-list" id="ledgerList">
+                <div id="emptyLedger" style="text-align: center; padding: 40px 0; color: var(--text-sub); font-size: 13px;">
+                    還沒有人點餐唷，快來當第一個！
+                </div>
+            </div>
+
+            <div class="filter-box">
+                <div class="filter-title">🔮 魔法圖卡與複製內容篩選器</div>
+                <div class="filter-options">
+                    <label class="filter-label">
+                        <input type="checkbox" id="showIndividualOpt" checked onchange="onFilterChanged()"> 顯示各自個人明細 (A)
+                    </label>
+                    <label class="filter-label">
+                        <input type="checkbox" id="showStatsOpt" checked onchange="onFilterChanged()"> 顯示全體品項加總 (B)
+                    </label>
+                    <label class="filter-label">
+                        <input type="checkbox" id="showTotalOpt" checked onchange="onFilterChanged()"> 顯示今日開團總金額 (C)
+                    </label>
+                </div>
+            </div>
+
+            <div class="summary-box">
+                <div class="summary-row" style="align-items: flex-start;">
+                    <span style="color: var(--text-sub); white-space: nowrap;">全體口味統計：</span>
+                    <span id="allFlavorStats" style="font-size: 12px; text-align: right; max-width: 210px; word-break: break-all; color: var(--text-main); font-weight: 700; line-height: 1.4;">無</span>
+                </div>
+                <div class="summary-row" style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(142,122,112,0.2);">
+                    <span style="font-weight: 700; color: var(--text-main);">整單應付總金額：</span>
+                    <span style="font-size: 22px; font-weight: 700; color: #d96a6a;" id="grandTotal">$ 0</span>
+                </div>
+            </div>
+
+            <div class="action-btn-group">
+                <button class="copy-all-btn" onclick="copyFilteredLedgerText()">📋 依篩選條件複製大帳本文字</button>
+                <button class="gen-image-btn" onclick="triggerGenerateImage()">📸 產生圖片大圖卡</button>
+                <button class="clear-btn" onclick="clearAllLedgers()">清除今日全體帳本 🧹</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="image-card-container">
+        <h4>📸 今日美味結算大圖卡</h4>
+        <p>（請點擊上方的「產生圖片大圖卡」後生成，即可<b>「長按圖片」</b>儲存）</p>
+        <div id="imgPlaceholder" class="image-placeholder">點選產生圖片按鈕後，這裡會自動凝聚出精美儀表板圖卡唷！</div>
+        <img id="outputCardImage" class="output-real-image" alt="太極鰲車輪餅結算單">
+    </div>
+
+    <div class="footer">
+        <div class="footer-inner">✦ 太極鰲車輪餅專用 · 美味與帳務神隊友 ✦</div>
+        <div>Designed by <b style="color:#d96a6a;">✦ ChuChu ✦</b> © 2026 · All yummy rights reserved</div>
     </div>
 </div>
 
+<div class="toast" id="toastBox"></div>
+<canvas id="captureCanvas" width="450" height="650"></canvas>
+
 <script>
-    // 資料結構：從 localStorage 讀取暫存，若無則為空陣列
-    let orders = JSON.parse(localStorage.getItem('wheelCakeOrders')) || [];
+function changeFontSize(size) {
+    const root = document.documentElement;
+    document.querySelectorAll('.font-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(`font-${size}`).classList.add('active');
+    if (size === 'small') root.style.setProperty('--base-font-size', '13px');
+    else if (size === 'medium') root.style.setProperty('--base-font-size', '16px');
+    else if (size === 'large') root.style.setProperty('--base-font-size', '20px');
+}
 
-    // 初始化讀取
-    window.onload = function() {
-        // 還原上次勾選狀態（可選，這裡預設全開）
-        renderAll();
-    };
+const menuData = {
+    cat15: [
+        { id: 'ch1', name: '紅豆', price: 15 },
+        { id: 'ch2', name: '奶油', price: 15 },
+        { id: 'ch3', name: '花生', price: 15 },
+        { id: 'ch4', name: '巧克力', price: 15 },
+        { id: 'ch5', name: '咖啡', price: 15 },
+        { id: 'ch6', name: '玉米', price: 15 },
+        { id: 'ch7', name: '哈密瓜奶油', price: 15 },
+        { id: 'ch8', name: '草莓奶油', price: 15 },
+        { id: 'ch9', name: '起士', price: 15 },
+        { id: 'ch10', name: '胡椒蛋', price: 15 },
+        { id: 'ch11', name: '蘿蔔絲', price: 15 },
+        { id: 'ch12', name: '酸菜菜脯', price: 15 },
+        { id: 'ch13', name: '高麗菜飯', price: 15 }
+    ],
+    'cat18-19': [
+        { id: 'ch14', name: '奧利奧OREO雙餡', price: 18 },
+        { id: 'ch15', name: '芝麻', price: 19 }
+    ],
+    cat20: [
+        { id: 'ch16', name: '地瓜', price: 20 },
+        { id: 'ch17', name: '三餡', price: 20 },
+        { id: 'ch18', name: '麻吉 + 任一口味', price: 20 },
+        { id: 'ch19', name: '原味麻吉', price: 20 },
+        { id: 'ch20', name: '黑糖麻吉', price: 20 },
+        { id: 'ch21', name: '紅豆 + 麻吉', price: 20 },
+        { id: 'ch22', name: '奶油 + 麻吉', price: 20 },
+        { id: 'ch23', name: '芝麻 + 麻吉', price: 20 },
+        { id: 'ch24', name: '巧克力 + 麻吉', price: 20 }
+    ],
+    'cat21-25': [
+        { id: 'ch25', name: '起司蛋', price: 21 },
+        { id: 'ch26', name: '芋頭', price: 25 },
+        { id: 'ch27', name: '五餡', price: 25 }
+    ]
+};
 
-    // 儲存至 localStorage 的暫存記憶函數
-    function saveData() {
-        localStorage.setItem('wheelCakeOrders', JSON.stringify(orders));
+let currentSelection = {};
+// 🧠 暫存機制：優先從 localStorage 讀取大帳本與篩選過濾器狀態
+let globalLedger = JSON.parse(localStorage.getItem('chuchu_pie_ledger')) || [];
+
+function saveToLocalStorage() {
+    localStorage.setItem('chuchu_pie_ledger', JSON.stringify(globalLedger));
+    localStorage.setItem('chuchu_pie_filters', JSON.stringify({
+        ind: document.getElementById('showIndividualOpt').checked,
+        sta: document.getElementById('showStatsOpt').checked,
+        tot: document.getElementById('showTotalOpt').checked
+    }));
+}
+
+function loadFiltersFromStorage() {
+    const savedFilters = JSON.parse(localStorage.getItem('chuchu_pie_filters'));
+    if (savedFilters) {
+        document.getElementById('showIndividualOpt').checked = savedFilters.ind;
+        document.getElementById('showStatsOpt').checked = savedFilters.sta;
+        document.getElementById('showTotalOpt').checked = savedFilters.tot;
     }
+}
 
-    // 新增或修改送出
-    function submitOrder() {
-        const userName = document.getElementById('user-name').value.trim();
-        const flavorSelect = document.getElementById('flavor');
-        const flavor = flavorSelect.value;
-        const price = parseInt(flavorSelect.options[flavorSelect.selectedIndex].getAttribute('data-price'));
-        const quantity = parseInt(document.getElementById('quantity').value);
-        const editIndex = parseInt(document.getElementById('edit-index').value);
+function initSelections() {
+    Object.keys(menuData).forEach(cat => { menuData[cat].forEach(item => { currentSelection[item.id] = 0; }); });
+}
 
-        if (!userName) {
-            alert('請輸入訂購人姓名！');
-            return;
-        }
-        if (quantity < 1 || isNaN(quantity)) {
-            alert('請輸入正確的數量！');
-            return;
-        }
-
-        if (editIndex === -1) {
-            // 新增模式
-            orders.push({ name: userName, flavor: flavor, price: price, qty: quantity });
-        } else {
-            // 修改模式
-            orders[editIndex] = { name: userName, flavor: flavor, price: price, qty: quantity };
-            document.getElementById('edit-index').value = "-1";
-            document.getElementById('btn-submit').innerText = "送出點餐";
-            document.getElementById('btn-submit').style.backgroundColor = "var(--primary-color)";
-        }
-
-        // 清空輸入框（保留姓名方便下一次輸入）
-        document.getElementById('quantity').value = "1";
-
-        saveData();
-        renderAll();
-    }
-
-    // 刪除特定明細
-    function deleteOrder(index) {
-        if(confirm("確定要刪除這筆明細嗎？")) {
-            orders.splice(index, 1);
-            saveData();
-            renderAll();
-        }
-    }
-
-    // 啟動修改模式
-    function editOrder(index) {
-        const order = orders[index];
-        document.getElementById('user-name').value = order.name;
-        document.getElementById('flavor').value = order.flavor;
-        document.getElementById('quantity').value = order.qty;
-        
-        // 將狀態改為修改中
-        document.getElementById('edit-index').value = index;
-        const submitBtn = document.getElementById('btn-submit');
-        submitBtn.innerText = "確認修改 💾";
-        submitBtn.style.backgroundColor = "#2980b9";
-        
-        // 捲動回頂端方便修改
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    // 清除全體帳本
-    function clearAllOrders() {
-        if (confirm("⚠️ 確定要清除今日整份大帳本嗎？清除後無法復原喔！")) {
-            orders = [];
-            document.getElementById('edit-index').value = "-1";
-            document.getElementById('btn-submit').innerText = "送出點餐";
-            document.getElementById('btn-submit').style.backgroundColor = "var(--primary-color)";
-            saveData();
-            renderAll();
-            document.getElementById('image-result').innerHTML = ""; // 順便清空產生的圖片
-        }
-    }
-
-    // 綜合算力：渲染大帳本列表、即時同步圖卡DOM
-    function renderAll() {
-        const orderListDiv = document.getElementById('order-list');
-        orderListDiv.innerHTML = '';
-
-        if(orders.length === 0) {
-            orderListDiv.innerHTML = '<p style="color: #999; text-align:center;">目前大帳本空空如也 🏜️</p>';
-        }
-
-        let totalMoney = 0;
-        let flavorSummary = {};
-        let detailHtml = '';
-
-        // 遍歷所有訂單
-        orders.forEach((item, index) => {
-            const subtotal = item.price * item.qty;
-            totalMoney += subtotal;
-
-            // 計算品項加總
-            if (!flavorSummary[item.flavor]) {
-                flavorSummary[item.flavor] = 0;
-            }
-            flavorSummary[item.flavor] += item.qty;
-
-            // 1. 右側管理介面的條目
-            const itemDiv = document.createElement('div');
-            itemDiv.className = 'order-item';
-            itemDiv.innerHTML = `
-                <div><strong>${item.name}</strong>：${item.flavor} x${item.qty} ($${subtotal})</div>
-                <div class="order-actions">
-                    <button onclick="editOrder(${index})" title="修改">✏️</button>
-                    <button onclick="deleteOrder(${index})" title="刪除">❌</button>
-                </div>
-            `;
-            orderListDiv.appendChild(itemDiv);
-
-            // 2. 組合圖卡專用的 A 區明細文字
-            detailHtml += `<div style="margin-bottom:4px;">👤 <strong>${item.name}</strong>：${item.flavor} x${item.qty} (${subtotal}元)</div>`;
+function renderFlavorLists() {
+    const scrollArea = document.getElementById('flavorScrollArea');
+    scrollArea.innerHTML = '';
+    Object.keys(menuData).forEach((cat, idx) => {
+        const pane = document.createElement('div');
+        pane.className = `flavor-group-pane ${idx === 0 ? 'active' : ''}`;
+        pane.id = `pane-${cat}`;
+        menuData[cat].forEach(item => {
+            const row = document.createElement('div'); row.className = 'flavor-row';
+            row.innerHTML = `<div class="flavor-info"><span class="flavor-name">${item.name}</span><span class="flavor-price">$ ${item.price} / 個</span></div>
+                             <div class="counter-controls"><button class="counter-btn" type="button" onclick="updateCount('${item.id}', -1)">-</button>
+                             <span class="counter-value" id="count-${item.id}">0</span><button class="counter-btn" type="button" onclick="updateCount('${item.id}', 1)">+</button></div>`;
+            pane.appendChild(row);
         });
+        scrollArea.appendChild(pane);
+    });
+}
 
-        // 處理 B 區品項加總文字
-        let summaryHtml = '';
-        for (const [flavor, qty] of Object.entries(flavorSummary)) {
-            summaryHtml += `<div style="margin-bottom:4px;">🥯 <strong>${flavor}</strong>：共 ${qty} 個</div>`;
-        }
+function switchCategory(catId) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(`btn-${catId}`).classList.add('active');
+    document.querySelectorAll('.flavor-group-pane').forEach(pane => pane.classList.remove('active'));
+    document.getElementById(`pane-${catId}`).classList.add('active');
+}
 
-        // 把資料灌進圖卡預覽區 DOM
-        document.getElementById('card-detail-content').innerHTML = detailHtml || '無資料';
-        document.getElementById('card-summary-content').innerHTML = summaryHtml || '無資料';
-        document.getElementById('card-total-content').innerText = `NT$ ${totalMoney} 元`;
+function updateCount(id, delta) {
+    const newVal = (currentSelection[id] || 0) + delta;
+    if (newVal >= 0 && newVal <= 99) { currentSelection[id] = newVal; document.getElementById(`count-${id}`).textContent = newVal; calculateSingleTotal(); }
+}
 
-        // 【同步篩選隱藏機制】根據打勾狀態，動態讓圖卡對應區塊「隱形」並縮水高度
-        const chkDetail = document.getElementById('chk-detail').checked;
-        const chkSummary = document.getElementById('chk-summary').checked;
-        const chkTotal = document.getElementById('chk-total').checked;
+function findItemById(id) {
+    for (let cat of Object.keys(menuData)) { let match = menuData[cat].find(i => i.id === id); if (match) return match; }
+    return null;
+}
 
-        document.getElementById('card-a-sec').className = chkDetail ? "card-section" : "card-section hidden";
-        document.getElementById('card-b-sec').className = chkSummary ? "card-section" : "card-section hidden";
-        document.getElementById('card-c-sec').className = chkTotal ? "card-section" : "card-section hidden";
+function calculateSingleTotal() {
+    let sum = 0;
+    Object.keys(currentSelection).forEach(id => { const qty = currentSelection[id]; const item = findItemById(id); if (item && qty > 0) sum += qty * item.price; });
+    document.getElementById('singleTotal').textContent = `$ ${sum}`;
+    return sum;
+}
+
+function showToast(msg) {
+    const toast = document.getElementById('toastBox'); toast.textContent = msg; toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+// 送出點餐或確認修改
+function submitOrder() {
+    const name = document.getElementById('memberInput').value.trim();
+    if (!name) { showToast('🥞 請先填寫名字，以便主主統計大帳本！'); return; }
+    let hasItems = false; let detailSegments = []; let itemsOrdered = {};
+    Object.keys(currentSelection).forEach(id => {
+        const qty = currentSelection[id];
+        if (qty > 0) { hasItems = true; const item = findItemById(id); detailSegments.push(`${item.name} x${qty}`); itemsOrdered[id] = qty; }
+    });
+    if (!hasItems) { showToast('🥞 請先選擇任何一個好iches口味與數量喔！'); return; }
+    const cost = calculateSingleTotal();
+    
+    const editIndex = parseInt(document.getElementById('editIndex').value);
+    
+    if (editIndex === -1) {
+        // 新增模式
+        globalLedger.push({ id: Date.now(), name: name, detailsText: detailSegments.join(', '), items: itemsOrdered, cost: cost });
+        showToast(`✨ 已成功寫入全體明細大帳本！`);
+    } else {
+        // 修改模式
+        globalLedger[editIndex] = { id: globalLedger[editIndex].id, name: name, detailsText: detailSegments.join(', '), items: itemsOrdered, cost: cost };
+        // 還原為新增模式狀態
+        document.getElementById('editIndex').value = "-1";
+        const sBtn = document.getElementById('submitBtn');
+        sBtn.innerText = "送出點餐";
+        sBtn.style.background = "var(--butter-gold)";
+        showToast(`✏️ 點餐明細已成功修改更新！`);
     }
+    
+    document.getElementById('memberInput').value = ''; 
+    initSelections(); 
+    initSelectionsOnList(); 
+    calculateSingleTotal(); 
+    saveToLocalStorage();
+    renderLedger();
+}
 
-    // 依篩選條件動態組合文字並複製到剪貼簿
-    function copyFilteredText() {
-        if (orders.length === 0) {
-            alert('大帳本裡面還沒有資料可以複製喔！');
-            return;
-        }
+function initSelectionsOnList() { Object.keys(currentSelection).forEach(id => { const element = document.getElementById(`count-${id}`); if(element) element.textContent = '0'; }); }
 
-        const chkDetail = document.getElementById('chk-detail').checked;
-        const chkSummary = document.getElementById('chk-summary').checked;
-        const chkTotal = document.getElementById('chk-total').checked;
+// 移除紀錄
+function removeRecord(id) {
+    globalLedger = globalLedger.filter(rec => rec.id !== id);
+    // 如果剛好在修改該筆，順便初始化
+    document.getElementById('editIndex').value = "-1";
+    const sBtn = document.getElementById('submitBtn');
+    sBtn.innerText = "送出點餐";
+    sBtn.style.background = "var(--butter-gold)";
+    
+    saveToLocalStorage();
+    renderLedger(); 
+    showToast('💡 已將該品項自帳本中移除');
+}
 
-        let copyLines = [];
-        copyLines.push(`📋 太極鰲車輪餅 今日結算清單 \n---`);
+// ✏️ 啟動修改模式功能
+function editRecord(index) {
+    const record = globalLedger[index];
+    document.getElementById('memberInput').value = record.name;
+    document.getElementById('editIndex').value = index;
+    
+    // 清空並重新倒回選擇的數量
+    initSelections();
+    Object.keys(record.items).forEach(id => {
+        currentSelection[id] = record.items[id];
+        const elem = document.getElementById(`count-${id}`);
+        if(elem) elem.textContent = record.items[id];
+    });
+    calculateSingleTotal();
+    
+    // 變更左側工作台按鈕狀態
+    const sBtn = document.getElementById('submitBtn');
+    sBtn.innerText = "確認修改 💾";
+    sBtn.style.background = "#5dade2";
+    
+    showToast('✏️ 已將資料倒回工作台，修改完請點「確認修改」');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
-        // A 區
-        if (chkDetail) {
-            copyLines.push(`【A】個人訂購明細：`);
-            orders.forEach(item => {
-                copyLines.push(`• ${item.name} : ${item.flavor} x${item.qty} (${item.price * item.qty}元)`);
-            });
-            copyLines.push(`---`);
-        }
-
-        // B 區
-        if (chkSummary) {
-            copyLines.push(`【B】全體品項加總：`);
-            let flavorSummary = {};
-            orders.forEach(item => {
-                flavorSummary[item.flavor] = (flavorSummary[item.flavor] || 0) + item.qty;
-            });
-            for (const [flavor, qty] of Object.entries(flavorSummary)) {
-                copyLines.push(`• ${flavor} : ${qty}個`);
-            }
-            copyLines.push(`---`);
-        }
-
-        // C 區
-        if (chkTotal) {
-            let totalMoney = orders.reduce((sum, item) => sum + (item.price * item.qty), 0);
-            copyLines.push(`【C】今日應付總額： ${totalMoney} 元`);
-        }
-
-        const finalContent = copyLines.join('\n');
+// 🧹 清除今日全體大帳本
+function clearAllLedgers() {
+    if (confirm("⚠️ 確定要清空今日大帳本內的所有資訊嗎？清空後無法復原喔！")) {
+        globalLedger = [];
+        document.getElementById('editIndex').value = "-1";
+        const sBtn = document.getElementById('submitBtn');
+        sBtn.innerText = "送出點餐";
+        sBtn.style.background = "var(--butter-gold)";
+        document.getElementById('memberInput').value = '';
+        initSelections();
+        initSelectionsOnList();
+        calculateSingleTotal();
         
-        // 執行複製到剪貼簿
-        navigator.clipboard.writeText(finalContent).then(() => {
-            alert('📋 聰明篩選文字已成功複製到剪貼簿！快去 LINE 貼上吧！');
-        }).catch(err => {
-            alert('複製失敗，請手動全選複製。');
-        });
+        saveToLocalStorage();
+        renderLedger();
+        showToast('🧹 大帳本已完全清空重置囉！');
+    }
+}
+
+function onFilterChanged() {
+    saveToLocalStorage();
+    // 隱藏當下圖片，提示使用者需要重新產生
+    document.getElementById('imgPlaceholder').style.display = 'block';
+    document.getElementById('imgPlaceholder').textContent = '篩選條件已變更，請點擊上方按鈕重新凝聚大圖卡 🥞';
+    document.getElementById('outputCardImage').style.display = 'none';
+}
+
+function renderLedger() {
+    const listContainer = document.getElementById('ledgerList');
+    if (globalLedger.length === 0) {
+        listContainer.innerHTML = `<div id="emptyLedger" style="text-align: center; padding: 40px 0; color: var(--text-sub); font-size: 13px;">還沒有人點餐唷，快來當第一個！</div>`;
+        document.getElementById('allFlavorStats').textContent = '無'; document.getElementById('grandTotal').textContent = '$ 0';
+        document.getElementById('imgPlaceholder').style.display = 'block';
+        document.getElementById('imgPlaceholder').textContent = '點選產生圖片按鈕後，這裡會自動凝聚出精美儀表板圖卡唷！';
+        document.getElementById('outputCardImage').style.display = 'none';
+        return;
+    }
+    listContainer.innerHTML = ''; let totalMoney = 0; let totalFlavorCounters = {};
+    globalLedger.forEach((record, index) => {
+        totalMoney += record.cost; Object.keys(record.items).forEach(id => { totalFlavorCounters[id] = (totalFlavorCounters[id] || 0) + record.items[id]; });
+        const div = document.createElement('div'); div.className = 'ledger-item';
+        div.innerHTML = `<div><span class="ledger-name">【${record.name}】</span><span class="ledger-detail">${record.detailsText}</span></div>
+                         <div class="ledger-actions">
+                             <span style="color:#d96a6a;font-weight:700;margin-right:4px;">$${record.cost}</span>
+                             <span class="edit-record" onclick="editRecord(${index})" title="修改">✏️</span>
+                             <span class="delete-record" onclick="removeRecord(${record.id})" title="刪除">✕</span>
+                         </div>`;
+        listContainer.appendChild(div);
+    });
+    document.getElementById('grandTotal').textContent = `$ ${totalMoney}`;
+    let statSegments = []; Object.keys(totalFlavorCounters).forEach(id => { const item = findItemById(id); if (item && totalFlavorCounters[id] > 0) { statSegments.push(`${item.name}:${totalFlavorCounters[id]}個`); } });
+    document.getElementById('allFlavorStats').textContent = statSegments.length > 0 ? statSegments.join(' / ') : '無';
+}
+
+function copyFilteredLedgerText() {
+    if (globalLedger.length === 0) { showToast('🥞 目前大帳本空空的，沒辦法生成文字唷！'); return; }
+    
+    const showIndividual = document.getElementById('showIndividualOpt').checked;
+    const showStats = document.getElementById('showStatsOpt').checked;
+    const showTotal = document.getElementById('showTotalOpt').checked;
+
+    if (!showIndividual && !showStats && !showTotal) {
+        showToast('🔮 請至少勾選一種想要產生的內容唷！');
+        return;
     }
 
-    // 📸 按下後才會真正抓取當下過濾的 DOM 並渲染成圖片
-    function generateCardImage() {
-        if (orders.length === 0) {
-            alert('帳本內無資料，無法生成圖卡！');
-            return;
+    let textSegments = ['✦ 太極鰲車輪餅 · 下午茶美味結算單 ✦\n'];
+
+    if (showIndividual) {
+        textSegments.push('📝 【個人點餐明細】');
+        globalLedger.forEach(record => {
+            textSegments.push(`【${record.name}】${record.detailsText} 共 ${record.cost} 元`);
+        });
+        textSegments.push('');
+    }
+
+    if (showStats) {
+        textSegments.push('🥞 【全體口味統計】');
+        textSegments.push(document.getElementById('allFlavorStats').textContent);
+        textSegments.push('');
+    }
+
+    if (showTotal) {
+        textSegments.push('💰 【本次開團應付總額】');
+        textSegments.push(`合計金額：${document.getElementById('grandTotal').textContent} 元`);
+        textSegments.push('');
+    }
+
+    textSegments.push('Design by ChuChu ✦');
+    const finalCopyText = textSegments.join('\n');
+
+    navigator.clipboard.writeText(finalCopyText).then(() => {
+        showToast(`✨ 已成功依照篩選條件複製大帳本文字！`);
+    }).catch(() => { showToast(`❌ 複製失敗，請手動複製。`); });
+}
+
+// 📸 主動按鈕點擊觸發繪製大圖卡機制
+function triggerGenerateImage() {
+    if (globalLedger.length === 0) {
+        showToast('🥞 帳本內空空的，無法凝結出大圖卡喔！');
+        return;
+    }
+    showToast('✨ 正在施展魔法繪製精美大圖卡...');
+    autoUpdateVisualCardImage();
+}
+
+function autoUpdateVisualCardImage() {
+    const canvas = document.getElementById('captureCanvas'); const ctx = canvas.getContext('2d');
+    
+    const showIndividual = document.getElementById('showIndividualOpt').checked;
+    const showStats = document.getElementById('showStatsOpt').checked;
+    const showTotal = document.getElementById('showTotalOpt').checked;
+
+    let baseHeaderHeight = 100;
+    let baseFooterWatermarkHeight = 50;
+    
+    let itemsHeight = 0;
+    if (showIndividual) {
+        itemsHeight = (globalLedger.length * 38) + 25;
+    }
+
+    let summaryBoxHeight = 0;
+    let estimatedStatLines = 1;
+    const footerStatsRaw = document.getElementById('allFlavorStats').textContent;
+    
+    if (showStats || showTotal) {
+        const maxCharsPerLine = 28;
+        estimatedStatLines = Math.max(1, Math.ceil(footerStatsRaw.length / maxCharsPerLine));
+        
+        let boxPaddingAndTitle = 15;
+        let statsSectionHeight = showStats ? (20 + (estimatedStatLines * 18)) : 0;
+        let totalSectionHeight = showTotal ? 35 : 0;
+        
+        summaryBoxHeight = boxPaddingAndTitle + statsSectionHeight + totalSectionHeight + 15;
+    }
+
+    canvas.height = baseHeaderHeight + itemsHeight + summaryBoxHeight + baseFooterWatermarkHeight + 20;
+
+    let gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, '#fff9f6'); gradient.addColorStop(1, '#ffebe3');
+    ctx.fillStyle = gradient; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    ctx.strokeStyle = '#e3d6cf'; ctx.lineWidth = 2; ctx.strokeRect(15, 15, canvas.width - 30, canvas.height - 30);
+    ctx.strokeStyle = 'rgba(246, 200, 108, 0.4)'; ctx.lineWidth = 1.5; ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
+    
+    ctx.textAlign = 'center'; ctx.font = 'bold 21px "Microsoft JhengHei", sans-serif'; ctx.fillStyle = '#54433a';
+    ctx.fillText('🥞 太極鰲車輪餅 · 下午茶結算單 🥞', canvas.width / 2, 55);
+    
+    ctx.strokeStyle = 'rgba(142, 122, 112, 0.2)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(60, 75); ctx.lineTo(canvas.width - 60, 75); ctx.stroke();
+    
+    let currentY = 100;
+
+    if (showIndividual) {
+        ctx.textAlign = 'left';
+        ctx.font = 'bold 13px "Microsoft JhengHei", sans-serif'; ctx.fillStyle = '#8e7a70';
+        ctx.fillText('📝 個人點餐明細：', 35, currentY);
+        currentY += 25;
+
+        globalLedger.forEach((record) => {
+            ctx.font = 'bold 14px "Microsoft JhengHei", sans-serif'; ctx.fillStyle = '#54433a'; ctx.fillText(`【${record.name}】`, 35, currentY);
+            ctx.font = '13px "Microsoft JhengHei", sans-serif'; ctx.fillStyle = '#8e7a70';
+            let txt = record.detailsText; if(txt.length > 24) txt = txt.substring(0, 22) + '...';
+            ctx.fillText(txt, 115, currentY);
+            ctx.textAlign = 'right'; ctx.font = 'bold 15px "Quicksand", sans-serif'; ctx.fillStyle = '#d96a6a'; ctx.fillText(`$${record.cost}`, canvas.width - 35, currentY);
+            ctx.textAlign = 'left'; ctx.strokeStyle = 'rgba(142, 122, 112, 0.08)'; ctx.beginPath(); ctx.moveTo(35, currentY + 12); ctx.lineTo(canvas.width - 35, currentY + 12); ctx.stroke();
+            currentY += 38;
+        });
+        currentY += 10;
+    }
+    
+    if (showStats || showTotal) {
+        const summaryBoxTop = currentY;
+        
+        ctx.fillStyle = '#ffffff'; ctx.fillRect(35, summaryBoxTop, canvas.width - 70, summaryBoxHeight);
+        ctx.strokeStyle = 'rgba(246, 200, 108, 0.6)'; ctx.lineWidth = 1.5; ctx.strokeRect(35, summaryBoxTop, canvas.width - 70, summaryBoxHeight);
+        
+        let boxInnerY = summaryBoxTop + 25;
+
+        if (showStats) {
+            ctx.textAlign = 'left';
+            ctx.font = 'bold 13px "Microsoft JhengHei", sans-serif'; ctx.fillStyle = '#8e7a70';
+            ctx.fillText('全體品項加總：', 48, boxInnerY);
+            
+            ctx.font = '12px "Microsoft JhengHei", sans-serif'; ctx.fillStyle = '#54433a';
+            let startX = 140;
+            let startY = boxInnerY;
+            
+            const maxCharsPerLine = 28;
+            for (let i = 0; i < footerStatsRaw.length; i += maxCharsPerLine) {
+                let chunk = footerStatsRaw.substring(i, i + maxCharsPerLine);
+                ctx.fillText(chunk, startX, startY);
+                startY += 18;
+            }
+            boxInnerY = startY + 10;
         }
 
-        const resultDiv = document.getElementById('image-result');
-        resultDiv.innerHTML = '<p style="color: #e67e22;">✨ 正在施展魔法繪製專屬大圖卡...</p>';
-
-        // 使用 html2canvas 套件捕捉已經動態伸縮隱藏後的 capture-area
-        setTimeout(() => {
-            html2canvas(document.getElementById('capture-area'), {
-                scale: 2, // 提高解析度提升質感
-                backgroundColor: null,
-                useCORS: true
-            }).then(canvas => {
-                resultDiv.innerHTML = '<h3>🎉 生成成功！</h3><p style="font-size:0.85rem; color:#666;">手機用戶可「長按下方圖片」儲存，電腦用戶按右鍵另存即可！</p>';
-                const img = document.createElement('img');
-                img.src = canvas.toDataURL('image/png');
-                resultDiv.appendChild(img);
-                
-                // 貼心捲動到圖片處
-                resultDiv.scrollIntoView({ behavior: 'smooth' });
-            });
-        }, 300);
+        if (showTotal) {
+            if (showStats) {
+                ctx.strokeStyle = 'rgba(142, 122, 112, 0.1)'; ctx.beginPath(); ctx.moveTo(48, boxInnerY - 12); ctx.lineTo(canvas.width - 48, boxInnerY - 12); ctx.stroke();
+            }
+            ctx.textAlign = 'left';
+            ctx.font = 'bold 14px "Microsoft JhengHei", sans-serif'; ctx.fillStyle = '#54433a'; 
+            ctx.fillText('今日開團總金額：', 48, boxInnerY);
+            ctx.textAlign = 'right'; ctx.font = 'bold 24px "Quicksand", sans-serif'; ctx.fillStyle = '#d96a6a'; 
+            ctx.fillText(document.getElementById('grandTotal').textContent, canvas.width - 48, boxInnerY + 4);
+        }
     }
+
+    ctx.textAlign = 'center'; ctx.font = '500 11px "Quicksand", sans-serif'; ctx.fillStyle = 'rgba(142, 122, 112, 0.4)';
+    ctx.fillText('Made with yummy thoughts by ChuChu ✦ © 2026', canvas.width / 2, canvas.height - 30);
+
+    const dataURL = canvas.toDataURL("image/png");
+    const outputImg = document.getElementById('outputCardImage');
+    outputImg.src = dataURL;
+    
+    document.getElementById('imgPlaceholder').style.display = 'none';
+    outputImg.style.display = 'block';
+}
+
+window.onload = function() { 
+    loadFiltersFromStorage();
+    initSelections(); 
+    initSelectionsOnList(); 
+    renderFlavorLists(); 
+    renderLedger(); 
+};
 </script>
 
 </body>
