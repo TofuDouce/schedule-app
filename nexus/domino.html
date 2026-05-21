@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>骨牌效應 ✦ Domino Effect</title>
+    <title>壯觀千塊骨牌 ✦ Domino Mega-Chain</title>
     <meta name="robots" content="noindex,nofollow">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -30,13 +30,11 @@
         }
         .domino {
             cursor: pointer;
-            transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.35s ease;
-            transform-origin: bottom center;
+            transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.25s ease;
         }
-        /* 倒下後的狀態 */
+        /* 壓倒後的傾斜狀態 */
         .domino.down {
-            transform: rotate(90deg) translateY(2px);
-            opacity: 0.4;
+            opacity: 0.35;
         }
         /* 介面層 */
         .ui-container {
@@ -105,13 +103,13 @@
     <div class="ui-container">
         <div class="header">
             <div>
-                <h1 class="title">骨牌效應</h1>
-                <div class="subtitle">✦ Domino Effect</div>
+                <h1 class="title">無盡骨牌效應</h1>
+                <div class="subtitle">✦ 1200+ Domino Mega-Chain</div>
             </div>
             <button class="btn" onclick="resetField()">✦ 重置骨牌 (R) ✦</button>
         </div>
         <div class="footer">
-            <div class="hint" id="hintText">點擊第一塊骨牌・啟動連鎖效應</div>
+            <div class="hint" id="hintText">點擊最左上角第一塊骨牌・釋放連鎖</div>
         </div>
     </div>
 
@@ -129,41 +127,77 @@
             const screenWidth = window.innerWidth;
             const screenHeight = window.innerHeight;
             
-            const dominoWidth = 6;
-            const dominoHeight = 32;
-            const spacing = 14; // 間距物理極限，倒下時能完美壓到下一塊
+            // 骨牌幾何尺寸
+            const dWidth = 4;
+            const dHeight = 18;
+            const step = 8; // 軌道前進步長
             
-            const startX = 40;
-            const endX = screenWidth - 40;
-            const centerY = screenHeight / 2;
+            // 實打實的 1200 塊骨牌
+            const totalDominoes = 1200; 
             
-            let index = 0;
-            for (let x = startX; x < endX; x += spacing) {
-                // 利用正弦函數計算波浪 Y 軸，讓骨牌排成一條優雅的 S 型波浪形
-                const y = centerY + Math.sin(x * 0.005) * (screenHeight * 0.18);
-                
+            // 蛇行軌道物理參數
+            const padding = 60;
+            const rowHeight = dHeight * 2.5; // 每列的上下間距
+            const availableWidth = screenWidth - padding * 2;
+            
+            let currentX = padding;
+            let currentY = padding + 40;
+            let direction = 1; // 1 = 向右跑, -1 = 向左跑
+
+            for (let i = 0; i < totalDominoes; i++) {
+                // 建立 SVG 矩形
                 const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-                // 漸層彩虹調色
-                const hue = (index * 2) % 360;
-                const color = `hsl(${hue}, 75%, 60%)`;
+                
+                // 動態流體色彩（360度絢麗漸層）
+                const hue = (i * 0.4) % 360;
+                const color = `hsl(${hue}, 80%, 55%)`;
                 
                 rect.setAttribute("class", "domino");
-                rect.setAttribute("x", x);
-                rect.setAttribute("y", y - dominoHeight);
-                rect.setAttribute("width", dominoWidth);
-                rect.setAttribute("height", dominoHeight);
-                rect.setAttribute("rx", "2"); // 細緻圓角
+                rect.setAttribute("width", dWidth);
+                rect.setAttribute("height", dHeight);
+                rect.setAttribute("rx", "1");
                 rect.setAttribute("fill", color);
                 
-                // 設定每一塊骨牌專屬的底部旋轉軸心
-                rect.style.transformOrigin = `${x + dominoWidth/2}px ${y}px`;
+                // 根據當前前進方向，計算骨牌應該傾倒的角度
+                // 向右跑的骨牌往右倒（90deg），向左跑的往左倒（-90deg）
+                const fallAngle = direction * 75; 
+                rect.dataset.fallAngle = fallAngle;
+
+                // 軌道邏輯：計算折返蛇行
+                if (direction === 1) {
+                    // 向右前進
+                    if (currentX < screenWidth - padding) {
+                        currentX += step;
+                    } else {
+                        // 撞到右牆，轉彎向下，並切換方向往左
+                        currentY += rowHeight;
+                        direction = -1;
+                    }
+                } else {
+                    // 向左前進
+                    if (currentX > padding) {
+                        currentX -= step;
+                    } else {
+                        // 撞到左牆，轉彎向下，並切換方向往右
+                        currentY += rowHeight;
+                        direction = 1;
+                    }
+                }
+
+                // 超出螢幕底部就停止產生，防死當
+                if (currentY > screenHeight - padding) break;
+
+                rect.setAttribute("x", currentX - dWidth / 2);
+                rect.setAttribute("y", currentY - dHeight);
+                
+                // 設定每塊骨牌以其「底部中心點」為物理旋轉軸
+                rect.style.transformOrigin = `${currentX}px ${currentY}px`;
                 
                 svg.appendChild(rect);
                 dominoes.push(rect);
-                index++;
             }
 
-            // 綁定第一塊骨牌的點擊啟動事件
+            // 綁定極左上角第一塊骨牌作為引爆點
             if (dominoes.length > 0) {
                 dominoes[0].addEventListener('click', startChainAction);
             }
@@ -175,11 +209,14 @@
             document.getElementById('hintText').style.display = 'none';
             dominoes[0].removeEventListener('click', startChainAction);
 
-            // 連鎖推倒引擎
+            // 1200塊巨量連鎖引擎
             dominoes.forEach((domino, i) => {
                 setTimeout(() => {
+                    const angle = domino.dataset.fallAngle;
+                    // 執行精準的方向傾倒
+                    domino.style.transform = `rotate(${angle}deg)`;
                     domino.classList.add('down');
-                }, i * 25); // 25毫秒推倒一塊，流暢滑順
+                }, i * 12); // 縮短至 12 毫秒，維持極速流暢的骨牌奔跑感
             });
         }
 
@@ -187,7 +224,6 @@
             initDominoes();
         }
 
-        // 支援鍵盤 R 鍵重置快捷鍵
         window.addEventListener('keydown', (e) => {
             if (e.key === 'r' || e.key === 'R') {
                 resetField();
