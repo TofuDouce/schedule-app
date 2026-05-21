@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>✦DreamID✦</title>
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #1a1625; --gold: #e2d1a7; --gold-dim: rgba(226, 209, 167, 0.2); --text: #fdfbff; --card-bg: rgba(255, 255, 255, 0.05); }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: var(--text); font-family: "Cormorant Garamond", serif; padding: 20px 0 60px; }
+
+        .container { width: 92%; max-width: 480px; margin: auto; position: relative; }
+        .header { text-align: center; margin-bottom: 25px; padding-top: 20px; }
+        .main-title { font-family: "Great Vibes", cursive; font-size: 60px; color: var(--gold); line-height: 1; }
+        .subtitle { font-family: "Cinzel", serif; font-size: 11px; letter-spacing: 3px; color: var(--gold); margin-top: 8px; opacity: 0.8; }
+
+        .panel { background: rgba(20, 18, 28, 0.6); border: 0.5px solid var(--gold-dim); padding: 22px; backdrop-filter: blur(15px); }
+
+        /* 5x4 矩陣開關 */
+        .world-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 25px; }
+        .world-btn { 
+            background: var(--card-bg); border: 0.5px solid var(--gold-dim); padding: 10px 0; 
+            border-radius: 4px; cursor: pointer; transition: 0.3s; text-align: center;
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+        }
+        .world-btn span { font-size: 11px; color: rgba(255,255,255,0.5); }
+        .world-btn .emoji { font-size: 18px; filter: grayscale(100%); transition: 0.3s; }
+        .world-btn.active { background: rgba(226, 209, 167, 0.15); border-color: var(--gold); box-shadow: 0 0 10px rgba(226, 209, 167, 0.1); }
+        .world-btn.active span { color: var(--gold); font-weight: bold; }
+        .world-btn.active .emoji { filter: grayscale(0%); }
+
+        .row-split { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .input-label { font-family: "Cinzel", serif; font-size: 13px; color: var(--gold); margin-bottom: 6px; display: block; }
+        input, select { 
+            width: 100%; background: rgba(255,255,255,0.08); border: 0.5px solid var(--gold-dim); 
+            color: #fff; padding: 12px; font-size: 15px; outline: none; border-radius: 4px;
+        }
+
+        .toggle-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .toggle-box { background: var(--card-bg); border: 0.5px solid var(--gold-dim); padding: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .switch { width: 40px; height: 20px; background: #333; border-radius: 10px; position: relative; cursor: pointer; }
+        .switch.active { background: #b1a27b; }
+        .dot { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: #fff; border-radius: 50%; transition: 0.2s; }
+        .switch.active .dot { left: 22px; }
+
+        .gen-btn { 
+            width: 100%; height: 55px; margin-top: 30px; background: transparent; 
+            border: 1px solid var(--gold); color: var(--gold); font-family: "Cinzel", serif; 
+            font-size: 16px; letter-spacing: 3px; cursor: pointer; transition: 0.4s;
+        }
+        .gen-btn:hover { background: var(--gold-dim); }
+
+        .result-card { border-bottom: 0.5px solid var(--gold-dim); padding: 20px 0; animation: fadeIn 0.4s ease forwards; cursor: pointer; }
+        .id-val { font-family: "Cinzel", serif; font-size: 22px; color: #fff; margin-bottom: 6px; }
+        .id-meaning { font-size: 14px; color: var(--gold); font-style: italic; line-height: 1.5; opacity: 0.8; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1 class="main-title">DreamID</h1>
+            <p class="subtitle">✦ ID產生器 ✦</p>
+        </div>
+
+        <div class="panel">
+            <div class="world-grid" id="worldGrid"></div>
+
+            <div class="row-split">
+                <div><span class="input-label">第一關鍵字</span><input id="k1" value="Ann"></div>
+                <div><span class="input-label">第二關鍵字</span><input id="k2" placeholder="例如: Lucian"></div>
+            </div>
+
+            <div class="row-split" style="align-items: center;">
+                <div><span class="input-label" id="lenDisp">14 字元</span><input type="range" id="range" min="6" max="24" value="14" style="accent-color: var(--gold);"></div>
+                <div><span class="input-label">分隔符</span><select id="sep"><option value="">無間隔</option><option value=".">.</option><option value="_">_</option></select></div>
+            </div>
+
+            <div class="toggle-group">
+                <div class="toggle-box"><span>大寫 UPPER</span><div class="switch" id="up" onclick="tgl(this)"><div class="dot"></div></div></div>
+                <div class="toggle-box"><span>數字 NUM</span><div class="switch active" id="num" onclick="tgl(this)"><div class="dot"></div></div></div>
+                <div class="toggle-box"><span>符號 SYM</span><div class="switch" id="sym" onclick="tgl(this)"><div class="dot"></div></div></div>
+                <div class="toggle-box"><span>繁複 DECO</span><div class="switch active" id="deco" onclick="tgl(this)"><div class="dot"></div></div></div>
+            </div>
+
+            <button class="gen-btn" id="generateBtn">START SYNCHRONIZATION</button>
+            <div id="results"></div>
+        </div>
+    </div>
+
+<script>
+    const worlds = [
+        { id: 'sweet', n: '糖霜', e: '🍭', w: {"Sugar":"砂糖甜味","Cream":"鮮奶油般","Berry":"莓果香"}, v: "在{}中點綴著{}" },
+        { id: 'tenno', n: '虛空', e: '⚔️', w: {"Lotus":"秘蓮","Void":"虛空","Oro":"傳承"}, v: "在{}中覺醒的{}" },
+        { id: 'hunter', n: '獵跡', e: '🐉', w: {"Rath":"火魂","Scale":"龍鱗","Apex":"巔峰"}, v: "在{}中迴盪的{}" },
+        { id: 'desert', n: '荒漠', e: '🏜️', w: {"Sand":"流沙","Oasis":"綠洲","Dune":"起伏沙丘"}, v: "在{}中穿梭於{}" },
+        { id: 'herbal', n: '草本', e: '🌿', w: {"Rose":"薔薇","Mint":"薄荷","Ivy":"蔓延"}, v: "在{}中散發著{}氣息" },
+        { id: 'star', n: '星海', e: '🌌', w: {"Nova":"新星","Luna":"月光","Astra":"星空"}, v: "在{}中仰望著{}" },
+        { id: 'ocean', n: '深海', e: '🌊', w: {"Tide":"潮汐","Coral":"珊瑚","Abyss":"深淵"}, v: "在{}中沉溺於{}" },
+        { id: 'classic', n: '古典', e: '📜', w: {"Muse":"繆思","Aura":"氣場","Velvet":"絲絨"}, v: "在{}中編織著{}" },
+        { id: 'fairy', n: '仙境', e: '🍄', w: {"Dew":"晨露","Mori":"森林","Pixie":"妖精"}, v: "在{}中尋覓著{}" },
+        { id: 'gothic', n: '歌德', e: '🦇', w: {"Noir":"漆黑","Raven":"渡鴉","Thorn":"荊棘"}, v: "在{}中埋藏於{}" },
+        { id: 'cyber', n: '賽博', e: '🤖', w: {"Neon":"霓虹","Pixel":"像素","Data":"數據"}, v: "在{}中閃爍著{}" },
+        { id: 'nordic', n: '北歐', e: '❄️', w: ["Frost","Rune","Fjord"], v: "在{}中封凍的{}" },
+        { id: 'zen', n: '禪意', e: '🍵', w: {"Ink":"墨痕","Tea":"茶煙","Wind":"流風"}, v: "在{}中執筆於{}" },
+        { id: 'magic', n: '奧術', e: '🪄', w: {"Mana":"魔力","Sage":"賢者","Soul":"靈魂"}, v: "在{}中詠唱著{}" },
+        { id: 'steam', n: '蒸氣', e: '⚙️', w: {"Gear":"齒輪","Haze":"迷霧","Brass":"黃銅"}, v: "在{}中轟鳴的{}" },
+        { id: 'ink', n: '墨影', e: '📽️', w: {"Lens":"鏡頭","Shadow":"暗影","Grain":"膠卷"}, v: "在{}中凝視著{}" },
+        { id: 'sakura', n: '櫻落', e: '🌸', w: {"Hana":"花瓣","Yoru":"宵暗","Sake":"醺陶"}, v: "在{}中醉心於{}" },
+        { id: 'lava', n: '熔岩', e: '🔥', w: {"Ash":"餘燼","Flare":"閃焰","Magma":"岩漿"}, v: "在{}中燃燒著{}" },
+        { id: 'ice', n: '晶綻', e: '💎', w: {"Ice":"寒冰","Crystal":"晶體","Blue":"湛藍"}, v: "在{}中映射著{}" },
+        { id: 'cloud', n: '雲端', e: '☁️', w: {"Cloud":"流雲","Mist":"嵐霧","Halo":"光暈"}, v: "在{}中漫步於{}" }
+    ];
+
+    const grid = document.getElementById('worldGrid');
+    worlds.forEach(w => {
+        const btn = document.createElement('div');
+        btn.className = 'world-btn' + (w.id === 'star' ? ' active' : '');
+        btn.dataset.id = w.id;
+        btn.innerHTML = `<span class="emoji">${w.e}</span><span>${w.n}</span>`;
+        btn.onclick = () => btn.classList.toggle('active');
+        grid.appendChild(btn);
+    });
+
+    function tgl(el) { el.classList.toggle('active'); }
+    document.getElementById('range').addEventListener('input', e => document.getElementById('lenDisp').innerText = e.target.value + ' 字元');
+
+    function toPascal(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : ""; }
+
+    function generate() {
+        const activeIds = Array.from(document.querySelectorAll('.world-btn.active')).map(b => b.dataset.id);
+        if (activeIds.length === 0) return;
+
+        const k1 = toPascal(document.getElementById('k1').value || "Ann");
+        const k2 = toPascal(document.getElementById('k2').value);
+        const sep = document.getElementById('sep').value;
+        const limit = parseInt(document.getElementById('range').value);
+        const isUp = document.getElementById('up').classList.contains('active');
+        const isNum = document.getElementById('num').classList.contains('active');
+        const isSym = document.getElementById('sym').classList.contains('active');
+        const isDeco = document.getElementById('deco').classList.contains('active');
+
+        const resBox = document.getElementById('results');
+        resBox.innerHTML = "";
+
+        for(let i=0; i<8; i++) {
+            const picked = activeIds.sort(() => 0.5 - Math.random()).slice(0, activeIds.length > 1 ? 2 : 1);
+            let fusionWords = [];
+            let chineseContext = "";
+
+            if (picked.length === 1) {
+                const w = worlds.find(x => x.id === picked[0]);
+                const keys = Object.keys(w.w);
+                const randomKey = keys[Math.floor(Math.random()*keys.length)];
+                fusionWords.push(toPascal(randomKey));
+                const subject = k2 ? `${k1} 與 ${k2}` : k1;
+                chineseContext = w.v.replace('{}', subject).replace('{}', w.w[randomKey]);
+            } else {
+                const w1 = worlds.find(x => x.id === picked[0]);
+                const w2 = worlds.find(x => x.id === picked[1]);
+                const k1_keys = Object.keys(w1.w);
+                const k2_keys = Object.keys(w2.w);
+                const rk1 = k1_keys[Math.floor(Math.random()*k1_keys.length)];
+                const rk2 = k2_keys[Math.floor(Math.random()*k2_keys.length)];
+                fusionWords.push(toPascal(rk1), toPascal(rk2));
+                const subject = k2 ? `${k1} 與 ${k2}` : k1;
+                chineseContext = `${subject}在${w1.w[rk1]}與${w2.w[rk2]}之間`;
+            }
+
+            let id = k1 + (k2 ? sep + k2 : "") + sep + fusionWords.join("");
+            if(isNum) id += Math.floor(Math.random()*10);
+            if(isSym) id += "_";
+            if(isDeco) {
+                const ds = [(s)=>"v"+s, (s)=>"i"+s, (s)=>s+"x"];
+                id = ds[Math.floor(Math.random()*ds.length)](id);
+            }
+
+            if(id.length > limit) id = id.substring(0, limit);
+            if(isUp) id = id.toUpperCase();
+
+            const card = document.createElement('div');
+            card.className = 'result-card';
+            card.innerHTML = `<div class="id-val">${id}</div><div class="id-meaning">✦ ${chineseContext}</div>`;
+            card.onclick = () => {
+                navigator.clipboard.writeText(id);
+                const m = card.querySelector('.id-meaning');
+                const old = m.innerText; m.innerText = "已成功複製到剪貼簿 ✦";
+                setTimeout(() => m.innerText = old, 800);
+            };
+            resBox.appendChild(card);
+        }
+    }
+
+    document.getElementById('generateBtn').onclick = generate;
+</script>
+</body>
+</html>
