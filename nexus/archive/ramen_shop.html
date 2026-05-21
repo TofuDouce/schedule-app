@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>深夜拉麵店</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:sans-serif;
+}
+
+body{
+    background:#0d1117;
+    overflow:hidden;
+    color:white;
+}
+
+#game{
+    display:flex;
+    height:100vh;
+}
+
+/* LEFT */
+
+#left{
+    width:70%;
+    position:relative;
+    background:
+    linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.6)),
+    linear-gradient(#1a2230,#0c0f14);
+}
+
+#rain{
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    opacity:.2;
+}
+
+.drop{
+    position:absolute;
+    width:2px;
+    height:18px;
+    background:white;
+    animation:rain linear infinite;
+}
+
+@keyframes rain{
+    from{
+        transform:translateY(-20px);
+    }
+    to{
+        transform:translateY(100vh);
+    }
+}
+
+#shop{
+    position:absolute;
+    bottom:0;
+    width:100%;
+    height:45%;
+    background:#231815;
+    border-top:5px solid #4d2c22;
+}
+
+#counter{
+    position:absolute;
+    bottom:90px;
+    width:100%;
+    height:80px;
+    background:#5a3825;
+}
+
+.customer{
+    position:absolute;
+    bottom:160px;
+    width:70px;
+    height:120px;
+    transition:.3s;
+}
+
+.head{
+    width:42px;
+    height:42px;
+    background:#ffd7b1;
+    border-radius:50%;
+    margin:auto;
+}
+
+.body{
+    width:50px;
+    height:70px;
+    background:#444;
+    margin:auto;
+    border-radius:10px;
+}
+
+.order{
+    position:absolute;
+    top:-40px;
+    left:-20px;
+    background:white;
+    color:black;
+    padding:4px 8px;
+    border-radius:10px;
+    font-size:14px;
+}
+
+.patience{
+    height:6px;
+    background:red;
+    margin-top:5px;
+}
+
+/* RIGHT */
+
+#right{
+    width:30%;
+    background:#161b22;
+    border-left:4px solid #222;
+    padding:20px;
+    overflow:auto;
+}
+
+.panel{
+    margin-bottom:20px;
+    padding:15px;
+    background:#1f2630;
+    border-radius:12px;
+}
+
+h2{
+    margin-bottom:10px;
+    color:#ffd27d;
+}
+
+button{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    border:none;
+    border-radius:10px;
+    background:#ff914d;
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+    transition:.2s;
+}
+
+button:hover{
+    transform:scale(1.03);
+}
+
+button:active{
+    transform:scale(.96);
+}
+
+.stat{
+    margin:8px 0;
+}
+
+#log{
+    height:180px;
+    overflow:auto;
+    font-size:14px;
+    line-height:1.5;
+}
+
+.combo{
+    color:#ffde59;
+    font-weight:bold;
+}
+
+.steam{
+    position:absolute;
+    width:20px;
+    height:20px;
+    border-radius:50%;
+    background:rgba(255,255,255,.1);
+    animation:steam 3s infinite;
+}
+
+@keyframes steam{
+    from{
+        transform:translateY(0) scale(1);
+        opacity:.4;
+    }
+    to{
+        transform:translateY(-100px) scale(2);
+        opacity:0;
+    }
+}
+
+#dayText{
+    position:absolute;
+    top:20px;
+    left:20px;
+    font-size:22px;
+    opacity:.8;
+}
+
+#moneyPop{
+    position:absolute;
+    color:#ffe066;
+    font-weight:bold;
+    pointer-events:none;
+}
+</style>
+</head>
+<body>
+
+<div id="game">
+
+<div id="left">
+
+<div id="dayText">🌧️ 深夜營業中</div>
+
+<div id="rain"></div>
+
+<div id="shop">
+<div id="counter"></div>
+</div>
+
+</div>
+
+<div id="right">
+
+<div class="panel">
+<h2>🍜 拉麵店</h2>
+
+<div class="stat">💰 金錢：<span id="money">0</span></div>
+<div class="stat">⭐ 評價：<span id="rating">5</span></div>
+<div class="stat">🔥 Combo：<span id="combo">0</span></div>
+<div class="stat">👥 客人總數：<span id="served">0</span></div>
+</div>
+
+<div class="panel">
+<h2>🍳 做料理</h2>
+
+<button onclick="cook('ramen')">🍜 拉麵</button>
+<button onclick="cook('friedrice')">🍳 炒飯</button>
+<button onclick="cook('miso')">🥣 味噌湯</button>
+</div>
+
+<div class="panel">
+<h2>🏪 升級</h2>
+
+<button onclick="upgrade('speed')">
+⚡ 出餐速度 Lv.<span id="speedLv">1</span>
+</button>
+
+<button onclick="upgrade('price')">
+💰 料理價格 Lv.<span id="priceLv">1</span>
+</button>
+
+<button onclick="upgrade('seats')">
+🪑 座位數 Lv.<span id="seatLv">3</span>
+</button>
+</div>
+
+<div class="panel">
+<h2>📜 店內消息</h2>
+<div id="log"></div>
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+let money = 50;
+let combo = 0;
+let rating = 5;
+let served = 0;
+
+let speedLv = 1;
+let priceLv = 1;
+let seats = 3;
+
+let customers = [];
+
+const dishes = {
+    ramen:{
+        name:"拉麵",
+        price:15,
+        color:"#ffcc66"
+    },
+    friedrice:{
+        name:"炒飯",
+        price:18,
+        color:"#ffd166"
+    },
+    miso:{
+        name:"味噌湯",
+        price:12,
+        color:"#ffe29a"
+    }
+};
+
+function updateUI(){
+
+    moneyEl.textContent = Math.floor(money);
+    comboEl.textContent = combo;
+    ratingEl.textContent = rating.toFixed(1);
+    servedEl.textContent = served;
+
+    speedLvEl.textContent = speedLv;
+    priceLvEl.textContent = priceLv;
+    seatLvEl.textContent = seats;
+}
+
+const moneyEl = document.getElementById("money");
+const comboEl = document.getElementById("combo");
+const ratingEl = document.getElementById("rating");
+const servedEl = document.getElementById("served");
+
+const speedLvEl = document.getElementById("speedLv");
+const priceLvEl = document.getElementById("priceLv");
+const seatLvEl = document.getElementById("seatLv");
+
+function log(text){
+
+    const div = document.createElement("div");
+    div.innerHTML = text;
+
+    document.getElementById("log").prepend(div);
+}
+
+function spawnCustomer(){
+
+    if(customers.length >= seats) return;
+
+    const keys = Object.keys(dishes);
+    const order = keys[Math.floor(Math.random()*keys.length)];
+
+    const customer = {
+        id:Date.now()+Math.random(),
+        order,
+        patience:100
+    };
+
+    customers.push(customer);
+
+    renderCustomers();
+}
+
+function renderCustomers(){
+
+    document.querySelectorAll(".customer").forEach(e=>e.remove());
+
+    customers.forEach((c,i)=>{
+
+        const div = document.createElement("div");
+        div.className = "customer";
+        div.style.left = 80 + i*140 + "px";
+
+        div.innerHTML = `
+        <div class="order">
+            ${dishes[c.order].name}
+            <div class="patience" style="width:${c.patience}%"></div>
+        </div>
+
+        <div class="head"></div>
+        <div class="body"></div>
+        `;
+
+        document.getElementById("left").appendChild(div);
+
+    });
+}
+
+function cook(type){
+
+    const target = customers.find(c=>c.order===type);
+
+    if(!target){
+
+        combo = 0;
+        log("❌ 沒有人點這道料理");
+        updateUI();
+        return;
+    }
+
+    const base = dishes[type].price;
+    const earn = base * priceLv + combo;
+
+    money += earn;
+
+    combo++;
+
+    served++;
+
+    createMoneyPop("+"+earn);
+
+    log(`🍜 完成 ${dishes[type].name} +$${earn}`);
+
+    if(combo % 5 === 0){
+
+        log(`<span class="combo">🔥 COMBO x${combo}</span>`);
+    }
+
+    customers = customers.filter(c=>c.id !== target.id);
+
+    renderCustomers();
+    updateUI();
+}
+
+function createMoneyPop(text){
+
+    const pop = document.createElement("div");
+
+    pop.id = "moneyPop";
+    pop.textContent = text;
+
+    pop.style.left = "50%";
+    pop.style.top = "50%";
+
+    document.body.appendChild(pop);
+
+    let y = 0;
+
+    const int = setInterval(()=>{
+
+        y -= 2;
+
+        pop.style.transform = `translateY(${y}px)`;
+
+        pop.style.opacity = 1 + y/50;
+
+        if(y < -50){
+
+            clearInterval(int);
+            pop.remove();
+        }
+
+    },16);
+}
+
+function upgrade(type){
+
+    if(type==="speed"){
+
+        const cost = speedLv * 80;
+
+        if(money < cost) return;
+
+        money -= cost;
+        speedLv++;
+
+        log("⚡ 出餐速度提升");
+    }
+
+    if(type==="price"){
+
+        const cost = priceLv * 120;
+
+        if(money < cost) return;
+
+        money -= cost;
+        priceLv++;
+
+        log("💰 料理價格提升");
+    }
+
+    if(type==="seats"){
+
+        const cost = seats * 150;
+
+        if(money < cost) return;
+
+        money -= cost;
+        seats++;
+
+        log("🪑 新增座位");
+    }
+
+    updateUI();
+}
+
+function patienceLoop(){
+
+    customers.forEach(c=>{
+
+        c.patience -= 0.15;
+
+        if(c.patience <= 0){
+
+            combo = 0;
+            rating -= 0.1;
+
+            log("😡 客人氣跑了");
+
+            customers = customers.filter(x=>x.id !== c.id);
+        }
+
+    });
+
+    renderCustomers();
+    updateUI();
+}
+
+setInterval(spawnCustomer, 2500);
+
+setInterval(patienceLoop,100);
+
+function createRain(){
+
+    for(let i=0;i<120;i++){
+
+        const d = document.createElement("div");
+
+        d.className = "drop";
+
+        d.style.left = Math.random()*100+"%";
+
+        d.style.animationDuration =
+        0.5 + Math.random()*0.7 + "s";
+
+        d.style.opacity = Math.random();
+
+        d.style.top = Math.random()*100+"%";
+
+        document.getElementById("rain").appendChild(d);
+    }
+}
+
+createRain();
+
+function steam(){
+
+    const s = document.createElement("div");
+
+    s.className = "steam";
+
+    s.style.left =
+    300 + Math.random()*120 + "px";
+
+    s.style.bottom = "120px";
+
+    document.getElementById("left").appendChild(s);
+
+    setTimeout(()=>s.remove(),3000);
+}
+
+setInterval(steam,400);
+
+const events = [
+"🌧️ 下雨天，拉麵需求增加",
+"⭐ 熟客來店，小費增加",
+"🌙 深夜時段，客人變少",
+"🔥 美食部落客推薦了你的店",
+"🍜 今日味噌湯熱賣"
+];
+
+setInterval(()=>{
+
+    const e = events[Math.floor(Math.random()*events.length)];
+
+    log(e);
+
+    if(e.includes("拉麵")){
+
+        dishes.ramen.price += 2;
+    }
+
+    if(e.includes("小費")){
+
+        money += 50;
+    }
+
+},20000);
+
+updateUI();
+
+log("🍜 深夜拉麵店開始營業");
+
+</script>
+
+</body>
+</html>
