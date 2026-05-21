@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<title> Echo｜西方奇幻小說生成器</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"PingFang TC","Noto Sans TC",sans-serif;
+}
+
+:root{
+
+    --bg1:#09090f;
+    --bg2:#111522;
+
+    --card:rgba(255,255,255,.05);
+
+    --line:rgba(255,255,255,.08);
+
+    --text:#ece8ff;
+
+    --sub:#bcb5d9;
+}
+
+body{
+
+    background:
+    radial-gradient(circle at top, rgba(118,92,255,.18), transparent 35%),
+    linear-gradient(180deg,var(--bg1),var(--bg2));
+
+    color:var(--text);
+
+    min-height:100vh;
+
+    overflow:hidden;
+}
+
+body::before{
+
+    content:"";
+
+    position:fixed;
+
+    inset:0;
+
+    background-image:
+    linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
+
+    background-size:40px 40px;
+
+    pointer-events:none;
+}
+
+.glow{
+
+    position:fixed;
+
+    width:340px;
+    height:340px;
+
+    border-radius:50%;
+
+    filter:blur(120px);
+
+    z-index:-1;
+}
+
+.glow1{
+
+    top:-120px;
+    left:-120px;
+
+    background:rgba(122,90,255,.18);
+}
+
+.glow2{
+
+    bottom:-120px;
+    right:-120px;
+
+    background:rgba(90,130,255,.18);
+}
+
+.container{
+
+    width:min(1500px,94%);
+
+    margin:auto;
+
+    padding:30px 0 40px;
+}
+
+.hero{
+
+    text-align:center;
+
+    margin-bottom:28px;
+}
+
+.hero h1{
+
+    font-size:64px;
+
+    letter-spacing:10px;
+
+    margin-bottom:12px;
+
+    background:
+    linear-gradient(
+        90deg,
+        #fff,
+        #f0d79f,
+        #b8c7ff
+    );
+
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+.hero p{
+
+    color:var(--sub);
+
+    line-height:1.9;
+
+    font-size:15px;
+}
+
+.layout{
+
+    display:grid;
+
+    grid-template-columns:430px 1fr;
+
+    gap:24px;
+
+    height:82vh;
+}
+
+.card{
+
+    background:var(--card);
+
+    border:1px solid var(--line);
+
+    border-radius:28px;
+
+    padding:26px;
+
+    backdrop-filter:blur(14px);
+
+    box-shadow:0 10px 40px rgba(0,0,0,.35);
+
+    overflow:hidden;
+}
+
+.leftPanel{
+
+    overflow-y:auto;
+}
+
+.card h2{
+
+    margin-bottom:20px;
+
+    font-size:24px;
+}
+
+.grid{
+
+    display:grid;
+
+    grid-template-columns:1fr 1fr;
+
+    gap:14px;
+}
+
+label{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:8px;
+
+    font-size:14px;
+
+    color:#d8d0f0;
+}
+
+select,
+textarea{
+
+    background:rgba(255,255,255,.07);
+
+    border:1px solid rgba(255,255,255,.08);
+
+    color:white;
+
+    padding:14px;
+
+    border-radius:16px;
+
+    outline:none;
+
+    font-size:15px;
+}
+
+textarea{
+
+    resize:vertical;
+
+    min-height:110px;
+}
+
+button{
+
+    width:100%;
+
+    border:none;
+
+    border-radius:18px;
+
+    padding:16px;
+
+    margin-top:16px;
+
+    font-size:16px;
+
+    cursor:pointer;
+
+    color:white;
+
+    background:
+    linear-gradient(
+        90deg,
+        #7d63ff,
+        #5f8dff
+    );
+
+    transition:.25s;
+
+    box-shadow:0 8px 25px rgba(102,96,255,.35);
+}
+
+button:hover{
+
+    transform:translateY(-2px);
+}
+
+.resultTop{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    flex-wrap:wrap;
+
+    gap:12px;
+}
+
+.smallBtn{
+
+    width:auto;
+
+    margin:0;
+
+    padding:11px 16px;
+
+    border-radius:14px;
+
+    font-size:14px;
+}
+
+.output{
+
+    margin-top:18px;
+
+    height:calc(82vh - 120px);
+
+    background:rgba(255,255,255,.03);
+
+    border:1px solid rgba(255,255,255,.06);
+
+    border-radius:24px;
+
+    padding:32px;
+
+    line-height:2.15;
+
+    white-space:pre-wrap;
+
+    font-size:17px;
+
+    overflow-y:auto;
+
+    overflow-x:hidden;
+
+    scroll-behavior:smooth;
+}
+
+.typing::after{
+
+    content:"▋";
+
+    animation:blink .8s infinite;
+}
+
+@keyframes blink{
+
+    50%{
+        opacity:0;
+    }
+}
+
+.footer{
+
+    margin-top:18px;
+
+    text-align:center;
+
+    color:#8e87aa;
+
+    font-size:13px;
+}
+
+@media(max-width:1100px){
+
+    body{
+        overflow:auto;
+    }
+
+    .layout{
+        grid-template-columns:1fr;
+        height:auto;
+    }
+
+    .hero h1{
+        font-size:42px;
+    }
+
+    .grid{
+        grid-template-columns:1fr;
+    }
+
+    .output{
+        height:70vh;
+    }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="glow glow1"></div>
+<div class="glow glow2"></div>
+
+<div class="container">
+
+    <div class="hero">
+
+        <h1>命運之書</h1>
+
+        <p>
+            西方中土奇幻小說生成器<br>
+            多劇情路線 × 黑暗史詩 × 宿命愛情
+        </p>
+
+    </div>
+
+    <div class="layout">
+
+        <!-- 左側 -->
+
+        <div class="card leftPanel">
+
+            <h2>世界設定</h2>
+
+            <div class="grid">
+
+                <label>
+                    劇情路線
+
+                    <select id="route">
+
+                        <option>隨機</option>
+
+                        <option>王權戰爭</option>
+
+                        <option>古神復甦</option>
+
+                        <option>流亡冒險</option>
+
+                        <option>教廷審判</option>
+
+                        <option>巨龍戰爭</option>
+
+                        <option>雙王國戰爭</option>
+
+                        <option>魔法學院</option>
+
+                    </select>
+
+                </label>
+
+                <label>
+                    感情主題
+
+                    <select id="love">
+
+                        <option>虐戀</option>
+
+                        <option>宿命感</option>
+
+                        <option>相愛相殺</option>
+
+                        <option>救贖</option>
+
+                        <option>禁忌戀</option>
+
+                        <option>敵國戀人</option>
+
+                        <option>政治聯姻</option>
+
+                    </select>
+
+                </label>
+
+                <label>
+                    結局
+
+                    <select id="ending">
+
+                        <option>HE 圓滿</option>
+
+                        <option>BE 悲劇</option>
+
+                        <option>雙死結局</option>
+
+                        <option>犧牲式結局</option>
+
+                        <option>轉世重逢</option>
+
+                    </select>
+
+                </label>
+
+                <label>
+                    黑暗程度
+
+                    <select id="darkness">
+
+                        <option>普通</option>
+
+                        <option>壓抑</option>
+
+                        <option>黑暗</option>
+
+                        <option>絕望史詩</option>
+
+                    </select>
+
+                </label>
+
+                <label>
+                    篇幅
+
+                    <select id="length">
+
+                        <option value="1500">
+                            短篇（1500字）
+                        </option>
+
+                        <option value="5000">
+                            中篇（5000字）
+                        </option>
+
+                        <option value="10000">
+                            長篇（10000字）
+                        </option>
+
+                    </select>
+
+                </label>
+
+                <label>
+                    男主身份
+
+                    <select id="hero">
+
+                        <option>流亡王子</option>
+
+                        <option>黑騎士</option>
+
+                        <option>龍語者</option>
+
+                        <option>北境領主</option>
+
+                        <option>白銀劍士</option>
+
+                        <option>聖殿騎士</option>
+
+                        <option>森林遊俠</option>
+
+                        <option>亡國繼承人</option>
+
+                    </select>
+
+                </label>
+
+                <label>
+                    女主身份
+
+                    <select id="heroine">
+
+                        <option>精靈祭司</option>
+
+                        <option>龍族後裔</option>
+
+                        <option>王國公主</option>
+
+                        <option>黑魔女</option>
+
+                        <option>預言者</option>
+
+                        <option>雪原巫女</option>
+
+                        <option>聖女</option>
+
+                        <option>敵國女王</option>
+
+                    </select>
+
+                </label>
+
+                <label>
+                    敘事風格
+
+                    <select id="tone">
+
+                        <option>古典史詩</option>
+
+                        <option>黑暗壓抑</option>
+
+                        <option>電影感</option>
+
+                        <option>悲劇史詩</option>
+
+                        <option>抒情宿命感</option>
+
+                    </select>
+
+                </label>
+
+            </div>
+
+            <label style="margin-top:18px;">
+
+                額外關鍵字
+
+                <textarea
+                    id="keywords"
+                    placeholder="例如：暴雪、巨龍、白銀王城、紅月、神殿、深海"
+                ></textarea>
+
+            </label>
+
+            <button onclick="randomAll()">
+                ✦ 隨機命運
+            </button>
+
+            <button onclick="generateStory()">
+                ✦ 生成史詩故事
+            </button>
+
+        </div>
+
+        <!-- 右側 -->
+
+        <div class="card">
+
+            <div class="resultTop">
+
+                <h2 style="margin:0;">
+                    生成結果
+                </h2>
+
+                <div style="
+                display:flex;
+                gap:10px;
+                align-items:center;
+                flex-wrap:wrap;
+                ">
+
+                    <div style="
+                    color:#d0c8ea;
+                    font-size:14px;
+                    ">
+                        全文字數：
+                        <span id="wordCount">0</span>
+                    </div>
+
+                    <button
+                        class="smallBtn"
+                        onclick="copyStory()"
+                    >
+                        一鍵複製
+                    </button>
+
+                </div>
+
+            </div>
+
+            <div id="output" class="output typing">
+命運尚未開始轉動……
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="footer">
+        命運之書｜Epic Fantasy Generator
+    </div>
+
+</div>
+
+<script>
+
+function random(arr){
+
+    return arr[
+        Math.floor(Math.random()*arr.length)
+    ];
+}
+
+function randomAll(){
+
+    const selects =
+        document.querySelectorAll("select");
+
+    selects.forEach(select=>{
+
+        select.selectedIndex =
+            Math.floor(
+                Math.random()*select.options.length
+            );
+
+    });
+
+    generateStory();
+}
+
+function copyStory(){
+
+    const text =
+        document.getElementById("output").innerText;
+
+    navigator.clipboard.writeText(text);
+
+    alert("已複製故事！");
+}
+
+function typeWriter(text){
+
+    const output =
+        document.getElementById("output");
+
+    output.textContent = "";
+
+    output.classList.add("typing");
+
+    let i = 0;
+
+    const speed = 1;
+
+    const timer = setInterval(()=>{
+
+        output.textContent += text.charAt(i);
+
+        i++;
+
+        if(i >= text.length){
+
+            clearInterval(timer);
+
+            output.classList.remove("typing");
+
+            document.getElementById("wordCount")
+            .innerText = text.length;
+        }
+
+    },speed);
+}
+
+const storyRoutes = {
+
+    "王權戰爭":{
+
+        intro:[
+            "王國正陷入繼承戰爭。",
+            "王城內部爆發政變。",
+            "舊王死後，所有貴族開始互相殘殺。"
+        ],
+
+        events:[
+            "白銀騎士團發動叛亂。",
+            "王室成員遭到暗殺。",
+            "北境軍團包圍王城。",
+            "王位繼承人突然失蹤。"
+        ],
+
+        themes:[
+            "權力",
+            "背叛",
+            "王座",
+            "血統"
+        ]
+
+    },
+
+    "古神復甦":{
+
+        intro:[
+            "封印千年的古神重新甦醒。",
+            "深淵開始侵蝕世界。",
+            "血色紅月高掛天空。"
+        ],
+
+        events:[
+            "神殿深處傳來低語。",
+            "祭司開始陷入瘋狂。",
+            "整座城市被黑霧吞噬。",
+            "遠古封印逐漸崩裂。"
+        ],
+
+        themes:[
+            "瘋狂",
+            "深淵",
+            "獻祭",
+            "毀滅"
+        ]
+
+    },
+
+    "流亡冒險":{
+
+        intro:[
+            "男主被迫離開故鄉。",
+            "王國覆滅後，兩人開始逃亡。",
+            "世界邊境正逐漸崩壞。"
+        ],
+
+        events:[
+            "暴雪封鎖山脈。",
+            "旅團遭到怪物襲擊。",
+            "兩人在黑森林中迷失。",
+            "古老遺跡被重新發現。"
+        ],
+
+        themes:[
+            "旅途",
+            "成長",
+            "自由",
+            "流浪"
+        ]
+
+    }
+
+};
+
+function generateStory(){
+
+    const selectedRoute =
+        document.getElementById("route").value;
+
+    const routeName =
+        selectedRoute === "隨機"
+        ? random(Object.keys(storyRoutes))
+        : selectedRoute;
+
+    const route =
+        storyRoutes[routeName];
+
+    const love =
+        document.getElementById("love").value;
+
+    const ending =
+        document.getElementById("ending").value;
+
+    const darkness =
+        document.getElementById("darkness").value;
+
+    const hero =
+        document.getElementById("hero").value;
+
+    const heroine =
+        document.getElementById("heroine").value;
+
+    const tone =
+        document.getElementById("tone").value;
+
+    const length =
+        parseInt(
+            document.getElementById("length").value
+        );
+
+    const keywords =
+        document.getElementById("keywords").value;
+
+    const locations = [
+
+        "艾德蘭王城",
+        "霜狼北境",
+        "永夜森林",
+        "白銀聖都",
+        "黑海深淵",
+        "龍脊山脈"
+
+    ];
+
+    const factions = [
+
+        "白銀騎士團",
+        "黑龍議會",
+        "深淵法師塔",
+        "月神教廷",
+        "舊神信徒"
+
+    ];
+
+    const emotionalLines = [
+
+        "他們彼此深愛，卻始終無法真正靠近。",
+
+        "愛意在戰火與死亡之中逐漸滋長。",
+
+        "兩人的感情像暴雪中的火焰，越熾烈越接近毀滅。",
+
+        "從一開始，他們便注定無法得到幸福。"
+
+    ];
+
+    let story = `
+
+══════════════════
+
+【劇情路線】
+
+${routeName}
+
+【世界觀】
+
+故事發生於「${random(locations)}」。
+
+${random(route.intro)}
+
+男主是一名${hero}。
+
+女主則是${heroine}。
+
+【核心主題】
+
+${random(route.themes)}
+ ×
+${love}
+
+【敘事風格】
+
+${tone}
+
+【黑暗程度】
+
+${darkness}
+
+══════════════════
+
+`;
+
+    let chapter = 1;
+
+    while(story.length < length){
+
+        story += `
+
+【第 ${chapter} 章】
+
+${random(route.events)}
+
+男主逐漸發現，
+真正可怕的並不是怪物，
+而是人們內心深處對權力與恐懼的渴望。
+
+在旅途中，
+他與女主被迫同行。
+
+兩人曾在暴雪中逃亡，
+也曾在深夜裡討論命運。
+
+${random(emotionalLines)}
+
+而女主似乎始終隱瞞著某個秘密。
+
+那個秘密，
+很可能與世界即將毀滅的真相有關。
+
+${random(factions)}
+開始進軍
+${random(locations)}。
+
+王國開始崩塌。
+
+大量城市陷入火海。
+
+══════════════════
+
+`;
+
+        chapter++;
+    }
+
+    story += `
+
+【最終篇章】
+
+世界終於迎來毀滅邊緣。
+
+天空崩裂。
+
+古老神明重新甦醒。
+
+而男主終於明白：
+
+所謂命運，
+並不是神明的安排。
+
+而是人們一次次在痛苦中做出的選擇。
+
+在最後決戰裡，
+男主與女主重新相遇。
+
+他們早已遍體鱗傷。
+
+卻仍選擇站在彼此身旁。
+
+══════════════════
+
+【結局】
+
+本作採用「${ending}」作為收束。
+
+新的時代終於在灰燼中誕生。
+
+而那段曾燃燒於黑暗中的感情，
+將會像古老史詩一樣，
+被後世永遠傳唱。
+
+══════════════════
+
+【額外元素】
+
+${keywords || "無"}
+
+`;
+
+    const output =
+        document.getElementById("output");
+
+    document.getElementById("wordCount")
+    .innerText = "生成中...";
+
+    if(story.length > 12000){
+
+        output.textContent = story;
+
+        output.classList.remove("typing");
+
+        document.getElementById("wordCount")
+        .innerText = story.length;
+
+    }else{
+
+        typeWriter(story);
+    }
+}
+
+</script>
+
+</body>
+</html>
