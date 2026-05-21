@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>✦ 太極鰲車輪餅．團購 by ChuChu ✦</title>
+    <title>✦ 太極鰲車輪餅．美味結算工坊 by ChuChu ✦</title>
 
     <meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
     <meta name="googlebot" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
@@ -88,7 +88,6 @@
         .ledger-name { color: var(--text-main); font-weight: 700; }
         .ledger-detail { color: var(--text-sub); }
         
-        /* 修改與刪除小操作區 */
         .ledger-actions { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
         .edit-record { color: #2980b9; cursor: pointer; font-size: 13px; font-weight: 700; }
         .edit-record:hover { text-decoration: underline; }
@@ -107,7 +106,6 @@
         .sidebar-title { font-size: calc(var(--base-font-size) * 1.1); font-weight: 700; color: var(--text-main); text-align: center; }
         .sidebar-desc { font-size: 12px; color: var(--text-sub); text-align: center; margin-bottom: 16px; }
 
-        /* 按鈕區 */
         .action-btn-group { display: flex; flex-direction: column; gap: 8px; margin-top: auto; }
         .copy-all-btn { width: 100%; background: #4a3b32; border: none; color: #ffffff; padding: 11px; border-radius: 12px; cursor: pointer; font-family: inherit; font-weight: 700; font-size: 13px; box-shadow: 0 4px 10px rgba(74, 59, 50, 0.15); }
         .copy-all-btn:hover { background: #5c4a3f; }
@@ -116,7 +114,6 @@
         .clear-btn { width: 100%; background: #fdf2f2; border: 1px dashed var(--berry-pink); color: #c0392b; padding: 8px; border-radius: 12px; cursor: pointer; font-family: inherit; font-weight: 700; font-size: 12px; }
         .clear-btn:hover { background: #fce4e4; }
 
-        /* 📸 下方實體圖片區塊樣式 */
         .image-card-container { background: var(--card-bg); border: 1px solid rgba(142, 122, 112, 0.12); border-radius: 24px; padding: 24px; text-align: center; box-shadow: 0 10px 30px rgba(84, 67, 58, 0.05); max-width: 480px; margin: 24px auto 0 auto; }
         .image-card-container h4 { font-size: 15px; color: var(--text-main); margin-bottom: 4px; font-weight: 700; }
         .image-card-container p { font-size: 12px; color: var(--text-sub); margin-bottom: 16px; }
@@ -300,7 +297,6 @@ const menuData = {
 };
 
 let currentSelection = {};
-// 🧠 暫存機制：優先從 localStorage 讀取大帳本與篩選過濾器狀態
 let globalLedger = JSON.parse(localStorage.getItem('chuchu_pie_ledger')) || [];
 
 function saveToLocalStorage() {
@@ -372,7 +368,6 @@ function showToast(msg) {
     setTimeout(() => toast.classList.remove('show'), 2500);
 }
 
-// 送出點餐或確認修改
 function submitOrder() {
     const name = document.getElementById('memberInput').value.trim();
     if (!name) { showToast('🥞 請先填寫名字，以便主主統計大帳本！'); return; }
@@ -381,19 +376,16 @@ function submitOrder() {
         const qty = currentSelection[id];
         if (qty > 0) { hasItems = true; const item = findItemById(id); detailSegments.push(`${item.name} x${qty}`); itemsOrdered[id] = qty; }
     });
-    if (!hasItems) { showToast('🥞 請先選擇任何一個好iches口味與數量喔！'); return; }
+    if (!hasItems) { showToast('🥞 請先選擇任何一個好吃的口味與數量喔！'); return; }
     const cost = calculateSingleTotal();
     
     const editIndex = parseInt(document.getElementById('editIndex').value);
     
     if (editIndex === -1) {
-        // 新增模式
         globalLedger.push({ id: Date.now(), name: name, detailsText: detailSegments.join(', '), items: itemsOrdered, cost: cost });
         showToast(`✨ 已成功寫入全體明細大帳本！`);
     } else {
-        // 修改模式
         globalLedger[editIndex] = { id: globalLedger[editIndex].id, name: name, detailsText: detailSegments.join(', '), items: itemsOrdered, cost: cost };
-        // 還原為新增模式狀態
         document.getElementById('editIndex').value = "-1";
         const sBtn = document.getElementById('submitBtn');
         sBtn.innerText = "送出點餐";
@@ -409,12 +401,29 @@ function submitOrder() {
     renderLedger();
 }
 
-function initSelectionsOnList() { Object.keys(currentSelection).forEach(id => { const element = document.getElementById(`count-${id}`); if(element) element.textContent = '0'; }); }
+function editRecord(index) {
+    const record = globalLedger[index];
+    document.getElementById('memberInput').value = record.name;
+    document.getElementById('editIndex').value = index;
+    
+    initSelections();
+    Object.keys(record.items).forEach(id => {
+        currentSelection[id] = record.items[id];
+        const elem = document.getElementById(`count-${id}`);
+        if(elem) elem.textContent = record.items[id];
+    });
+    calculateSingleTotal();
+    
+    const sBtn = document.getElementById('submitBtn');
+    sBtn.innerText = "確認修改 💾";
+    sBtn.style.background = "#5dade2";
+    
+    showToast('✏️ 已將資料倒回工作台，修改完請點「確認修改」');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
-// 移除紀錄
 function removeRecord(id) {
     globalLedger = globalLedger.filter(rec => rec.id !== id);
-    // 如果剛好在修改該筆，順便初始化
     document.getElementById('editIndex').value = "-1";
     const sBtn = document.getElementById('submitBtn');
     sBtn.innerText = "送出點餐";
@@ -425,31 +434,6 @@ function removeRecord(id) {
     showToast('💡 已將該品項自帳本中移除');
 }
 
-// ✏️ 啟動修改模式功能
-function editRecord(index) {
-    const record = globalLedger[index];
-    document.getElementById('memberInput').value = record.name;
-    document.getElementById('editIndex').value = index;
-    
-    // 清空並重新倒回選擇的數量
-    initSelections();
-    Object.keys(record.items).forEach(id => {
-        currentSelection[id] = record.items[id];
-        const elem = document.getElementById(`count-${id}`);
-        if(elem) elem.textContent = record.items[id];
-    });
-    calculateSingleTotal();
-    
-    // 變更左側工作台按鈕狀態
-    const sBtn = document.getElementById('submitBtn');
-    sBtn.innerText = "確認修改 💾";
-    sBtn.style.background = "#5dade2";
-    
-    showToast('✏️ 已將資料倒回工作台，修改完請點「確認修改」');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-// 🧹 清除今日全體大帳本
 function clearAllLedgers() {
     if (confirm("⚠️ 確定要清空今日大帳本內的所有資訊嗎？清空後無法復原喔！")) {
         globalLedger = [];
@@ -470,7 +454,6 @@ function clearAllLedgers() {
 
 function onFilterChanged() {
     saveToLocalStorage();
-    // 隱藏當下圖片，提示使用者需要重新產生
     document.getElementById('imgPlaceholder').style.display = 'block';
     document.getElementById('imgPlaceholder').textContent = '篩選條件已變更，請點擊上方按鈕重新凝聚大圖卡 🥞';
     document.getElementById('outputCardImage').style.display = 'none';
@@ -545,7 +528,6 @@ function copyFilteredLedgerText() {
     }).catch(() => { showToast(`❌ 複製失敗，請手動複製。`); });
 }
 
-// 📸 主動按鈕點擊觸發繪製大圖卡機制
 function triggerGenerateImage() {
     if (globalLedger.length === 0) {
         showToast('🥞 帳本內空空的，無法凝結出大圖卡喔！');
@@ -556,7 +538,8 @@ function triggerGenerateImage() {
 }
 
 function autoUpdateVisualCardImage() {
-    const canvas = document.getElementById('captureCanvas'); const ctx = canvas.getContext('2d');
+    const canvas = document.getElementById('captureCanvas'); 
+    const ctx = canvas.getContext('2d');
     
     const showIndividual = document.getElementById('showIndividualOpt').checked;
     const showStats = document.getElementById('showStatsOpt').checked;
@@ -565,9 +548,41 @@ function autoUpdateVisualCardImage() {
     let baseHeaderHeight = 100;
     let baseFooterWatermarkHeight = 50;
     
+    // --- 📝 核心修正：文字換行與動態高度預算 ---
     let itemsHeight = 0;
+    let computedRecords = [];
+    const maxDetailWidth = 240; 
+
     if (showIndividual) {
-        itemsHeight = (globalLedger.length * 38) + 25;
+        itemsHeight += 25; 
+        
+        globalLedger.forEach((record) => {
+            ctx.font = '13px "Microsoft JhengHei", sans-serif';
+            let words = record.detailsText.split(', ');
+            let lines = [];
+            let currentLine = "";
+
+            for (let i = 0; i < words.length; i++) {
+                let testLine = currentLine + (currentLine ? ', ' : '') + words[i];
+                let metrics = ctx.measureText(testLine);
+                if (metrics.width > maxDetailWidth && i > 0) {
+                    lines.push(currentLine + ',');
+                    currentLine = words[i];
+                } else {
+                    currentLine = testLine;
+                }
+            }
+            if (currentLine) lines.push(currentLine);
+
+            let recordHeight = Math.max(38, 20 + (lines.length * 18));
+            computedRecords.push({
+                record: record,
+                lines: lines,
+                height: recordHeight
+            });
+            itemsHeight += recordHeight;
+        });
+        itemsHeight += 10; 
     }
 
     let summaryBoxHeight = 0;
@@ -607,14 +622,28 @@ function autoUpdateVisualCardImage() {
         ctx.fillText('📝 個人點餐明細：', 35, currentY);
         currentY += 25;
 
-        globalLedger.forEach((record) => {
-            ctx.font = 'bold 14px "Microsoft JhengHei", sans-serif'; ctx.fillStyle = '#54433a'; ctx.fillText(`【${record.name}】`, 35, currentY);
+        computedRecords.forEach((item) => {
+            ctx.font = 'bold 14px "Microsoft JhengHei", sans-serif'; ctx.fillStyle = '#54433a'; 
+            ctx.fillText(`【${item.record.name}】`, 35, currentY);
+            
             ctx.font = '13px "Microsoft JhengHei", sans-serif'; ctx.fillStyle = '#8e7a70';
-            let txt = record.detailsText; if(txt.length > 24) txt = txt.substring(0, 22) + '...';
-            ctx.fillText(txt, 115, currentY);
-            ctx.textAlign = 'right'; ctx.font = 'bold 15px "Quicksand", sans-serif'; ctx.fillStyle = '#d96a6a'; ctx.fillText(`$${record.cost}`, canvas.width - 35, currentY);
-            ctx.textAlign = 'left'; ctx.strokeStyle = 'rgba(142, 122, 112, 0.08)'; ctx.beginPath(); ctx.moveTo(35, currentY + 12); ctx.lineTo(canvas.width - 35, currentY + 12); ctx.stroke();
-            currentY += 38;
+            let lineY = currentY;
+            item.lines.forEach((line) => {
+                ctx.fillText(line, 115, lineY);
+                lineY += 18;
+            });
+            
+            ctx.textAlign = 'right'; ctx.font = 'bold 15px "Quicksand", sans-serif'; ctx.fillStyle = '#d96a6a'; 
+            ctx.fillText(`$${item.record.cost}`, canvas.width - 35, currentY);
+            
+            ctx.textAlign = 'left'; 
+            ctx.strokeStyle = 'rgba(142, 122, 112, 0.08)'; 
+            ctx.beginPath(); 
+            ctx.moveTo(35, currentY + item.height - 24); 
+            ctx.lineTo(canvas.width - 35, currentY + item.height - 24); 
+            ctx.stroke();
+            
+            currentY += item.height;
         });
         currentY += 10;
     }
