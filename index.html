@@ -35,8 +35,8 @@
             font-family: "Zen Maru Gothic", sans-serif;
             background: radial-gradient(circle at top, rgba(150,120,255,.1), transparent 50%),
                         linear-gradient(180deg, var(--bg1), var(--bg2), var(--bg3));
-            padding: 20px;
-            overflow: hidden;
+            padding: 24px;
+            position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -66,7 +66,7 @@
             50% { opacity: 1; transform: scale(1.3); }
         }
 
-        /* 魔法古典外框 (微調得更纖細、乾淨) */
+        /* 魔法古典外框 */
         .frame {
             position: fixed;
             inset: 16px;
@@ -76,24 +76,26 @@
             z-index: 999;
         }
 
-        /* 主容器：固定寬度、置中，極簡乾淨 */
+        /* 主容器：改用垂直 Flex 佈局，自動撐開絕不重疊 */
         .stage {
             width: 100%;
-            max-width: 500px;
-            text-align: center;
-            position: relative;
+            max-width: 460px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
             z-index: 2;
+            padding: 20px 0;
         }
 
         /* 懸浮月亮 */
         .moon-symbol {
             font-size: 36px;
             color: var(--gold);
-            text-shadow: 0 0 20px rgba(216,191,138,.4);
+            text-shadow: 0 0 20px rgba(216, 191, 138, 0.4);
             animation: floatMoon 4s ease-in-out infinite;
             cursor: pointer;
-            display: inline-block;
-            margin-bottom: 10px;
         }
 
         @keyframes floatMoon {
@@ -103,13 +105,13 @@
 
         /* 大標題區塊 */
         .title-block {
-            margin-bottom: 40px;
+            text-align: center;
         }
 
         .main-title {
             font-weight: 700;
             letter-spacing: 3px;
-            font-size: clamp(24px, 5vw, 32px);
+            font-size: clamp(26px, 6vw, 32px);
             background: linear-gradient(180deg, #ffffff 30%, #d8bf8a 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -118,28 +120,35 @@
         .subtitle {
             font-size: 13px;
             color: #8c7fa6;
-            margin-top: 8px;
+            margin-top: 6px;
             letter-spacing: 1px;
         }
 
-        /* 極簡儀式感核心卡片 */
+        /* 核心卡片：移除生硬的最小高度，改用 padding 呼吸空間 */
         .portal-card {
+            width: 100%;
             background: var(--card);
             border: 1px solid rgba(216, 191, 138, 0.15);
             border-radius: 28px;
-            padding: 40px 30px;
+            padding: 45px 24px;
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             box-shadow: 0 30px 70px rgba(0,0,0,.4);
-            min-height: 260px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            position: relative;
         }
 
-        /* 儀式按鈕：外觀像一個神祕的同心圓魔法陣 */
+        /* 初始狀態容器 */
+        .init-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px; /* 讓按鈕與文字維持舒適的間距 */
+        }
+
+        /* 儀式按鈕 */
         .altar-btn {
             width: 100px;
             height: 100px;
@@ -177,18 +186,19 @@
         }
 
         .btn-label {
-            font-size: 13px;
-            color: #a897c9;
-            margin-top: 15px;
+            font-size: 14px;
+            color: #bba9e8;
             letter-spacing: 2px;
+            text-align: center;
         }
 
-        /* 占卜結果呈現區（預設隱藏，優雅淡入） */
+        /* 占卜結果呈現區 */
         .result-view {
             opacity: 0;
             transform: translateY(10px);
             display: none;
             width: 100%;
+            text-align: center;
         }
 
         .result-view.active {
@@ -215,7 +225,6 @@
             font-size: 14px;
             color: #d1c4e9;
             margin-bottom: 18px;
-            font-weight: 500;
         }
 
         .card-detail {
@@ -243,20 +252,16 @@
             color: var(--gold);
         }
 
-        /* 頁尾 */
+        /* 頁尾：移除絕對定位，自然留在最下方，絕不重疊 */
         .footer {
-            position: absolute;
-            bottom: 40px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
             text-align: center;
+            margin-top: 10px;
         }
 
         .footer-brand {
-            font-size: 15px;
+            font-size: 14px;
             letter-spacing: 1px;
-            color: rgba(234, 223, 255, 0.6);
+            color: rgba(234, 223, 255, 0.5);
             font-weight: 500;
         }
 
@@ -266,11 +271,14 @@
             margin-top: 4px;
         }
 
-        /* 隱藏元素用 */
+        /* 隱藏元素用（抽卡後標題隱藏，卡片會自動優雅往上置中） */
         .hide {
             opacity: 0 !important;
             transform: scale(0.9) !important;
             pointer-events: none;
+            height: 0;
+            margin: 0;
+            overflow: hidden;
         }
     </style>
 </head>
@@ -281,27 +289,22 @@
 
 <div class="stage">
     
-    <!-- 懸浮月亮 -->
     <div class="moon">
         <div class="moon-symbol" onclick="resetAltar()">☾</div>
     </div>
 
-    <!-- 標題區塊：抽卡後會優雅淡出縮小，保持畫面乾淨 -->
     <div class="title-block" id="titleBlock">
         <h1 class="main-title">群星低語</h1>
         <div class="subtitle">Whispering Cosmos</div>
     </div>
 
-    <!-- 核心互動祭壇 -->
     <div class="portal-card">
         
-        <!-- 初始狀態：只有一個神祕的圓鈕 -->
-        <div id="initView" style="display: flex; flex-direction: column; align-items: center;">
+        <div id="initView" class="init-box">
             <button class="altar-btn" onclick="whisperToStars()">✦</button>
             <div class="btn-label">輕觸星軌・聆聽低語</div>
         </div>
 
-        <!-- 結果狀態：動態浮現 -->
         <div id="resultView" class="result-view">
             <div class="card-icon" id="cardIcon">🔮</div>
             <div class="card-name" id="cardName">—</div>
@@ -312,7 +315,6 @@
 
     </div>
 
-    <!-- 頁尾 -->
     <div class="footer">
         <div class="footer-brand">✦ Lazy Dreamer ✦</div>
         <div class="footer-sub">Crafted with moonlight & starlight magic</div>
@@ -347,25 +349,20 @@ function whisperToStars() {
     const resultView = document.getElementById("resultView");
     const titleBlock = document.getElementById("titleBlock");
 
-    // 隨機抽取星象
     const card = fateCards[Math.floor(Math.random() * fateCards.length)];
 
-    // 填入資料
     document.getElementById("cardIcon").innerText = card.icon;
     document.getElementById("cardName").innerText = card.name;
     document.getElementById("cardPhrase").innerText = `「${card.phrase}」`;
     document.getElementById("cardDetail").innerText = card.detail;
 
-    // 視覺動態：標題與初始按鈕優雅淡出
     titleBlock.classList.add("hide");
     initView.style.opacity = "0";
     
     setTimeout(() => {
         initView.style.display = "none";
+        resultView.style.style = "block";
         
-        // 結果畫面優雅淡入
-        resultView.style.display = "block";
-        // 觸發 CSS transition
         setTimeout(() => {
             resultView.classList.add("active");
         }, 50);
