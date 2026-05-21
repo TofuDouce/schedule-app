@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title> Magic index </title>
+
+<!-- 防止搜尋引擎索引 -->
+
+<meta
+name="robots"
+content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+
+<meta
+name="googlebot"
+content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+
+<meta
+name="bingbot"
+content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+:root{
+
+    --bg1:#171320;
+    --bg2:#241a35;
+    --bg3:#31244d;
+
+    --gold:#d8bf8a;
+
+    --text:#f4efff;
+
+    --card:
+    rgba(29,24,44,.72);
+}
+
+body{
+
+    min-height:100vh;
+
+    overflow-x:hidden;
+
+    color:var(--text);
+
+    font-family:
+    "Cormorant Garamond",
+    serif;
+
+    background:
+    radial-gradient(
+    circle at top,
+    rgba(180,150,255,.14),
+    transparent 30%
+    ),
+
+    linear-gradient(
+    180deg,
+    var(--bg1),
+    var(--bg2),
+    var(--bg3)
+    );
+
+    padding:28px;
+
+    position:relative;
+}
+
+/* 星空 */
+
+.stars{
+
+    position:fixed;
+
+    inset:0;
+
+    overflow:hidden;
+
+    z-index:-3;
+}
+
+.star{
+
+    position:absolute;
+
+    width:2px;
+    height:2px;
+
+    background:white;
+
+    border-radius:50%;
+
+    opacity:.7;
+
+    animation:twinkle 4s infinite;
+}
+
+@keyframes twinkle{
+
+    0%{
+        opacity:.15;
+        transform:scale(.7);
+    }
+
+    50%{
+        opacity:1;
+        transform:scale(1.4);
+    }
+
+    100%{
+        opacity:.15;
+        transform:scale(.7);
+    }
+}
+
+/* 外框 */
+
+.frame{
+
+    position:fixed;
+
+    inset:14px;
+
+    border:
+    1.5px solid rgba(216,191,138,.48);
+
+    border-radius:38px;
+
+    pointer-events:none;
+
+    z-index:999;
+}
+
+.frame::before{
+
+    content:"";
+
+    position:absolute;
+
+    inset:12px;
+
+    border:
+    1px solid rgba(216,191,138,.18);
+
+    border-radius:30px;
+}
+
+/* 四角 */
+
+.corner{
+
+    position:fixed;
+
+    width:120px;
+    height:120px;
+
+    pointer-events:none;
+
+    z-index:1000;
+}
+
+.corner::before{
+
+    content:"";
+
+    position:absolute;
+
+    inset:0;
+
+    border:
+    1.5px solid rgba(216,191,138,.45);
+
+    border-radius:50%;
+}
+
+.corner::after{
+
+    content:"✦";
+
+    position:absolute;
+
+    color:rgba(216,191,138,.85);
+
+    font-size:26px;
+}
+
+.tl{
+    top:18px;
+    left:18px;
+}
+
+.tl::before{
+    clip-path:polygon(0 0,100% 0,0 100%);
+}
+
+.tl::after{
+    top:18px;
+    left:18px;
+}
+
+.tr{
+    top:18px;
+    right:18px;
+}
+
+.tr::before{
+    clip-path:polygon(0 0,100% 0,100% 100%);
+}
+
+.tr::after{
+    top:18px;
+    right:18px;
+}
+
+.bl{
+    bottom:18px;
+    left:18px;
+}
+
+.bl::before{
+    clip-path:polygon(0 0,0 100%,100% 100%);
+}
+
+.bl::after{
+    bottom:18px;
+    left:18px;
+}
+
+.br{
+    bottom:18px;
+    right:18px;
+}
+
+.br::before{
+    clip-path:polygon(100% 0,0 100%,100% 100%);
+}
+
+.br::after{
+    bottom:18px;
+    right:18px;
+}
+
+/* 主內容 */
+
+.container{
+
+    max-width:1000px;
+
+    margin:auto;
+
+    position:relative;
+
+    z-index:2;
+}
+
+/* 月亮 */
+
+.moon{
+
+    text-align:center;
+
+    margin-top:10px;
+
+    position:relative;
+}
+
+.moon::before{
+
+    content:"";
+
+    position:absolute;
+
+    left:50%;
+
+    top:-70px;
+
+    width:1px;
+    height:70px;
+
+    background:
+    rgba(216,191,138,.35);
+}
+
+.moon-symbol{
+
+    font-size:42px;
+
+    color:var(--gold);
+
+    text-shadow:
+    0 0 18px rgba(216,191,138,.25);
+
+    animation:floatMoon 4s ease-in-out infinite;
+}
+
+@keyframes floatMoon{
+
+    0%{
+        transform:translateY(0px);
+    }
+
+    50%{
+        transform:translateY(6px);
+    }
+
+    100%{
+        transform:translateY(0px);
+    }
+}
+
+/* 標題 */
+
+.title{
+
+    text-align:center;
+
+    margin-top:20px;
+
+    margin-bottom:50px;
+}
+
+.main-title{
+
+    font-family:
+    "Cinzel",
+    serif;
+
+    font-weight:700;
+
+    letter-spacing:5px;
+
+    line-height:1.1;
+
+    font-size:
+    clamp(
+        42px,
+        9vw,
+        82px
+    );
+
+    background:
+    linear-gradient(
+        180deg,
+        #ffffff 0%,
+        #f1e8ff 40%,
+        #d8bf8a 100%
+    );
+
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+
+    position:relative;
+}
+
+.main-title::before{
+
+    content:"";
+
+    position:absolute;
+
+    width:
+    clamp(
+        180px,
+        40vw,
+        340px
+    );
+
+    height:
+    clamp(
+        180px,
+        40vw,
+        340px
+    );
+
+    border:
+    1px solid rgba(216,191,138,.12);
+
+    border-radius:50%;
+
+    left:50%;
+    top:50%;
+
+    transform:
+    translate(-50%,-50%);
+
+    z-index:-1;
+}
+
+.subtitle{
+
+    margin-top:24px;
+
+    font-size:
+    clamp(
+        18px,
+        3vw,
+        28px
+    );
+
+    color:#ddd0f5;
+
+    line-height:2;
+}
+
+/* 卡片 */
+
+.grid{
+
+    display:grid;
+
+    grid-template-columns:
+    repeat(
+        auto-fit,
+        minmax(260px,1fr)
+    );
+
+    gap:28px;
+}
+
+.card{
+
+    background:
+    var(--card);
+
+    border:
+    1px solid rgba(255,255,255,.06);
+
+    border-radius:34px;
+
+    padding:28px;
+
+    backdrop-filter:blur(16px);
+
+    text-decoration:none;
+
+    color:white;
+
+    position:relative;
+
+    overflow:hidden;
+
+    transition:.4s;
+}
+
+.card:hover{
+
+    transform:
+    translateY(-10px)
+    scale(1.02);
+
+    box-shadow:
+    0 20px 50px rgba(0,0,0,.4);
+}
+
+.card::before{
+
+    content:"";
+
+    position:absolute;
+
+    inset:0;
+
+    background:
+    radial-gradient(
+    circle at top,
+    rgba(255,255,255,.06),
+    transparent 60%
+    );
+
+    pointer-events:none;
+}
+
+.card-symbol{
+
+    font-size:28px;
+
+    color:var(--gold);
+
+    margin-bottom:16px;
+}
+
+.card-title{
+
+    font-family:
+    "Cinzel",
+    serif;
+
+    font-size:30px;
+
+    margin-bottom:10px;
+
+    line-height:1.3;
+}
+
+.card-file{
+
+    color:#bba9e8;
+
+    font-size:15px;
+
+    letter-spacing:1px;
+
+    margin-bottom:18px;
+
+    opacity:.82;
+}
+
+.card-desc{
+
+    color:#d6c8f5;
+
+    line-height:1.8;
+
+    font-size:18px;
+
+    min-height:70px;
+}
+
+.card-footer{
+
+    margin-top:24px;
+
+    color:#b89ef0;
+
+    font-size:15px;
+
+    letter-spacing:1px;
+}
+
+/* footer */
+
+.footer{
+
+    text-align:center;
+
+    margin-top:70px;
+
+    margin-bottom:90px;
+}
+
+.footer-line{
+
+    width:120px;
+
+    height:1px;
+
+    margin:auto;
+
+    margin-bottom:22px;
+
+    background:
+    linear-gradient(
+    90deg,
+    transparent,
+    rgba(216,191,138,.7),
+    transparent
+    );
+}
+
+.footer-inner{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    gap:18px;
+}
+
+.sparkle{
+
+    color:#f6d98f;
+
+    font-size:24px;
+}
+
+.dream{
+
+    font-family:
+    "Cinzel",
+    serif;
+
+    font-size:34px;
+
+    letter-spacing:4px;
+
+    color:#eadfff;
+}
+
+.creator{
+
+    margin-top:10px;
+
+    font-size:16px;
+
+    color:#a897c9;
+
+    letter-spacing:2px;
+
+    font-style:italic;
+}
+
+.loading{
+
+    text-align:center;
+
+    color:#c9b8f1;
+
+    font-size:22px;
+
+    margin-top:50px;
+}
+
+@media(max-width:640px){
+
+    .card-title{
+        font-size:24px;
+    }
+
+    .frame{
+        inset:10px;
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="stars" id="stars"></div>
+
+<div class="frame"></div>
+
+<div class="corner tl"></div>
+<div class="corner tr"></div>
+<div class="corner bl"></div>
+<div class="corner br"></div>
+
+<div class="container">
+
+    <div class="moon">
+        <div class="moon-symbol">
+            ☾
+        </div>
+    </div>
+
+    <div class="title">
+
+        <h1 class="main-title">
+            Lazy Dream Archive
+        </h1>
+
+        <p class="subtitle">
+            所有靈感與作品的入口
+            <br>
+            每個網頁，都是另一個宇宙 ✦
+        </p>
+
+    </div>
+
+    <div
+    class="grid"
+    id="projects">
+
+        <div class="loading">
+            正在讀取魔法書庫...
+        </div>
+
+    </div>
+
+    <div class="footer">
+
+        <div class="footer-line"></div>
+
+        <div class="footer-inner">
+
+            <span class="sparkle">✦</span>
+
+            <span class="dream">
+                Lazy Dream
+            </span>
+
+            <span class="sparkle">✦</span>
+
+        </div>
+
+        <div class="creator">
+            Crafted with moonlight & dream magic
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+/* ===== 星空 ===== */
+
+const stars =
+document.getElementById("stars");
+
+for(let i=0;i<140;i++){
+
+    const star =
+    document.createElement("div");
+
+    star.className = "star";
+
+    star.style.left =
+    Math.random()*100 + "%";
+
+    star.style.top =
+    Math.random()*100 + "%";
+
+    star.style.animationDelay =
+    Math.random()*4 + "s";
+
+    stars.appendChild(star);
+}
+
+/* ===== GitHub 設定 ===== */
+
+const username = "TofuDouce";
+
+/* 改成你的 repo 名稱 */
+
+const repo = "schedule-app";
+
+/* ===== 描述 ===== */
+
+const descriptions = {
+
+    "index.html":
+    "首頁與魔法入口",
+
+    "etf.html":
+    "在衝動消費前看看另一種未來",
+
+    "schedule.html":
+    "夢境般的班表管理工具",
+
+    "quote.html":
+    "每日靈感與命運語錄",
+
+    "todo.html":
+    "星空待辦清單"
+};
+
+/* ===== icon ===== */
+
+const symbols = [
+    "✦",
+    "☾",
+    "✧",
+    "✶",
+    "❂",
+    "☽"
+];
+
+/* ===== 載入 ===== */
+
+async function loadProjects(){
+
+    const container =
+    document.getElementById("projects");
+
+    try{
+
+        const response =
+        await fetch(
+        `https://api.github.com/repos/${username}/${repo}/contents`
+        );
+
+        const files =
+        await response.json();
+
+        const htmlFiles =
+        files.filter(file =>
+
+            file.name.endsWith(".html")
+
+            &&
+
+            file.name !== "archive.html"
+        );
+
+        /* 把自己放最上面 */
+
+        container.innerHTML =
+
+        `
+        <a
+        class="card"
+        href="archive.html"
+        target="_blank">
+
+            <div class="card-symbol">
+                ☾
+            </div>
+
+            <div class="card-title">
+                Lazy Dream Archive
+            </div>
+
+            <div class="card-file">
+                archive.html
+            </div>
+
+            <div class="card-desc">
+                所有作品與宇宙的入口
+            </div>
+
+            <div class="card-footer">
+                CURRENT PORTAL ✦
+            </div>
+
+        </a>
+        `;
+
+        for (const [index,file] of htmlFiles.entries()) {
+
+            const card =
+            document.createElement("a");
+
+            card.className = "card";
+
+            /* 新分頁開啟 */
+
+            card.target = "_blank";
+
+            card.href = file.name;
+
+            const symbol =
+            symbols[
+            index % symbols.length
+            ];
+
+            let title =
+            file.name
+            .replace(".html","");
+
+            try{
+
+                const pageResponse =
+                await fetch(file.download_url);
+
+                const html =
+                await pageResponse.text();
+
+                const match =
+                html.match(
+                /<title>(.*?)<\/title>/i
+                );
+
+                if(match && match[1]){
+
+                    title = match[1];
+                }
+
+            }catch(e){
+
+                console.log(
+                "title 讀取失敗"
+                );
+            }
+
+            const desc =
+            descriptions[file.name]
+            ||
+
+            "通往另一個宇宙的入口";
+
+            card.innerHTML =
+
+            `
+            <div class="card-symbol">
+                ${symbol}
+            </div>
+
+            <div class="card-title">
+                ${title}
+            </div>
+
+            <div class="card-file">
+                ${file.name}
+            </div>
+
+            <div class="card-desc">
+                ${desc}
+            </div>
+
+            <div class="card-footer">
+                OPEN PORTAL →
+            </div>
+            `;
+
+            container.appendChild(card);
+        }
+
+    }catch(err){
+
+        container.innerHTML =
+
+        `
+        <div class="loading">
+            無法讀取 GitHub Repo 😭
+        </div>
+        `;
+    }
+}
+
+loadProjects();
+
+</script>
+
+</body>
+</html>
