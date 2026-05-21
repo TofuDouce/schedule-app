@@ -1,723 +1,449 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中正診所 Portal</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <title>✦ 太極鰲車輪餅．美味結算工坊 by ChuChu ✦</title>
+
+    <meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+    <meta name="googlebot" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
+
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; transition: font-size 0.2s ease, transform 0.2s ease; }
+
         :root {
-            /* 預設主題色：天空藍 */
-            --accent-primary: #0284c7;
-            --accent-hover: #0369a1;
-            --accent-light: rgba(2, 132, 199, 0.1);
-            
-            /* 字體大小變數 */
+            --bg-base: #fff9f6; 
+            --bg-gradient-end: #ffebe3; 
+            --card-bg: #ffffff; 
+            --text-main: #54433a; 
+            --text-sub: #8e7a70; 
+            --flavor-bg: #fffbf9; 
+            --butter-gold: #f6c86c; 
+            --butter-gold-hover: #f3b946;
+            --berry-pink: #f79999;
             --base-font-size: 16px;
-            
-            /* 網格列數變數 (卡片排版張數設定) */
-            --grid-cols: 4;
-
-            /* 日間模式變數 */
-            --bg-gradient: linear-gradient(135deg, #e0f2fe 0%, #f0fdf4 100%);
-            --panel-bg: rgba(255, 255, 255, 0.45);
-            --panel-border: rgba(255, 255, 255, 0.4);
-            --text-main: #1e293b;
-            --text-muted: #64748b;
-            --card-bg: rgba(255, 255, 255, 0.65);
-            --card-hover-bg: rgba(255, 255, 255, 0.85);
-            --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.08);
-            --sidebar-bg: rgba(255, 255, 255, 0.85);
-        }
-
-        [data-theme="dark"] {
-            /* 夜間模式變數 */
-            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #050b14 100%);
-            --panel-bg: rgba(30, 41, 59, 0.45);
-            --panel-border: rgba(255, 255, 255, 0.08);
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --card-bg: rgba(30, 41, 59, 0.6);
-            --card-hover-bg: rgba(47, 63, 89, 0.75);
-            --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-            --sidebar-bg: rgba(15, 23, 42, 0.95);
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            font-size: var(--base-font-size);
-            background: var(--bg-gradient);
-            background-attachment: fixed;
-            color: var(--text-main);
             min-height: 100vh;
-            padding: 2rem;
-            position: relative;
-            overflow-x: hidden;
-        }
-
-        /* 頂部導航與時鐘 */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-            padding: 1rem 1.5rem;
-            background: var(--panel-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--panel-border);
-            border-radius: 16px;
-            box-shadow: var(--shadow);
-        }
-
-        .clinic-info h1 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--accent-primary);
-        }
-
-        .clock-container {
-            text-align: right;
-            font-variant-numeric: tabular-nums;
-        }
-
-        #clock {
-            font-size: 1.4rem;
-            font-weight: 600;
-        }
-
-        #date {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-        }
-
-        /* 主要書籤區塊 */
-        .section-title {
-            font-size: 1.2rem;
-            margin: 1.5rem 0 1rem 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
             color: var(--text-main);
-        }
-
-        .links-grid {
-            display: grid;
-            grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
-            gap: 1.25rem;
-            margin-bottom: 2rem;
-        }
-
-        /* 卡片設計 */
-        .link-card {
-            display: flex;
-            flex-direction: column;
-            padding: 1.25rem;
-            background: var(--card-bg);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border: 1px solid var(--panel-border);
-            border-radius: 14px;
-            box-shadow: var(--shadow);
-            text-decoration: none;
-            color: var(--text-main);
-            position: relative;
-            cursor: pointer;
-        }
-
-        .link-card:hover {
-            background: var(--card-hover-bg);
-            transform: translateY(-2px);
-            border-color: var(--accent-primary);
-        }
-
-        /* C13 黃色醒目提示效果 */
-        .link-card.highlight-c13 {
-            border: 2px solid #eab308;
-            background: rgba(234, 179, 8, 0.05);
-        }
-        .link-card.highlight-c13:hover {
-            background: rgba(234, 179, 8, 0.12);
-        }
-
-        .card-header {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .card-icon {
-            font-size: 1.5rem;
-            width: 40px;
-            height: 40px;
+            font-family: "Zen Maru Gothic", "Quicksand", "Microsoft JhengHei", sans-serif;
+            background: linear-gradient(180deg, var(--bg-base) 0%, var(--bg-gradient-end) 100%);
+            padding: 24px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: var(--accent-light);
-            color: var(--accent-primary);
-            border-radius: 10px;
+            position: relative;
         }
 
-        .card-title {
-            font-weight: 600;
-            font-size: 1.05rem;
-        }
+        .decor-border { position: fixed; inset: 12px; border: 2px dashed rgba(142, 122, 112, 0.15); border-radius: 24px; pointer-events: none; z-index: 999; }
+        .container { width: 100%; max-width: 1040px; margin: auto; position: relative; z-index: 2; padding: 10px 0; padding-bottom: 50px; }
 
-        .card-desc {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            line-height: 1.4;
-        }
+        .font-control { display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 12px; }
+        .font-btn { background: var(--card-bg); border: 1px solid rgba(142, 122, 112, 0.2); color: var(--text-main); padding: 6px 14px; border-radius: 30px; cursor: pointer; font-size: 13px; font-weight: bold; box-shadow: 0 2px 6px rgba(0,0,0,0.03); }
+        .font-btn:hover { background: #fff5f0; border-color: var(--butter-gold); }
+        .font-btn.active { background: var(--butter-gold); color: var(--text-main); border-color: var(--butter-gold); box-shadow: 0 2px 8px rgba(246, 200, 108, 0.4); }
 
-        /* 側邊欄控制按鈕 */
-        .admin-trigger {
+        .title-block { text-align: center; margin-bottom: 30px; }
+        .main-title { font-size: clamp(24px, 4.5vw, 36px); font-weight: 700; color: var(--text-main); letter-spacing: 1px; line-height: 1.4; }
+        .title-badge { display: inline-block; background: rgba(246, 200, 108, 0.2); color: #bd8619; font-size: 13px; padding: 4px 12px; border-radius: 20px; margin-bottom: 8px; font-weight: 700; }
+
+        .layout-grid { display: flex; flex-direction: column; gap: 24px; margin-bottom: 30px; }
+        @media (min-width: 950px) { .layout-grid { flex-direction: row; align-items: stretch; } }
+
+        .main-calculator, .sidebar-panel { background: var(--card-bg); border: 1px solid rgba(142, 122, 112, 0.12); border-radius: 24px; padding: 28px; box-shadow: 0 10px 30px rgba(84, 67, 58, 0.05); display: flex; flex-direction: column; }
+        @media (min-width: 950px) { .sidebar-panel { width: 380px; } }
+
+        .form-label { display: block; font-size: calc(var(--base-font-size) * 0.9); font-weight: 700; color: var(--text-main); margin-bottom: 8px; }
+        .classic-input { width: 100%; background: #fffbf9; border: 1.5px solid rgba(142, 122, 112, 0.18); border-radius: 14px; padding: 12px 16px; color: var(--text-main); font-size: calc(var(--base-font-size) * 1.0); font-family: inherit; }
+        .classic-input:focus { outline: none; border-color: var(--butter-gold); background: #ffffff; box-shadow: 0 0 0 3px rgba(246, 200, 108, 0.25); }
+
+        .category-tabs { display: flex; gap: 6px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 4px; }
+        .tab-btn { background: #f7f3f0; border: 1px solid transparent; color: var(--text-sub); padding: 8px 14px; border-radius: 12px; cursor: pointer; font-size: 13px; font-weight: 700; white-space: nowrap; font-family: inherit; }
+        .tab-btn:hover { color: var(--text-main); background: #eee7e2; }
+        .tab-btn.active { background: #fff4dd; border-color: rgba(246, 200, 108, 0.5); color: #b07910; }
+
+        .flavor-scroll-area { max-height: 380px; overflow-y: auto; padding-right: 4px; margin-bottom: 15px; }
+        .flavor-group-pane { display: none; }
+        .flavor-group-pane.active { display: block; }
+        .flavor-row { display: flex; align-items: center; justify-content: space-between; background: var(--flavor-bg); padding: 12px 16px; border-radius: 16px; margin-bottom: 8px; border: 1px solid rgba(142, 122, 112, 0.06); }
+        .flavor-name { font-size: calc(var(--base-font-size) * 0.95); color: var(--text-main); font-weight: 700; }
+        .flavor-price { font-size: 12px; color: var(--text-sub); }
+
+        .counter-controls { display: flex; align-items: center; gap: 12px; }
+        .counter-btn { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid rgba(142, 122, 112, 0.2); background: #ffffff; color: var(--text-main); cursor: pointer; font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+        .counter-btn:hover { border-color: var(--butter-gold); color: var(--butter-gold-hover); }
+        .counter-value { font-size: calc(var(--base-font-size) * 1.0); font-weight: 700; width: 20px; text-align: center; color: var(--text-main); }
+
+        .magic-btn { width: 100%; background: var(--butter-gold); border: none; color: var(--text-main); padding: 14px; border-radius: 16px; cursor: pointer; font-family: inherit; font-weight: 700; font-size: calc(var(--base-font-size) * 1.0); box-shadow: 0 4px 12px rgba(246, 200, 108, 0.3); margin-top: auto; }
+        .magic-btn:hover { background: var(--butter-gold-hover); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(246, 200, 108, 0.4); }
+
+        .ledger-list { max-height: 280px; overflow-y: auto; margin-bottom: 15px; padding-right: 4px; }
+        .ledger-item { padding: 12px 0; border-bottom: 1px dashed rgba(142, 122, 112, 0.15); font-size: calc(var(--base-font-size) * 0.85); display: flex; justify-content: space-between; align-items: center; }
+        .ledger-name { color: var(--text-main); font-weight: 700; }
+        .ledger-detail { color: var(--text-sub); }
+        .delete-record { color: var(--berry-pink); cursor: pointer; margin-left: 10px; font-size: 13px; font-weight: 700; }
+
+        .summary-box { background: #fffbf5; border: 1.5px solid rgba(246, 200, 108, 0.3); border-radius: 16px; padding: 14px; margin-top: auto; }
+        .summary-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: calc(var(--base-font-size) * 0.9); }
+        .smooth-hr { margin: 18px 0; border: none; height: 1px; background: rgba(142, 122, 112, 0.12); }
+        .sidebar-title { font-size: calc(var(--base-font-size) * 1.1); font-weight: 700; color: var(--text-main); text-align: center; }
+        .sidebar-desc { font-size: 12px; color: var(--text-sub); text-align: center; margin-bottom: 16px; }
+
+        /* 📸 下方實體圖片區塊樣式 */
+        .image-card-container { background: var(--card-bg); border: 1px solid rgba(142, 122, 112, 0.12); border-radius: 24px; padding: 24px; text-align: center; box-shadow: 0 10px 30px rgba(84, 67, 58, 0.05); max-width: 480px; margin: 0 auto; }
+        .image-card-container h4 { font-size: 15px; color: var(--text-main); margin-bottom: 4px; font-weight: 700; }
+        .image-card-container p { font-size: 12px; color: var(--text-sub); margin-bottom: 16px; }
+        .output-real-image { width: 100%; height: auto; border-radius: 16px; border: 1px solid rgba(142, 122, 112, 0.15); box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: none; }
+        .image-placeholder { padding: 40px 20px; border: 2px dashed rgba(142, 122, 112, 0.15); border-radius: 16px; color: var(--text-sub); font-size: 13px; }
+
+        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: #4a3b32; color: #ffffff; padding: 12px 24px; border-radius: 12px; z-index: 2000; opacity: 0; transition: all 0.3s ease; font-size: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); text-align: center; }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        #captureCanvas { display: none; }
+
+        .footer { text-align: center; margin-top: 35px; color: var(--text-sub); font-size: 13px; }
+        .footer-inner { margin-bottom: 4px; font-weight: 700; color: var(--text-main); }
+        
+        .copy-watermark {
             position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            width: 56px;
-            height: 56px;
-            background: var(--accent-primary);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            cursor: pointer;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-            z-index: 999;
-        }
-        .admin-trigger:hover {
-            background: var(--accent-hover);
-            transform: scale(1.05);
-        }
-
-        /* 右側彈出式管理面板 (側邊欄) */
-        .sidebar {
-            position: fixed;
-            top: 0;
-            right: -400px;
-            width: 400px;
-            height: 100vh;
-            background: var(--sidebar-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-left: 1px solid var(--panel-border);
-            box-shadow: -4px 0 32px rgba(0,0,0,0.15);
-            z-index: 1000;
-            padding: 2rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-            overflow-y: auto;
-            transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .sidebar.open {
-            right: 0;
-        }
-
-        .sidebar-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--panel-border);
-            padding-bottom: 1rem;
-        }
-
-        .sidebar-title {
-            font-size: 1.3rem;
-            font-weight: 700;
-        }
-
-        .close-sidebar {
-            background: none;
-            border: none;
-            font-size: 1.2rem;
-            color: var(--text-muted);
-            cursor: pointer;
-        }
-
-        /* 管理面板子區塊 */
-        .sidebar-section {
-            background: rgba(0, 0, 0, 0.02);
-            padding: 1rem;
-            border-radius: 12px;
-            border: 1px solid var(--panel-border);
-        }
-
-        .sidebar-section-title {
-            font-size: 0.95rem;
-            font-weight: 600;
-            margin-bottom: 0.75rem;
-            color: var(--accent-primary);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        /* 顯示與排版設定控制項 (字體與卡片張數) */
-        .control-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-
-        .control-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.9rem;
-        }
-
-        .control-item input[type="range"] {
-            width: 150px;
-            accent-color: var(--accent-primary);
-        }
-
-        .control-item select {
-            padding: 0.25rem 0.5rem;
-            border-radius: 6px;
-            background: var(--card-bg);
-            color: var(--text-main);
-            border: 1px solid var(--panel-border);
-        }
-
-        /* 主題色彩選色器 */
-        .color-picker {
-            display: flex;
-            gap: 0.75rem;
-            margin-top: 0.5rem;
-        }
-
-        .color-dot {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 2px solid transparent;
-        }
-
-        .color-dot.active {
-            border-color: var(--text-main);
-            transform: scale(1.1);
-        }
-
-        /* eGFR 計算器樣式 */
-        .egfr-inputs {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.5rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .sidebar input, .sidebar select {
-            width: 100%;
-            padding: 0.5rem;
-            border-radius: 6px;
-            border: 1px solid var(--panel-border);
-            background: var(--card-bg);
-            color: var(--text-main);
-            font-size: 0.9rem;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 0.5rem;
-            background: var(--accent-primary);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 0.5rem;
-        }
-        .btn:hover {
-            background: var(--accent-hover);
-        }
-
-        #egfr-result {
-            margin-top: 0.75rem;
-            padding: 0.5rem;
-            border-radius: 6px;
-            background: var(--accent-light);
-            font-size: 0.9rem;
-            font-weight: 600;
-            text-align: center;
-        }
-
-        /* 編輯與管理書籤列表 */
-        .manage-links-list {
-            max-height: 150px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-        }
-
-        .manage-link-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.4rem 0.5rem;
-            background: var(--card-bg);
-            border-radius: 6px;
-            font-size: 0.85rem;
-        }
-
-        .delete-btn {
-            background: none;
-            border: none;
-            color: #ef4444;
-            cursor: pointer;
-        }
-
-        /* 響應式斷點優化 */
-        @media (max-width: 1024px) {
-            :root { --grid-cols: 3 !important; }
-            body { padding: 1rem; }
-        }
-
-        @media (max-width: 768px) {
-            :root { --grid-cols: 2 !important; }
-            .sidebar { width: 100%; right: -100%; }
-            .header { flex-direction: column; gap: 0.5rem; text-align: center; }
-            .clock-container { text-align: center; }
+            bottom: 25px;
+            right: 25px;
+            font-family: "Quicksand", sans-serif;
+            font-size: 11px;
+            color: rgba(142, 122, 112, 0.45);
+            letter-spacing: 0.5px;
+            pointer-events: none;
+            z-index: 1001;
         }
     </style>
 </head>
 <body>
 
-    <header class="header">
-        <div class="clinic-info">
-            <h1>中正診所 Portal</h1>
-        </div>
-        <div class="clock-container">
-            <div id="clock">00:00:00</div>
-            <div id="date">西元 2026年05月16日 │ 民國 115年05月16日 (六)</div>
-        </div>
-    </header>
+<div class="decor-border"></div>
 
-    <h2 class="section-title"><i class="fa-solid fa-star"></i> 核心公用連結</h2>
-    <div class="links-grid" id="primary-grid"></div>
+<div class="copy-watermark"> Made with yummy thoughts by <b>ChuChu</b> ✦</div>
 
-    <h2 class="section-title"><i class="fa-solid fa-link"></i> 常用與行政連結</h2>
-    <div class="links-grid" id="secondary-grid"></div>
-
-    <div class="admin-trigger" onclick="toggleSidebar()">
-        <i class="fa-solid fa-gear"></i>
+<div class="container">
+    <div class="font-control">
+        <button id="font-small" class="font-btn" onclick="changeFontSize('small')">A -</button>
+        <button id="font-medium" class="font-btn active" onclick="changeFontSize('medium')">A</button>
+        <button id="font-large" class="font-btn" onclick="changeFontSize('large')">A +</button>
     </div>
 
-    <div class="sidebar" id="adminSidebar">
-        <div class="sidebar-header">
-            <div class="sidebar-title">⚙️ 控制中心</div>
-            <button class="close-sidebar" onclick="toggleSidebar()"><i class="fa-solid fa-xmark"></i></button>
+    <div class="title-block">
+        <div class="title-badge">下午茶開團應緣神隊友 🥞</div>
+        <h1 class="main-title">太極鰲車輪餅<br>美味結算工坊</h1>
+    </div>
+
+    <div class="layout-grid">
+        <div class="main-calculator" id="mainCorePanel">
+            <div class="form-group">
+                <label class="form-label">Step 1. 輸入你的名字或暱稱</label>
+                <input type="text" id="memberInput" class="classic-input" placeholder="請輸入名字，主揪才找得到人喔..." autocomplete="off">
+            </div>
+
+            <label class="form-label">Step 2. 選擇口味與數量</label>
+            
+            <div class="category-tabs" id="tabBar">
+                <button id="btn-cat15" class="tab-btn active" onclick="switchCategory('cat15')">15元超值經典系列</button>
+                <button id="btn-cat18-19" class="tab-btn" onclick="switchCategory('cat18-19')">18-19元雙餡與芝麻</button>
+                <button id="btn-cat20" class="tab-btn" onclick="switchCategory('cat20')">20元地瓜麻吉軍團</button>
+                <button id="btn-cat21-25" class="tab-btn" onclick="switchCategory('cat21-25')">21-25元豪華特製頂級</button>
+            </div>
+
+            <div class="flavor-scroll-area" id="flavorScrollArea">
+                </div>
+
+            <div class="smooth-hr"></div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <span class="form-label" style="margin: 0;">您的本次點餐小計：</span>
+                <span style="font-size: 26px; font-weight: 700; color: #d96a6a;" id="singleTotal">$ 0</span>
+            </div>
+
+            <button class="magic-btn" onclick="submitOrder()">送出點餐 ✦ 自動複製並寫入帳本</button>
         </div>
 
-        <div class="sidebar-section">
-            <div class="sidebar-section-title"><i class="fa-solid fa-sliders"></i> 顯示與排版設定</div>
-            <div class="control-group">
-                <div class="control-item">
-                    <label>內文字體大小</label>
-                    <input type="range" id="fontSizeSlider" min="14" max="22" value="16" oninput="updateFontSize(this.value)">
-                    <span id="fontSizeVal">16px</span>
-                </div>
-                <div class="control-item">
-                    <label>橫向卡片張數</label>
-                    <select id="gridColsSelect" onchange="updateGridCols(this.value)">
-                        <option value="3">每列 3 張卡片</option>
-                        <option value="4" selected>每列 4 張卡片</option>
-                        <option value="5">每列 5 張卡片</option>
-                        <option value="6">每列 6 張卡片</option>
-                    </select>
-                </div>
-                <div class="control-item">
-                    <label>深色模夜間模式</label>
-                    <select id="themeSelect" onchange="updateTheme(this.value)">
-                        <option value="light">日間模式</option>
-                        <option value="dark">夜間模式</option>
-                    </select>
-                </div>
-                <div class="control-item" style="flex-direction: column; align-items: flex-start; gap: 0.25rem;">
-                    <label>主題核心色系</label>
-                    <div class="color-picker">
-                        <div class="color-dot" style="background: #0284c7;" onclick="updateAccentColor('#0284c7', '#0369a1', 'rgba(2, 132, 199, 0.1)', this)" title="天空藍"></div>
-                        <div class="color-dot" style="background: #10b981;" onclick="updateAccentColor('#10b981', '#047857', 'rgba(16, 185, 129, 0.1)', this)" title="翡翠綠"></div>
-                        <div class="color-dot" style="background: #a855f7;" onclick="updateAccentColor('#a855f7', '#7e22ce', 'rgba(168, 85, 247, 0.1)', this)" title="丁香紫"></div>
-                        <div class="color-dot" style="background: #64748b;" onclick="updateAccentColor('#64748b', '#475569', 'rgba(100, 116, 139, 0.1)', this)" title="磨砂灰"></div>
-                    </div>
+        <div class="sidebar-panel" id="sidebarPanel">
+            <h3 class="sidebar-title">📋 今日全體點餐明細大帳本</h3>
+            <p class="sidebar-desc">全辦公室目前已匯整的車輪餅願望清單。</p>
+            
+            <div class="ledger-list" id="ledgerList">
+                <div id="emptyLedger" style="text-align: center; padding: 40px 0; color: var(--text-sub); font-size: 13px;">
+                    還沒有人點餐唷，快來當第一個！
                 </div>
             </div>
-        </div>
 
-        <div class="sidebar-section">
-            <div class="sidebar-section-title"><i class="fa-solid fa-calculator"></i> eGFR 計算器 (CKD-EPI 2021)</div>
-            <div class="egfr-inputs">
-                <input type="number" id="egfr-creatinine" placeholder="Cr 肌肉酐酸" step="0.01">
-                <input type="number" id="egfr-age" placeholder="年齡">
+            <div class="summary-box">
+                <div class="summary-row" style="align-items: flex-start;">
+                    <span style="color: var(--text-sub); white-space: nowrap;">全體口味統計：</span>
+                    <span id="allFlavorStats" style="font-size: 12px; text-align: right; max-width: 210px; word-break: break-all; color: var(--text-main); font-weight: 700; line-height: 1.4;">無</span>
+                </div>
+                <div class="summary-row" style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(142,122,112,0.2);">
+                    <span style="font-weight: 700; color: var(--text-main);">整單應付總金額：</span>
+                    <span style="font-size: 22px; font-weight: 700; color: #d96a6a;" id="grandTotal">$ 0</span>
+                </div>
             </div>
-            <div class="egfr-inputs">
-                <select id="egfr-gender">
-                    <option value="male">男性</option>
-                    <option value="female">女性</option>
-                </select>
-            </div>
-            <button class="btn" onclick="calculateEGFR()">一秒計算結果</button>
-            <div id="egfr-result">請輸入數值進行計算</div>
-        </div>
-
-        <div class="sidebar-section">
-            <div class="sidebar-section-title"><i class="fa-solid fa-plus"></i> 新增自訂書籤</div>
-            <div class="control-group" style="gap: 0.5rem;">
-                <input type="text" id="new-title" placeholder="書籤名稱 (例如: 健保申報系統)">
-                <input type="text" id="new-url" placeholder="網址 (https://...)">
-                <input type="text" id="new-desc" placeholder="簡短描述說明">
-                <input type="text" id="new-icon" placeholder="圖示 Emoji (例如: 🏥)" value="🔗">
-                <select id="new-category">
-                    <option value="secondary">常用與行政連結</option>
-                    <option value="primary">核心公用連結</option>
-                </select>
-                <button class="btn" onclick="addCustomLink()">確認新增卡片</button>
-            </div>
-        </div>
-
-        <div class="sidebar-section">
-            <div class="sidebar-section-title"><i class="fa-solid fa-trash-can"></i> 管理自訂連結</div>
-            <div class="manage-links-list" id="manageLinksContainer"></div>
         </div>
     </div>
 
-    <script>
-        // 內建核心固定的書籤資料
-        const coreLinks = {
-            primary: [
-                { id: 'c1', title: '健保雲端系統', url: 'https://vpn.nhi.gov.tw', desc: 'VPN 健保雲端查詢系統、醫事人員憑證登入。', icon: '🏥' },
-                { id: 'c2', title: '診所各類表單', url: 'https://docs.google.com', desc: '中正診所內部表單、行政庶務、排班表專區。', icon: '📝' },
-                { id: 'c3', title: '藥品與健保代碼', url: 'https://www.nhi.gov.tw', desc: '健保用藥品項查詢、適應症與特殊申報規範。', icon: '🔍' }
-            ],
-            secondary: [
-                { id: 'c4', title: '亞東醫院轉診', url: 'https://www.femh.org.tw', desc: '亞東綠色通道、轉診單線上填報與報告查詢。', icon: '🚗' },
-                { id: 'c5', title: 'NIIS 疫苗系統', url: 'https://niis.cdc.gov.tw', desc: '全國預防接種資訊管理系統，流感/新冠常規查詢。', icon: '💉' },
-                { id: 'c13', title: 'C13 考核自評表', url: 'https://docs.google.com/spreadsheets', desc: '年度診所督導考核、C13 自評表項目即時填報。', icon: '⭐', highlight: true }
-            ]
-        };
+    <div class="image-card-container">
+        <h4>📸 今日美味結算大圖卡</h4>
+        <p>（下方圖片隨帳本動態即時生成，手機可直接<b>「長按圖片」</b>儲存或分享）</p>
+        <div id="imgPlaceholder" class="image-placeholder">帳本內有資料時，這裡會自動凝結出精美防盜圖卡唷！</div>
+        <img id="outputCardImage" class="output-real-image" alt="太極鰲車輪餅結算單">
+    </div>
 
-        // 從 localStorage 載入使用者設定與自訂連結
-        let customLinks = JSON.parse(localStorage.getItem('portal_custom_links')) || [];
+    <div class="footer">
+        <div class="footer-inner">✦ 太極鰲車輪餅專用 · 美味與帳務神隊友 ✦</div>
+        <div>Designed by <b style="color:#d96a6a;">✦ ChuChu ✦</b> © 2026 · All yummy rights reserved</div>
+    </div>
+</div>
 
-        // 初始化
-        window.addEventListener('DOMContentLoaded', () => {
-            initClock();
-            loadSettings();
-            renderLinks();
-            initColorPickerActive();
+<div class="toast" id="toastBox"></div>
+<canvas id="captureCanvas" width="450" height="650"></canvas>
+
+<script>
+function changeFontSize(size) {
+    const root = document.documentElement;
+    document.querySelectorAll('.font-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(`font-${size}`).classList.add('active');
+    if (size === 'small') root.style.setProperty('--base-font-size', '13px');
+    else if (size === 'medium') root.style.setProperty('--base-font-size', '16px');
+    else if (size === 'large') root.style.setProperty('--base-font-size', '20px');
+}
+
+const menuData = {
+    cat15: [
+        { id: 'ch1', name: '紅豆', price: 15 },
+        { id: 'ch2', name: '奶油', price: 15 },
+        { id: 'ch3', name: '花生', price: 15 },
+        { id: 'ch4', name: '巧克力', price: 15 },
+        { id: 'ch5', name: '咖啡', price: 15 },
+        { id: 'ch6', name: '玉米', price: 15 },
+        { id: 'ch7', name: '哈密瓜奶油', price: 15 },
+        { id: 'ch8', name: '草莓奶油', price: 15 },
+        { id: 'ch9', name: '起士', price: 15 },
+        { id: 'ch10', name: '胡椒蛋', price: 15 },
+        { id: 'ch11', name: '蘿蔔絲', price: 15 },
+        { id: 'ch12', name: '酸菜菜脯', price: 15 },
+        { id: 'ch13', name: '高麗菜飯', price: 15 }
+    ],
+    'cat18-19': [
+        { id: 'ch14', name: '奧利奧OREO雙餡', price: 18 },
+        { id: 'ch15', name: '芝麻', price: 19 }
+    ],
+    cat20: [
+        { id: 'ch16', name: '地瓜', price: 20 },
+        { id: 'ch17', name: '三餡', price: 20 },
+        { id: 'ch18', name: '麻吉 + 任一口味', price: 20 },
+        { id: 'ch19', name: '原味麻吉', price: 20 },
+        { id: 'ch20', name: '黑糖麻吉', price: 20 },
+        { id: 'ch21', name: '紅豆 + 麻吉', price: 20 },
+        { id: 'ch22', name: '奶油 + 麻吉', price: 20 },
+        { id: 'ch23', name: '芝麻 + 麻吉', price: 20 },
+        { id: 'ch24', name: '巧克力 + 麻吉', price: 20 }
+    ],
+    'cat21-25': [
+        { id: 'ch25', name: '起司蛋', price: 21 },
+        { id: 'ch26', name: '芋頭', price: 25 },
+        { id: 'ch27', name: '五餡', price: 25 }
+    ]
+};
+
+let currentSelection = {};
+let globalLedger = [];
+
+function initSelections() {
+    Object.keys(menuData).forEach(cat => { menuData[cat].forEach(item => { currentSelection[item.id] = 0; }); });
+}
+
+function renderFlavorLists() {
+    const scrollArea = document.getElementById('flavorScrollArea');
+    scrollArea.innerHTML = '';
+    Object.keys(menuData).forEach((cat, idx) => {
+        const pane = document.createElement('div');
+        pane.className = `flavor-group-pane ${idx === 0 ? 'active' : ''}`;
+        pane.id = `pane-${cat}`;
+        menuData[cat].forEach(item => {
+            const row = document.createElement('div'); row.className = 'flavor-row';
+            row.innerHTML = `<div class="flavor-info"><span class="flavor-name">${item.name}</span><span class="flavor-price">$ ${item.price} / 個</span></div>
+                             <div class="counter-controls"><button class="counter-btn" type="button" onclick="updateCount('${item.id}', -1)">-</button>
+                             <span class="counter-value" id="count-${item.id}">0</span><button class="counter-btn" type="button" onclick="updateCount('${item.id}', 1)">+</button></div>`;
+            pane.appendChild(row);
         });
+        scrollArea.appendChild(pane);
+    });
+}
 
-        // 側邊欄開關邏輯
-        function toggleSidebar() {
-            document.getElementById('adminSidebar').classList.toggle('open');
-        }
+function switchCategory(catId) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(`btn-${catId}`).classList.add('active');
+    document.querySelectorAll('.flavor-group-pane').forEach(pane => pane.classList.remove('active'));
+    document.getElementById(`pane-${catId}`).classList.add('active');
+}
 
-        // 1. 顯示排版核心功能：設定字體大小
-        function updateFontSize(size) {
-            document.documentElement.style.setProperty('--base-font-size', size + 'px');
-            document.getElementById('fontSizeVal').innerText = size + 'px';
-            localStorage.setItem('portal_font_size', size);
-        }
+function updateCount(id, delta) {
+    const newVal = (currentSelection[id] || 0) + delta;
+    if (newVal >= 0 && newVal <= 99) { currentSelection[id] = newVal; document.getElementById(`count-${id}`).textContent = newVal; calculateSingleTotal(); }
+}
 
-        // 2. 顯示排版核心功能：設定卡片橫向張數 (欄數)
-        function updateGridCols(cols) {
-            document.documentElement.style.setProperty('--grid-cols', cols);
-            localStorage.setItem('portal_grid_cols', cols);
-        }
+function findItemById(id) {
+    for (let cat of Object.keys(menuData)) { let match = menuData[cat].find(i => i.id === id); if (match) return match; }
+    return null;
+}
 
-        // 3. 顯示排版核心功能：主題切換
-        function updateTheme(theme) {
-            document.documentElement.setAttribute('data-theme', theme);
-            localStorage.setItem('portal_theme', theme);
-        }
+function calculateSingleTotal() {
+    let sum = 0;
+    Object.keys(currentSelection).forEach(id => { const qty = currentSelection[id]; const item = findItemById(id); if (item && qty > 0) sum += qty * item.price; });
+    document.getElementById('singleTotal').textContent = `$ ${sum}`;
+    return sum;
+}
 
-        // 4. 顯示排版核心功能：變更核心色系
-        function updateAccentColor(primary, hover, light, element) {
-            document.documentElement.style.setProperty('--accent-primary', primary);
-            document.documentElement.style.setProperty('--accent-hover', hover);
-            document.documentElement.style.setProperty('--accent-light', light);
-            
-            localStorage.setItem('portal_color_primary', primary);
-            localStorage.setItem('portal_color_hover', hover);
-            localStorage.setItem('portal_color_light', light);
+function showToast(msg) {
+    const toast = document.getElementById('toastBox'); toast.textContent = msg; toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+}
 
-            document.querySelectorAll('.color-dot').forEach(dot => dot.classList.remove('active'));
-            if(element) element.classList.add('active');
-        }
+function submitOrder() {
+    const name = document.getElementById('memberInput').value.trim();
+    if (!name) { showToast('🥞 請先填寫名字，以便主主統計大帳本！'); return; }
+    let hasItems = false; let detailSegments = []; let itemsOrdered = {};
+    Object.keys(currentSelection).forEach(id => {
+        const qty = currentSelection[id];
+        if (qty > 0) { hasItems = true; const item = findItemById(id); detailSegments.push(`${item.name} x${qty}`); itemsOrdered[id] = qty; }
+    });
+    if (!hasItems) { showToast('🥞 請先選擇任何一個好吃的口味與數量喔！'); return; }
+    const cost = calculateSingleTotal();
+    const copyText = `✦ 點餐完畢 ✦ 【${name}】\n明細如下：${detailSegments.join(', ')}\n合計金額 ${cost} 元。\nDesign by ChuChu ✦`;
+    globalLedger.push({ id: Date.now(), name: name, detailsText: detailSegments.join(', '), items: itemsOrdered, cost: cost });
+    
+    navigator.clipboard.writeText(copyText).then(() => {
+        showToast(`✨ 點餐成功且明細已自動複製！快去貼在 LINE 吧！`);
+    }).catch(() => { showToast(`✨ 已成功寫入全體明細大帳本！`); });
+    
+    document.getElementById('memberInput').value = ''; initSelections(); initSelectionsOnList(); calculateSingleTotal(); renderLedger();
+}
 
-        // 讀取設定檔
-        function loadSettings() {
-            const savedSize = localStorage.getItem('portal_font_size') || '16';
-            document.getElementById('fontSizeSlider').value = savedSize;
-            updateFontSize(savedSize);
+function initSelectionsOnList() { Object.keys(currentSelection).forEach(id => { const element = document.getElementById(`count-${id}`); if(element) element.textContent = '0'; }); }
+function removeRecord(id) { globalLedger = globalLedger.filter(rec => rec.id !== id); renderLedger(); showToast('💡 已將該品項自帳本中移除'); }
 
-            const savedCols = localStorage.getItem('portal_grid_cols') || '4';
-            document.getElementById('gridColsSelect').value = savedCols;
-            updateGridCols(savedCols);
+function renderLedger() {
+    const listContainer = document.getElementById('ledgerList');
+    if (globalLedger.length === 0) {
+        listContainer.innerHTML = `<div id="emptyLedger" style="text-align: center; padding: 40px 0; color: var(--text-sub); font-size: 13px;">還沒有人點餐唷，快來當第一個！</div>`;
+        document.getElementById('allFlavorStats').textContent = '無'; document.getElementById('grandTotal').textContent = '$ 0';
+        document.getElementById('imgPlaceholder').style.display = 'block';
+        document.getElementById('outputCardImage').style.display = 'none';
+        return;
+    }
+    listContainer.innerHTML = ''; let totalMoney = 0; let totalFlavorCounters = {};
+    globalLedger.forEach(record => {
+        totalMoney += record.cost; Object.keys(record.items).forEach(id => { totalFlavorCounters[id] = (totalFlavorCounters[id] || 0) + record.items[id]; });
+        const div = document.createElement('div'); div.className = 'ledger-item';
+        div.innerHTML = `<div><span class="ledger-name">【${record.name}】</span><span class="ledger-detail">${record.detailsText}</span></div>
+                         <div style="display:flex;align-items:center;white-space:nowrap;"><span style="color:#d96a6a;font-weight:700;">$${record.cost}</span>
+                         <span class="delete-record" onclick="removeRecord(${record.id})">✕</span></div>`;
+        listContainer.appendChild(div);
+    });
+    document.getElementById('grandTotal').textContent = `$ ${totalMoney}`;
+    let statSegments = []; Object.keys(totalFlavorCounters).forEach(id => { const item = findItemById(id); if (item && totalFlavorCounters[id] > 0) { statSegments.push(`${item.name}:${totalFlavorCounters[id]}個`); } });
+    document.getElementById('allFlavorStats').textContent = statSegments.length > 0 ? statSegments.join(' / ') : '無';
 
-            const savedTheme = localStorage.getItem('portal_theme') || 'light';
-            document.getElementById('themeSelect').value = savedTheme;
-            updateTheme(savedTheme);
+    // 帳本更新即時重繪
+    autoUpdateVisualCardImage();
+}
 
-            const savedPrimary = localStorage.getItem('portal_color_primary');
-            if(savedPrimary) {
-                const savedHover = localStorage.getItem('portal_color_hover');
-                const savedLight = localStorage.getItem('portal_color_light');
-                updateAccentColor(savedPrimary, savedHover, savedLight, null);
-            }
-        }
+// 🎨 修正後支援「動態長高畫布」與「多行統計文字包裹」的終極渲染機制
+function autoUpdateVisualCardImage() {
+    const canvas = document.getElementById('captureCanvas'); const ctx = canvas.getContext('2d');
+    
+    // 【修正點 1】動態計算所需高度，避免超載破圖
+    const baseHeaderHeight = 110;
+    const itemsHeight = globalLedger.length * 38;
+    const footerStatsRaw = document.getElementById('allFlavorStats').textContent;
+    
+    // 預估統計換行所需行數
+    const maxCharsPerLine = 28;
+    const estimatedStatLines = Math.max(1, Math.ceil(footerStatsRaw.length / maxCharsPerLine));
+    const footerHeight = 110 + (estimatedStatLines * 18);
+    
+    // 重新設定 Canvas 的實體畫布高度
+    canvas.height = baseHeaderHeight + itemsHeight + footerHeight;
 
-        function initColorPickerActive() {
-            const currentPrimary = localStorage.getItem('portal_color_primary') || '#0284c7';
-            document.querySelectorAll('.color-dot').forEach(dot => {
-                if(dot.style.backgroundColor === currentPrimary || (currentPrimary === '#0284c7' && dot.title === '天空藍')) {
-                    dot.classList.add('active');
-                }
-            });
-        }
+    // --- 開始繪製背景與外框 ---
+    let gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, '#fff9f6'); gradient.addColorStop(1, '#ffebe3');
+    ctx.fillStyle = gradient; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    ctx.strokeStyle = '#e3d6cf'; ctx.lineWidth = 2; ctx.strokeRect(15, 15, canvas.width - 30, canvas.height - 30);
+    ctx.strokeStyle = 'rgba(246, 200, 108, 0.4)'; ctx.lineWidth = 1.5; ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
+    
+    ctx.textAlign = 'center'; ctx.font = 'bold 21px "Microsoft JhengHei", sans-serif'; ctx.fillStyle = '#54433a';
+    ctx.fillText('🥞 太極鰲車輪餅 · 下午茶結算單 🥞', canvas.width / 2, 60);
+    
+    ctx.strokeStyle = 'rgba(142, 122, 112, 0.2)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(60, 80); ctx.lineTo(canvas.width - 60, 80); ctx.stroke();
+    
+    // --- 繪製成員明細 ---
+    ctx.textAlign = 'left'; let currentY = 115;
+    globalLedger.forEach((record) => {
+        ctx.font = 'bold 14px "Microsoft JhengHei", sans-serif'; ctx.fillStyle = '#54433a'; ctx.fillText(`【${record.name}】`, 35, currentY);
+        ctx.font = '13px "Microsoft JhengHei", sans-serif'; ctx.fillStyle = '#8e7a70';
+        let txt = record.detailsText; if(txt.length > 24) txt = txt.substring(0, 22) + '...';
+        ctx.fillText(txt, 115, currentY);
+        ctx.textAlign = 'right'; ctx.font = 'bold 15px "Quicksand", sans-serif'; ctx.fillStyle = '#d96a6a'; ctx.fillText(`$${record.cost}`, canvas.width - 35, currentY);
+        ctx.textAlign = 'left'; ctx.strokeStyle = 'rgba(142, 122, 112, 0.08)'; ctx.beginPath(); ctx.moveTo(35, currentY + 12); ctx.lineTo(canvas.width - 35, currentY + 12); ctx.stroke();
+        currentY += 38;
+    });
+    
+    // --- 繪製底部分類加總框 ---
+    currentY += 10;
+    const summaryBoxTop = currentY;
+    const summaryBoxHeight = 55 + (estimatedStatLines * 18);
+    
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(35, summaryBoxTop, canvas.width - 70, summaryBoxHeight);
+    ctx.strokeStyle = 'rgba(246, 200, 108, 0.6)'; ctx.lineWidth = 1.5; ctx.strokeRect(35, summaryBoxTop, canvas.width - 70, summaryBoxHeight);
+    
+    // 【修正點 2】自動換行口味統計文字繪製
+    ctx.font = 'bold 13px "Microsoft JhengHei", sans-serif'; ctx.fillStyle = '#8e7a70';
+    ctx.fillText('全體品項加總：', 48, summaryBoxTop + 24);
+    
+    ctx.font = '12px "Microsoft JhengHei", sans-serif'; ctx.fillStyle = '#54433a';
+    let startX = 140;
+    let startY = summaryBoxTop + 24;
+    
+    // 將口味依據最大字數截斷分行繪製
+    for (let i = 0; i < footerStatsRaw.length; i += maxCharsPerLine) {
+        let chunk = footerStatsRaw.substring(i, i + maxCharsPerLine);
+        ctx.fillText(chunk, startX, startY);
+        startY += 18;
+    }
+    
+    const totalMoneyTop = summaryBoxTop + summaryBoxHeight - 20;
+    ctx.font = 'bold 14px "Microsoft JhengHei", sans-serif'; ctx.fillStyle = '#54433a'; 
+    ctx.fillText('今日開團總金額：', 48, totalMoneyTop);
+    ctx.textAlign = 'right'; ctx.font = 'bold 24px "Quicksand", sans-serif'; ctx.fillStyle = '#d96a6a'; 
+    ctx.fillText(document.getElementById('grandTotal').textContent, canvas.width - 48, totalMoneyTop + 4);
 
-        // 渲染主要與次要網格卡片
-        function renderLinks() {
-            const primaryGrid = document.getElementById('primary-grid');
-            const secondaryGrid = document.getElementById('secondary-grid');
-            const manageContainer = document.getElementById('manageLinksContainer');
+    // ✦ 專屬 ChuChu 的不可抹滅防盜水印 ✦
+    ctx.textAlign = 'center'; ctx.font = '500 11px "Quicksand", sans-serif'; ctx.fillStyle = 'rgba(142, 122, 112, 0.4)';
+    ctx.fillText('Made with yummy thoughts by ChuChu ✦ © 2026', canvas.width / 2, canvas.height - 30);
 
-            primaryGrid.innerHTML = '';
-            secondaryGrid.innerHTML = '';
-            manageContainer.innerHTML = '';
+    // 把大畫布壓製成 <img> 標籤，完美觸發長按下載
+    const dataURL = canvas.toDataURL("image/png");
+    const outputImg = document.getElementById('outputCardImage');
+    outputImg.src = dataURL;
+    
+    document.getElementById('imgPlaceholder').style.display = 'none';
+    outputImg.style.display = 'block';
+}
 
-            // 合併內建卡片與自訂卡片
-            const allPrimary = [...coreLinks.primary, ...customLinks.filter(l => l.category === 'primary')];
-            const allSecondary = [...coreLinks.secondary, ...customLinks.filter(l => l.category === 'secondary')];
+window.onload = function() { initSelections(); initSelectionsOnList(); renderFlavorLists(); };
+</script>
 
-            // 渲染核心公用
-            allPrimary.forEach(link => {
-                primaryGrid.appendChild(createCardElement(link));
-            });
-
-            // 渲染行政連結
-            allSecondary.forEach(link => {
-                secondaryGrid.appendChild(createCardElement(link));
-            });
-
-            // 渲染側邊欄中的刪除列表管理項
-            customLinks.forEach((link, index) => {
-                const item = document.createElement('div');
-                item.className = 'manage-link-item';
-                item.innerHTML = `
-                    <span>${link.icon} ${link.title}</span>
-                    <button class="delete-btn" onclick="deleteLink(${index})"><i class="fa-solid fa-trash-can"></i></button>
-                `;
-                manageContainer.appendChild(item);
-            });
-        }
-
-        function createCardElement(link) {
-            const a = document.createElement('a');
-            a.className = 'link-card' + (link.highlight ? ' highlight-c13' : '');
-            a.href = link.url;
-            a.target = '_blank';
-            a.innerHTML = `
-                <div class="card-header">
-                    <div class="card-icon">${link.icon || '🔗'}</div>
-                    <div class="card-title">${link.title}</div>
-                </div>
-                <div class="card-desc">${link.desc || '暫無描述說明。'}</div>
-            `;
-            return a;
-        }
-
-        // 新增自訂卡片書籤
-        function addCustomLink() {
-            const title = document.getElementById('new-title').value.trim();
-            const url = document.getElementById('new-url').value.trim();
-            const desc = document.getElementById('new-desc').value.trim();
-            const icon = document.getElementById('new-icon').value.trim();
-            const category = document.getElementById('new-category').value;
-
-            if(!title || !url) {
-                alert('請填寫書籤名稱與網址！');
-                return;
-            }
-
-            customLinks.push({ title, url, desc, icon, category });
-            localStorage.setItem('portal_custom_links', JSON.stringify(customLinks));
-            
-            // 清空輸入欄位
-            document.getElementById('new-title').value = '';
-            document.getElementById('new-url').value = '';
-            document.getElementById('new-desc').value = '';
-
-            renderLinks();
-            alert('自訂網頁卡片新增成功！');
-        }
-
-        // 刪除自訂書籤
-        function deleteLink(index) {
-            if(confirm('確定要刪除這張自訂連結卡片嗎？')) {
-                customLinks.splice(index, 1);
-                localStorage.setItem('portal_custom_links', JSON.stringify(customLinks));
-                renderLinks();
-            }
-        }
-
-        // 醫學 eGFR 計算器功能 (CKD-EPI 2021)
-        function calculateEGFR() {
-            const scr = parseFloat(document.getElementById('egfr-creatinine').value);
-            const age = parseFloat(document.getElementById('egfr-age').value);
-            const gender = document.getElementById('egfr-gender').value;
-
-            if (isNaN(scr) || isNaN(age)) {
-                document.getElementById('egfr-result').innerText = '請填入正確的數值！';
-                return;
-            }
-
-            let kappa = (gender === 'female') ? 0.7 : 0.9;
-            let alpha = (gender === 'female') ? -0.241 : -0.302;
-            let genderMultiplier = (gender === 'female') ? 1.012 : 1;
-
-            let minTerm = Math.pow(Math.min(scr / kappa, 1), alpha);
-            let maxTerm = Math.pow(Math.max(scr / kappa, 1), -1.200);
-            let ageTerm = Math.pow(0.9938, age);
-
-            let egfr = 142 * minTerm * maxTerm * ageTerm * genderMultiplier;
-            
-            document.getElementById('egfr-result').innerText = `eGFR：${egfr.toFixed(1)} mL/min/1.73m²`;
-        }
-
-        // 即時時鐘邏輯
-        function initClock() {
-            const days = ['日', '一', '二', '三', '四', '五', '六'];
-            setInterval(() => {
-                const now = new Date();
-                const h = String(now.getHours()).padStart(2, '0');
-                const m = String(now.getMinutes()).padStart(2, '0');
-                const s = String(now.getSeconds()).padStart(2, '0');
-                document.getElementById('clock').innerText = `${h}:${m}:${s}`;
-                
-                const rYear = now.getFullYear();
-                const mYear = rYear - 1911;
-                const mon = String(now.getMonth() + 1).padStart(2, '0');
-                const date = String(now.getDate()).padStart(2, '0');
-                const day = days[now.getDay()];
-                document.getElementById('date').innerText = `西元 ${rYear}年${mon}月${date}日 │ 民國 ${mYear}年${mon}月${date}日 (${day})`;
-            }, 1000);
-        }
-    </script>
 </body>
 </html>
