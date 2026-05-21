@@ -58,6 +58,7 @@
         .main-calculator, .sidebar-panel { background: var(--card-bg); border: 1px solid rgba(142, 122, 112, 0.12); border-radius: 24px; padding: 28px; box-shadow: 0 10px 30px rgba(84, 67, 58, 0.05); display: flex; flex-direction: column; }
         @media (min-width: 950px) { .sidebar-panel { width: 380px; } }
 
+        .form-group { margin-bottom: 16px; }
         .form-label { display: block; font-size: calc(var(--base-font-size) * 0.9); font-weight: 700; color: var(--text-main); margin-bottom: 8px; }
         .classic-input { width: 100%; background: #fffbf9; border: 1.5px solid rgba(142, 122, 112, 0.18); border-radius: 14px; padding: 12px 16px; color: var(--text-main); font-size: calc(var(--base-font-size) * 1.0); font-family: inherit; }
         .classic-input:focus { outline: none; border-color: var(--butter-gold); background: #ffffff; box-shadow: 0 0 0 3px rgba(246, 200, 108, 0.25); }
@@ -82,11 +83,17 @@
         .magic-btn { width: 100%; background: var(--butter-gold); border: none; color: var(--text-main); padding: 14px; border-radius: 16px; cursor: pointer; font-family: inherit; font-weight: 700; font-size: calc(var(--base-font-size) * 1.0); box-shadow: 0 4px 12px rgba(246, 200, 108, 0.3); margin-top: auto; }
         .magic-btn:hover { background: var(--butter-gold-hover); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(246, 200, 108, 0.4); }
 
-        .ledger-list { max-height: 280px; overflow-y: auto; margin-bottom: 15px; padding-right: 4px; }
+        .ledger-list { max-height: 240px; overflow-y: auto; margin-bottom: 15px; padding-right: 4px; }
         .ledger-item { padding: 12px 0; border-bottom: 1px dashed rgba(142, 122, 112, 0.15); font-size: calc(var(--base-font-size) * 0.85); display: flex; justify-content: space-between; align-items: center; }
         .ledger-name { color: var(--text-main); font-weight: 700; }
         .ledger-detail { color: var(--text-sub); }
         .delete-record { color: var(--berry-pink); cursor: pointer; margin-left: 10px; font-size: 13px; font-weight: 700; }
+
+        .filter-box { background: #fdfaf7; border: 1px dashed rgba(142, 122, 112, 0.25); border-radius: 14px; padding: 10px 12px; margin-bottom: 12px; }
+        .filter-title { font-size: 12px; font-weight: 700; color: var(--text-sub); margin-bottom: 6px; display: flex; align-items: center; gap: 4px; }
+        .filter-options { display: flex; flex-direction: column; gap: 6px; }
+        .filter-label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-main); font-weight: 700; cursor: pointer; }
+        .filter-label input[type="checkbox"] { width: 15px; height: 15px; accent-color: #d96a6a; cursor: pointer; }
 
         .summary-box { background: #fffbf5; border: 1.5px solid rgba(246, 200, 108, 0.3); border-radius: 16px; padding: 14px; margin-top: auto; }
         .summary-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: calc(var(--base-font-size) * 0.9); }
@@ -95,11 +102,14 @@
         .sidebar-desc { font-size: 12px; color: var(--text-sub); text-align: center; margin-bottom: 16px; }
 
         /* 📸 下方實體圖片區塊樣式 */
-        .image-card-container { background: var(--card-bg); border: 1px solid rgba(142, 122, 112, 0.12); border-radius: 24px; padding: 24px; text-align: center; box-shadow: 0 10px 30px rgba(84, 67, 58, 0.05); max-width: 480px; margin: 0 auto; }
+        .image-card-container { background: var(--card-bg); border: 1px solid rgba(142, 122, 112, 0.12); border-radius: 24px; padding: 24px; text-align: center; box-shadow: 0 10px 30px rgba(84, 67, 58, 0.05); max-width: 480px; margin: 24px auto 0 auto; }
         .image-card-container h4 { font-size: 15px; color: var(--text-main); margin-bottom: 4px; font-weight: 700; }
         .image-card-container p { font-size: 12px; color: var(--text-sub); margin-bottom: 16px; }
         .output-real-image { width: 100%; height: auto; border-radius: 16px; border: 1px solid rgba(142, 122, 112, 0.15); box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: none; }
         .image-placeholder { padding: 40px 20px; border: 2px dashed rgba(142, 122, 112, 0.15); border-radius: 16px; color: var(--text-sub); font-size: 13px; }
+
+        .copy-all-btn { width: 100%; background: #4a3b32; border: none; color: #ffffff; padding: 10px; border-radius: 12px; cursor: pointer; font-family: inherit; font-weight: 700; font-size: 13px; margin-top: 10px; box-shadow: 0 4px 10px rgba(74, 59, 50, 0.15); }
+        .copy-all-btn:hover { background: #5c4a3f; }
 
         .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: #4a3b32; color: #ffffff; padding: 12px 24px; border-radius: 12px; z-index: 2000; opacity: 0; transition: all 0.3s ease; font-size: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); text-align: center; }
         .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
@@ -178,6 +188,22 @@
                 </div>
             </div>
 
+            <!-- 🔮 篩選器（已隱藏任何敏感字眼） -->
+            <div class="filter-box">
+                <div class="filter-title">🔮 魔法圖卡與複製內容篩選器</div>
+                <div class="filter-options">
+                    <label class="filter-label">
+                        <input type="checkbox" id="showIndividualOpt" checked onchange="onFilterChanged()"> 顯示各自個人明細 (A)
+                    </label>
+                    <label class="filter-label">
+                        <input type="checkbox" id="showStatsOpt" checked onchange="onFilterChanged()"> 顯示全體品項加總 (B)
+                    </label>
+                    <label class="filter-label">
+                        <input type="checkbox" id="showTotalOpt" checked onchange="onFilterChanged()"> 顯示今日開團總金額 (C)
+                    </label>
+                </div>
+            </div>
+
             <div class="summary-box">
                 <div class="summary-row" style="align-items: flex-start;">
                     <span style="color: var(--text-sub); white-space: nowrap;">全體口味統計：</span>
@@ -188,13 +214,15 @@
                     <span style="font-size: 22px; font-weight: 700; color: #d96a6a;" id="grandTotal">$ 0</span>
                 </div>
             </div>
+
+            <button class="copy-all-btn" onclick="copyFilteredLedgerText()">📋 依篩選條件複製大帳本文字</button>
         </div>
     </div>
 
     <div class="image-card-container">
         <h4>📸 今日美味結算大圖卡</h4>
-        <p>（下方圖片隨帳本動態即時生成，手機可直接<b>「長按圖片」</b>儲存或分享）</p>
-        <div id="imgPlaceholder" class="image-placeholder">帳本內有資料時，這裡會自動凝結出精美防盜圖卡唷！</div>
+        <p>（下方圖片隨帳本與篩選條件即時生成，可<b>「長按圖片」</b>儲存）</p>
+        <div id="imgPlaceholder" class="image-placeholder">帳本內有資料時，這裡會自動凝結出精美儀表板圖卡唷！</div>
         <img id="outputCardImage" class="output-real-image" alt="太極鰲車輪餅結算單">
     </div>
 
@@ -332,6 +360,12 @@ function submitOrder() {
 function initSelectionsOnList() { Object.keys(currentSelection).forEach(id => { const element = document.getElementById(`count-${id}`); if(element) element.textContent = '0'; }); }
 function removeRecord(id) { globalLedger = globalLedger.filter(rec => rec.id !== id); renderLedger(); showToast('💡 已將該品項自帳本中移除'); }
 
+function onFilterChanged() {
+    if (globalLedger.length > 0) {
+        autoUpdateVisualCardImage();
+    }
+}
+
 function renderLedger() {
     const listContainer = document.getElementById('ledgerList');
     if (globalLedger.length === 0) {
@@ -354,28 +388,83 @@ function renderLedger() {
     let statSegments = []; Object.keys(totalFlavorCounters).forEach(id => { const item = findItemById(id); if (item && totalFlavorCounters[id] > 0) { statSegments.push(`${item.name}:${totalFlavorCounters[id]}個`); } });
     document.getElementById('allFlavorStats').textContent = statSegments.length > 0 ? statSegments.join(' / ') : '無';
 
-    // 帳本更新即時重繪
     autoUpdateVisualCardImage();
 }
 
-// 🎨 修正後支援「動態長高畫布」與「多行統計文字包裹」的終極渲染機制
+function copyFilteredLedgerText() {
+    if (globalLedger.length === 0) { showToast('🥞 目前大帳本空空的，沒辦法生成文字唷！'); return; }
+    
+    const showIndividual = document.getElementById('showIndividualOpt').checked;
+    const showStats = document.getElementById('showStatsOpt').checked;
+    const showTotal = document.getElementById('showTotalOpt').checked;
+
+    if (!showIndividual && !showStats && !showTotal) {
+        showToast('🔮 請至少勾選一種想要產生的內容唷！');
+        return;
+    }
+
+    let textSegments = ['✦ 太極鰲車輪餅 · 下午茶美味結算單 ✦\n'];
+
+    if (showIndividual) {
+        textSegments.push('📝 【個人點餐明細】');
+        globalLedger.forEach(record => {
+            textSegments.push(`【${record.name}】${record.detailsText} 共 ${record.cost} 元`);
+        });
+        textSegments.push('');
+    }
+
+    if (showStats) {
+        textSegments.push('🥞 【全體口味統計】');
+        textSegments.push(document.getElementById('allFlavorStats').textContent);
+        textSegments.push('');
+    }
+
+    if (showTotal) {
+        textSegments.push('💰 【本次開團應付總額】');
+        textSegments.push(`合計金額：${document.getElementById('grandTotal').textContent} 元`);
+        textSegments.push('');
+    }
+
+    textSegments.push('Design by ChuChu ✦');
+    const finalCopyText = textSegments.join('\n');
+
+    navigator.clipboard.writeText(finalCopyText).then(() => {
+        showToast(`✨ 已成功依照篩選條件複製大帳本文字！`);
+    }).catch(() => { showToast(`❌ 複製失敗，請手動複製。`); });
+}
+
 function autoUpdateVisualCardImage() {
     const canvas = document.getElementById('captureCanvas'); const ctx = canvas.getContext('2d');
     
-    // 【修正點 1】動態計算所需高度，避免超載破圖
-    const baseHeaderHeight = 110;
-    const itemsHeight = globalLedger.length * 38;
+    const showIndividual = document.getElementById('showIndividualOpt').checked;
+    const showStats = document.getElementById('showStatsOpt').checked;
+    const showTotal = document.getElementById('showTotalOpt').checked;
+
+    let baseHeaderHeight = 100;
+    let baseFooterWatermarkHeight = 50;
+    
+    let itemsHeight = 0;
+    if (showIndividual) {
+        itemsHeight = (globalLedger.length * 38) + 25;
+    }
+
+    let summaryBoxHeight = 0;
+    let estimatedStatLines = 1;
     const footerStatsRaw = document.getElementById('allFlavorStats').textContent;
     
-    // 預估統計換行所需行數
-    const maxCharsPerLine = 28;
-    const estimatedStatLines = Math.max(1, Math.ceil(footerStatsRaw.length / maxCharsPerLine));
-    const footerHeight = 110 + (estimatedStatLines * 18);
-    
-    // 重新設定 Canvas 的實體畫布高度
-    canvas.height = baseHeaderHeight + itemsHeight + footerHeight;
+    if (showStats || showTotal) {
+        const maxCharsPerLine = 28;
+        estimatedStatLines = Math.max(1, Math.ceil(footerStatsRaw.length / maxCharsPerLine));
+        
+        let boxPaddingAndTitle = 15;
+        let statsSectionHeight = showStats ? (20 + (estimatedStatLines * 18)) : 0;
+        let totalSectionHeight = showTotal ? 35 : 0;
+        
+        summaryBoxHeight = boxPaddingAndTitle + statsSectionHeight + totalSectionHeight + 15;
+    }
 
-    // --- 開始繪製背景與外框 ---
+    canvas.height = baseHeaderHeight + itemsHeight + summaryBoxHeight + baseFooterWatermarkHeight + 20;
+
     let gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
     gradient.addColorStop(0, '#fff9f6'); gradient.addColorStop(1, '#ffebe3');
     ctx.fillStyle = gradient; ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -384,56 +473,71 @@ function autoUpdateVisualCardImage() {
     ctx.strokeStyle = 'rgba(246, 200, 108, 0.4)'; ctx.lineWidth = 1.5; ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
     
     ctx.textAlign = 'center'; ctx.font = 'bold 21px "Microsoft JhengHei", sans-serif'; ctx.fillStyle = '#54433a';
-    ctx.fillText('🥞 太極鰲車輪餅 · 下午茶結算單 🥞', canvas.width / 2, 60);
+    ctx.fillText('🥞 太極鰲車輪餅 · 下午茶結算單 🥞', canvas.width / 2, 55);
     
-    ctx.strokeStyle = 'rgba(142, 122, 112, 0.2)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(60, 80); ctx.lineTo(canvas.width - 60, 80); ctx.stroke();
+    ctx.strokeStyle = 'rgba(142, 122, 112, 0.2)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(60, 75); ctx.lineTo(canvas.width - 60, 75); ctx.stroke();
     
-    // --- 繪製成員明細 ---
-    ctx.textAlign = 'left'; let currentY = 115;
-    globalLedger.forEach((record) => {
-        ctx.font = 'bold 14px "Microsoft JhengHei", sans-serif'; ctx.fillStyle = '#54433a'; ctx.fillText(`【${record.name}】`, 35, currentY);
-        ctx.font = '13px "Microsoft JhengHei", sans-serif'; ctx.fillStyle = '#8e7a70';
-        let txt = record.detailsText; if(txt.length > 24) txt = txt.substring(0, 22) + '...';
-        ctx.fillText(txt, 115, currentY);
-        ctx.textAlign = 'right'; ctx.font = 'bold 15px "Quicksand", sans-serif'; ctx.fillStyle = '#d96a6a'; ctx.fillText(`$${record.cost}`, canvas.width - 35, currentY);
-        ctx.textAlign = 'left'; ctx.strokeStyle = 'rgba(142, 122, 112, 0.08)'; ctx.beginPath(); ctx.moveTo(35, currentY + 12); ctx.lineTo(canvas.width - 35, currentY + 12); ctx.stroke();
-        currentY += 38;
-    });
-    
-    // --- 繪製底部分類加總框 ---
-    currentY += 10;
-    const summaryBoxTop = currentY;
-    const summaryBoxHeight = 55 + (estimatedStatLines * 18);
-    
-    ctx.fillStyle = '#ffffff'; ctx.fillRect(35, summaryBoxTop, canvas.width - 70, summaryBoxHeight);
-    ctx.strokeStyle = 'rgba(246, 200, 108, 0.6)'; ctx.lineWidth = 1.5; ctx.strokeRect(35, summaryBoxTop, canvas.width - 70, summaryBoxHeight);
-    
-    // 【修正點 2】自動換行口味統計文字繪製
-    ctx.font = 'bold 13px "Microsoft JhengHei", sans-serif'; ctx.fillStyle = '#8e7a70';
-    ctx.fillText('全體品項加總：', 48, summaryBoxTop + 24);
-    
-    ctx.font = '12px "Microsoft JhengHei", sans-serif'; ctx.fillStyle = '#54433a';
-    let startX = 140;
-    let startY = summaryBoxTop + 24;
-    
-    // 將口味依據最大字數截斷分行繪製
-    for (let i = 0; i < footerStatsRaw.length; i += maxCharsPerLine) {
-        let chunk = footerStatsRaw.substring(i, i + maxCharsPerLine);
-        ctx.fillText(chunk, startX, startY);
-        startY += 18;
+    let currentY = 100;
+
+    if (showIndividual) {
+        ctx.textAlign = 'left';
+        ctx.font = 'bold 13px "Microsoft JhengHei", sans-serif'; ctx.fillStyle = '#8e7a70';
+        ctx.fillText('📝 個人點餐明細：', 35, currentY);
+        currentY += 25;
+
+        globalLedger.forEach((record) => {
+            ctx.font = 'bold 14px "Microsoft JhengHei", sans-serif'; ctx.fillStyle = '#54433a'; ctx.fillText(`【${record.name}】`, 35, currentY);
+            ctx.font = '13px "Microsoft JhengHei", sans-serif'; ctx.fillStyle = '#8e7a70';
+            let txt = record.detailsText; if(txt.length > 24) txt = txt.substring(0, 22) + '...';
+            ctx.fillText(txt, 115, currentY);
+            ctx.textAlign = 'right'; ctx.font = 'bold 15px "Quicksand", sans-serif'; ctx.fillStyle = '#d96a6a'; ctx.fillText(`$${record.cost}`, canvas.width - 35, currentY);
+            ctx.textAlign = 'left'; ctx.strokeStyle = 'rgba(142, 122, 112, 0.08)'; ctx.beginPath(); ctx.moveTo(35, currentY + 12); ctx.lineTo(canvas.width - 35, currentY + 12); stroke();
+            currentY += 38;
+        });
+        currentY += 10;
     }
     
-    const totalMoneyTop = summaryBoxTop + summaryBoxHeight - 20;
-    ctx.font = 'bold 14px "Microsoft JhengHei", sans-serif'; ctx.fillStyle = '#54433a'; 
-    ctx.fillText('今日開團總金額：', 48, totalMoneyTop);
-    ctx.textAlign = 'right'; ctx.font = 'bold 24px "Quicksand", sans-serif'; ctx.fillStyle = '#d96a6a'; 
-    ctx.fillText(document.getElementById('grandTotal').textContent, canvas.width - 48, totalMoneyTop + 4);
+    if (showStats || showTotal) {
+        const summaryBoxTop = currentY;
+        
+        ctx.fillStyle = '#ffffff'; ctx.fillRect(35, summaryBoxTop, canvas.width - 70, summaryBoxHeight);
+        ctx.strokeStyle = 'rgba(246, 200, 108, 0.6)'; ctx.lineWidth = 1.5; ctx.strokeRect(35, summaryBoxTop, canvas.width - 70, summaryBoxHeight);
+        
+        let boxInnerY = summaryBoxTop + 25;
 
-    // ✦ 專屬 ChuChu 的不可抹滅防盜水印 ✦
+        if (showStats) {
+            ctx.textAlign = 'left';
+            ctx.font = 'bold 13px "Microsoft JhengHei", sans-serif'; ctx.fillStyle = '#8e7a70';
+            ctx.fillText('全體品項加總：', 48, boxInnerY);
+            
+            ctx.font = '12px "Microsoft JhengHei", sans-serif'; ctx.fillStyle = '#54433a';
+            let startX = 140;
+            let startY = boxInnerY;
+            
+            const maxCharsPerLine = 28;
+            for (let i = 0; i < footerStatsRaw.length; i += maxCharsPerLine) {
+                let chunk = footerStatsRaw.substring(i, i + maxCharsPerLine);
+                ctx.fillText(chunk, startX, startY);
+                startY += 18;
+            }
+            boxInnerY = startY + 10;
+        }
+
+        if (showTotal) {
+            if (showStats) {
+                ctx.strokeStyle = 'rgba(142, 122, 112, 0.1)'; ctx.beginPath(); ctx.moveTo(48, boxInnerY - 12); ctx.lineTo(canvas.width - 48, boxInnerY - 12); ctx.stroke();
+            }
+            ctx.textAlign = 'left';
+            ctx.font = 'bold 14px "Microsoft JhengHei", sans-serif'; ctx.fillStyle = '#54433a'; 
+            ctx.fillText('今日開團總金額：', 48, boxInnerY);
+            ctx.textAlign = 'right'; ctx.font = 'bold 24px "Quicksand", sans-serif'; ctx.fillStyle = '#d96a6a'; 
+            ctx.fillText(document.getElementById('grandTotal').textContent, canvas.width - 48, boxInnerY + 4);
+        }
+    }
+
     ctx.textAlign = 'center'; ctx.font = '500 11px "Quicksand", sans-serif'; ctx.fillStyle = 'rgba(142, 122, 112, 0.4)';
     ctx.fillText('Made with yummy thoughts by ChuChu ✦ © 2026', canvas.width / 2, canvas.height - 30);
 
-    // 把大畫布壓製成 <img> 標籤，完美觸發長按下載
     const dataURL = canvas.toDataURL("image/png");
     const outputImg = document.getElementById('outputCardImage');
     outputImg.src = dataURL;
