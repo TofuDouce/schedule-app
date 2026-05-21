@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> ✦ 每月資產動態記帳本 ✦ </title>
+
+    <meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:wght@400;500;600&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: font-size 0.2s ease, transform 0.4s ease, box-shadow 0.4s ease, background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        :root {
+            --bg1: #171320;
+            --bg2: #241a35;
+            --bg3: #31244d;
+            --gold: #d8bf8a;
+            --text: #f4efff;
+            --card: rgba(29, 24, 44, .72);
+            --gold-low: rgba(216, 191, 138, 0.15);
+            --base-font-size: 16px;
+            --income-mint: #8ae0be;
+            --expense-rose: #f29494;
+        }
+
+        body {
+            min-height: 100vh;
+            color: var(--text);
+            font-family: "Noto Sans TC", "Cormorant Garamond", serif;
+            background: radial-gradient(circle at top, rgba(180,150,255,.14), transparent 40%),
+                        linear-gradient(180deg, var(--bg1), var(--bg2), var(--bg3));
+            padding: 28px;
+            position: relative;
+            font-size: var(--base-font-size);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 沿用你的星空背景與框架 */
+        .stars { position: fixed; inset: 0; overflow: hidden; z-index: -3; pointer-events: none; }
+        .star { position: absolute; width: 2px; height: 2px; background: white; border-radius: 50%; opacity: .7; animation: twinkle 4s infinite; }
+        @keyframes twinkle { 0%, 100% { opacity: .15; transform: scale(.7); } 50% { opacity: 1; transform: scale(1.4); } }
+
+        .frame { position: fixed; inset: 14px; border: 1.5px solid rgba(216,191,138,.48); border-radius: 38px; pointer-events: none; z-index: 999; }
+        .frame::before { content: ""; position: absolute; inset: 12px; border: 1px solid rgba(216,191,138,.18); border-radius: 30px; }
+        .corner { position: fixed; width: 120px; height: 120px; pointer-events: none; z-index: 1000; }
+        .corner::before { content: ""; position: absolute; inset: 0; border: 1.5px solid rgba(216,191,138,.45); border-radius: 50%; }
+        .corner::after { content: "✦"; position: absolute; color: rgba(216,191,138,.85); font-size: 26px; }
+        .tl { top: 18px; left: 18px; } .tl::before { clip-path: polygon(0 0, 100% 0, 0 100%); } .tl::after { top: 18px; left: 18px; }
+        .tr { top: 18px; right: 18px; } .tr::before { clip-path: polygon(0 0, 100% 0, 100% 100%); } .tr::after { top: 18px; right: 18px; }
+        .bl { bottom: 18px; left: 18px; } .bl::before { clip-path: polygon(0 0, 0 100%, 100% 100%); } .bl::after { bottom: 18px; left: 18px; }
+        .br { bottom: 18px; right: 18px; } .br::before { clip-path: polygon(100% 0, 0 100%, 100% 100%); } .br::after { bottom: 18px; right: 18px; }
+
+        .container { width: 100%; max-width: 1080px; margin: auto; position: relative; z-index: 2; padding: 20px 0; }
+
+        .font-control { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: -10px; position: relative; z-index: 1010; }
+        .font-btn { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(216, 191, 138, 0.3); color: var(--text); padding: 6px 14px; border-radius: 20px; cursor: pointer; font-family: "Cinzel", serif; font-size: 14px; backdrop-filter: blur(5px); }
+        .font-btn:hover { background: rgba(216, 191, 138, 0.2); color: var(--gold); border-color: var(--gold); }
+        .font-btn.active { background: var(--gold); color: var(--bg1); font-weight: bold; }
+
+        .moon { text-align: center; margin-top: 10px; position: relative; }
+        .moon-symbol { font-size: 42px; color: var(--gold); text-shadow: 0 0 18px rgba(216,191,138,.25); animation: floatMoon 4s ease-in-out infinite; }
+        @keyframes floatMoon { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(6px); } }
+
+        .title-block { text-align: center; margin-top: 15px; margin-bottom: 35px; }
+        .main-title { font-family: "Cinzel", serif; font-weight: 700; letter-spacing: 4px; font-size: clamp(28px, 5vw, 42px); background: linear-gradient(180deg, #ffffff 0%, #f1e8ff 40%, #d8bf8a 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        /* 佈局架構 */
+        .layout-grid { display: flex; flex-direction: column; gap: 28px; }
+        @media (min-width: 900px) { .layout-grid { flex-direction: row; align-items: stretch; } }
+
+        /* 功能卡片設計 */
+        .main-calculator { flex: 1; background: var(--card); border: 1px solid rgba(255,255,255,.06); border-radius: 34px; padding: 32px; backdrop-filter: blur(16px); box-shadow: 0 20px 50px rgba(0,0,0,.3); }
+        .sidebar-panel { width: 100%; background: var(--card); border: 1px solid rgba(255,255,255,.06); border-radius: 34px; padding: 28px; backdrop-filter: blur(16px); box-shadow: 0 20px 50px rgba(0,0,0,.3); display: flex; flex-direction: column; }
+        @media (min-width: 900px) { .sidebar-panel { width: 340px; } }
+
+        /* 表單與表格樣式 */
+        .form-group { margin-bottom: 18px; }
+        .form-label { display: block; font-size: 14px; color: #bba9e8; margin-bottom: 6px; letter-spacing: 1px; font-family: "Cinzel", serif; }
+        .classic-input { width: 100%; background: rgba(15, 11, 25, 0.5); border: 1px solid rgba(216, 191, 138, 0.25); border-radius: 12px; padding: 10px 14px; color: #ffffff; font-size: 16px; outline: none; }
+        .classic-input:focus { border-color: var(--gold); box-shadow: 0 0 8px rgba(216, 191, 138, 0.2); }
+        
+        .row-flex { display: flex; gap: 10px; }
+        .btn-magic { flex: 1; background: rgba(216, 191, 138, 0.1); border: 1px solid var(--gold); color: var(--gold); padding: 10px; border-radius: 12px; cursor: pointer; font-family: "Cinzel", serif; font-weight: 600; margin-top: 10px; }
+        .btn-magic:hover { background: var(--gold); color: var(--bg1); box-shadow: 0 0 15px var(--gold); }
+
+        .ledger-table-wrapper { margin-top: 25px; max-height: 250px; overflow-y: auto; border-radius: 12px; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; color: #eadfff; }
+        th { text-align: left; padding: 10px; color: var(--gold); border-bottom: 1px solid rgba(216, 191, 138, 0.2); font-family: "Cinzel", serif; position: sticky; top: 0; background: var(--bg2); }
+        td { padding: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        
+        /* 側邊欄元件 */
+        .sidebar-title { font-family: "Cinzel", serif; font-size: 18px; color: var(--gold); text-align: center; margin-bottom: 15px; }
+        .balance-box { text-align: center; padding: 15px; background: rgba(216, 191, 138, 0.05); border-radius: 20px; border: 1px solid rgba(216, 191, 138, 0.1); margin-bottom: 20px; }
+        .balance-label { font-size: 12px; color: #a897c9; text-transform: uppercase; letter-spacing: 1px; }
+        .balance-value { font-size: 28px; font-family: "Cinzel", serif; color: var(--text); margin-top: 5px; }
+        
+        .chart-wrap { flex: 1; display: flex; align-items: center; justify-content: center; padding: 10px; }
+        
+        .btn-ghost { background: none; border: 1px solid rgba(216, 191, 138, 0.2); color: #a897c9; padding: 6px; border-radius: 8px; cursor: pointer; font-size: 11px; margin-top: 10px; }
+        .btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
+
+        /* 顏色語意 */
+        .color-rose { color: var(--expense-rose) !important; }
+        .color-mint { color: var(--income-mint) !important; }
+
+        .footer { text-align: center; margin-top: 35px; }
+        .footer-line { width: 100px; height: 1px; margin: auto; margin-bottom: 14px; background: linear-gradient(90deg, transparent, rgba(216,191,138,.5), transparent); }
+        .footer-inner { font-family: "Cinzel", serif; font-size: 18px; color: #eadfff; }
+    </style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+<div class="frame"></div>
+<div class="corner tl"></div> <div class="corner tr"></div> <div class="corner bl"></div> <div class="corner br"></div>
+
+<div class="container">
+    <div class="font-control">
+        <button class="font-btn" onclick="changeFontSize('small', this)">A -</button>
+        <button class="font-btn active" onclick="changeFontSize('medium', this)">A</button>
+        <button class="font-btn" onclick="changeFontSize('large', this)">A +</button>
+    </div>
+
+    <div class="moon">
+        <div class="moon-symbol">☾</div>
+    </div>
+
+    <div class="title-block">
+        <h1 class="main-title">每月資產動態記帳本</h1>
+    </div>
+
+    <div class="layout-grid">
+        
+        <div class="main-calculator">
+            <div class="form-group">
+                <label class="form-label">當月起始可用金額</label>
+                <input type="number" id="initialBudget" class="classic-input" value="50000" onchange="updateAll()">
+            </div>
+
+            <div class="classic-hr" style="margin: 30px 0; border: none; height: 1px; background: linear-gradient(90deg, transparent, rgba(216,191,138,.3), transparent);"></div>
+
+            <div class="row-flex">
+                <div class="form-group" style="flex: 1;">
+                    <label class="form-label">類型</label>
+                    <select id="itemType" class="classic-input" onchange="toggleCategories()" style="background: #1d182c;">
+                        <option value="expense">支出 (-)</option>
+                        <option value="income">收入 (+)</option>
+                    </select>
+                </div>
+                <div class="form-group" style="flex: 1.5;">
+                    <label class="form-label">分類</label>
+                    <select id="itemCategory" class="classic-input" style="background: #1d182c;"></select>
+                </div>
+            </div>
+
+            <div class="row-flex">
+                <div class="form-group" style="flex: 1;">
+                    <label class="form-label">金額</label>
+                    <input type="number" id="itemAmount" class="classic-input" placeholder="0">
+                </div>
+                <div class="form-group" style="flex: 2;">
+                    <label class="form-label">備註內容</label>
+                    <input type="text" id="itemDesc" class="classic-input" placeholder="例：晚餐、薪資...">
+                </div>
+            </div>
+
+            <button class="btn-magic" onclick="addItem()">✦ 注入帳目明細 ✦</button>
+
+            <div class="ledger-table-wrapper">
+                <table id="ledgerTable">
+                    <thead>
+                        <tr>
+                            <th>分類</th>
+                            <th>內容</th>
+                            <th>金額</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ledgerBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="sidebar-panel">
+            <h3 class="sidebar-title">📊 資產動態看板</h3>
+            
+            <div class="balance-box">
+                <div class="balance-label">目前剩餘餘額</div>
+                <div class="balance-value" id="currentBalance">$0</div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; padding: 0 10px; margin-bottom: 20px;">
+                <div style="text-align: left;">
+                    <div class="balance-label">總收入</div>
+                    <div class="color-mint" id="sumIncome" style="font-size: 18px; font-weight: 600;">$0</div>
+                </div>
+                <div style="text-align: right;">
+                    <div class="balance-label">總支出</div>
+                    <div class="color-rose" id="sumExpense" style="font-size: 18px; font-weight: 600;">$0</div>
+                </div>
+            </div>
+
+            <div class="chart-wrap">
+                <canvas id="expenseChart"></canvas>
+            </div>
+
+            <button class="btn-ghost" onclick="loadFixed()">+ 帶入每月固定收支</button>
+            <button class="btn-ghost" onclick="clearData()" style="border-color: rgba(242, 148, 148, 0.2);">↻ 重置本月數據</button>
+        </div>
+
+    </div>
+
+    <div class="footer">
+        <div class="footer-line"></div>
+        <div class="footer-inner">✦ Lazy Dream Ledger ✦</div>
+    </div>
+</div>
+
+<script>
+/* 生成背景星星 */
+const starsWrap = document.getElementById("stars");
+for (let i = 0; i < 120; i++) {
+    const star = document.createElement("div");
+    star.className = "star";
+    star.style.left = Math.random() * 100 + "%";
+    star.style.top = Math.random() * 100 + "%";
+    star.style.animationDelay = Math.random() * 4 + "s";
+    starsWrap.appendChild(star);
+}
+
+/* 字體級距切換 */
+function changeFontSize(size, btnElement) {
+    const root = document.documentElement;
+    document.querySelectorAll('.font-btn').forEach(btn => btn.classList.remove('active'));
+    btnElement.classList.add('active');
+    const sizes = { 'small': '13px', 'medium': '16px', 'large': '20px' };
+    root.style.setProperty('--base-font-size', sizes[size]);
+}
+
+/* 理財功能邏輯 */
+let ledger = JSON.parse(localStorage.getItem('my_magic_ledger')) || [];
+let chartInstance = null;
+
+function toggleCategories() {
+    const type = document.getElementById('itemType').value;
+    const catSelect = document.getElementById('itemCategory');
+    const cats = type === 'expense' 
+        ? ['飲食', '交通', '娛樂', '居住', '日用', '其他'] 
+        : ['薪資', '獎金', '投資', '補貼', '其他'];
+    catSelect.innerHTML = cats.map(c => `<option value="${c}">${c}</option>`).join('');
+}
+
+function addItem() {
+    const amount = parseFloat(document.getElementById('itemAmount').value);
+    const desc = document.getElementById('itemDesc').value;
+    if (!amount || amount <= 0) return alert("請輸入有效金額");
+
+    const item = {
+        id: Date.now(),
+        type: document.getElementById('itemType').value,
+        category: document.getElementById('itemCategory').value,
+        amount: amount,
+        desc: desc || document.getElementById('itemCategory').value
+    };
+    ledger.push(item);
+    document.getElementById('itemAmount').value = '';
+    document.getElementById('itemDesc').value = '';
+    updateAll();
+}
+
+function deleteItem(id) {
+    ledger = ledger.filter(i => i.id !== id);
+    updateAll();
+}
+
+function loadFixed() {
+    if(confirm("是否載入固定收支？(例：房租、網路、訂閱)")){
+        const fixed = [
+            { id: Date.now()+1, type: 'expense', category: '居住', amount: 12000, desc: '每月房租' },
+            { id: Date.now()+2, type: 'expense', category: '日用', amount: 800, desc: '手機費' },
+            { id: Date.now()+3, type: 'expense', category: '娛樂', amount: 390, desc: 'Netflix' }
+        ];
+        ledger.push(...fixed);
+        updateAll();
+    }
+}
+
+function clearData() {
+    if(confirm("確定要重置本月帳目嗎？")) { ledger = []; updateAll(); }
+}
+
+function updateAll() {
+    localStorage.setItem('my_magic_ledger', JSON.stringify(ledger));
+    localStorage.setItem('my_magic_initial', document.getElementById('initialBudget').value);
+    
+    const initial = parseFloat(document.getElementById('initialBudget').value) || 0;
+    let income = 0, expense = 0;
+    let catData = {};
+
+    const body = document.getElementById('ledgerBody');
+    body.innerHTML = '';
+
+    ledger.forEach(i => {
+        if (i.type === 'income') {
+            income += i.amount;
+        } else {
+            expense += i.amount;
+            catData[i.category] = (catData[i.category] || 0) + i.amount;
+        }
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${i.category}</td>
+            <td style="color: #a897c9; font-size: 12px;">${i.desc}</td>
+            <td class="${i.type==='income'?'color-mint':'color-rose'}">${i.type==='income'?'+':'-'}$${i.amount.toLocaleString()}</td>
+            <td><span onclick="deleteItem(${i.id})" style="cursor:pointer; color:rgba(216,191,138,0.4)">✕</span></td>
+        `;
+        body.prepend(tr);
+    });
+
+    document.getElementById('sumIncome').innerText = `$${income.toLocaleString()}`;
+    document.getElementById('sumExpense').innerText = `$${expense.toLocaleString()}`;
+    const balance = initial + income - expense;
+    document.getElementById('currentBalance').innerText = `$${balance.toLocaleString()}`;
+    document.getElementById('currentBalance').className = 'balance-value ' + (balance < 0 ? 'color-rose' : 'color-mint');
+
+    renderChart(catData);
+}
+
+function renderChart(dataMap) {
+    const ctx = document.getElementById('expenseChart').getContext('2d');
+    if (chartInstance) chartInstance.destroy();
+    
+    const labels = Object.keys(dataMap);
+    if (labels.length === 0) return;
+
+    chartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: Object.values(dataMap),
+                backgroundColor: ['#d8bf8a', '#bba9e8', '#f29494', '#8ae0be', '#6b5ba1', '#3d345c'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            cutout: '70%',
+            plugins: {
+                legend: { position: 'bottom', labels: { color: '#a897c9', font: { size: 11 }, padding: 15 } }
+            }
+        }
+    });
+}
+
+window.onload = () => {
+    const savedInitial = localStorage.getItem('my_magic_initial');
+    if (savedInitial) document.getElementById('initialBudget').value = savedInitial;
+    toggleCategories();
+    updateAll();
+};
+</script>
+
+</body>
+</html>
