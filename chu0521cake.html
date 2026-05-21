@@ -395,7 +395,11 @@ function submitOrder() {
     
     document.getElementById('memberInput').value = ''; 
     initSelections(); 
-    initSelectionsOnList(); 
+    // 重設畫面上所有計數器
+    Object.keys(currentSelection).forEach(id => {
+        const elem = document.getElementById(`count-${id}`);
+        if(elem) elem.textContent = "0";
+    });
     calculateSingleTotal(); 
     saveToLocalStorage();
     renderLedger();
@@ -443,7 +447,10 @@ function clearAllLedgers() {
         sBtn.style.background = "var(--butter-gold)";
         document.getElementById('memberInput').value = '';
         initSelections();
-        initSelectionsOnList();
+        Object.keys(currentSelection).forEach(id => {
+            const elem = document.getElementById(`count-${id}`);
+            if(elem) elem.textContent = "0";
+        });
         calculateSingleTotal();
         
         saveToLocalStorage();
@@ -548,7 +555,6 @@ function autoUpdateVisualCardImage() {
     let baseHeaderHeight = 100;
     let baseFooterWatermarkHeight = 50;
     
-    // --- 📝 核心修正：文字換行與動態高度預算 ---
     let itemsHeight = 0;
     let computedRecords = [];
     const maxDetailWidth = 240; 
@@ -697,11 +703,11 @@ function autoUpdateVisualCardImage() {
     outputImg.style.display = 'block';
 }
 
+// 修正後的關鍵初始化邏輯：
 window.onload = function() { 
     loadFiltersFromStorage();
     initSelections(); 
-    initSelectionsOnList(); 
-    renderFlavorLists(); 
+    renderFlavorLists(); // <-- 這行剛才不小心掉到黑洞裡了，已經把它拉回來！
     renderLedger(); 
 };
 </script>
