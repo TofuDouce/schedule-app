@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每月資產動態記帳本</title>
+    <!-- 引入 Google 字體與 Chart.js 動態圖表庫 -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-space: #0b071a;
+            --nebula-purple: #1e1233;
+            --gold-accent: #d4af37;
+            --gold-hover: #f3e5ab;
+            --text-light: #e0dbec;
+            --text-dark: #a29bfe;
+            --card-bg: rgba(30, 18, 51, 0.65);
+            --income-color: #2ecc71;
+            --expense-color: #e74c3c;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', 'Cinzel', serif;
+            background: radial-gradient(circle at center, var(--nebula-purple) 0%, var(--bg-space) 100%);
+            color: var(--text-light);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* 背景星空與懸浮月亮微特效 */
+        body::before {
+            content: "🌙";
+            position: fixed;
+            top: 30px;
+            right: 40px;
+            font-size: 2rem;
+            opacity: 0.3;
+            animation: float Moon 6s ease-in-out infinite;
+        }
+
+        @keyframes floatMoon {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            margin-top: 20px;
+        }
+
+        /* 標題區塊 */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+            padding-bottom: 20px;
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            color: var(--gold-accent);
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+        }
+
+        header p {
+            color: var(--text-dark);
+            font-size: 0.95rem;
+        }
+
+        /* 頂部核心：可用金額區塊 */
+        .budget-setup-card {
+            background: var(--card-bg);
+            border: 1px solid var(--gold-accent);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(8px);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            color: var(--gold-accent);
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        input, select {
+            background: rgba(15, 10, 25, 0.8);
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--gold-accent);
+            box-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
+        }
+
+        .dashboard-summary {
+            display: flex;
+            gap: 30px;
+        }
+
+        .summary-item {
+            text-align: right;
+        }
+
+        .summary-item .label {
+            font-size: 0.85rem;
+            color: var(--text-dark);
+            margin-bottom: 5px;
+        }
+
+        .summary-item .value {
+            font-size: 1.6rem;
+            font-weight: bold;
+        }
+
+        .summary-item.remaining .value {
+            color: var(--gold-accent);
+            text-shadow: 0 0 8px rgba(212, 175, 55, 0.3);
+        }
+
+        /* 主區塊：左填寫/明細，右圖表 */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 25px;
+        }
+
+        @media (max-width: 900px) {
+            .main-grid { grid-template-columns: 1fr; }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(8px);
+        }
+
+        .card h2 {
+            font-size: 1.3rem;
+            color: var(--gold-accent);
+            margin-bottom: 20px;
+            border-left: 3px solid var(--gold-accent);
+            padding-left: 10px;
+        }
+
+        /* 記帳表單單行排列 */
+        .ledger-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1.2fr auto;
+            gap: 12px;
+            margin-bottom: 25px;
+            align-items: flex-end;
+        }
+
+        @media (max-width: 600px) {
+            .ledger-form { grid-template-columns: 1fr; }
+        }
+
+        button {
+            background: linear-gradient(135deg, #4a1e80 0%, #2b1055 100%);
+            border: 1px solid var(--gold-accent);
+            color: var(--gold-accent);
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: var(--gold-accent);
+            color: var(--bg-space);
+            box-shadow: 0 0 12px var(--gold-accent);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            color: var(--text-light);
+            padding: 6px 12px;
+            font-size: 0.85rem;
+        }
+
+        /* 明細表格 */
+        .table-container {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.95rem;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        th {
+            color: var(--text-dark);
+            font-weight: 500;
+            position: sticky;
+            top: 0;
+            background: var(--nebula-purple);
+        }
+
+        .type-income { color: var(--income-color); }
+        .type-expense { color: var(--expense-color); }
+
+        .btn-delete {
+            background: transparent;
+            border: none;
+            color: #ff7675;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .btn-delete:hover { text-decoration: underline; background: transparent; box-shadow: none; color: #ff0000;}
+
+        /* 右側圖表固定比例 */
+        .chart-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 350px;
+        }
+
+        canvas {
+            max-width: 100% !important;
+            max-height: 280px !important;
+        }
+
+        /* 固定收支快速管理區 */
+        .shortcut-section {
+            margin-top: 25px;
+            border-top: 1px dashed rgba(212, 175, 55, 0.3);
+            padding-top: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>🪙 每月資產動態記帳與視覺看板</h1>
+        <p>掌握每月收支流向，理性規劃財富平衡</p>
+    </header>
+
+    <!-- 頂部核心資產設定卡 -->
+    <div class="budget-setup-card">
+        <div class="input-group">
+            <label for="initialBudget">設定當月起始可用金額 ($)</label>
+            <input type="number" id="initialBudget" value="50000" onchange="updateDashboard()">
+        </div>
+        
+        <div class="dashboard-summary">
+            <div class="summary-item">
+                <div class="label">總總收入 (+)</div>
+                <div class="value type-income" id="totalIncome">$0</div>
+            </div>
+            <div class="summary-item">
+                <div class="label">總總支出 (-)</div>
+                <div class="value type-expense" id="totalExpense">$0</div>
+            </div>
+            <div class="summary-item remaining">
+                <div class="label">目前剩餘可用金額</div>
+                <div class="value" id="remainingBalance">$50,000</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主區塊 -->
+    <div class="main-grid">
+        <!-- 左側：收支輸入與歷史明細 -->
+        <div class="card">
+            <h2>新增收支明細</h2>
+            <div class="ledger-form">
+                <div class="input-group">
+                    <label>收支類型</label>
+                    <select id="itemType" onchange="handleTypeChange()">
+                        <option value="expense">支出 (-)</option>
+                        <option value="income">收入 (+)</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>分類</label>
+                    <select id="itemCategory">
+                        <!-- 預設支出分類 -->
+                        <option value="飲食">飲食</option>
+                        <option value="交通">交通</option>
+                        <option value="娛樂">娛樂</option>
+                        <option value="居住">居住</option>
+                        <option value="日常用品">日常用品</option>
+                        <option value="其他支出">其他支出</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>金額與備註</label>
+                    <div style="display: flex; gap: 5px;">
+                        <input type="number" id="itemAmount" placeholder="金額" style="width: 45%;">
+                        <input type="text" id="itemDesc" placeholder="備註(如:晚餐)" style="width: 55%;">
+                    </div>
+                </div>
+                <button onclick="addItem()">記帳</button>
+            </div>
+
+            <h2>本月明細流水帳</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>類別</th>
+                            <th>分類</th>
+                            <th>金額</th>
+                            <th>備註</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ledgerItems">
+                        <!-- 動態插入 -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 固定收支一鍵快速帶入區 -->
+            <div class="shortcut-section">
+                <span style="color: var(--gold-accent); font-size: 0.9rem; width: 100%; display: block; margin-bottom: 5px;">⚡ 快速擴充功能：</span>
+                <button class="btn-secondary" onclick="loadFixedExpenses()">一鍵帶入本月固定支出 (房租/訂閱費)</button>
+                <button class="btn-secondary" onclick="clearAll()">清空本月重新記帳</button>
+            </div>
+        </div>
+
+        <!-- 右側：動態圓餅圖視覺看板 -->
+        <div class="card chart-container">
+            <h2>支出分類比例圖</h2>
+            <div style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;">
+                <canvas id="expenseChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 初始化資料庫 (若本地有紀錄則讀取)
+    let ledger = JSON.parse(localStorage.getItem('my_ledger_data')) || [];
+    let chartInstance = null;
+
+    // 預設分類選單連動
+    function handleTypeChange() {
+        const type = document.getElementById('itemType').value;
+        const categorySelect = document.getElementById('itemCategory');
+        categorySelect.innerHTML = '';
+
+        if (type === 'expense') {
+            const categories = ['飲食', '交通', '娛樂', '居住', '日常用品', '其他支出'];
+            categories.forEach(c => categorySelect.innerHTML += `<option value="${c}">${c}</option>`);
+        } else {
+            const categories = ['薪資', '獎金', '投資收益', '其他收入'];
+            categories.forEach(c => categorySelect.innerHTML += `<option value="${c}">${c}</option>`);
+        }
+    }
+
+    // 新增一筆帳目
+    function addItem() {
+        const type = document.getElementById('itemType').value;
+        const category = document.getElementById('itemCategory').value;
+        const amount = parseFloat(document.getElementById('itemAmount').value);
+        const desc = document.getElementById('itemDesc').value || category;
+
+        if (isNaN(amount) || amount <= 0) {
+            alert('請輸入正確的金額');
+            return;
+        }
+
+        const newItem = { id: Date.now(), type, category, amount, desc };
+        ledger.push(newItem);
+        
+        // 清空輸入框
+        document.getElementById('itemAmount').value = '';
+        document.getElementById('itemDesc').value = '';
+
+        saveAndRefresh();
+    }
+
+    // 刪除帳目
+    function deleteItem(id) {
+        ledger = ledger.filter(item => item.id !== id);
+        saveAndRefresh();
+    }
+
+    // 一鍵帶入固定支出範例
+    function loadFixedExpenses() {
+        if(confirm("是否一鍵帶入本月固定支出（包含：房租 $10000, 網路費 $1000, Netflix $390）？")) {
+            const fixed = [
+                { id: Date.now()+1, type: 'expense', category: '居住', amount: 10000, desc: '固定房租' },
+                { id: Date.now()+2, type: 'expense', category: '日常用品', amount: 1000, desc: '寬頻網路費' },
+                { id: Date.now()+3, type: 'expense', category: '娛樂', amount: 390, desc: 'Netflix續訂' }
+            ];
+            ledger.push(...fixed);
+            saveAndRefresh();
+        }
+    }
+
+    // 清空重置
+    function clearAll() {
+        if (confirm("確定要清空本月所有記帳明細嗎？（初始金額不會被重置）")) {
+            ledger = [];
+            saveAndRefresh();
+        }
+    }
+
+    // 儲存至本地並刷新頁面渲染
+    function saveAndRefresh() {
+        localStorage.setItem('my_ledger_data', JSON.stringify(ledger));
+        localStorage.setItem('my_initial_budget', document.getElementById('initialBudget').value);
+        updateDashboard();
+    }
+
+    // 更新核心看版與圖表
+    function updateDashboard() {
+        const initialBudget = parseFloat(document.getElementById('initialBudget').value) || 0;
+        localStorage.setItem('my_initial_budget', initialBudget); // 記住初始金額
+
+        let totalIncome = 0;
+        let totalExpense = 0;
+        
+        // 圓餅圖分類加總統計資料
+        const chartDataMap = {};
+
+        const tbody = document.getElementById('ledgerItems');
+        tbody.innerHTML = '';
+
+        ledger.forEach(item => {
+            // 算總額
+            if (item.type === 'income') {
+                totalIncome += item.amount;
+            } else {
+                totalExpense += item.amount;
+                // 統計支出分類供圓餅圖使用
+                chartDataMap[item.category] = (chartDataMap[item.category] || 0) + item.amount;
+            }
+
+            // 渲染表格行
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="${item.type === 'income' ? 'type-income' : 'type-expense'}">${item.type === 'income' ? '收入 (+)' : '支出 (-)'}</td>
+                <td>${item.category}</td>
+                <td>$${item.amount.toLocaleString()}</td>
+                <td style="color: var(--text-dark); font-size:0.85rem">${item.desc}</td>
+                <td><button class="btn-delete" onclick="deleteItem(${item.id})">刪除</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        const remainingBalance = initialBudget + totalIncome - totalExpense;
+
+        // 寫入上方看板面額
+        document.getElementById('totalIncome').innerText = `$${totalIncome.toLocaleString()}`;
+        document.getElementById('totalExpense').innerText = `$${totalExpense.toLocaleString()}`;
+        document.getElementById('remainingBalance').innerText = `$${remainingBalance.toLocaleString()}`;
+
+        // 負債警示顏色調整
+        if(remainingBalance < 0) {
+            document.getElementById('remainingBalance').style.color = '#ff7675';
+        } else {
+            document.getElementById('remainingBalance').style.color = 'var(--gold-accent)';
+        }
+
+        updateChart(chartDataMap);
+    }
+
+    // 更新或創建 Chart.js 圓餅圖
+    function updateChart(dataMap) {
+        const ctx = document.getElementById('expenseChart').getContext('2d');
+        const labels = Object.keys(dataMap);
+        const dataValues = Object.values(dataMap);
+
+        if (chartInstance) {
+            chartInstance.destroy(); // 必須摧毀舊圖表才能重新渲染新數據
+        }
+
+        if (labels.length === 0) {
+            // 如果沒有任何支出，給予一個預設提示性空圖表
+            chartInstance = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['暫無支出資料'],
+                    datasets: [{
+                        data: [1],
+                        backgroundColor: ['rgba(255,255,255,0.1)']
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { labels: { color: '#a29bfe' } } } }
+            });
+            return;
+        }
+
+        // 星空調色盤分類顏色
+        const palette = ['#a29bfe', '#81ecec', '#ff7675', '#fab1a0', '#ffeaa7', '#fd79a8', '#fdcb6e'];
+
+        chartInstance = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: dataValues,
+                    backgroundColor: palette.slice(0, labels.length),
+                    borderWidth: 1,
+                    borderColor: '#1e1233'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#e0dbec',
+                            font: { family: 'Noto Sans TC', size: 12 }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return ` ${context.label}: $${context.raw.toLocaleString()}`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // 網頁載入時自動執行
+    window.onload = function() {
+        const savedBudget = localStorage.getItem('my_initial_budget');
+        if (savedBudget !== null) {
+            document.getElementById('initialBudget').value = savedBudget;
+        }
+        handleTypeChange();
+        updateDashboard();
+    };
+</script>
+
+</body>
+</html>
