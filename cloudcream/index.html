@@ -251,6 +251,7 @@ body{
     text-align:center;
     color:var(--sub);
     padding:60px 20px;
+    font-size:20px;
 }
 
 .footer{
@@ -319,9 +320,11 @@ body{
     </div>
 
     <div id="appGrid" class="grid">
+
         <div class="loading">
             ☁ 正在讀取奶油雲朵小工具們...
         </div>
+
     </div>
 
     <div class="footer">
@@ -342,9 +345,9 @@ body{
    GitHub Repo 設定
 ========================= */
 
-const GITHUB_USER = "你的GitHub帳號";
-const GITHUB_REPO = "你的repo名稱";
-const GITHUB_FOLDER = "archive";
+const GITHUB_USER = "TofuDouce";
+const GITHUB_REPO = "schedule-app";
+const GITHUB_FOLDER = "cloudcream";
 
 /* =========================
    DOM
@@ -368,11 +371,17 @@ async function loadApps(){
 
         const response = await fetch(apiUrl);
 
+        if(!response.ok){
+            throw new Error("GitHub API 讀取失敗");
+        }
+
         const files = await response.json();
 
         const htmlFiles = files.filter(file =>
-            file.name.endsWith(".html") &&
-            file.name !== "index.html"
+
+            file.name.toLowerCase().endsWith(".html") &&
+            file.name.toLowerCase() !== "index.html"
+
         );
 
         allApps = htmlFiles.map(file => {
@@ -383,11 +392,21 @@ async function loadApps(){
             .replace(/[-_]/g," ");
 
             return{
+
                 title: toTitleCase(cleanName),
+
                 file: file.name,
+
                 desc: "奶油雲朵風格小工具網站 ✦",
+
                 icon: randomIcon(),
-                tags: ["pastel","tool","html"]
+
+                tags: [
+                    "pastel",
+                    "cloud",
+                    "html"
+                ]
+
             };
 
         });
@@ -396,13 +415,15 @@ async function loadApps(){
 
     }catch(error){
 
+        console.error(error);
+
         appGrid.innerHTML = `
+
             <div class="loading">
                 ❌ 無法讀取資料夾內容
             </div>
-        `;
 
-        console.error(error);
+        `;
 
     }
 
@@ -417,9 +438,11 @@ function renderApps(apps){
     if(apps.length === 0){
 
         appGrid.innerHTML = `
+
             <div class="loading">
-                ☁ 沒有找到網站
+                ☁ 沒有找到 HTML 網站
             </div>
+
         `;
 
         return;
@@ -429,7 +452,8 @@ function renderApps(apps){
 
     apps.forEach(app => {
 
-        const card = document.createElement("div");
+        const card =
+        document.createElement("div");
 
         card.className = "card";
 
@@ -448,9 +472,13 @@ function renderApps(apps){
             </div>
 
             <div class="tags">
+
                 ${app.tags.map(tag =>
+
                     `<div class="tag">${tag}</div>`
+
                 ).join("")}
+
             </div>
 
             <button
@@ -487,8 +515,13 @@ searchInput.addEventListener("input", e => {
     const keyword =
     e.target.value.toLowerCase();
 
-    const filtered = allApps.filter(app =>
-        app.title.toLowerCase().includes(keyword)
+    const filtered =
+    allApps.filter(app =>
+
+        app.title
+        .toLowerCase()
+        .includes(keyword)
+
     );
 
     renderApps(filtered);
@@ -502,10 +535,14 @@ searchInput.addEventListener("input", e => {
 function toTitleCase(str){
 
     return str.replace(
+
         /\w\S*/g,
+
         txt =>
+
         txt.charAt(0).toUpperCase() +
         txt.substring(1).toLowerCase()
+
     );
 
 }
@@ -513,6 +550,7 @@ function toTitleCase(str){
 function randomIcon(){
 
     const icons = [
+
         "☁",
         "🌸",
         "🧁",
@@ -523,10 +561,13 @@ function randomIcon(){
         "🫧",
         "🍞",
         "🎀"
+
     ];
 
     return icons[
-        Math.floor(Math.random() * icons.length)
+        Math.floor(
+            Math.random() * icons.length
+        )
     ];
 
 }
