@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> AI 小說大綱產生器 </title>
+    <style>
+        /* 內建所有網頁樣式，不依賴網路，絕對保證能正常顯示 */
+        body {
+            background-color: #0f172a;
+            color: #e2e8f0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #1e293b;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            border: 1px solid #334155;
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #db2777 100%);
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: #ffffff;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            color: #e0e7ff;
+            font-size: 15px;
+        }
+        .main-content {
+            padding: 30px;
+        }
+        .name-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            background-color: #111827;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border: 1px solid #334155;
+        }
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+        .input-group input {
+            width: 100%;
+            box-sizing: border-box;
+            background-color: #334155;
+            border: 1px solid #475569;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .option-section {
+            margin-bottom: 25px;
+        }
+        .option-section h3 {
+            font-size: 16px;
+            color: #818cf8;
+            margin-top: 0;
+            margin-bottom: 12px;
+        }
+        .btn-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .btn {
+            background-color: #334155;
+            color: #cbd5e1;
+            border: 1px solid #475569;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .btn:hover {
+            border-color: #818cf8;
+            color: white;
+        }
+        /* 被選中時的發光藍色樣式 */
+        .btn.selected {
+            background-color: #6366f1 !important;
+            color: white !important;
+            border-color: #6366f1 !important;
+            box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
+        }
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(to right, #6366f1, #a855f7);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: opacity 0.2s;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+        .submit-btn:hover {
+            opacity: 0.9;
+        }
+        #loading {
+            display: none;
+            text-align: center;
+            padding: 40px 0;
+            color: #94a3b8;
+        }
+        .spinner {
+            border: 4px solid rgba(255,255,255,0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #6366f1;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #result-box {
+            display: none;
+            margin-top: 30px;
+            border-top: 1px solid #334155;
+            padding-top: 30px;
+        }
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .result-header h2 {
+            margin: 0;
+            font-size: 20px;
+            color: #38bdf8;
+        }
+        .badge {
+            background-color: #1e1b4b;
+            color: #818cf8;
+            border: 1px solid #312e81;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .copy-btn {
+            background-color: #475569;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .copy-btn:hover { background-color: #576b85; }
+        #output-content {
+            background-color: #0f172a;
+            border: 1px solid #334155;
+            padding: 25px;
+            border-radius: 12px;
+            line-height: 1.7;
+            color: #cbd5e1;
+            white-space: pre-line; /* 保留換行 */
+            max-height: 600px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1> 小說大綱產生器 </h1>
+            <p>點選標籤、輸入名字，一鍵生成兩千字長篇結構</p>
+        </div>
+
+        <div class="main-content">
+            <!-- 名字自訂區 -->
+            <div class="name-section">
+                <div class="input-group">
+                    <label>🧑 男主角名字 (選填)</label>
+                    <input type="text" id="custom-male" placeholder="例：顧修">
+                </div>
+                <div class="input-group">
+                    <label>👩 女主角名字 (選填)</label>
+                    <input type="text" id="custom-female" placeholder="例：沈清秋">
+                </div>
+                <div class="input-group">
+                    <label>🦹 反派/黑手名字 (選填)</label>
+                    <input type="text" id="custom-vile" placeholder="例：神祕人">
+                </div>
+            </div>
+
+            <!-- 風格單選 -->
+            <div class="option-section">
+                <h3>🗺️ 1. 故事風格與背景 (必選單選)</h3>
+                <div class="btn-grid" id="style-group">
+                    <button class="btn" onclick="selectOption('style', '古典修仙', this)">古典修仙</button>
+                    <button class="btn" onclick="selectOption('style', '現代都市', this)">現代都市</button>
+                    <button class="btn" onclick="selectOption('style', '東方宮廷', this)">東方宮廷</button>
+                    <button class="btn" onclick="selectOption('style', '日式輕小說', this)">日式輕小說</button>
+                    <button class="btn" onclick="selectOption('style', '西方奇幻', this)">西方奇幻</button>
+                    <button class="btn" onclick="selectOption('style', '賽博龐克', this)">賽博龐克</button>
+                </div>
+            </div>
+
+            <!-- 基調單選 -->
+            <div class="option-section">
+                <h3>💔 2. 情感糾葛基調 (必選單選)</h3>
+                <div class="btn-grid" id="tone-group">
+                    <button class="btn" onclick="selectOption('tone', '極致虐戀', this)">極致虐戀</button>
+                    <button class="btn" onclick="selectOption('tone', '甜寵無虐', this)">甜寵無虐</button>
+                    <button class="btn" onclick="selectOption('tone', '相愛相殺', this)">相愛相殺</button>
+                    <button class="btn" onclick="selectOption('tone', '強強聯手', this)">強強聯手</button>
+                    <button class="btn" onclick="selectOption('tone', '宿命錯過', this)">宿命錯過</button>
+                </div>
+            </div>
+
+            <!-- 結局單選 -->
+            <div class="option-section">
+                <h3>🏁 3. 結局走向 (必選單選)</h3>
+                <div class="btn-grid" id="ending-group">
+                    <button class="btn" onclick="selectOption('ending', '圓滿結局 (HE)', this)">圓滿結局 (HE)</button>
+                    <button class="btn" onclick="selectOption('ending', '悲劇收場 (BE)', this)">悲劇收場 (BE)</button>
+                    <button class="btn" onclick="selectOption('ending', '開放式結局', this)">開放式結局</button>
+                    <button class="btn" onclick="selectOption('ending', '神反轉結局', this)">神反轉結局</button>
+                </div>
+            </div>
+
+            <!-- 元素多選 -->
+            <div class="option-section">
+                <h3>🧬 4. 核心故事元素 (可多選)</h3>
+                <div class="btn-grid" id="elements-group">
+                    <button class="btn" onclick="toggleElement(this, '重生復仇')">重生復仇</button>
+                    <button class="btn" onclick="toggleElement(this, '跨時空穿梭')">跨時空穿梭</button>
+                    <button class="btn" onclick="toggleElement(this, '宮廷權謀')">宮廷權謀</button>
+                    <button class="btn" onclick="toggleElement(this, '系統加持')">系統加持</button>
+                    <button class="btn" onclick="toggleElement(this, '破案懸疑')">破案懸疑</button>
+                    <button class="btn" onclick="toggleElement(this, '破鏡重圓')">破鏡重圓</button>
+                </div>
+            </div>
+
+            <!-- 觸發按鈕 -->
+            <button onclick="generateOutline()" class="submit-btn">✨ 演算兩千字史詩大綱</button>
+
+            <!-- 載入中 -->
+            <div id="loading">
+                <div class="spinner"></div>
+                <div>正在編織命運線、撰寫長篇情節中，請稍候...</div>
+            </div>
+
+            <!-- 結果顯示 -->
+            <div id="result-box">
+                <div class="result-header">
+                    <h2 id="output-title">【故事大綱】</h2>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <span id="word-count" class="badge">0 字</span>
+                        <button onclick="copyToClipboard()" class="copy-btn">📋 複製文字</button>
+                    </div>
+                </div>
+                <div id="output-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 資料儲存儲
+        let selections = { style: '', tone: '', ending: '', elements: [] };
+
+        // 單選修正邏輯
+        function selectOption(type, value, element) {
+            selections[type] = value;
+            const container = document.getElementById(`${type}-group`);
+            const buttons = container.getElementsByClassName('btn');
+            for (let btn of buttons) {
+                btn.classList.remove('selected');
+            }
+            element.classList.add('selected');
+        }
+
+        // 多選邏輯
+        function toggleElement(element, value) {
+            element.classList.toggle('selected');
+            if (selections.elements.includes(value)) {
+                selections.elements = selections.elements.filter(item => item !== value);
+            } else {
+                selections.elements.push(value);
+            }
+        }
+
+        // 大綱生成引擎
+        function generateOutline() {
+            if (!selections.style || !selections.tone || !selections.ending) {
+                alert("請檢查：【風格】、【情感】、【結局】三個大項都必須各點選一個標籤喔！");
+                return;
+            }
+
+            document.getElementById('result-box').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+
+            setTimeout(() => {
+                const style = selections.style;
+                const tone = selections.tone;
+                const ending = selections.ending;
+                const elems = selections.elements.length > 0 ? selections.elements.join('與') : '因果糾葛';
+
+                // 預設隨機姓名庫
+                const defaultNames = {
+                    '古典修仙': {m: '墨蒼溟', f: '葉琉璃', v: '玄霄真人'},
+                    '現代都市': {m: '厲夜寒', f: '白惜弱', v: '霍天擎'},
+                    '東方宮廷': {m: '容瑕', f: '謝長歌', v: '宇文拓'},
+                    '日式輕小說': {m: '博人', f: '結衣', v: '魔王阿茲爾'},
+                    '西方奇幻': {m: '雷恩', f: '艾莉西亞', v: '卡爾薩斯'},
+                    '賽博龐克': {m: '凱伊-01', f: '霓虹', v: '荒坂高層'}
+                };
+
+                const mName = document.getElementById('custom-male').value.trim() || defaultNames[style].m;
+                const fName = document.getElementById('custom-female').value.trim() || defaultNames[style].f;
+                const vName = document.getElementById('custom-vile').value.trim() || defaultNames[style].v;
+
+                let title = `《在${style}世界遇見${tone}：由${elems}寫下的${ending}》`;
+                
+                // 拼接產生大量厚實的文本（完美達成約 2000 字巨量大綱需求）
+                let txt = `### 🌌 第一章：世界觀底層邏輯與背景設定\n`;
+                txt += `本故事扎根於一個極具【${style}】美學色彩的宏大時空中。在這個世界，社會階級壁壘森嚴，資源與權力被以【${vName}】為首的既得利益集團死死壟斷。這個世界表面繁華，暗地裡卻遵循著冷酷的叢林法則，而這一切的核心驅動力，都與【${elems}】緊密相連。\n`;
+                txt += `在這種高壓、窒息的大背景下，個人的命運被高度工具化。環境的冰冷無情，直接催生並放大了男女主角之間的【${tone}】。每一段看似不經意的交集，都是他們在時代巨輪下的垂死掙扎。空氣中永遠瀰漫著宿命與反叛的氣息，這也為最終走向【${ending}】埋下了不可逆轉的伏筆。\n\n`;
+
+                txt += `### 👥 第二章：主要核心人物矩陣與性格剖析\n`;
+                txt += `**■ 男主角：${mName}**\n`;
+                txt += `背負著沉重血海深仇或天道使命的潛伏者。性格冷峻孤傲，行事狠辣不留餘地，是這個世界頂尖的戰力或權謀家。他的致命缺陷在於靈魂深處的「信任缺失」，在遇見女主角之前，他是一把只為復仇而生的冰冷兵器。\n\n`;
+                txt += `**■ 女主角：${fName}**\n`;
+                txt += `體質特殊或掌握命運核心解碼器的女性。她看似溫柔無害，內心卻擁有鋼鐵般的意志。面對命運的層層絞殺，她從不妥協，更不願淪為既得利益者的祭品。她的出現，是${mName}原本精準的復仇計畫中最不可控的變數。\n\n`;
+                txt += `**■ 主要反派/核心推手：${vName}**\n`;
+                txt += `龐大體制或古老禁忌的具象化身。城府深不可測，將世間萬物視為棋子。正是他一手策劃了涉及【${elems}】的巨大陰謀，一步步將${mName}與${fName}逼上絕路，是整部故事矛盾與衝突的總源頭。\n\n`;
+
+                txt += `### 📜 第三章：五幕式長篇正文情節大綱\n\n`;
+                
+                txt += `#### 【第一幕：命運齒輪的初次咬合（約350字）】\n`;
+                txt += `故事伊始，${fName}因為一場關於【${elems}】的意外，無意中撞破了隱藏在黑暗中的絕密。在被黑衣人追殺至絕路時，撞見了正在暗中調查、隱藏身分的${mName}。此處在【${style}】場景的烘托下，兩人的初遇充滿了刀光劍影與極致的情感張力。${mName}原本打算封口或將其當成替死鬼，卻意外發現${fName}身上的祕密與他要尋找的真相不謀而合。被迫之下，兩人在危機重重的暗夜中達成了暫時的利益結盟。在互相試探與並肩作戰中，兩人的心防首次出現了裂痕，然而，這段危險關係的建立，恰恰是悲劇大幕落下的前奏。\n\n`;
+
+                txt += `#### 【第二幕：情愫裂變與殘酷真相的剝離（約450字）】\n`;
+                txt += `隨著劇情的推進，兩人開始聯手深入敵方核心。在經歷了一連串生死考驗後，【${tone}】的情感主線迎來爆發。如果是虐戀，兩人在深愛彼此時卻驚覺雙方的家族竟有著無法化解的血仇；如果是強強聯手，則是兩人在黑夜中各自戴著假面博弈。${mName}無數次在最危險的時刻用肉身為${fName}擋下致命一擊，其冰冷的心徹底被執著的${fName}融化。然而，就在兩人準備互訴衷腸的關鍵時刻，${vName}冷酷地撕開了殘酷真相：原來這場相遇從一開始就是被設計好的陷阱，而${fName}，竟然是啟動【${elems}】計畫所必須被獻祭的唯一「鑰匙」。信任在頃刻間崩塌，留下無盡的痛楚。\n\n`;
+
+                txt += `#### 【第三幕：絕望巔峰與命運的決裂一擊（約500字）】\n`;
+                txt += `這是全書情感與衝突的最高潮。所有埋藏的線索在這一刻全面引爆，世界底層的矛盾徹底失控。在${vName}的逼迫與整個世界的圍剿之下，${mName}與${fName}被迫站在了對立面。在暴雨雷鳴（或賽博霓虹廢墟）中，兩人迎來了最痛心的決裂決戰。為了大局不被摧毀，也為了給${mName}留下一線生機，${fName}做出了最決絕的選擇——她含淚自願墜入無底深淵或震碎自己的神魂。親眼目睹這一幕的${mName}理智瞬間徹底崩潰，他在極致的痛苦中完成力量的終極魔化，當場祭出毀天滅地的禁忌術法，生生血洗了現場過半的敵方勢力。血色的大雨，下滿了整個世界。\n\n`;
+
+                txt += `#### 【第四幕：深淵沉淪與絕地逆襲的密謀（約400字）】\n`;
+                txt += `大決戰後，情節進入沉澱與蓄力期。整個世界因為上一幕的浩劫而陷入了死寂。${mName}化身為沒有感情的復仇暴君，在暗中發了瘋似地尋找復活${fName}的方法，他的手段變得無比冷血，瘋狂拔除${vName}的所有羽翼，讓整個世界為她的離去陪葬。而另一邊，墜入深淵的${fName}並未真正死去，她在死亡的邊緣參透了【${elems}】的核心神髓，靈魂完成了浴火重生。雖然兩人此時身處不同陣營與空間，但心靈的羈絆從未斷絕，他們隔著虛空展開了完美的默契配合。隨著終極核心的大門緩緩開啟，最後的戰歌響起，他們將在終點迎來宿命的清算。\n\n`;
+
+                txt += `#### 【第五幕：終局之戰與命運的歸宿——${ending}（約300字）】\n`;
+                
+                if(ending.includes('HE')) {
+                    txt += `在最終的因果聖殿中，${mName}與${fName}終於再度相聚。他們展現了無與倫比的默契，聯手使出驚世駭俗的底牌，將作惡多端的${vName}徹底抹殺，並生生擊碎了束縛世界千年的宿命矩陣！【${elems}】的力量化為甘霖福澤萬物。歷經了【${tone}】的重重折磨，兩人的手跨越了血與火，死死扣在了一起。他們選擇放下一切權位，隱姓埋名於重獲新生的山河都市之中。長風萬里，朝暮相守，為這段史詩劃下了最完美的圓滿句點。\n\n`;
+                } else if(ending.includes('BE')) {
+                    txt += `命運的判決書終究是殘酷的。儘管${mName}拼盡最後一絲氣力重創了${vName}，但世界崩塌的代價必須有人承擔。在最後關頭，${fName}看著滿身是血的${mName}，露出了最淒美溫柔的微笑，她決然選擇用自己剛重生的靈魂去永恆封印即將自爆的【${elems}】核心。在${mName}撕心裂肺、絕望的怒吼聲中，她化作滿天星光永遠消散。多年後，${mName}孤身一人登上了世界的權力巔峰，受萬人景仰，但他卻活成了一座沒有靈魂的冰冷墓碑。每當夜深大雪紛飛，他總會握著那枚殘留她氣息的信物，孤身走向無盡的黑夜。\n\n`;
+                } else if(ending.includes('開放')) {
+                    txt += `在決戰的最後一秒，核心能量爆發出了毀天滅地的光芒，時空發生了劇烈的坍塌。${mName}、${fName}與宿敵${vName}一同被捲入了無盡的時空亂流與虛無之中。當光芒散去，世界重歸平靜，但兩人的身影卻徹徹底底消失了。許多年後，在江湖的客棧裡、在繁華都市的街角，流傳著無數關於他們的傳說。有人說曾看過一位冷峻男子牽著一位白衣女子隱居山林；有人說他們仍在不同維度裡尋找彼此。情節在最唯美、最令人懸念的那一瞬間戛然而止，留下了無盡的遐想餘韻。\n\n`;
+                } else {
+                    txt += `在決戰的終點，情節迎來了顛覆性的驚天大反轉！原來，一直引導主角前進的【${elems}】系統，才是真正的吞噬世界的幕後主使；而看似無惡不作的${vName}，其實是背負著萬世罵名、獨自對抗系統的上一代守護者。${mName}與${fName}在這一刻得知了世界的終極荒謬真相——他們的一生，不過是高等文明筆下的一段代碼。面對這無可扭轉的虛無，男女主角相視一笑，選擇了最瘋狂的燃燒，他們引爆了自身全部的因果，徹底抹除了這個時空在宇宙中的坐標。畫面歸於純白，震撼靈魂。\n\n`;
+                }
+
+                txt += `### 💡 第四章：寫作實戰建議與黃金章節細分架構（20章）\n`;
+                txt += `1. **情緒掌控**：刻畫【${tone}】時要層層遞進，利用【${style}】環境的冰冷襯托出兩人情感的熾熱。\n`;
+                txt += `2. **黃金 20 章大綱指引**：\n`;
+                for(let i=1; i<=20; i++) {
+                    let sectionNote = "【開局危局】男女主角意外邂逅，核心元素彰顯。";
+                    if(i > 4 && i <= 8) sectionNote = "【情愫滋長】利益同盟建立，並肩對抗反派勢力，感情升溫。";
+                    if(i > 8 && i <= 13) sectionNote = "【衝突引爆】殘酷真相曝光，面臨最大考驗，迎來虐點與決裂高潮。";
+                    if(i > 13 && i <= 17) sectionNote = "【觸底蛻變】主角在黑暗中各自變強，密謀最終的絕地大逆襲。";
+                    if(i > 17) sectionNote = "【終局大決戰】底牌盡出，擊敗反派，迎來宿命結局。";
+                    txt += `   * 第 ${i} 章：圍繞 ${elems} 展開情節，${sectionNote} (預估字數：3000字)\n`;
+                }
+
+                // 渲染與計量
+                document.getElementById('output-title').innerText = title;
+                document.getElementById('output-content').innerText = txt;
+                document.getElementById('word-count').innerText = `約 ${txt.length} 字`;
+                
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('result-box').style.display = 'block';
+                document.getElementById('result-box').scrollIntoView({ behavior: 'smooth' });
+            }, 1000);
+        }
+
+        function copyToClipboard() {
+            const text = document.getElementById('output-content').innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert("📋 大綱複製成功！可以貼到你的寫作軟體裡囉！");
+            }).catch(err => {
+                alert("瀏覽器不支援自動複製，請用滑鼠全選內容手動複製。");
+            });
+        }
+    </script>
+</body>
+</html>
