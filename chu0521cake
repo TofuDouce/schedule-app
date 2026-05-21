@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>太極鰲車輪餅點餐系統</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #e67e22;
+            --secondary-color: #d35400;
+            --bg-color: #fdf6f0;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Noto Sans TC', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .container { grid-template-columns: 1fr; }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 8px 24px rgba(230, 126, 34, 0.1);
+            border: 1px solid #fadbd8;
+        }
+
+        h1, h2, h3 {
+            color: var(--secondary-color);
+            margin-top: 0;
+        }
+
+        .header-title {
+            grid-column: 1 / -1;
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        /* 表單設計 */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="text"], input[type="number"], select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #f5cba7;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .btn-primary { background-color: var(--primary-color); color: white; }
+        .btn-primary:hover { background-color: var(--secondary-color); }
+        .btn-danger { background-color: #e74c3c; color: white; }
+        .btn-danger:hover { background-color: #c0392b; }
+        .btn-dark { background-color: #34495e; color: white; }
+        .btn-dark:hover { background-color: #2c3e50; }
+
+        /* 帳本明細樣式 */
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #fadbd8;
+        }
+
+        .order-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            margin-left: 5px;
+        }
+
+        /* 篩選器樣式 */
+        .filter-section {
+            background: #fef5ef;
+            border: 2px dashed var(--primary-color);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        /* 圖卡預覽與隱藏 */
+        #capture-area {
+            background: linear-gradient(135deg, #fff5eb 0%, #ffede0 100%);
+            padding: 30px;
+            border-radius: 20px;
+            border: 4px solid #e67e22;
+            color: #4a2700;
+            margin-top: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        }
+
+        .card-brand {
+            font-size: 1.8rem;
+            font-weight: bold;
+            text-align: center;
+            color: var(--secondary-color);
+            border-bottom: 2px dashed #e67e22;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .card-section {
+            margin-bottom: 20px;
+        }
+
+        .card-section h4 {
+            margin: 0 0 8px 0;
+            color: #d35400;
+            font-size: 1.1rem;
+            border-left: 4px solid #e67e22;
+            padding-left: 8px;
+        }
+
+        .hidden { display: none !important; }
+
+        #image-result {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        #image-result img {
+            max-width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-title">太極鰲車輪餅</div>
+
+    <div class="card">
+        <h2>點餐工作台 🛠️</h2>
+        <input type="hidden" id="edit-index" value="-1">
+        
+        <div class="form-group">
+            <label for="user-name">訂購人姓名：</label>
+            <input type="text" id="user-name" placeholder="例如：小明">
+        </div>
+
+        <div class="form-group">
+            <label for="flavor">選擇口味：</label>
+            <select id="flavor">
+                <option value="紅豆" data-price="15">紅豆 ($15)</option>
+                <option value="奶油" data-price="15">奶油 ($15)</option>
+                <option value="芋頭" data-price="20">芋頭 ($20)</option>
+                <option value="起司蛋" data-price="21">起司蛋 ($21)</option>
+                <option value="雙餡(紅豆+奶油)" data-price="18">雙餡(紅豆+奶油) ($18)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="quantity">數量：</label>
+            <input type="number" id="quantity" value="1" min="1">
+        </div>
+
+        <div class="btn-group">
+            <button class="btn btn-primary" onclick="submitOrder()" id="btn-submit">送出點餐</button>
+            <button class="btn btn-danger" onclick="clearAllOrders()">清除帳本 🧹</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>📋 今日全體點餐明細大帳本</h2>
+        <p style="color: #666; margin-top: -10px;">目前已匯整的清單。</p>
+        
+        <div id="order-list" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px;">
+            </div>
+
+        <div class="filter-section">
+            <h3>🔮 魔法圖卡與文字生成篩選器</h3>
+            <p style="font-size: 0.85rem; color: #7f8c8d; margin: -5px 0 10px 0;">勾選決定下方圖卡與複製文字要出現什麼內容：</p>
+            <div class="checkbox-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="chk-detail" checked onchange="renderAll()"> 顯示【A】個人明細（各自多少錢）
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="chk-summary" checked onchange="renderAll()"> 顯示【B】全體品項加總（廚房方便做）
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="chk-total" checked onchange="renderAll()"> 顯示【C】今日應付總金額
+                </label>
+            </div>
+        </div>
+
+        <div class="btn-group" style="flex-direction: column; gap: 10px;">
+            <button class="btn btn-dark" onclick="copyFilteredText()">📋 依篩選條件複製大帳本文字</button>
+            <button class="btn btn-primary" style="background-color: #27ae60;" onclick="generateCardImage()">📸 產生圖片大圖卡</button>
+        </div>
+    </div>
+
+    <div class="card" style="grid-column: 1 / -1;">
+        <h2>📸 結算大圖卡預覽區</h2>
+        <p style="color: #666; margin-top: -10px;">點擊「產生圖片大圖卡」後，會在下方生成可長按儲存的精美圖片。</p>
+        
+        <div id="capture-area">
+            <div class="card-brand">🥮 太極鰲車輪餅 結算報表</div>
+            
+            <div id="card-a-sec" class="card-section">
+                <h4>【A】個人訂購明細</h4>
+                <div id="card-detail-content"></div>
+            </div>
+
+            <div id="card-b-sec" class="card-section">
+                <h4>【B】全體品項加總</h4>
+                <div id="card-summary-content"></div>
+            </div>
+
+            <div id="card-c-sec" class="card-section" style="margin-bottom: 0;">
+                <h4>【C】今日應付總額</h4>
+                <div id="card-total-content" style="font-size: 1.4rem; font-weight: bold; color: #c0392b;"></div>
+            </div>
+        </div>
+
+        <div id="image-result"></div>
+    </div>
+</div>
+
+<script>
+    // 資料結構：從 localStorage 讀取暫存，若無則為空陣列
+    let orders = JSON.parse(localStorage.getItem('wheelCakeOrders')) || [];
+
+    // 初始化讀取
+    window.onload = function() {
+        // 還原上次勾選狀態（可選，這裡預設全開）
+        renderAll();
+    };
+
+    // 儲存至 localStorage 的暫存記憶函數
+    function saveData() {
+        localStorage.setItem('wheelCakeOrders', JSON.stringify(orders));
+    }
+
+    // 新增或修改送出
+    function submitOrder() {
+        const userName = document.getElementById('user-name').value.trim();
+        const flavorSelect = document.getElementById('flavor');
+        const flavor = flavorSelect.value;
+        const price = parseInt(flavorSelect.options[flavorSelect.selectedIndex].getAttribute('data-price'));
+        const quantity = parseInt(document.getElementById('quantity').value);
+        const editIndex = parseInt(document.getElementById('edit-index').value);
+
+        if (!userName) {
+            alert('請輸入訂購人姓名！');
+            return;
+        }
+        if (quantity < 1 || isNaN(quantity)) {
+            alert('請輸入正確的數量！');
+            return;
+        }
+
+        if (editIndex === -1) {
+            // 新增模式
+            orders.push({ name: userName, flavor: flavor, price: price, qty: quantity });
+        } else {
+            // 修改模式
+            orders[editIndex] = { name: userName, flavor: flavor, price: price, qty: quantity };
+            document.getElementById('edit-index').value = "-1";
+            document.getElementById('btn-submit').innerText = "送出點餐";
+            document.getElementById('btn-submit').style.backgroundColor = "var(--primary-color)";
+        }
+
+        // 清空輸入框（保留姓名方便下一次輸入）
+        document.getElementById('quantity').value = "1";
+
+        saveData();
+        renderAll();
+    }
+
+    // 刪除特定明細
+    function deleteOrder(index) {
+        if(confirm("確定要刪除這筆明細嗎？")) {
+            orders.splice(index, 1);
+            saveData();
+            renderAll();
+        }
+    }
+
+    // 啟動修改模式
+    function editOrder(index) {
+        const order = orders[index];
+        document.getElementById('user-name').value = order.name;
+        document.getElementById('flavor').value = order.flavor;
+        document.getElementById('quantity').value = order.qty;
+        
+        // 將狀態改為修改中
+        document.getElementById('edit-index').value = index;
+        const submitBtn = document.getElementById('btn-submit');
+        submitBtn.innerText = "確認修改 💾";
+        submitBtn.style.backgroundColor = "#2980b9";
+        
+        // 捲動回頂端方便修改
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // 清除全體帳本
+    function clearAllOrders() {
+        if (confirm("⚠️ 確定要清除今日整份大帳本嗎？清除後無法復原喔！")) {
+            orders = [];
+            document.getElementById('edit-index').value = "-1";
+            document.getElementById('btn-submit').innerText = "送出點餐";
+            document.getElementById('btn-submit').style.backgroundColor = "var(--primary-color)";
+            saveData();
+            renderAll();
+            document.getElementById('image-result').innerHTML = ""; // 順便清空產生的圖片
+        }
+    }
+
+    // 綜合算力：渲染大帳本列表、即時同步圖卡DOM
+    function renderAll() {
+        const orderListDiv = document.getElementById('order-list');
+        orderListDiv.innerHTML = '';
+
+        if(orders.length === 0) {
+            orderListDiv.innerHTML = '<p style="color: #999; text-align:center;">目前大帳本空空如也 🏜️</p>';
+        }
+
+        let totalMoney = 0;
+        let flavorSummary = {};
+        let detailHtml = '';
+
+        // 遍歷所有訂單
+        orders.forEach((item, index) => {
+            const subtotal = item.price * item.qty;
+            totalMoney += subtotal;
+
+            // 計算品項加總
+            if (!flavorSummary[item.flavor]) {
+                flavorSummary[item.flavor] = 0;
+            }
+            flavorSummary[item.flavor] += item.qty;
+
+            // 1. 右側管理介面的條目
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'order-item';
+            itemDiv.innerHTML = `
+                <div><strong>${item.name}</strong>：${item.flavor} x${item.qty} ($${subtotal})</div>
+                <div class="order-actions">
+                    <button onclick="editOrder(${index})" title="修改">✏️</button>
+                    <button onclick="deleteOrder(${index})" title="刪除">❌</button>
+                </div>
+            `;
+            orderListDiv.appendChild(itemDiv);
+
+            // 2. 組合圖卡專用的 A 區明細文字
+            detailHtml += `<div style="margin-bottom:4px;">👤 <strong>${item.name}</strong>：${item.flavor} x${item.qty} (${subtotal}元)</div>`;
+        });
+
+        // 處理 B 區品項加總文字
+        let summaryHtml = '';
+        for (const [flavor, qty] of Object.entries(flavorSummary)) {
+            summaryHtml += `<div style="margin-bottom:4px;">🥯 <strong>${flavor}</strong>：共 ${qty} 個</div>`;
+        }
+
+        // 把資料灌進圖卡預覽區 DOM
+        document.getElementById('card-detail-content').innerHTML = detailHtml || '無資料';
+        document.getElementById('card-summary-content').innerHTML = summaryHtml || '無資料';
+        document.getElementById('card-total-content').innerText = `NT$ ${totalMoney} 元`;
+
+        // 【同步篩選隱藏機制】根據打勾狀態，動態讓圖卡對應區塊「隱形」並縮水高度
+        const chkDetail = document.getElementById('chk-detail').checked;
+        const chkSummary = document.getElementById('chk-summary').checked;
+        const chkTotal = document.getElementById('chk-total').checked;
+
+        document.getElementById('card-a-sec').className = chkDetail ? "card-section" : "card-section hidden";
+        document.getElementById('card-b-sec').className = chkSummary ? "card-section" : "card-section hidden";
+        document.getElementById('card-c-sec').className = chkTotal ? "card-section" : "card-section hidden";
+    }
+
+    // 依篩選條件動態組合文字並複製到剪貼簿
+    function copyFilteredText() {
+        if (orders.length === 0) {
+            alert('大帳本裡面還沒有資料可以複製喔！');
+            return;
+        }
+
+        const chkDetail = document.getElementById('chk-detail').checked;
+        const chkSummary = document.getElementById('chk-summary').checked;
+        const chkTotal = document.getElementById('chk-total').checked;
+
+        let copyLines = [];
+        copyLines.push(`📋 太極鰲車輪餅 今日結算清單 \n---`);
+
+        // A 區
+        if (chkDetail) {
+            copyLines.push(`【A】個人訂購明細：`);
+            orders.forEach(item => {
+                copyLines.push(`• ${item.name} : ${item.flavor} x${item.qty} (${item.price * item.qty}元)`);
+            });
+            copyLines.push(`---`);
+        }
+
+        // B 區
+        if (chkSummary) {
+            copyLines.push(`【B】全體品項加總：`);
+            let flavorSummary = {};
+            orders.forEach(item => {
+                flavorSummary[item.flavor] = (flavorSummary[item.flavor] || 0) + item.qty;
+            });
+            for (const [flavor, qty] of Object.entries(flavorSummary)) {
+                copyLines.push(`• ${flavor} : ${qty}個`);
+            }
+            copyLines.push(`---`);
+        }
+
+        // C 區
+        if (chkTotal) {
+            let totalMoney = orders.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            copyLines.push(`【C】今日應付總額： ${totalMoney} 元`);
+        }
+
+        const finalContent = copyLines.join('\n');
+        
+        // 執行複製到剪貼簿
+        navigator.clipboard.writeText(finalContent).then(() => {
+            alert('📋 聰明篩選文字已成功複製到剪貼簿！快去 LINE 貼上吧！');
+        }).catch(err => {
+            alert('複製失敗，請手動全選複製。');
+        });
+    }
+
+    // 📸 按下後才會真正抓取當下過濾的 DOM 並渲染成圖片
+    function generateCardImage() {
+        if (orders.length === 0) {
+            alert('帳本內無資料，無法生成圖卡！');
+            return;
+        }
+
+        const resultDiv = document.getElementById('image-result');
+        resultDiv.innerHTML = '<p style="color: #e67e22;">✨ 正在施展魔法繪製專屬大圖卡...</p>';
+
+        // 使用 html2canvas 套件捕捉已經動態伸縮隱藏後的 capture-area
+        setTimeout(() => {
+            html2canvas(document.getElementById('capture-area'), {
+                scale: 2, // 提高解析度提升質感
+                backgroundColor: null,
+                useCORS: true
+            }).then(canvas => {
+                resultDiv.innerHTML = '<h3>🎉 生成成功！</h3><p style="font-size:0.85rem; color:#666;">手機用戶可「長按下方圖片」儲存，電腦用戶按右鍵另存即可！</p>';
+                const img = document.createElement('img');
+                img.src = canvas.toDataURL('image/png');
+                resultDiv.appendChild(img);
+                
+                // 貼心捲動到圖片處
+                resultDiv.scrollIntoView({ behavior: 'smooth' });
+            });
+        }, 300);
+    }
+</script>
+
+</body>
+</html>
