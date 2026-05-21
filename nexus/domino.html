@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>骨牌效應 ✦ Domino Effect</title>
+    <meta name="robots" content="noindex,nofollow">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #fafafa;
+            font-family: "Zen Maru Gothic", sans-serif;
+        }
+        svg {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+        .domino {
+            cursor: pointer;
+            transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.35s ease;
+            transform-origin: bottom center;
+        }
+        /* 倒下後的狀態 */
+        .domino.down {
+            transform: rotate(90deg) translateY(2px);
+            opacity: 0.4;
+        }
+        /* 介面層 */
+        .ui-container {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 30px;
+            z-index: 10;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            pointer-events: auto;
+        }
+        .title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1c1921;
+            letter-spacing: 2px;
+        }
+        .subtitle {
+            font-size: 12px;
+            color: #8a8299;
+            margin-top: 4px;
+            letter-spacing: 1px;
+        }
+        .btn {
+            background: rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            color: #332f3d;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn:hover {
+            background: rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+        }
+        .footer {
+            text-align: center;
+            width: 100%;
+        }
+        .hint {
+            font-size: 14px;
+            color: rgba(0, 0, 0, 0.25);
+            letter-spacing: 2px;
+            animation: pulse 2s infinite ease-in-out;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+    </style>
+</head>
+<body>
+
+    <svg id="dominoField"></svg>
+
+    <div class="ui-container">
+        <div class="header">
+            <div>
+                <h1 class="title">骨牌效應</h1>
+                <div class="subtitle">✦ Domino Effect</div>
+            </div>
+            <button class="btn" onclick="resetField()">✦ 重置骨牌 (R) ✦</button>
+        </div>
+        <div class="footer">
+            <div class="hint" id="hintText">點擊第一塊骨牌・啟動連鎖效應</div>
+        </div>
+    </div>
+
+    <script>
+        const svg = document.getElementById('dominoField');
+        let dominoes = [];
+        let isRunning = false;
+
+        function initDominoes() {
+            svg.innerHTML = '';
+            dominoes = [];
+            isRunning = false;
+            document.getElementById('hintText').style.display = 'block';
+
+            const screenWidth = window.innerWidth;
+            const screenHeight = window.innerHeight;
+            
+            const dominoWidth = 6;
+            const dominoHeight = 32;
+            const spacing = 14; // 間距物理極限，倒下時能完美壓到下一塊
+            
+            const startX = 40;
+            const endX = screenWidth - 40;
+            const centerY = screenHeight / 2;
+            
+            let index = 0;
+            for (let x = startX; x < endX; x += spacing) {
+                // 利用正弦函數計算波浪 Y 軸，讓骨牌排成一條優雅的 S 型波浪形
+                const y = centerY + Math.sin(x * 0.005) * (screenHeight * 0.18);
+                
+                const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                // 漸層彩虹調色
+                const hue = (index * 2) % 360;
+                const color = `hsl(${hue}, 75%, 60%)`;
+                
+                rect.setAttribute("class", "domino");
+                rect.setAttribute("x", x);
+                rect.setAttribute("y", y - dominoHeight);
+                rect.setAttribute("width", dominoWidth);
+                rect.setAttribute("height", dominoHeight);
+                rect.setAttribute("rx", "2"); // 細緻圓角
+                rect.setAttribute("fill", color);
+                
+                // 設定每一塊骨牌專屬的底部旋轉軸心
+                rect.style.transformOrigin = `${x + dominoWidth/2}px ${y}px`;
+                
+                svg.appendChild(rect);
+                dominoes.push(rect);
+                index++;
+            }
+
+            // 綁定第一塊骨牌的點擊啟動事件
+            if (dominoes.length > 0) {
+                dominoes[0].addEventListener('click', startChainAction);
+            }
+        }
+
+        function startChainAction() {
+            if (isRunning) return;
+            isRunning = true;
+            document.getElementById('hintText').style.display = 'none';
+            dominoes[0].removeEventListener('click', startChainAction);
+
+            // 連鎖推倒引擎
+            dominoes.forEach((domino, i) => {
+                setTimeout(() => {
+                    domino.classList.add('down');
+                }, i * 25); // 25毫秒推倒一塊，流暢滑順
+            });
+        }
+
+        function resetField() {
+            initDominoes();
+        }
+
+        // 支援鍵盤 R 鍵重置快捷鍵
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'r' || e.key === 'R') {
+                resetField();
+            }
+        });
+
+        initDominoes();
+        window.addEventListener('resize', initDominoes);
+    </script>
+</body>
+</html>
