@@ -71,7 +71,7 @@ body{
 
 }
 
-/* 100 功德背景 */
+/* 100 功德 */
 
 body.enlightened{
 
@@ -84,7 +84,7 @@ body.enlightened{
 
 }
 
-/* 300 功德背景 */
+/* 300 功德 */
 
 body.voidmode{
 
@@ -318,8 +318,6 @@ body.voidmode{
 
 }
 
-/* 靈魂對話 */
-
 #frog.awaken{
 
     animation:
@@ -355,7 +353,7 @@ body.voidmode{
 
 }
 
-/* 按鈕 */
+/* button */
 
 .main-btn{
 
@@ -392,7 +390,7 @@ body.voidmode{
 
 }
 
-/* 柔和框 */
+/* soft box */
 
 .soft-box{
 
@@ -466,7 +464,7 @@ body.voidmode{
 
 }
 
-/* 浮字 */
+/* floating text */
 
 .float-text{
 
@@ -767,6 +765,14 @@ function resetFont(){
 
 }
 
+/* audio */
+
+const audioCtx =
+new (
+    window.AudioContext ||
+    window.webkitAudioContext
+)();
+
 /* 功德 */
 
 let count = 0;
@@ -906,11 +912,11 @@ function gainKarma(x,y){
 
 function playWoodBlock(){
 
-    const audioCtx =
-    new (
-        window.AudioContext ||
-        window.webkitAudioContext
-    )();
+    if(audioCtx.state === "suspended"){
+
+        audioCtx.resume();
+
+    }
 
     const oscillator =
     audioCtx.createOscillator();
@@ -918,21 +924,26 @@ function playWoodBlock(){
     const gainNode =
     audioCtx.createGain();
 
-    oscillator.type = "sine";
+    oscillator.type = "triangle";
 
     oscillator.frequency.setValueAtTime(
-        420,
+        180,
         audioCtx.currentTime
     );
 
+    oscillator.frequency.exponentialRampToValueAtTime(
+        90,
+        audioCtx.currentTime + 0.08
+    );
+
     gainNode.gain.setValueAtTime(
-        0.3,
+        0.22,
         audioCtx.currentTime
     );
 
     gainNode.gain.exponentialRampToValueAtTime(
-        0.01,
-        audioCtx.currentTime + 0.12
+        0.001,
+        audioCtx.currentTime + 0.18
     );
 
     oscillator.connect(gainNode);
@@ -942,7 +953,7 @@ function playWoodBlock(){
     oscillator.start();
 
     oscillator.stop(
-        audioCtx.currentTime + 0.12
+        audioCtx.currentTime + 0.18
     );
 
 }
