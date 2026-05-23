@@ -30,7 +30,7 @@
 
     --main:#d9ae8c;
 
-    --main2:#ecd8c7;
+    --main-dark:#c99972;
 
     --text:#3c2e26;
 
@@ -53,13 +53,33 @@ body{
     padding:20px;
 
     overflow-x:hidden;
+
+    position:relative;
+}
+
+/* watermark */
+
+.watermark{
+
+    position:fixed;
+
+    right:22px;
+    bottom:18px;
+
+    color:#bba89b;
+
+    font-size:12px;
+
+    pointer-events:none;
+
+    z-index:999;
 }
 
 /* container */
 
 .container{
 
-    max-width:760px;
+    max-width:820px;
 
     margin:auto;
 }
@@ -68,7 +88,7 @@ body{
 
 .hero{
 
-    margin-bottom:26px;
+    margin-bottom:28px;
 }
 
 .small{
@@ -82,7 +102,7 @@ body{
 
 .title{
 
-    font-size:38px;
+    font-size:42px;
 
     font-weight:700;
 
@@ -110,7 +130,7 @@ body{
 
     padding-bottom:8px;
 
-    margin-bottom:24px;
+    margin-bottom:22px;
 }
 
 .tab{
@@ -178,6 +198,9 @@ body{
     outline:none;
 
     color:var(--text);
+
+    box-shadow:
+    0 4px 10px rgba(0,0,0,.03);
 }
 
 .add-btn{
@@ -203,7 +226,7 @@ body{
 
 .add-btn:hover{
 
-    opacity:.9;
+    background:var(--main-dark);
 }
 
 /* board */
@@ -221,10 +244,12 @@ body{
     grid-template-columns:
     repeat(
         auto-fit,
-        minmax(160px,1fr)
+        minmax(170px,1fr)
     );
 
     gap:18px;
+
+    min-height:300px;
 }
 
 /* task */
@@ -235,7 +260,7 @@ body{
 
     background:white;
 
-    border-radius:26px;
+    border-radius:28px;
 
     padding:18px;
 
@@ -249,8 +274,6 @@ body{
 
     text-align:center;
 
-    position:relative;
-
     transition:.2s;
 
     animation:fade .25s ease;
@@ -260,7 +283,7 @@ body{
 
     from{
         opacity:0;
-        transform:translateY(8px);
+        transform:translateY(10px);
     }
 
     to{
@@ -290,6 +313,8 @@ body{
     font-weight:700;
 
     margin-bottom:16px;
+
+    word-break:break-word;
 }
 
 /* buttons */
@@ -303,8 +328,8 @@ body{
 
 .icon-btn{
 
-    width:40px;
-    height:40px;
+    width:42px;
+    height:42px;
 
     border:none;
 
@@ -331,16 +356,9 @@ body{
     color:#d37f7f;
 }
 
-.task.done .done-btn{
-
-    background:white;
-
-    color:#d6a682;
-}
-
 .icon-btn:hover{
 
-    transform:scale(1.05);
+    transform:scale(1.06);
 }
 
 /* stats */
@@ -360,15 +378,43 @@ body{
     font-size:17px;
 }
 
+/* empty */
+
 .empty{
+
+    grid-column:1/-1;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    color:#b7a79d;
+
+    font-size:18px;
+
+    min-height:220px;
+}
+
+/* footer */
+
+.footer{
 
     text-align:center;
 
-    color:#b9aaa0;
+    margin-top:50px;
 
-    padding:40px 0;
+    margin-bottom:80px;
 
-    grid-column:1/-1;
+    color:#a9978a;
+
+    font-size:14px;
+}
+
+.footer b{
+
+    color:#d29d7c;
 }
 
 @media(max-width:640px){
@@ -378,7 +424,7 @@ body{
     }
 
     .title{
-        font-size:32px;
+        font-size:34px;
     }
 
     .board{
@@ -403,6 +449,10 @@ body{
 
 <body>
 
+<div class="watermark">
+    Made with soft thoughts by ChuChu ✦
+</div>
+
 <div class="container">
 
     <!-- HERO -->
@@ -425,21 +475,7 @@ body{
 
     <!-- TABS -->
 
-    <div class="tabs">
-
-        <button class="tab active">
-            每日任務
-        </button>
-
-        <button class="tab">
-            出遊計劃
-        </button>
-
-        <button class="tab">
-            每月任務
-        </button>
-
-    </div>
+    <div class="tabs" id="tabs"></div>
 
     <!-- ADD -->
 
@@ -483,58 +519,173 @@ body{
 
     </div>
 
+    <!-- FOOTER -->
+
+    <div class="footer">
+
+        ✦ Daily Soft ✦
+        <br><br>
+
+        Designed by <b>ChuChu</b> © 2026
+
+    </div>
+
 </div>
 
 <script>
 
-let tasks = [
+/* 真正棋盤資料 */
 
-    {
-        text:"喝5杯水",
-        done:true
-    },
+let boards = {
 
-    {
-        text:"打掃臥室",
-        done:true
-    },
+    "每日任務":[
 
-    {
-        text:"閱讀30分鐘",
-        done:false
-    },
+        {
+            text:"喝5杯水",
+            done:true
+        },
 
-    {
-        text:"洗澡",
-        done:false
-    },
+        {
+            text:"打掃臥室",
+            done:true
+        },
 
-    {
-        text:"拉伸10分鐘",
-        done:false
-    }
-];
+        {
+            text:"閱讀30分鐘",
+            done:false
+        }
+    ],
 
-function saveTasks(){
+    "出遊計劃":[
+
+        {
+            text:"訂飯店",
+            done:false
+        },
+
+        {
+            text:"整理行李",
+            done:false
+        }
+    ],
+
+    "每月任務":[
+
+        {
+            text:"整理房間",
+            done:false
+        },
+
+        {
+            text:"記帳",
+            done:false
+        }
+    ]
+};
+
+let currentBoard = "每日任務";
+
+/* localStorage */
+
+function saveBoards(){
 
     localStorage.setItem(
-        "dailysoft_tasks",
-        JSON.stringify(tasks)
+        "dailysoft_boards",
+        JSON.stringify(boards)
     );
 }
 
-function loadTasks(){
+function loadBoards(){
 
     const saved =
     localStorage.getItem(
-        "dailysoft_tasks"
+        "dailysoft_boards"
     );
 
     if(saved){
 
-        tasks = JSON.parse(saved);
+        boards = JSON.parse(saved);
     }
 }
+
+/* render tabs */
+
+function renderTabs(){
+
+    const tabs =
+    document.getElementById("tabs");
+
+    tabs.innerHTML = "";
+
+    Object.keys(boards).forEach(name=>{
+
+        const button =
+        document.createElement("button");
+
+        button.className =
+        currentBoard === name
+        ? "tab active"
+        : "tab";
+
+        button.innerText = name;
+
+        button.onclick = ()=>{
+
+            currentBoard = name;
+
+            renderTabs();
+
+            renderTasks();
+        };
+
+        tabs.appendChild(button);
+    });
+
+    /* 新增棋盤按鈕 */
+
+    const addBoardBtn =
+    document.createElement("button");
+
+    addBoardBtn.className = "tab";
+
+    addBoardBtn.innerText = "＋ 添加棋盤";
+
+    addBoardBtn.onclick = addBoard;
+
+    tabs.appendChild(addBoardBtn);
+}
+
+/* 新增棋盤 */
+
+function addBoard(){
+
+    const name =
+    prompt("輸入棋盤名稱 🌸");
+
+    if(!name){
+
+        return;
+    }
+
+    if(boards[name]){
+
+        alert("已經有這個棋盤了 ✨");
+
+        return;
+    }
+
+    boards[name] = [];
+
+    currentBoard = name;
+
+    saveBoards();
+
+    renderTabs();
+
+    renderTasks();
+}
+
+/* render tasks */
 
 function renderTasks(){
 
@@ -542,6 +693,9 @@ function renderTasks(){
     document.getElementById("board");
 
     board.innerHTML = "";
+
+    const tasks =
+    boards[currentBoard];
 
     if(tasks.length === 0){
 
@@ -595,6 +749,8 @@ function renderTasks(){
     updateStats();
 }
 
+/* add task */
+
 function addTask(){
 
     const input =
@@ -610,7 +766,7 @@ function addTask(){
         return;
     }
 
-    tasks.unshift({
+    boards[currentBoard].unshift({
 
         text:text,
         done:false
@@ -618,31 +774,40 @@ function addTask(){
 
     input.value = "";
 
-    saveTasks();
+    saveBoards();
 
     renderTasks();
 }
+
+/* toggle */
 
 function toggleTask(index){
 
-    tasks[index].done =
-    !tasks[index].done;
+    boards[currentBoard][index].done =
+    !boards[currentBoard][index].done;
 
-    saveTasks();
+    saveBoards();
 
     renderTasks();
 }
+
+/* delete */
 
 function deleteTask(index){
 
-    tasks.splice(index,1);
+    boards[currentBoard].splice(index,1);
 
-    saveTasks();
+    saveBoards();
 
     renderTasks();
 }
 
+/* stats */
+
 function updateStats(){
+
+    const tasks =
+    boards[currentBoard];
 
     document.getElementById(
         "allCount"
@@ -660,7 +825,7 @@ function updateStats(){
     done;
 }
 
-/* Enter 新增 */
+/* enter */
 
 document
 .getElementById("taskInput")
@@ -674,9 +839,11 @@ function(e){
     }
 });
 
-/* 初始化 */
+/* init */
 
-loadTasks();
+loadBoards();
+
+renderTabs();
 
 renderTasks();
 
