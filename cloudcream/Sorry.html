@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>✦ 自動道歉機 ✦</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
+
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+:root{
+
+    --bg-base:#fff9f6;
+    --bg-gradient:#ffe9e2;
+
+    --card-bg:#ffffff;
+
+    --text-main:#54433a;
+    --text-sub:#8e7a70;
+
+    --gold:#f6c86c;
+    --gold-hover:#efb94d;
+
+    --pink:#f79999;
+
+    --line:#eadfd8;
+
+    --base-font-size:20px;
+
+}
+
+body{
+
+    min-height:100vh;
+
+    background:
+    linear-gradient(
+        180deg,
+        var(--bg-base),
+        var(--bg-gradient)
+    );
+
+    font-family:
+    "Zen Maru Gothic",
+    "Quicksand",
+    sans-serif;
+
+    color:var(--text-main);
+
+    padding:40px 28px 80px;
+
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+
+    position:relative;
+
+    overflow-x:hidden;
+
+    font-size:var(--base-font-size);
+
+}
+
+/* 外框 */
+
+.decor-border{
+
+    position:fixed;
+    inset:12px;
+
+    border:2px dashed rgba(142,122,112,0.15);
+
+    border-radius:24px;
+
+    pointer-events:none;
+
+}
+
+/* 浮水印 */
+
+.watermark{
+
+    position:fixed;
+
+    right:24px;
+    bottom:24px;
+
+    color:rgba(142,122,112,0.4);
+
+    font-size:12px;
+
+    pointer-events:none;
+
+}
+
+.container{
+
+    width:100%;
+    max-width:1200px;
+
+    position:relative;
+    z-index:2;
+
+}
+
+/* top */
+
+.topbar{
+
+    display:flex;
+    justify-content:flex-end;
+    gap:8px;
+
+    margin-bottom:18px;
+
+}
+
+.top-btn{
+
+    border:none;
+
+    background:white;
+
+    border:1px solid rgba(142,122,112,0.18);
+
+    color:var(--text-main);
+
+    padding:8px 16px;
+
+    border-radius:999px;
+
+    cursor:pointer;
+
+    font-family:inherit;
+    font-size:15px;
+    font-weight:700;
+
+    transition:0.2s;
+
+}
+
+.top-btn:hover{
+
+    background:#fff4ec;
+
+}
+
+/* hero */
+
+.hero{
+
+    text-align:center;
+
+    margin-bottom:28px;
+
+}
+
+.badge{
+
+    display:inline-block;
+
+    background:rgba(246,200,108,0.18);
+
+    color:#b57d18;
+
+    padding:7px 16px;
+
+    border-radius:999px;
+
+    font-size:15px;
+    font-weight:700;
+
+    margin-bottom:14px;
+
+}
+
+.title{
+
+    font-size:clamp(36px,5vw,54px);
+
+    line-height:1.4;
+
+}
+
+.subtitle{
+
+    margin-top:10px;
+
+    color:var(--text-sub);
+
+    font-size:16px;
+
+}
+
+/* layout */
+
+.layout{
+
+    display:grid;
+
+    grid-template-columns:1fr;
+
+    gap:24px;
+
+}
+
+@media(min-width:900px){
+
+    .layout{
+
+        grid-template-columns:1.2fr 0.8fr;
+
+    }
+
+}
+
+/* card */
+
+.card{
+
+    background:var(--card-bg);
+
+    border-radius:28px;
+
+    border:1px solid rgba(142,122,112,0.1);
+
+    padding:30px;
+
+    box-shadow:
+    0 10px 30px rgba(84,67,58,0.05);
+
+}
+
+/* input */
+
+.input{
+
+    width:100%;
+
+    padding:16px;
+
+    border-radius:18px;
+
+    border:1.5px solid rgba(142,122,112,0.14);
+
+    background:#fffbf9;
+
+    font-size:16px;
+
+    font-family:inherit;
+
+    resize:vertical;
+
+    min-height:130px;
+
+    margin-bottom:16px;
+
+}
+
+.input:focus{
+
+    outline:none;
+
+    border-color:var(--gold);
+
+    background:white;
+
+}
+
+.select{
+
+    width:100%;
+
+    padding:14px;
+
+    border-radius:16px;
+
+    border:1px solid rgba(142,122,112,0.12);
+
+    background:white;
+
+    font-size:16px;
+
+    font-family:inherit;
+
+    margin-bottom:16px;
+
+}
+
+/* btn */
+
+.main-btn{
+
+    width:100%;
+
+    border:none;
+
+    background:var(--gold);
+
+    color:var(--text-main);
+
+    padding:16px;
+
+    border-radius:18px;
+
+    cursor:pointer;
+
+    font-family:inherit;
+
+    font-size:17px;
+    font-weight:700;
+
+    margin-top:10px;
+
+    transition:0.2s;
+
+    box-shadow:
+    0 6px 16px rgba(246,200,108,0.25);
+
+}
+
+.main-btn:hover{
+
+    background:var(--gold-hover);
+
+    transform:translateY(-2px);
+
+}
+
+/* soft */
+
+.soft-box{
+
+    background:#fffaf7;
+
+    border:1px dashed rgba(142,122,112,0.2);
+
+    border-radius:18px;
+
+    padding:22px;
+
+    margin-top:22px;
+
+}
+
+.soft-box-title{
+
+    font-size:17px;
+    font-weight:700;
+
+    margin-bottom:10px;
+
+}
+
+.soft-box-text{
+
+    color:var(--text-sub);
+
+    line-height:2;
+
+    white-space:pre-line;
+
+}
+
+/* meter */
+
+.meter-wrap{
+
+    margin-top:18px;
+
+}
+
+.meter-bar{
+
+    width:100%;
+
+    height:18px;
+
+    background:#f0e4dd;
+
+    border-radius:999px;
+
+    overflow:hidden;
+
+    margin-top:10px;
+
+}
+
+.meter-fill{
+
+    height:100%;
+
+    width:0%;
+
+    background:
+    linear-gradient(
+        90deg,
+        #f6c86c,
+        #f79999
+    );
+
+    border-radius:999px;
+
+    transition:1s;
+
+}
+
+/* side */
+
+.list{
+
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+
+}
+
+.list-item{
+
+    background:#fffcfb;
+
+    border:1px solid rgba(142,122,112,0.08);
+
+    border-radius:16px;
+
+    padding:16px 18px;
+
+}
+
+.list-item-title{
+
+    font-weight:700;
+
+    margin-bottom:6px;
+
+}
+
+.list-item-text{
+
+    color:var(--text-sub);
+
+    line-height:1.7;
+
+    font-size:15px;
+
+}
+
+/* 證明書 */
+
+#certificate{
+
+    background:white;
+
+    border-radius:24px;
+
+    padding:30px;
+
+    margin-top:24px;
+
+    border:2px dashed rgba(142,122,112,0.18);
+
+}
+
+.cert-title{
+
+    font-size:30px;
+
+    font-weight:700;
+
+    text-align:center;
+
+    margin-bottom:18px;
+
+}
+
+.cert-text{
+
+    color:var(--text-sub);
+
+    line-height:2;
+
+    font-size:17px;
+
+    white-space:pre-line;
+
+}
+
+/* footer */
+
+.footer{
+
+    text-align:center;
+
+    margin-top:36px;
+
+    color:var(--text-sub);
+
+    font-size:14px;
+
+}
+
+.footer b{
+
+    color:var(--pink);
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="decor-border"></div>
+
+<div class="watermark">
+    Apology powered by <b>ChuChu</b> ✦
+</div>
+
+<div class="container">
+
+    <!-- top -->
+
+    <div class="topbar">
+
+        <button
+            class="top-btn"
+            onclick="changeFont(-1)"
+        >
+            A -
+        </button>
+
+        <button
+            class="top-btn"
+            onclick="resetFont()"
+        >
+            A
+        </button>
+
+        <button
+            class="top-btn"
+            onclick="changeFont(1)"
+        >
+            A +
+        </button>
+
+    </div>
+
+    <!-- hero -->
+
+    <div class="hero">
+
+        <div class="badge">
+            卑微生成系統 🙇
+        </div>
+
+        <h1 class="title">
+            自動道歉機
+        </h1>
+
+        <p class="subtitle">
+            幫你生成宇宙級誠懇道歉。
+        </p>
+
+    </div>
+
+    <div class="layout">
+
+        <!-- LEFT -->
+
+        <div class="card">
+
+            <textarea
+                class="input"
+                id="fault"
+                placeholder="輸入你這次犯的蠢事..."
+            ></textarea>
+
+            <select
+                class="select"
+                id="tone"
+            >
+
+                <option value="normal">
+                    🙇 普通卑微語氣
+                </option>
+
+                <option value="boss">
+                    👔 總裁語氣
+                </option>
+
+                <option value="tsundere">
+                    😤 傲嬌語氣
+                </option>
+
+                <option value="cry">
+                    😭 哭腔語氣
+                </option>
+
+            </select>
+
+            <button
+                class="main-btn"
+                onclick="generateApology()"
+            >
+                ✦ 執行誠懇道歉 ✦
+            </button>
+
+            <button
+                class="main-btn"
+                onclick="downloadCertificate()"
+            >
+                📄 生成道歉證明書
+            </button>
+
+            <div
+                class="soft-box"
+                id="resultBox"
+            >
+
+                <div class="soft-box-title">
+                    🙇 道歉尚未開始
+                </div>
+
+                <div class="soft-box-text">
+                    等待新的卑微發言。
+                </div>
+
+            </div>
+
+            <!-- meter -->
+
+            <div class="meter-wrap">
+
+                <div class="soft-box-title">
+                    📈 誠意指數
+                </div>
+
+                <div
+                    class="soft-box-text"
+                    id="meterText"
+                >
+                    尚未檢測誠意。
+                </div>
+
+                <div class="meter-bar">
+
+                    <div
+                        class="meter-fill"
+                        id="meterFill"
+                    ></div>
+
+                </div>
+
+            </div>
+
+            <!-- cert -->
+
+            <div id="certificate">
+
+                <div class="cert-title">
+                    道歉證明書
+                </div>
+
+                <div
+                    class="cert-text"
+                    id="certText"
+                >
+                    尚未產生道歉內容。
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- RIGHT -->
+
+        <div class="card">
+
+            <div class="list">
+
+                <div class="list-item">
+
+                    <div class="list-item-title">
+                        ☁ 系統狀態
+                    </div>
+
+                    <div
+                        class="list-item-text"
+                        id="statusText"
+                    >
+                        等待新的受害者。
+                    </div>
+
+                </div>
+
+                <div class="list-item">
+
+                    <div class="list-item-title">
+                        😭 卑微程度
+                    </div>
+
+                    <div
+                        class="list-item-text"
+                        id="humbleText"
+                    >
+                        尚未開始下跪。
+                    </div>
+
+                </div>
+
+                <div class="list-item">
+
+                    <div class="list-item-title">
+                        📄 道歉觀測
+                    </div>
+
+                    <div
+                        class="list-item-text"
+                        id="observeText"
+                    >
+                        世界上又有人做錯事了。
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="footer">
+
+        <div>
+            ✦ Automatic Apology Machine ✦
+        </div>
+
+        <div>
+            Designed by <b>ChuChu</b> © 2026
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+/* 字體 */
+
+let currentSize = 20;
+
+function changeFont(v){
+
+    currentSize += v;
+
+    if(currentSize < 16){
+        currentSize = 16;
+    }
+
+    if(currentSize > 26){
+        currentSize = 26;
+    }
+
+    document.documentElement.style.setProperty(
+        '--base-font-size',
+        currentSize + 'px'
+    );
+
+}
+
+function resetFont(){
+
+    currentSize = 20;
+
+    document.documentElement.style.setProperty(
+        '--base-font-size',
+        '20px'
+    );
+
+}
+
+/* 資料 */
+
+const intros = [
+
+    "我真的錯了。",
+    "千錯萬錯都是我的錯。",
+    "針對這次事件，我深感愧疚。",
+    "我願意誠實面對自己的愚蠢。"
+
+];
+
+const middles = [
+
+    "我的行為簡直是宇宙級災難。",
+    "我當時的大腦大概停止運作了。",
+    "我對自己的荒謬行為感到羞愧。",
+    "這件事充分證明我需要重新做人。"
+
+];
+
+const outros = [
+
+    "請給我一個贖罪的機會。",
+    "我會反省到世界末日。",
+    "我願意為此跪算盤。",
+    "請收下我誠摯的歉意。"
+
+];
+
+const bossStyle = [
+
+    "身為一位成熟的大人，我願意承擔全部責任。",
+    "本次失誤已造成重大精神損失。",
+    "我將親自進行深刻檢討。"
+
+];
+
+const tsundereStyle = [
+
+    "哼，反正就是我錯了行了吧！",
+    "你不要以為我是特地來道歉的！",
+    "笨蛋！我只是剛好覺得有點愧疚而已！"
+
+];
+
+const cryStyle = [
+
+    "嗚嗚嗚我真的不是故意的……",
+    "拜託不要討厭我……",
+    "我現在已經開始後悔到睡不著了……"
+
+];
+
+const statusList = [
+
+    "系統正在計算卑微程度。",
+    "正在分析道歉可信度。",
+    "檢測到強烈後悔情緒。",
+    "系統懷疑你又搞砸了。"
+
+];
+
+const humbleList = [
+
+    "開始跪算盤。",
+    "準備土下座。",
+    "已進入超卑微模式。",
+    "正在進行深刻反省。"
+
+];
+
+const observeList = [
+
+    "世界上又有人做錯事了。",
+    "今天也有人需要道歉。",
+    "系統感受到濃厚愧疚。",
+    "宇宙正在默默觀察你。"
+
+];
+
+/* random */
+
+function random(arr){
+
+    return arr[
+        Math.floor(
+            Math.random()*arr.length
+        )
+    ];
+
+}
+
+/* generate */
+
+function generateApology(){
+
+    const fault =
+    document.getElementById(
+        "fault"
+    ).value ||
+    "沒做什麼特別的事，單純想道歉";
+
+    const tone =
+    document.getElementById(
+        "tone"
+    ).value;
+
+    let styleText = "";
+
+    if(tone === "boss"){
+
+        styleText =
+        random(bossStyle);
+
+    }
+
+    if(tone === "tsundere"){
+
+        styleText =
+        random(tsundereStyle);
+
+    }
+
+    if(tone === "cry"){
+
+        styleText =
+        random(cryStyle);
+
+    }
+
+    const result =
+
+`${random(intros)}
+
+針對「${fault}」這件事，
+
+${random(middles)}
+
+${styleText}
+
+${random(outros)}`;
+
+    document.getElementById(
+        "resultBox"
+    ).innerHTML = `
+
+        <div class="soft-box-title">
+            🙇 道歉結果
+        </div>
+
+        <div class="soft-box-text">
+            ${result}
+        </div>
+
+    `;
+
+    document.getElementById(
+        "certText"
+    ).innerText =
+    result;
+
+    /* meter */
+
+    const sincerity =
+    Math.floor(
+        Math.random()*99
+    ) + 1;
+
+    document.getElementById(
+        "meterFill"
+    ).style.width =
+    sincerity + "%";
+
+    let meterMessage =
+    `誠意指數：${sincerity}%`;
+
+    if(sincerity === 1){
+
+        meterMessage =
+        "誠意不足，請重新按按鈕。";
+
+    }
+
+    document.getElementById(
+        "meterText"
+    ).innerText =
+    meterMessage;
+
+    /* side */
+
+    document.getElementById(
+        "statusText"
+    ).innerText =
+    random(statusList);
+
+    document.getElementById(
+        "humbleText"
+    ).innerText =
+    random(humbleList);
+
+    document.getElementById(
+        "observeText"
+    ).innerText =
+    random(observeList);
+
+}
+
+/* screenshot */
+
+function downloadCertificate(){
+
+    html2canvas(
+        document.getElementById(
+            "certificate"
+        )
+    ).then(canvas => {
+
+        const link =
+        document.createElement("a");
+
+        link.download =
+        "道歉證明書.png";
+
+        link.href =
+        canvas.toDataURL();
+
+        link.click();
+
+    });
+
+}
+
+</script>
+
+</body>
+</html>
