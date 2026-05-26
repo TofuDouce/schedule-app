@@ -11,24 +11,29 @@
 :root {
   /* 中正診所 Portal 經典藍天白雲風格變數 */
   --bg: linear-gradient(135deg, #f0f4f8 0%, #e6eff9 100%);
-  --card: rgba(255, 255, 255, 0.9); /* 微調提高白卡片不透明度，增加文字可讀性 */
+  --card: rgba(255, 255, 255, 0.9);
   --card-hover: #ffffff;
-  --text: #0f172a; /* 採用中正診所經典深藍黑，大幅拉高對比度 */
-  --sub: #475569;  /* 加深副標題文字，確保字字清晰 */
+  --text: #0f172a;
+  --sub: #475569;
   --accent: #0284c7; /* 質感天空藍 */
   --accent-light: #e0f2fe;
-  --border: rgba(203, 213, 225, 0.9); /* 加深卡片邊框，避免白色背景模糊 */
+  --border: rgba(203, 213, 225, 0.9);
   --shadow: 0 10px 32px rgba(31, 38, 135, 0.06);
   --card-shadow: 0 4px 16px rgba(2, 132, 199, 0.08);
   --backdrop: blur(12px);
+
+  /* 專屬手寫筆記區塊的暖橘色系變數（日間） */
+  --note-accent: #ea580c;
+  --note-accent-light: #ffedd5;
+  --note-card-border: rgba(251, 146, 60, 0.6);
+  --note-card-shadow: 0 4px 16px rgba(234, 88, 12, 0.08);
 }
 
 body.dark {
-  /* 舒適、不刺眼的夜間高對比適配 */
   --bg: #0f172a;
   --card: rgba(30, 41, 59, 0.85);
   --card-hover: #1e293b;
-  --text: #ffffff; /* 夜間模式使用純白高亮粗體 */
+  --text: #ffffff;
   --sub: #cbd5e1;
   --accent: #38bdf8;
   --accent-light: #0c4a6e;
@@ -36,6 +41,12 @@ body.dark {
   --shadow: 0 10px 28px rgba(0, 0, 0, 0.4);
   --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   --backdrop: blur(12px);
+
+  /* 專屬手寫筆記區塊的暖橘色系變數（夜間） */
+  --note-accent: #fb923c;
+  --note-accent-light: #431407;
+  --note-card-border: rgba(234, 88, 12, 0.7);
+  --note-card-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
 * {
@@ -53,9 +64,22 @@ body {
   min-height: 100vh;
 }
 
+/* 頂部控制列佈局 */
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.title-area {
+  flex: 1;
+}
+
 .title {
   font-size: 32px;
-  font-weight: 800; /* 超粗體大標題 */
+  font-weight: 800;
   letter-spacing: 0.5px;
   margin-bottom: 6px;
   color: var(--text);
@@ -67,22 +91,46 @@ body {
 .subtitle {
   color: var(--sub);
   font-size: 16px;
-  margin-bottom: 24px;
-  font-weight: 700; /* 加粗 */
+  margin: 0;
+  font-weight: 700;
+}
+
+/* 頂部快捷鍵按鈕 */
+.quick-jump-btn {
+  background: linear-gradient(135deg, var(--note-accent), #f97316);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 16px;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(234, 88, 12, 0.3);
+  transition: transform 0.2s, box-shadow 0.2s;
+  white-space: nowrap;
+}
+
+.quick-jump-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(234, 88, 12, 0.4);
+}
+
+.quick-jump-btn:active {
+  transform: translateY(0);
 }
 
 /* 搜尋框優化 */
 .search {
   width: 100%;
   padding: 16px 20px;
-  border: 2px solid var(--border); /* 加粗外框 */
+  border: 2px solid var(--border);
   border-radius: 20px;
   background: var(--card);
   backdrop-filter: var(--backdrop);
   -webkit-backdrop-filter: var(--backdrop);
   color: var(--text);
   font-size: 17px;
-  font-weight: 700; /* 輸入關鍵字也是粗體 */
+  font-weight: 700;
   outline: none;
   margin-bottom: 28px;
   box-shadow: var(--shadow);
@@ -99,7 +147,7 @@ body {
   margin-bottom: 32px;
 }
 
-/* 分類大標題：依照要求字體放大、並且使用超粗體 */
+/* 分類大標題：標準藍色風格 */
 .section-title {
   display: inline-flex;
   align-items: center;
@@ -108,8 +156,8 @@ body {
   color: var(--accent);
   padding: 10px 24px;
   border-radius: 999px;
-  font-size: 20px; /* 大字體 */
-  font-weight: 900; /* 超級粗體，與 Portal 邏輯一致 */
+  font-size: 20px;
+  font-weight: 900;
   margin-bottom: 16px;
   box-shadow: 0 2px 10px rgba(2, 132, 199, 0.1);
   letter-spacing: 0.5px;
@@ -140,7 +188,6 @@ body {
   overflow: hidden;
 }
 
-/* 左側辨識天空藍邊條 */
 .card::before {
   content: "";
   position: absolute;
@@ -162,9 +209,8 @@ body {
   width: 10px;
 }
 
-/* 提高代碼與疾病名稱字體粗度與對比 */
 .code {
-  font-weight: 900; /* 超粗體代碼 */
+  font-weight: 900;
   color: var(--accent);
   margin-bottom: 6px;
   font-size: 18px;
@@ -175,9 +221,36 @@ body {
   line-height: 1.4;
   word-break: break-word;
   font-size: 16px;
-  font-weight: 800; /* 符合中正診所 Portal 的顯眼高對比粗體 */
+  font-weight: 800;
   color: var(--text);
 }
+
+/* ===================================================
+   專屬客製化：手寫筆記獨立橘色系 CSS
+   =================================================== */
+.section.note-section .section-title {
+  background: var(--note-accent-light);
+  color: var(--note-accent);
+  box-shadow: 0 2px 10px rgba(234, 88, 12, 0.15);
+}
+
+.section.note-section .card {
+  border: 1px solid var(--note-card-border);
+  box-shadow: var(--note-card-shadow);
+}
+
+.section.note-section .card::before {
+  background: var(--note-accent);
+}
+
+.section.note-section .card:hover {
+  box-shadow: 0 12px 24px rgba(234, 88, 12, 0.25);
+}
+
+.section.note-section .code {
+  color: var(--note-accent);
+}
+
 
 /* 複製提示浮磚 */
 .toast {
@@ -237,7 +310,7 @@ body {
   background: var(--card);
   backdrop-filter: var(--backdrop);
   -webkit-backdrop-filter: var(--backdrop);
-  border: 2px solid var(--accent); /* 用天空藍框起來強化焦點 */
+  border: 2px solid var(--accent);
   border-radius: 24px;
   padding: 20px;
   display: none;
@@ -296,8 +369,13 @@ body {
 
 <body>
 
-<div class="title">門診病代速查</div>
-<div class="subtitle">👍 點擊卡片即可快速複製病代</div>
+<div class="header-row">
+  <div class="title-area">
+    <div class="title">門診病代速查</div>
+    <div class="subtitle">👍 點擊卡片即可快速複製病代</div>
+  </div>
+  <button class="quick-jump-btn" id="quickJumpBtn">底部筆記 ⬇️</button>
+</div>
 
 <input
   type="text"
@@ -334,29 +412,6 @@ body {
 // 區塊細分資料庫，搭配直觀 Emoji 標籤
 const data = {
 
-"📝 門診常用與新舊對照 (手寫筆記)":[
-  ["[341] K297", "胃炎"],
-  ["[151] K529", "胃腸炎"],
-  ["[353] N341", "尿道炎"],
-  ["[CE P*] L0390", "蜂窩性組織炎"],
-  ["[HE] B029", "疱疹"],
-  ["[7062] L723", "皮脂腺囊腫"],
-  ["[C/] L0291", "皮膚膿瘍"],
-  ["L0292", "癤"],
-  ["[ABS] L980", "化膿性肉芽腫 (處置後要加上 CD 才能接第二次換藥)"],
-  ["[MB] R42", "頭暈"],
-  ["[HEA] R519", "頭痛"],
-  ["K590", "便秘"],
-  ["[305] K649", "痔瘡"],
-  ["[TA] K056", "牙周疾病"],
-  ["J111", "流感 (未確認)"],
-  ["J09X2", "A流"],
-  ["[V*] B079", "病毒疣"],
-  ["[UB] K922", "腸胃道出血"],
-  ["Z712", "看報告的諮詢"],
-  ["K061", "牙齦腫大"]
-],
-
 "🦴 M00 關節痛 (一般)":[
   ["M2550","關節痛"],
   ["M5450","下背痛"],
@@ -389,7 +444,7 @@ const data = {
 ],
 
 "🦵 M05 膝部關節痛":[
-  ["M25561","右側膝部關節痛"],
+  ["M25561","right側膝部關節痛"],
   ["M25562","膝部關節痛"],
   ["M25569","未明示側性膝部關節痛"]
 ],
@@ -496,6 +551,30 @@ const data = {
   ["J069","✨急性上呼吸道感染"],
   ["JR070","喉嚨痛"],
   ["J0410","急性氣管炎－未伴有阻塞"]
+],
+
+// 移至最底部的手寫筆記資料（會套用橘色系）
+"📝 門診常用與新舊對照 (手寫筆記)":[
+  ["[341] K297", "胃炎"],
+  ["[151] K529", "胃腸炎"],
+  ["[353] N341", "尿道炎"],
+  ["[CE P*] L0390", "蜂窩性組織炎"],
+  ["[HZ] B029", "疱疹"],
+  ["[7062] L723", "皮脂腺囊腫"],
+  ["[C/] L0291", "皮膚膿瘍"],
+  ["L0292", "癤"],
+  ["[ABS] L980", "化膿性肉芽腫 (處置後要加上 CD 才能接第二次換藥)"],
+  ["[MB] R42", "頭暈"],
+  ["[HEA] R519", "頭痛"],
+  ["K590", "便秘"],
+  ["[305] K649", "痔瘡"],
+  ["[TA] K056", "牙周疾病"],
+  ["J111", "流感 (未確認)"],
+  ["J09X2", "A流"],
+  ["[V*] B079", "病毒疣"],
+  ["[UB] K922", "腸胃道出血"],
+  ["Z712", "看報告的諮詢"],
+  ["K061", "牙齦腫大"]
 ]
 
 };
@@ -518,7 +597,13 @@ function render(keyword=""){
     if (filtered.length === 0) return;
 
     const sec = document.createElement("div");
-    sec.className = "section";
+    // 如果是手寫筆記，賦予獨立的 class 以利套用橘色系樣式
+    if (section.includes("手寫筆記")) {
+      sec.className = "section note-section";
+      sec.id = "targetNoteSection"; // 作為快捷鍵跳轉錨點
+    } else {
+      sec.className = "section";
+    }
 
     sec.innerHTML = `
       <div class="section-title">${section}</div>
@@ -536,7 +621,6 @@ function render(keyword=""){
       `;
 
       card.onclick = () => {
-        // 提取標準的 ICD-10 代碼用於複製（過濾掉中括號和舊代碼）
         let cleanCode = item[0];
         if (cleanCode.includes("]")) {
           cleanCode = cleanCode.split("]").pop().trim();
@@ -551,7 +635,6 @@ function render(keyword=""){
     container.appendChild(sec);
   });
 
-  // 渲染完成後立即套用目前的字體設定
   applyFontSize(fontSlider.value);
 }
 
@@ -592,23 +675,35 @@ document.getElementById("searchInput").addEventListener("input", (e) => {
   render(e.target.value);
 });
 
-// 核心修復：齒輪按鈕與控制面板交互邏輯
+// 快捷鍵平滑滾動功能
+document.getElementById("quickJumpBtn").addEventListener("click", () => {
+  const noteEl = document.getElementById("targetNoteSection");
+  if (noteEl) {
+    noteEl.scrollIntoView({ behavior: "smooth", block: "start" });
+  } else {
+    // 若因搜尋導致被隱藏，則清空搜尋並再次跳轉
+    document.getElementById("searchInput").value = "";
+    render();
+    setTimeout(() => {
+      document.getElementById("targetNoteSection").scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+  }
+});
+
+// 齒輪按鈕與控制面板交互邏輯
 const settingsBtn = document.getElementById("settingsBtn");
 const settingsPanel = document.getElementById("settingsPanel");
 const modeBtn = document.getElementById("modeBtn");
 
-// 點擊齒輪切換面板
 settingsBtn.addEventListener("click", (e) => {
-  e.stopPropagation(); // 防止事件向上冒泡
+  e.stopPropagation();
   settingsPanel.classList.toggle("show");
 });
 
-// 點擊控制面板內部時，不關閉面板
 settingsPanel.addEventListener("click", (e) => {
   e.stopPropagation();
 });
 
-// 點擊網頁任何其他地方，自動縮回面板（防誤觸）
 document.addEventListener("click", () => {
   settingsPanel.classList.remove("show");
 });
