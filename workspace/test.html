@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<title>中正診所 - 慢處箋三期動態排程與天數計算器</title>
+
+<style>
+:root {
+  --bg: linear-gradient(135deg, #f0f4f8 0%, #e6eff9 100%);
+  --card: rgba(255, 255, 255, 0.9);
+  --card-hover: #ffffff;
+  --text: #0f172a; 
+  --sub: #475569;  
+  --accent: #0284c7; 
+  --accent-light: #e0f2fe;
+  --border: rgba(203, 213, 225, 0.9); 
+  --shadow: 0 10px 32px rgba(31, 38, 135, 0.06);
+  --card-shadow: 0 4px 16px rgba(2, 132, 199, 0.08);
+  --backdrop: blur(12px);
+
+  --success: #10b981;
+  --success-light: #d1fae5;
+  --danger: #ef4444;
+  --danger-light: #fee2e2;
+  --orange: #f97316;
+  --orange-light: #ffedd5;
+  
+  --note-accent: #0d9488;
+  --note-accent-light: #ccfbf1;
+  
+  /* 浮水印淺色模式顏色 */
+  --watermark-color: rgba(15, 23, 42, 0.06);
+}
+
+body.dark {
+  --bg: #0f172a;
+  --card: rgba(30, 41, 59, 0.85);
+  --card-hover: #1e293b;
+  --text: #ffffff; 
+  --sub: #cbd5e1;
+  --accent: #38bdf8;
+  --accent-light: #0c4a6e;
+  --border: rgba(71, 85, 105, 0.7);
+  --shadow: 0 10px 28px rgba(0, 0, 0, 0.4);
+  --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  --backdrop: blur(12px);
+
+  --success: #34d399;
+  --success-light: #064e3b;
+  --danger: #f87171;
+  --danger-light: #7f1d1d;
+  --orange: #fb923c;
+  --orange-light: #431407;
+
+  --note-accent: #2dd4bf;
+  --note-accent-light: #115e59;
+  
+  /* 浮水印深色模式顏色 */
+  --watermark-color: rgba(255, 255, 255, 0.04);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  background-attachment: fixed;
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  padding: 24px 20px 100px;
+  transition: background 0.3s, color 0.3s;
+  min-height: 100vh;
+}
+
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.title-area { flex: 1; }
+
+.title {
+  font-size: 32px;
+  font-weight: 800; 
+  margin-bottom: 6px;
+  background: linear-gradient(45deg, var(--text), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+  color: var(--sub);
+  font-size: 16px;
+  margin: 0;
+  font-weight: 700; 
+}
+
+.quick-jump-btn {
+  background: linear-gradient(135deg, var(--danger), #be123c);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 16px;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+  transition: transform 0.2s, box-shadow 0.2s;
+  white-space: nowrap;
+}
+
+.quick-jump-btn:hover {
+  transform: translateY(-2px);
+}
+
+.calculator-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+@media (min-width: 768px) {
+  .calculator-layout { grid-template-columns: 1.2fr 0.8fr; }
+}
+
+.section { margin-bottom: 24px; }
+
+.section-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent-light);
+  color: var(--accent);
+  padding: 10px 24px;
+  border-radius: 999px;
+  font-size: 18px; 
+  font-weight: 900; 
+  margin-bottom: 16px;
+}
+
+.control-card {
+  background: var(--card);
+  backdrop-filter: var(--backdrop);
+  -webkit-backdrop-filter: var(--backdrop);
+  border: 2px solid var(--border);
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+
+.input-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+@media (min-width: 480px) {
+  .input-row.two-cols { grid-template-columns: 1fr 1fr; }
+}
+
+.input-group { display: flex; flex-direction: column; }
+.input-label { font-size: 15px; font-weight: 800; margin-bottom: 8px; }
+.input-label .optional { color: var(--note-accent); font-size: 12px; font-weight: bold; }
+
+.input-field {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.5);
+  color: var(--text);
+  font-size: 17px;
+  font-weight: 700;
+  outline: none;
+}
+body.dark .input-field { background: rgba(15, 23, 42, 0.5); }
+.input-field:focus { border-color: var(--accent); }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.card {
+  background: var(--card);
+  backdrop-filter: var(--backdrop);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 20px 18px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-shadow: var(--card-shadow);
+  position: relative;
+  overflow: hidden;
+}
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(2, 132, 199, 0.15);
+}
+.card::before {
+  content: ""; position: absolute; top: 0; left: 0; width: 6px; height: 100%; background: var(--accent);
+}
+.card.c-orange::before { background: var(--orange); }
+.card.c-danger::before { background: var(--danger); }
+.card.c-success::before { background: var(--success); }
+
+.code { font-weight: 900; color: var(--accent); margin-bottom: 6px; font-size: 22px; }
+.card.c-orange .code { color: var(--orange); }
+.card.c-danger .code { color: var(--danger); }
+.card.c-success .code { color: var(--success); }
+
+.name { line-height: 1.5; font-size: 15px; font-weight: 800; color: var(--text); }
+.small-note { font-size: 85%; font-weight: 600; color: #64748b; display: block; margin-top: 4px; }
+body.dark .small-note { color: #94a3b8; }
+
+.toast {
+  position: fixed; bottom: 96px; left: 50%; transform: translateX(-50%);
+  background: var(--text); color: var(--card); padding: 14px 28px;
+  border-radius: 999px; font-size: 16px; font-weight: 800; opacity: 0;
+  pointer-events: none; transition: opacity 0.25s, bottom 0.25s; z-index: 1001;
+}
+.toast.show { opacity: 1; bottom: 106px; }
+
+/* 右下角齒輪 */
+.settings-btn {
+  position: fixed; right: 24px; bottom: 24px; width: 60px; height: 60px;
+  border: none; border-radius: 50%; background: var(--accent); color: white;
+  font-size: 26px; cursor: pointer; box-shadow: 0 8px 24px rgba(2, 132, 199, 0.3); z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+}
+.settings-panel {
+  position: fixed; right: 24px; bottom: 96px; width: 260px;
+  background: var(--card); border: 2px solid var(--accent); border-radius: 24px;
+  padding: 20px; display: none; box-shadow: var(--shadow); z-index: 999;
+}
+.settings-panel.show { display: block; }
+.setting-title { font-size: 16px; margin-bottom: 12px; font-weight: 800; }
+.range { width: 100%; margin-bottom: 20px; accent-color: var(--accent); }
+.mode-btn { width: 100%; border: none; border-radius: 16px; padding: 12px; font-size: 15px; background: var(--accent); color: white; cursor: pointer; font-weight: 800; }
+
+/* 🌟 中正診所 右下角半透明浮水印樣式 */
+.clinic-watermark {
+  position: fixed;
+  right: 24px;
+  bottom: 94px; /* 置於齒輪按鈕正上方、或是與面板錯開 */
+  font-size: 32px;
+  font-weight: 900;
+  color: var(--watermark-color);
+  letter-spacing: 2px;
+  user-select: none;
+  pointer-events: none; /* 滑鼠可直接穿透點擊下方元素，不造成任何操作阻礙 */
+  z-index: 998;
+  font-family: "SF Pro Text", "Helvetica Neue", "Helvetica", "Arial", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  transition: color 0.3s;
+}
+
+.footer-space { height: 80px; }
+</style>
+</head>
+
+<body>
+
+<div class="header-row">
+  <div class="title-area">
+    <div class="title">中正診所 - 慢處箋三期動態排程與天數計算器</div>
+    <div class="subtitle">📋 自動推算一二三期領藥區間與截止日，支持不准時拿藥之動態調整</div>
+  </div>
+  <button class="quick-jump-btn" id="clearDataBtn">清除資料 🧹</button>
+</div>
+
+<div class="calculator-layout">
+  
+  <div class="control-card">
+    <div class="section-title" style="font-size:15px; padding:4px 16px;">💊 輸入開立與領藥紀錄</div>
+    <div class="input-row two-cols">
+      <div class="input-group">
+        <label class="input-label">第 1 次開立日期</label>
+        <input type="date" class="input-field" id="rxStartDate" />
+      </div>
+      <div class="input-group">
+        <label class="input-label">每期開立天數 (通常為28天)</label>
+        <input type="number" class="input-field" id="perPeriodDays" value="28" min="1" />
+      </div>
+    </div>
+    <div class="input-row">
+      <div class="input-group">
+        <label class="input-label">第 2 次實際領藥日 <span class="optional">(有延遲/提前拿藥再填)</span></label>
+        <input type="date" class="input-field" id="rxSecondActualDate" style="border-color: var(--note-accent);" />
+      </div>
+    </div>
+  </div>
+
+  <div class="control-card">
+    <div class="section-title" style="font-size:15px; padding:4px 16px; background:var(--note-accent-light); color:var(--note-accent);">🧮 兩日期天數計算</div>
+    <div class="input-row two-cols">
+      <div class="input-group">
+        <label class="input-label">起始日期</label>
+        <inputType type="date" class="input-field" id="diffStart" />
+      </div>
+      <div class="input-group">
+        <label class="input-label">結束日期</label>
+        <input type="date" class="input-field" id="diffEnd" />
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div id="container"></div>
+
+<div class="toast" id="toast">已複製</div>
+
+<div class="clinic-watermark">中正診所</div>
+
+<button class="settings-btn" id="settingsBtn">⚙️</button>
+
+<div class="settings-panel" id="settingsPanel">
+  <div class="setting-title">🔧 調整診間字體大小</div>
+  <input type="range" min="14" max="32" value="20" class="range" id="fontSlider" />
+  <button class="mode-btn" id="modeBtn">切換深色模式</button>
+</div>
+
+<div class="footer-space"></div>
+
+<script>
+const fontSlider = document.getElementById("fontSlider");
+const container = document.getElementById("container");
+
+// 預設抓今天
+const today = new Date();
+const todayStr = today.toISOString().split('T')[0];
+document.getElementById("rxStartDate").value = todayStr;
+document.getElementById("diffStart").value = todayStr;
+document.getElementById("diffEnd").value = todayStr;
+
+function formatDateObj(dateObj) {
+  const y = dateObj.getFullYear();
+  const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const d = String(dateObj.getDate()).padStart(2, '0');
+  const rYear = y - 1911;
+  const dayOfWeek = ["日", "一", "二", "三", "四", "五", "六"][dateObj.getDay()];
+  
+  return {
+    iso: `${y}-${m}-${d}`,
+    roc: `${rYear}.${m}.${d}`,
+    detail: `民國 ${rYear} 年 ${m} 月 ${d} 日 (週${dayOfWeek})`
+  };
+}
+
+// 核心計算
+function calculateSchedule() {
+  container.innerHTML = "";
+  
+  const rxStartDateVal = document.getElementById("rxStartDate").value;
+  const rxSecondActualVal = document.getElementById("rxSecondActualDate").value;
+  const perDays = parseInt(document.getElementById("perPeriodDays").value) || 28;
+
+  if (rxStartDateVal) {
+    const d1 = new Date(rxStartDateVal);
+    d1.setHours(0,0,0,0);
+    const f1 = formatDateObj(d1);
+
+    // 1. 計算標準狀態下的第 2 次
+    const d2ExpireStandard = new Date(d1);
+    d2ExpireStandard.setDate(d1.getDate() + perDays);
+    const d2StartStandard = new Date(d2ExpireStandard);
+    d2StartStandard.setDate(d2ExpireStandard.getDate() - 10);
+    
+    const f2StartStandard = formatDateObj(d2StartStandard);
+    const f2ExpireStandard = formatDateObj(d2ExpireStandard);
+
+    // 2. 決定第 3 次的計算基準點
+    let d3Start, d3Expire, isDynamic = false;
+
+    if (rxSecondActualVal) {
+      const d2Actual = new Date(rxSecondActualVal);
+      d2Actual.setHours(0,0,0,0);
+      
+      d3Expire = new Date(d2Actual);
+      d3Expire.setDate(d2Actual.getDate() + perDays);
+      
+      d3Start = new Date(d3Expire);
+      d3Start.setDate(d3Expire.getDate() - 10);
+      isDynamic = true;
+    } else {
+      d3Expire = new Date(d1);
+      d3Expire.setDate(d1.getDate() + (perDays * 2));
+      
+      d3Start = new Date(d3Expire);
+      d3Start.setDate(d3Expire.getDate() - 10);
+    }
+
+    const f3Start = formatDateObj(d3Start);
+    const f3Expire = formatDateObj(d3Expire);
+
+    // 3. 最終限制截止日
+    const dFinalDeadline = new Date(d1);
+    dFinalDeadline.setDate(d1.getDate() + (perDays * 3) - 1);
+    const fFinal = formatDateObj(dFinalDeadline);
+
+    // 封裝卡片資料
+    const rxCards = [
+      { code: f1.roc, name: `第 1 次開立 / 領藥日<span class='small-note'>${f1.detail}</span>`, type: 'c-success' },
+      { code: `${f2StartStandard.roc} ～ ${f2ExpireStandard.roc}`, name: `第 2 次可拿藥期間 <span class='small-note'>預設吃完前10天開放：${f2StartStandard.detail} 起</span>`, type: 'c-accent' }
+    ];
+
+    if (isDynamic) {
+      rxCards.push({
+        code: `${f3Start.roc} ～ ${f3Expire.roc}`,
+        name: `✨ 第 3 次可拿藥期間 (已根據第2次實際領藥日重新計算) <span class='small-note'>第2次實際吃完前10天開放：${f3Start.detail} 起</span>`,
+        type: 'c-orange'
+      });
+    } else {
+      rxCards.push({
+        code: `${f3Start.roc} ～ ${f3Expire.roc}`,
+        name: `第 3 次可拿藥期間 <span class='small-note'>預設吃完前10天開放：${f3Start.detail} 起</span>`,
+        type: 'c-accent'
+      });
+    }
+
+    rxCards.push({ 
+      code: fFinal.roc, 
+      name: `🛑 整張處方箋領藥截止日<span class='small-note'>健保法規硬性限制，第3次最晚必須於此日期前領取 (${fFinal.detail})</span>`, 
+      type: 'c-danger' 
+    });
+
+    renderSection("📊 慢處箋三期健保排程表 (點擊可複製日期)", rxCards);
+  }
+
+  // 兩日期天數與相差天數
+  const dStartVal = document.getElementById("diffStart").value;
+  const dEndVal = document.getElementById("diffEnd").value;
+
+  if (dStartVal && dEndVal) {
+    const t1 = new Date(dStartVal);
+    const t2 = new Date(dEndVal);
+    const timeDiff = t2.getTime() - t1.getTime();
+    const totalDays = Math.round(timeDiff / (1000 * 3600 * 24));
+    
+    const weeks = Math.floor(Math.abs(totalDays) / 7);
+    const remainingDays = Math.abs(totalDays) % 7;
+
+    const diffCards = [
+      { code: `${totalDays} 天`, name: `總相差天數 <span class='small-note'>包含首尾間隔，等同於 ${weeks} 週 ${remainingDays} 天</span>`, type: 'c-orange' },
+      { code: `${totalDays > 0 ? totalDays - 1 : 0} 天`, name: `實際療程天數 <span class='small-note'>扣除尾日計算</span>`, type: 'c-orange' }
+    ];
+
+    renderSection("🧮 兩日期天數計算結果", diffCards);
+  }
+
+  applyFontSize(fontSlider.value);
+}
+
+function renderSection(title, cardsData) {
+  const sec = document.createElement("div");
+  sec.className = "section";
+  sec.innerHTML = `
+    <div class="section-title">${title}</div>
+    <div class="grid"></div>
+  `;
+  const grid = sec.querySelector(".grid");
+
+  cardsData.forEach(item => {
+    const card = document.createElement("div");
+    card.className = `card ${item.type || ''}`;
+    card.innerHTML = `
+      <div class="code">${item.code}</div>
+      <div class="name">${item.name}</div>
+    `;
+    card.onclick = () => {
+      navigator.clipboard.writeText(item.code);
+      showToast(`已複製: ${item.code}`);
+    };
+    grid.appendChild(card);
+  });
+  container.appendChild(sec);
+}
+
+function showToast(msg){
+  const toast = document.getElementById("toast");
+  toast.innerText = msg;
+  toast.classList.add("show");
+  setTimeout(() => { toast.classList.remove("show"); }, 1000);
+}
+
+function applyFontSize(size){
+  document.querySelectorAll(".code").forEach(el => { el.style.fontSize = size + "px"; });
+  document.querySelectorAll(".name").forEach(el => {
+    if (!el.classList.contains("small-note")) {
+      el.style.fontSize = Math.max(14, size - 4) + "px";
+    }
+  });
+}
+
+// 監聽事件
+document.getElementById("rxStartDate").addEventListener("input", calculateSchedule);
+document.getElementById("perPeriodDays").addEventListener("input", calculateSchedule);
+document.getElementById("rxSecondActualDate").addEventListener("input", calculateSchedule);
+document.getElementById("diffStart").addEventListener("input", calculateSchedule);
+document.getElementById("diffEnd").addEventListener("input", calculateSchedule);
+
+// 清除資料
+document.getElementById("clearDataBtn").addEventListener("click", () => {
+  document.getElementById("rxStartDate").value = "";
+  document.getElementById("rxSecondActualDate").value = "";
+  document.getElementById("diffStart").value = "";
+  document.getElementById("diffEnd").value = "";
+  container.innerHTML = "";
+  showToast("欄位已清空 🧹");
+});
+
+fontSlider.addEventListener("input", (e) => {
+  applyFontSize(e.target.value);
+});
+
+const settingsBtn = document.getElementById("settingsBtn");
+const settingsPanel = document.getElementById("settingsPanel");
+const modeBtn = document.getElementById("modeBtn");
+
+settingsBtn.addEventListener("click", (e) => { e.stopPropagation(); settingsPanel.classList.toggle("show"); });
+document.addEventListener("click", () => { settingsPanel.classList.remove("show"); });
+settingsPanel.addEventListener("click", (e) => { e.stopPropagation(); });
+
+modeBtn.addEventListener("click", () => {
+  document.body.classList.toggle("dark");
+  modeBtn.innerText = document.body.classList.contains("dark") ? "☀️ 切換日間模式" : "🌙 切換深色模式";
+});
+
+calculateSchedule();
+</script>
+
+</body>
+</html>
