@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<title>診間日期天數計算器</title>
+
+<style>
+
+:root {
+  /* 中正診所 Portal 經典藍天白雲風格變數 */
+  --bg: linear-gradient(135deg, #f0f4f8 0%, #e6eff9 100%);
+  --card: rgba(255, 255, 255, 0.9);
+  --card-hover: #ffffff;
+  --text: #0f172a; 
+  --sub: #475569;  
+  --accent: #0284c7; 
+  --accent-light: #e0f2fe;
+  --border: rgba(203, 213, 225, 0.9); 
+  --shadow: 0 10px 32px rgba(31, 38, 135, 0.06);
+  --card-shadow: 0 4px 16px rgba(2, 132, 199, 0.08);
+  --backdrop: blur(12px);
+
+  /* 專屬快捷與結果區塊的質感翡翠綠變數（用於區隔） */
+  --note-accent: #0d9488;
+  --note-accent-light: #ccfbf1;
+}
+
+body.dark {
+  --bg: #0f172a;
+  --card: rgba(30, 41, 59, 0.85);
+  --card-hover: #1e293b;
+  --text: #ffffff; 
+  --sub: #cbd5e1;
+  --accent: #38bdf8;
+  --accent-light: #0c4a6e;
+  --border: rgba(71, 85, 105, 0.7);
+  --shadow: 0 10px 28px rgba(0, 0, 0, 0.4);
+  --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  --backdrop: blur(12px);
+
+  /* 專屬區塊的質感翡翠綠變數（夜間） */
+  --note-accent: #2dd4bf;
+  --note-accent-light: #115e59;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  background-attachment: fixed;
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  padding: 24px 20px 100px;
+  transition: background 0.3s, color 0.3s;
+  min-height: 100vh;
+}
+
+/* 頂部控制列佈局 */
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.title-area {
+  flex: 1;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 800; 
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+  color: var(--text);
+  background: linear-gradient(45deg, var(--text), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+  color: var(--sub);
+  font-size: 16px;
+  margin: 0;
+  font-weight: 700; 
+}
+
+/* 頂部回到今天快捷鍵 */
+.quick-jump-btn {
+  background: linear-gradient(135deg, var(--note-accent), #0f766e);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 16px;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(13, 148, 136, 0.3);
+  transition: transform 0.2s, box-shadow 0.2s;
+  white-space: nowrap;
+}
+
+.quick-jump-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(13, 148, 136, 0.4);
+}
+
+/* 主要佈局：改為左右分欄或流暢的上下卡片 */
+.calculator-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+@media (min-width: 768px) {
+  .calculator-layout {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.section {
+  margin-bottom: 20px;
+}
+
+/* 分類大標題 */
+.section-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent-light);
+  color: var(--accent);
+  padding: 10px 24px;
+  border-radius: 999px;
+  font-size: 20px; 
+  font-weight: 900; 
+  margin-bottom: 16px;
+  box-shadow: 0 2px 10px rgba(2, 132, 199, 0.1);
+  letter-spacing: 0.5px;
+}
+
+/* 輸入控制台卡片 */
+.control-card {
+  background: var(--card);
+  backdrop-filter: var(--backdrop);
+  -webkit-backdrop-filter: var(--backdrop);
+  border: 2px solid var(--border);
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+
+.input-group {
+  margin-bottom: 18px;
+}
+
+.input-group:last-child {
+  margin-bottom: 0;
+}
+
+.input-label {
+  display: block;
+  font-size: 16px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+.input-field {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.5);
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 700;
+  outline: none;
+  transition: all 0.2s ease;
+}
+body.dark .input-field {
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.input-field:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-light);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 14px;
+}
+
+/* 結果卡片設計 */
+.card {
+  background: var(--card);
+  backdrop-filter: var(--backdrop);
+  -webkit-backdrop-filter: var(--backdrop);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 18px 16px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-shadow: var(--card-shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  background: var(--card-hover);
+  box-shadow: 0 12px 24px rgba(2, 132, 199, 0.18);
+}
+
+.card:hover::before {
+  width: 10px;
+}
+
+.code {
+  font-weight: 900; 
+  color: var(--accent);
+  margin-bottom: 6px;
+  font-size: 20px;
+  letter-spacing: 0.5px;
+}
+
+.name {
+  line-height: 1.4;
+  word-break: break-word;
+  font-size: 16px;
+  font-weight: 800; 
+  color: var(--text);
+}
+
+/* 括號細則小字化樣式 */
+.small-note {
+  font-size: 85%;
+  font-weight: 600;
+  color: #64748b;
+  display: block;
+  margin-top: 4px;
+}
+body.dark .small-note {
+  color: #94a3b8;
+}
+
+/* ===================================================
+   專屬色系區隔：快捷鍵區塊翡翠綠 CSS
+   =================================================== */
+.section.note-section .section-title {
+  background: var(--note-accent-light);
+  color: var(--note-accent);
+}
+
+.section.note-section .card::before {
+  background: var(--note-accent);
+}
+
+.section.note-section .card:hover {
+  box-shadow: 0 12px 24px rgba(13, 148, 136, 0.18);
+}
+
+.section.note-section .code {
+  color: var(--note-accent);
+}
+
+/* 複製提示浮磚 */
+.toast {
+  position: fixed;
+  bottom: 96px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--text);
+  color: var(--card);
+  padding: 14px 28px;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 800;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s, bottom 0.25s;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
+  z-index: 1001;
+}
+
+.toast.show {
+  opacity: 1;
+  bottom: 106px;
+}
+
+/* 右下角齒輪按鈕 */
+.settings-btn {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 60px;
+  height: 60px;
+  border: none;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), #0284c7);
+  color: white;
+  font-size: 26px;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(2, 132, 199, 0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.settings-btn:hover {
+  transform: rotate(45deg) scale(1.05);
+}
+
+/* 控制面板 */
+.settings-panel {
+  position: fixed;
+  right: 24px;
+  bottom: 96px;
+  width: 260px;
+  background: var(--card);
+  backdrop-filter: var(--backdrop);
+  -webkit-backdrop-filter: var(--backdrop);
+  border: 2px solid var(--accent); 
+  border-radius: 24px;
+  padding: 20px;
+  display: none;
+  box-shadow: var(--shadow);
+  z-index: 999;
+}
+
+.settings-panel.show {
+  display: block;
+  animation: panelFade 0.2s ease-out;
+}
+
+@keyframes panelFade {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.setting-title {
+  font-size: 16px;
+  margin-bottom: 12px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.range {
+  width: 100%;
+  margin-bottom: 20px;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+
+.mode-btn {
+  width: 100%;
+  border: none;
+  border-radius: 16px;
+  padding: 12px;
+  font-size: 15px;
+  background: var(--accent);
+  color: white;
+  cursor: pointer;
+  font-weight: 800;
+  transition: opacity 0.2s;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.2);
+}
+
+.mode-btn:hover {
+  opacity: 0.9;
+}
+
+.footer-space {
+  height: 80px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="header-row">
+  <div class="title-area">
+    <div class="title">診間日期天數計算器</div>
+    <div class="subtitle">👍 點擊計算結果卡片，即可快速複製日期/天數</div>
+  </div>
+  <button class="quick-jump-btn" id="resetTodayBtn">重設回今天 📅</button>
+</div>
+
+<div class="calculator-layout">
+  
+  <div class="control-card">
+    <div class="section-title" style="font-size:16px; padding:6px 16px;">🧮 兩日期相差天數</div>
+    <div class="input-group">
+      <label class="input-label">起始日期 (1)</label>
+      <input type="date" class="input-field" id="diffStart" />
+    </div>
+    <div class="input-group">
+      <label class="input-label">結束日期 (2)</label>
+      <input type="date" class="input-field" id="diffEnd" />
+    </div>
+  </div>
+
+  <div class="control-card">
+    <div class="section-title" style="font-size:16px; padding:6px 16px; background:var(--note-accent-light); color:var(--note-accent);">🔮 指定天數推算日期</div>
+    <div class="input-group">
+      <label class="input-label">基準日期</label>
+      <input type="date" class="input-field" id="calcBaseDate" />
+    </div>
+    <div class="input-group">
+      <label class="input-label">往後(正)/往前(負)天數</label>
+      <input type="number" class="input-field" id="calcDays" value="28" placeholder="例如：28 或 -7" />
+    </div>
+  </div>
+
+</div>
+
+<div id="container"></div>
+
+<div class="toast" id="toast">已複製</div>
+
+<button class="settings-btn" id="settingsBtn">⚙️</button>
+
+<div class="settings-panel" id="settingsPanel">
+  <div class="setting-title">🔧 調整診間字體大小</div>
+  <input
+    type="range"
+    min="14"
+    max="32"
+    value="18"
+    class="range"
+    id="fontSlider"
+  />
+  <button class="mode-btn" id="modeBtn">切換深色模式</button>
+</div>
+
+<div class="footer-space"></div>
+
+<script>
+
+// 初始化日期：預設為今天
+const todayStr = new Date().toISOString().split('T')[0];
+document.getElementById("diffStart").value = todayStr;
+document.getElementById("diffEnd").value = todayStr;
+document.getElementById("calcBaseDate").value = todayStr;
+
+const container = document.getElementById("container");
+const fontSlider = document.getElementById("fontSlider");
+
+// 日期格式化小工具（包含西元與民國）
+function formatDetails(dateObj) {
+  const y = dateObj.getFullYear();
+  const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const d = String(dateObj.getDate()).padStart(2, '0');
+  const rYear = y - 1911; // 民國年
+  const dayOfWeek = ["日", "一", "二", "三", "四", "五", "六"][dateObj.getDay()];
+  
+  return {
+    iso: `${y}-${m}-${d}`,
+    tw: `民國 ${rYear} 年 ${m} 月 ${d} 日`,
+    shortTw: `${rYear}/${m}/${d}`,
+    weekday: `星期${dayOfWeek}`
+  };
+}
+
+// 核心計算與動態渲染
+function calculateAndRender() {
+  container.innerHTML = "";
+
+  // 1. 讀取「相差天數」輸入值
+  const dStartVal = document.getElementById("diffStart").value;
+  const dEndVal = document.getElementById("diffEnd").value;
+  let diffCards = [];
+
+  if (dStartVal && dEndVal) {
+    const d1 = new Date(dStartVal);
+    const d2 = new Date(dEndVal);
+    const timeDiff = d2.getTime() - d1.getTime();
+    const totalDays = Math.round(timeDiff / (1000 * 3600 * 24));
+    
+    // 計算幾週零幾天
+    const weeks = Math.floor(Math.abs(totalDays) / 7);
+    const remainingDays = Math.abs(totalDays) % 7;
+    let weekStr = `${weeks} 週 ${remainingDays} 天`;
+
+    diffCards.push([`${totalDays} 天`, `總相差天數 <span class='small-note'>(${weekStr})</span>`]);
+    diffCards.push([`${totalDays > 0 ? totalDays - 1 : 0} 天`, `實際住院/療程天數 <span class='small-note'>(扣除尾日：當天算至隔天為 0 天)</span>`]);
+  }
+
+  // 2. 讀取「天數推算」輸入值
+  const baseDateVal = document.getElementById("calcBaseDate").value;
+  const daysVal = parseInt(document.getElementById("calcDays").value) || 0;
+  let calcCards = [];
+
+  if (baseDateVal) {
+    const baseDate = new Date(baseDateVal);
+    
+    // 計算指定加減天數的日期
+    const targetDate = new Date(baseDate);
+    targetDate.setDate(baseDate.getDate() + daysVal);
+    const f = formatDetails(targetDate);
+
+    calcCards.push([f.iso, `${f.tw} <span class='small-note'>(${f.weekday} / 民國：${f.shortTw})</span>`]);
+  }
+
+  // 3. 常見快捷推算面板資料（點擊直接改右側輸入框）
+  const quickRanges = [
+    { label: "1 週 (7天)", value: 7 },
+    { label: "2 週 (14天)", value: 14 },
+    { label: "4 週 (28天)", value: 28 },
+    { label: "30 天", value: 30 },
+    { label: "90 天 (約3個月)", value: 90 },
+    { label: "180 天 (約半年)", value: 180 }
+  ];
+
+  // --- 開始渲染前端卡片組 ---
+
+  // 渲染區塊一：相差天數結果
+  if (diffCards.length > 0) {
+    createSection("📅 兩日期相差計算結果", diffCards, false);
+  }
+
+  // 渲染區塊二：天數推算結果
+  if (calcCards.length > 0) {
+    createSection("🔮 指定天數推算結果", calcCards, false);
+  }
+
+  // 渲染區塊三：常用診間快捷推算鈕（使用翡翠綠色系區隔）
+  const quickCardsData = quickRanges.map(item => {
+    if (baseDateVal) {
+      const bDate = new Date(baseDateVal);
+      bDate.setDate(bDate.getDate() + item.value);
+      const f = formatDetails(bDate);
+      return [f.iso, `${item.label} 後是：<span class='small-note'>${f.shortTw} (${f.weekday})</span>`, item.value];
+    }
+    return [ `${item.value} 天後`, item.label, item.value];
+  });
+  
+  createSection("📝 常用門診回診/處方排程快捷鍵 (以基準日推算)", quickCardsData, true);
+
+  // 套用目前的字體大小設定
+  applyFontSize(fontSlider.value);
+}
+
+// 建立分類區塊的函式
+function createSection(title, items, isQuickSection) {
+  const sec = document.createElement("div");
+  sec.className = isQuickSection ? "section note-section" : "section";
+
+  sec.innerHTML = `
+    <div class="section-title">${title}</div>
+    <div class="grid"></div>
+  `;
+
+  const grid = sec.querySelector(".grid");
+
+  items.forEach(item => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <div class="code">${item[0]}</div>
+      <div class="name">${item[1]}</div>
+    `;
+
+    card.onclick = () => {
+      if (isQuickSection && item[2] !== undefined) {
+        // 如果點擊的是快捷鍵，則直接將該天數帶入右側輸入框並更新
+        document.getElementById("calcDays").value = item[2];
+        calculateAndRender();
+        showToast(`已切換為 ${item[2]} 天並完成推算`);
+      } else {
+        // 否則為複製功能
+        let cleanText = item[0];
+        navigator.clipboard.writeText(cleanText);
+        showToast(`已複製: ${cleanText}`);
+      }
+    };
+
+    grid.appendChild(card);
+  });
+
+  container.appendChild(sec);
+}
+
+function showToast(msg){
+  const toast = document.getElementById("toast");
+  toast.innerText = msg;
+  toast.classList.add("show");
+  setTimeout(() => {
+    toast.classList.remove("show");
+  }, 1000);
+}
+
+function applyFontSize(size){
+  document.querySelectorAll(".code").forEach(el => {
+    el.style.fontSize = size + "px";
+  });
+  document.querySelectorAll(".name").forEach(el => {
+    if (!el.classList.contains("small-note")) {
+      el.style.fontSize = Math.max(14, size - 2) + "px";
+    }
+  });
+}
+
+// 監聽所有輸入欄位的更動
+document.getElementById("diffStart").addEventListener("input", calculateAndRender);
+document.getElementById("diffEnd").addEventListener("input", calculateAndRender);
+document.getElementById("calcBaseDate").addEventListener("input", calculateAndRender);
+document.getElementById("calcDays").addEventListener("input", calculateAndRender);
+
+// 重設回今天按鈕
+document.getElementById("resetTodayBtn").addEventListener("click", () => {
+  document.getElementById("diffStart").value = todayStr;
+  document.getElementById("diffEnd").value = todayStr;
+  document.getElementById("calcBaseDate").value = todayStr;
+  document.getElementById("calcDays").value = 28;
+  calculateAndRender();
+  showToast("已重設所有日期為今天");
+});
+
+// 字體大小控制與記憶
+const savedFont = localStorage.getItem("calcFontSize");
+if (savedFont) {
+  fontSlider.value = savedFont;
+}
+
+fontSlider.addEventListener("input", (e) => {
+  const size = e.target.value;
+  applyFontSize(size);
+  localStorage.setItem("calcFontSize", size);
+});
+
+// 右下角控制面板與深色模式控制
+const settingsBtn = document.getElementById("settingsBtn");
+const settingsPanel = document.getElementById("settingsPanel");
+const modeBtn = document.getElementById("modeBtn");
+
+settingsBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
+  settingsPanel.classList.toggle("show");
+});
+
+settingsPanel.addEventListener("click", (e) => {
+  e.stopPropagation();
+});
+
+document.addEventListener("click", () => {
+  settingsPanel.classList.remove("show");
+});
+
+const savedTheme = localStorage.getItem("theme");
+if (savedTheme === "dark") {
+  document.body.classList.add("dark");
+  modeBtn.innerText = "☀️ 切換日間模式";
+} else {
+  modeBtn.innerText = "🌙 切換深色模式";
+}
+
+modeBtn.addEventListener("click", () => {
+  document.body.classList.toggle("dark");
+  if (document.body.classList.contains("dark")) {
+    localStorage.setItem("theme", "dark");
+    modeBtn.innerText = "☀️ 切換日間模式";
+  } else {
+    localStorage.setItem("theme", "light");
+    modeBtn.innerText = "🌙 切換深色模式";
+  }
+});
+
+// 首次載入執行計算
+calculateAndRender();
+
+</script>
+
+</body>
+</html>
