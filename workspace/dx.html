@@ -21,6 +21,10 @@
   --shadow: 0 10px 32px rgba(31, 38, 135, 0.06);
   --card-shadow: 0 4px 16px rgba(2, 132, 199, 0.08);
   --backdrop: blur(12px);
+
+  /* 專屬筆記區塊的質感翡翠綠變數（用於區隔） */
+  --note-accent: #0d9488;
+  --note-accent-light: #ccfbf1;
 }
 
 body.dark {
@@ -36,6 +40,10 @@ body.dark {
   --shadow: 0 10px 28px rgba(0, 0, 0, 0.4);
   --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   --backdrop: blur(12px);
+
+  /* 專屬筆記區塊的質感翡翠綠變數（夜間） */
+  --note-accent: #2dd4bf;
+  --note-accent-light: #115e59;
 }
 
 * {
@@ -53,6 +61,19 @@ body {
   min-height: 100vh;
 }
 
+/* 頂部控制列佈局 */
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.title-area {
+  flex: 1;
+}
+
 .title {
   font-size: 32px;
   font-weight: 800; /* 超粗體大標題 */
@@ -67,8 +88,28 @@ body {
 .subtitle {
   color: var(--sub);
   font-size: 16px;
-  margin-bottom: 24px;
+  margin: 0;
   font-weight: 700; /* 加粗 */
+}
+
+/* 頂部常用新舊代碼快捷鍵 */
+.quick-jump-btn {
+  background: linear-gradient(135deg, var(--note-accent), #0f766e);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 16px;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(13, 148, 136, 0.3);
+  transition: transform 0.2s, box-shadow 0.2s;
+  white-space: nowrap;
+}
+
+.quick-jump-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(13, 148, 136, 0.4);
 }
 
 /* 搜尋框優化 */
@@ -178,6 +219,39 @@ body {
   font-weight: 800; /* 符合中正診所 Portal 的顯眼高對比粗體 */
   color: var(--text);
 }
+
+/* 括號細則小字化樣式 */
+.small-note {
+  font-size: 85%;
+  font-weight: 600;
+  color: #64748b;
+  display: block;
+  margin-top: 2px;
+}
+body.dark .small-note {
+  color: #94a3b8;
+}
+
+/* ===================================================
+   專屬色系區隔：手寫筆記獨立翡翠綠 CSS (不破壞原布局)
+   =================================================== */
+.section.note-section .section-title {
+  background: var(--note-accent-light);
+  color: var(--note-accent);
+}
+
+.section.note-section .card::before {
+  background: var(--note-accent);
+}
+
+.section.note-section .card:hover {
+  box-shadow: 0 12px 24px rgba(13, 148, 136, 0.18);
+}
+
+.section.note-section .code {
+  color: var(--note-accent);
+}
+
 
 /* 複製提示浮磚 */
 .toast {
@@ -296,8 +370,13 @@ body {
 
 <body>
 
-<div class="title">門診病代速查</div>
-<div class="subtitle">👍 點擊卡片即可快速複製病代</div>
+<div class="header-row">
+  <div class="title-area">
+    <div class="title">門診病代速查</div>
+    <div class="subtitle">👍 點擊卡片即可快速複製病代</div>
+  </div>
+  <button class="quick-jump-btn" id="quickJumpBtn">常用新舊代碼📝</button>
+</div>
 
 <input
   type="text"
@@ -385,7 +464,7 @@ const data = {
 
 "✋ M08 手部疼痛":[
   ["M79601","右側手部臂疼痛"],
-  ["M79602","left手部臂疼痛"],
+  ["M79602","左側手部臂疼痛"],
   ["M79603","未明示側性手部臂疼痛"],
   ["M79641","右側手部疼痛"],
   ["M79642","左側手部疼痛"],
@@ -473,6 +552,30 @@ const data = {
   ["J069","✨急性上呼吸道感染"],
   ["JR070","喉嚨痛"],
   ["J0410","急性氣管炎－未伴有阻塞"]
+],
+
+// 移至最底部的對照資料區塊
+"📝 常用新舊代碼 (手寫筆記)":[
+  ["[341] K297", "胃炎"],
+  ["[151] K529", "胃腸炎"],
+  ["[353] N341", "尿道炎"],
+  ["[CE P*] L0390", "蜂窩性組織炎"],
+  ["[HZ] B029", "疱疹"], // 已修正為 HZ
+  ["[7062] L723", "皮脂腺囊腫"],
+  ["[C/] L0291", "皮膚膿瘍"],
+  ["L0292", "癤"],
+  ["[ABS] L980", "化膿性肉芽腫 <span class='small-note'>(處置後要加上 CD 才能接第二次換藥)</span>"], // 括號設定為小字
+  ["[MB] R42", "頭暈"],
+  ["[HEA] R519", "頭痛"],
+  ["K590", "便秘"],
+  ["[305] K649", "痔瘡"],
+  ["[TA] K056", "牙周疾病"],
+  ["J111", "流感 (未確認)"],
+  ["J09X2", "A流"],
+  ["[V*] B079", "病毒疣"],
+  ["[UB] K922", "腸胃道出血"],
+  ["Z712", "看報告的諮詢"],
+  ["K061", "牙齦腫大"]
 ]
 
 };
@@ -495,7 +598,13 @@ function render(keyword=""){
     if (filtered.length === 0) return;
 
     const sec = document.createElement("div");
-    sec.className = "section";
+    // 檢查是否為對照筆記區塊，賦予專屬類別與 ID
+    if (section.includes("常用新舊代碼")) {
+      sec.className = "section note-section";
+      sec.id = "targetNoteSection";
+    } else {
+      sec.className = "section";
+    }
 
     sec.innerHTML = `
       <div class="section-title">${section}</div>
@@ -513,8 +622,12 @@ function render(keyword=""){
       `;
 
       card.onclick = () => {
-        navigator.clipboard.writeText(item[0]);
-        showToast();
+        let cleanCode = item[0];
+        if (cleanCode.includes("]")) {
+          cleanCode = cleanCode.split("]").pop().trim();
+        }
+        navigator.clipboard.writeText(cleanCode);
+        showToast(cleanCode);
       };
 
       grid.appendChild(card);
@@ -523,13 +636,13 @@ function render(keyword=""){
     container.appendChild(sec);
   });
 
-  // 渲染完成後立即套用目前的字體設定
   applyFontSize(fontSlider.value);
 }
 
 // 提示浮磚功能
-function showToast(){
+function showToast(code){
   const toast = document.getElementById("toast");
+  toast.innerText = `已複製病代: ${code}`;
   toast.classList.add("show");
   setTimeout(() => {
     toast.classList.remove("show");
@@ -542,7 +655,10 @@ function applyFontSize(size){
     el.style.fontSize = size + "px";
   });
   document.querySelectorAll(".name").forEach(el => {
-    el.style.fontSize = size + "px";
+    // 排除小括號備註字體，其餘放大
+    if (!el.classList.contains("small-note")) {
+      el.style.fontSize = size + "px";
+    }
   });
 }
 
@@ -563,23 +679,34 @@ document.getElementById("searchInput").addEventListener("input", (e) => {
   render(e.target.value);
 });
 
-// 核心修復：齒輪按鈕與控制面板交互邏輯
+// 快捷鍵平滑滾動功能
+document.getElementById("quickJumpBtn").addEventListener("click", () => {
+  const noteEl = document.getElementById("targetNoteSection");
+  if (noteEl) {
+    noteEl.scrollIntoView({ behavior: "smooth", block: "start" });
+  } else {
+    document.getElementById("searchInput").value = "";
+    render();
+    setTimeout(() => {
+      document.getElementById("targetNoteSection").scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+  }
+});
+
+// 齒輪按鈕與控制面板交互邏輯
 const settingsBtn = document.getElementById("settingsBtn");
 const settingsPanel = document.getElementById("settingsPanel");
 const modeBtn = document.getElementById("modeBtn");
 
-// 點擊齒輪切換面板
 settingsBtn.addEventListener("click", (e) => {
-  e.stopPropagation(); // 防止事件向上冒泡
+  e.stopPropagation();
   settingsPanel.classList.toggle("show");
 });
 
-// 點擊控制面板內部時，不關閉面板
 settingsPanel.addEventListener("click", (e) => {
   e.stopPropagation();
 });
 
-// 點擊網頁任何其他地方，自動縮回面板（防誤觸）
 document.addEventListener("click", () => {
   settingsPanel.classList.remove("show");
 });
