@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-<title>診間日期天數計算器</title>
+<title>慢處箋拿藥與日期天數計算器</title>
 
 <style>
 
@@ -22,7 +22,13 @@
   --card-shadow: 0 4px 16px rgba(2, 132, 199, 0.08);
   --backdrop: blur(12px);
 
-  /* 專屬快捷與結果區塊的質感翡翠綠變數（用於區隔） */
+  /* 拿藥狀態色系變數 */
+  --success: #10b981;
+  --success-light: #d1fae5;
+  --danger: #ef4444;
+  --danger-light: #fee2e2;
+  
+  /* 專屬快捷區塊的質感翡翠綠變數 */
   --note-accent: #0d9488;
   --note-accent-light: #ccfbf1;
 }
@@ -40,7 +46,11 @@ body.dark {
   --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   --backdrop: blur(12px);
 
-  /* 專屬區塊的質感翡翠綠變數（夜間） */
+  --success: #34d399;
+  --success-light: #064e3b;
+  --danger: #f87171;
+  --danger-light: #7f1d1d;
+
   --note-accent: #2dd4bf;
   --note-accent-light: #115e59;
 }
@@ -91,7 +101,6 @@ body {
   font-weight: 700; 
 }
 
-/* 頂部回到今天快捷鍵 */
 .quick-jump-btn {
   background: linear-gradient(135deg, var(--note-accent), #0f766e);
   color: white;
@@ -111,22 +120,22 @@ body {
   box-shadow: 0 6px 20px rgba(13, 148, 136, 0.4);
 }
 
-/* 主要佈局：改為左右分欄或流暢的上下卡片 */
+/* 主要佈局 */
 .calculator-layout {
   display: grid;
   grid-template-columns: 1fr;
   gap: 24px;
-  margin-bottom: 28px;
+  margin-bottom: 24px;
 }
 
 @media (min-width: 768px) {
   .calculator-layout {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1.2fr 0.8fr;
   }
 }
 
 .section {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 /* 分類大標題 */
@@ -138,7 +147,7 @@ body {
   color: var(--accent);
   padding: 10px 24px;
   border-radius: 999px;
-  font-size: 20px; 
+  font-size: 19px; 
   font-weight: 900; 
   margin-bottom: 16px;
   box-shadow: 0 2px 10px rgba(2, 132, 199, 0.1);
@@ -156,17 +165,26 @@ body {
   box-shadow: var(--shadow);
 }
 
-.input-group {
-  margin-bottom: 18px;
+.input-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
 }
 
-.input-group:last-child {
-  margin-bottom: 0;
+@media (min-width: 480px) {
+  .input-row.two-cols {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
 }
 
 .input-label {
-  display: block;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 800;
   margin-bottom: 8px;
   color: var(--text);
@@ -179,7 +197,7 @@ body {
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.5);
   color: var(--text);
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
   outline: none;
   transition: all 0.2s ease;
@@ -193,9 +211,30 @@ body.dark .input-field {
   box-shadow: 0 0 0 4px var(--accent-light);
 }
 
+/* 狀態顯示條 */
+.status-bar {
+  padding: 16px;
+  border-radius: 16px;
+  font-size: 18px;
+  font-weight: 900;
+  text-align: center;
+  margin-top: 12px;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+}
+.status-bar.allow {
+  background: var(--success-light);
+  color: var(--success);
+  border: 2px solid var(--success);
+}
+.status-bar.deny {
+  background: var(--danger-light);
+  color: var(--danger);
+  border: 2px solid var(--danger);
+}
+
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 14px;
 }
 
@@ -250,12 +289,11 @@ body.dark .input-field {
 .name {
   line-height: 1.4;
   word-break: break-word;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 800; 
   color: var(--text);
 }
 
-/* 括號細則小字化樣式 */
 .small-note {
   font-size: 85%;
   font-weight: 600;
@@ -267,22 +305,14 @@ body.dark .small-note {
   color: #94a3b8;
 }
 
-/* ===================================================
-   專屬色系區隔：快捷鍵區塊翡翠綠 CSS
-   =================================================== */
+/* 專屬色系區隔 */
 .section.note-section .section-title {
   background: var(--note-accent-light);
   color: var(--note-accent);
 }
-
 .section.note-section .card::before {
   background: var(--note-accent);
 }
-
-.section.note-section .card:hover {
-  box-shadow: 0 12px 24px rgba(13, 148, 136, 0.18);
-}
-
 .section.note-section .code {
   color: var(--note-accent);
 }
@@ -406,8 +436,8 @@ body.dark .small-note {
 
 <div class="header-row">
   <div class="title-area">
-    <div class="title">診間日期天數計算器</div>
-    <div class="subtitle">👍 點擊計算結果卡片，即可快速複製日期/天數</div>
+    <div class="title">慢處箋與日期天數計算器</div>
+    <div class="subtitle">👍 自動檢核健保提前 10 天拿藥資格，點擊結果可複製</div>
   </div>
   <button class="quick-jump-btn" id="resetTodayBtn">重設回今天 📅</button>
 </div>
@@ -415,26 +445,31 @@ body.dark .small-note {
 <div class="calculator-layout">
   
   <div class="control-card">
-    <div class="section-title" style="font-size:16px; padding:6px 16px;">🧮 兩日期相差天數</div>
-    <div class="input-group">
-      <label class="input-label">起始日期 (1)</label>
-      <input type="date" class="input-field" id="diffStart" />
+    <div class="section-title" style="font-size:15px; padding:4px 16px; background:var(--accent-light); color:var(--accent); margin-bottom:12px;">💊 慢處箋拿藥資格試算</div>
+    
+    <div class="input-row two-cols">
+      <div class="input-group">
+        <label class="input-label">上一次給藥/調劑日</label>
+        <input type="date" class="input-field" id="rxLastDate" />
+      </div>
+      <div class="input-group">
+        <label class="input-label">上次開立天數 (天)</label>
+        <input type="number" class="input-field" id="rxDays" value="28" min="1" />
+      </div>
     </div>
-    <div class="input-group">
-      <label class="input-label">結束日期 (2)</label>
-      <input type="date" class="input-field" id="diffEnd" />
-    </div>
+
+    <div id="rxStatus" class="status-bar"></div>
   </div>
 
   <div class="control-card">
-    <div class="section-title" style="font-size:16px; padding:6px 16px; background:var(--note-accent-light); color:var(--note-accent);">🔮 指定天數推算日期</div>
-    <div class="input-group">
-      <label class="input-label">基準日期</label>
-      <input type="date" class="input-field" id="calcBaseDate" />
+    <div class="section-title" style="font-size:15px; padding:4px 16px; background:var(--note-accent-light); color:var(--note-accent); margin-bottom:12px;">🧮 兩日期相差天數</div>
+    <div class="input-group" style="margin-bottom: 10px;">
+      <label class="input-label">起始日期</label>
+      <input type="date" class="input-field" id="diffStart" />
     </div>
     <div class="input-group">
-      <label class="input-label">往後(正)/往前(負)天數</label>
-      <input type="number" class="input-field" id="calcDays" value="28" placeholder="例如：28 或 -7" />
+      <label class="input-label">結束日期</label>
+      <input type="date" class="input-field" id="diffEnd" />
     </div>
   </div>
 
@@ -463,21 +498,25 @@ body.dark .small-note {
 
 <script>
 
-// 初始化日期：預設為今天
-const todayStr = new Date().toISOString().split('T')[0];
+// 自動抓取今天的日期
+const today = new Date();
+today.setHours(0,0,0,0);
+const todayStr = today.toISOString().split('T')[0];
+
+// 初始化輸入欄位預設值
+document.getElementById("rxLastDate").value = todayStr;
 document.getElementById("diffStart").value = todayStr;
 document.getElementById("diffEnd").value = todayStr;
-document.getElementById("calcBaseDate").value = todayStr;
 
 const container = document.getElementById("container");
 const fontSlider = document.getElementById("fontSlider");
 
-// 日期格式化小工具（包含西元與民國）
+// 轉換民國年與週數小工具
 function formatDetails(dateObj) {
   const y = dateObj.getFullYear();
   const m = String(dateObj.getMonth() + 1).padStart(2, '0');
   const d = String(dateObj.getDate()).padStart(2, '0');
-  const rYear = y - 1911; // 民國年
+  const rYear = y - 1911;
   const dayOfWeek = ["日", "一", "二", "三", "四", "五", "六"][dateObj.getDay()];
   
   return {
@@ -488,11 +527,63 @@ function formatDetails(dateObj) {
   };
 }
 
-// 核心計算與動態渲染
-function calculateAndRender() {
+function calculateAll() {
   container.innerHTML = "";
 
-  // 1. 讀取「相差天數」輸入值
+  // ------------------------------------------
+  // 邏輯一：慢處箋拿藥資格檢核
+  // ------------------------------------------
+  const rxLastDateVal = document.getElementById("rxLastDate").value;
+  const rxDaysVal = parseInt(document.getElementById("rxDays").value) || 0;
+  
+  let rxCards = [];
+  const rxStatusEl = document.getElementById("rxStatus");
+
+  if (rxLastDateVal && rxDaysVal > 0) {
+    const lastDate = new Date(rxLastDateVal);
+    lastDate.setHours(0,0,0,0);
+
+    // 1. 藥物吃完（屆滿）日 = 上次調劑日 + 開立天數
+    const expireDate = new Date(lastDate);
+    expireDate.setDate(lastDate.getDate() + rxDaysVal);
+    const fExpire = formatDetails(expireDate);
+
+    // 2. 健保法規可開始拿藥日 = 屆滿日 - 10 天
+    const allowDate = new Date(expireDate);
+    allowDate.setDate(expireDate.getDate() - 10);
+    const fAllow = formatDetails(allowDate);
+
+    // 3. 判斷今天能不能拿藥
+    // 距離可拿藥日還差幾天
+    const timeDiffToAllow = allowDate.getTime() - today.getTime();
+    const daysUntilAllow = Math.ceil(timeDiffToAllow / (1000 * 3600 * 24));
+
+    // 距離吃完還剩幾天
+    const timeDiffToExpire = expireDate.getTime() - today.getTime();
+    const daysUntilExpire = Math.ceil(timeDiffToExpire / (1000 * 3600 * 24));
+
+    if (today >= allowDate) {
+      // 到了或超過可拿藥日
+      rxStatusEl.className = "status-bar allow";
+      if (daysUntilExpire >= 0) {
+        rxStatusEl.innerHTML = `🟢 健保審核：符合資格！現在「可以」調劑拿藥了 <span class='small-note' style='display:inline;'>(距離藥吃完還剩 ${daysUntilExpire} 天)</span>`;
+      } else {
+        rxStatusEl.innerHTML = `🟢 健保審核：符合資格！已超過上次處方屆滿日 ${Math.abs(daysUntilExpire)} 天`;
+      }
+    } else {
+      // 還不能拿藥
+      rxStatusEl.className = "status-bar deny";
+      rxStatusEl.innerHTML = `❌ 健保審核：尚未到期！「不可」拿藥，還差 ${daysUntilAllow} 天才可以提早領藥`;
+    }
+
+    // 塞入卡片顯示
+    rxCards.push([fAllow.iso, `📅 健保最早可拿藥日 <span class='small-note'>(${fAllow.tw} · ${fAllow.weekday})</span>`]);
+    rxCards.push([fExpire.iso, `⏳ 上次處方藥吃完日 <span class='small-note'>(${fExpire.tw} · ${fExpire.weekday})</span>`]);
+  }
+
+  // ------------------------------------------
+  // 邏輯二：純日期相差天數
+  // ------------------------------------------
   const dStartVal = document.getElementById("diffStart").value;
   const dEndVal = document.getElementById("diffEnd").value;
   let diffCards = [];
@@ -503,75 +594,49 @@ function calculateAndRender() {
     const timeDiff = d2.getTime() - d1.getTime();
     const totalDays = Math.round(timeDiff / (1000 * 3600 * 24));
     
-    // 計算幾週零幾天
     const weeks = Math.floor(Math.abs(totalDays) / 7);
     const remainingDays = Math.abs(totalDays) % 7;
-    let weekStr = `${weeks} 週 ${remainingDays} 天`;
 
-    diffCards.push([`${totalDays} 天`, `總相差天數 <span class='small-note'>(${weekStr})</span>`]);
-    diffCards.push([`${totalDays > 0 ? totalDays - 1 : 0} 天`, `實際住院/療程天數 <span class='small-note'>(扣除尾日：當天算至隔天為 0 天)</span>`]);
+    diffCards.push([`${totalDays} 天`, `總相差天數 <span class='small-note'>(等同於 ${weeks} 週 ${remainingDays} 天)</span>`]);
+    diffCards.push([`${totalDays > 0 ? totalDays - 1 : 0} 天`, `實際住院/療程天數 <span class='small-note'>(扣除尾日計算)</span>`]);
   }
 
-  // 2. 讀取「天數推算」輸入值
-  const baseDateVal = document.getElementById("calcBaseDate").value;
-  const daysVal = parseInt(document.getElementById("calcDays").value) || 0;
-  let calcCards = [];
-
-  if (baseDateVal) {
-    const baseDate = new Date(baseDateVal);
-    
-    // 計算指定加減天數的日期
-    const targetDate = new Date(baseDate);
-    targetDate.setDate(baseDate.getDate() + daysVal);
-    const f = formatDetails(targetDate);
-
-    calcCards.push([f.iso, `${f.tw} <span class='small-note'>(${f.weekday} / 民國：${f.shortTw})</span>`]);
-  }
-
-  // 3. 常見快捷推算面板資料（點擊直接改右側輸入框）
-  const quickRanges = [
-    { label: "1 週 (7天)", value: 7 },
-    { label: "2 週 (14天)", value: 14 },
-    { label: "4 週 (28天)", value: 28 },
-    { label: "30 天", value: 30 },
-    { label: "90 天 (約3個月)", value: 90 },
-    { label: "180 天 (約半年)", value: 180 }
-  ];
-
-  // --- 開始渲染前端卡片組 ---
-
-  // 渲染區塊一：相差天數結果
-  if (diffCards.length > 0) {
-    createSection("📅 兩日期相差計算結果", diffCards, false);
-  }
-
-  // 渲染區塊二：天數推算結果
-  if (calcCards.length > 0) {
-    createSection("🔮 指定天數推算結果", calcCards, false);
-  }
-
-  // 渲染區塊三：常用診間快捷推算鈕（使用翡翠綠色系區隔）
-  const quickCardsData = quickRanges.map(item => {
-    if (baseDateVal) {
-      const bDate = new Date(baseDateVal);
-      bDate.setDate(bDate.getDate() + item.value);
+  // ------------------------------------------
+  // 邏輯三：常備慢性處方天數對照快捷區
+  // ------------------------------------------
+  let quickCards = [];
+  if (rxLastDateVal) {
+    const standardRanges = [28, 30, 90];
+    standardRanges.forEach(days => {
+      const bDate = new Date(rxLastDateVal);
+      bDate.setDate(bDate.getDate() + days);
       const f = formatDetails(bDate);
-      return [f.iso, `${item.label} 後是：<span class='small-note'>${f.shortTw} (${f.weekday})</span>`, item.value];
-    }
-    return [ `${item.value} 天後`, item.label, item.value];
-  });
-  
-  createSection("📝 常用門診回診/處方排程快捷鍵 (以基準日推算)", quickCardsData, true);
+      
+      const aDate = new Date(bDate);
+      aDate.setDate(bDate.getDate() - 10);
+      const fA = formatDetails(aDate);
 
-  // 套用目前的字體大小設定
+      quickCards.push([f.iso, `開立 ${days} 天份吃完日 <span class='small-note'>(於 ${fA.shortTw} 可拿下一期藥)</span>`, days]);
+    });
+  }
+
+  // --- 輸出渲染區塊到網頁上 ---
+  if (rxCards.length > 0) {
+    renderSection("📊 慢處箋排程分析 (點擊可複製日期)", rxCards, false);
+  }
+  if (diffCards.length > 0) {
+    renderSection("📅 兩日期相差天數結果", diffCards, false);
+  }
+  if (quickCards.length > 0) {
+    renderSection("📝 一鍵帶入：常見開藥天數試算結果", quickCards, true);
+  }
+
   applyFontSize(fontSlider.value);
 }
 
-// 建立分類區塊的函式
-function createSection(title, items, isQuickSection) {
+function renderSection(title, items, isQuickSection) {
   const sec = document.createElement("div");
   sec.className = isQuickSection ? "section note-section" : "section";
-
   sec.innerHTML = `
     <div class="section-title">${title}</div>
     <div class="grid"></div>
@@ -589,21 +654,19 @@ function createSection(title, items, isQuickSection) {
 
     card.onclick = () => {
       if (isQuickSection && item[2] !== undefined) {
-        // 如果點擊的是快捷鍵，則直接將該天數帶入右側輸入框並更新
-        document.getElementById("calcDays").value = item[2];
-        calculateAndRender();
-        showToast(`已切換為 ${item[2]} 天並完成推算`);
+        // 點快捷鍵直接變更上方開立天數
+        document.getElementById("rxDays").value = item[2];
+        calculateAll();
+        showToast(`已切換至開立 ${item[2]} 天份`);
       } else {
-        // 否則為複製功能
+        // 複製文字
         let cleanText = item[0];
         navigator.clipboard.writeText(cleanText);
         showToast(`已複製: ${cleanText}`);
       }
     };
-
     grid.appendChild(card);
   });
-
   container.appendChild(sec);
 }
 
@@ -611,67 +674,49 @@ function showToast(msg){
   const toast = document.getElementById("toast");
   toast.innerText = msg;
   toast.classList.add("show");
-  setTimeout(() => {
-    toast.classList.remove("show");
-  }, 1000);
+  setTimeout(() => { toast.classList.remove("show"); }, 1000);
 }
 
 function applyFontSize(size){
-  document.querySelectorAll(".code").forEach(el => {
-    el.style.fontSize = size + "px";
-  });
+  document.querySelectorAll(".code").forEach(el => { el.style.fontSize = size + "px"; });
   document.querySelectorAll(".name").forEach(el => {
     if (!el.classList.contains("small-note")) {
-      el.style.fontSize = Math.max(14, size - 2) + "px";
+      el.style.fontSize = Math.max(14, size - 3) + "px";
     }
   });
 }
 
-// 監聽所有輸入欄位的更動
-document.getElementById("diffStart").addEventListener("input", calculateAndRender);
-document.getElementById("diffEnd").addEventListener("input", calculateAndRender);
-document.getElementById("calcBaseDate").addEventListener("input", calculateAndRender);
-document.getElementById("calcDays").addEventListener("input", calculateAndRender);
+// 監聽更動事件
+document.getElementById("rxLastDate").addEventListener("input", calculateAll);
+document.getElementById("rxDays").addEventListener("input", calculateAll);
+document.getElementById("diffStart").addEventListener("input", calculateAll);
+document.getElementById("diffEnd").addEventListener("input", calculateAll);
 
-// 重設回今天按鈕
 document.getElementById("resetTodayBtn").addEventListener("click", () => {
+  document.getElementById("rxLastDate").value = todayStr;
   document.getElementById("diffStart").value = todayStr;
   document.getElementById("diffEnd").value = todayStr;
-  document.getElementById("calcBaseDate").value = todayStr;
-  document.getElementById("calcDays").value = 28;
-  calculateAndRender();
-  showToast("已重設所有日期為今天");
+  document.getElementById("rxDays").value = 28;
+  calculateAll();
+  showToast("已重設回今天");
 });
 
-// 字體大小控制與記憶
-const savedFont = localStorage.getItem("calcFontSize");
-if (savedFont) {
-  fontSlider.value = savedFont;
-}
-
+// 字體無級縮放控制
+const savedFont = localStorage.getItem("rxCalcFont");
+if (savedFont) fontSlider.value = savedFont;
 fontSlider.addEventListener("input", (e) => {
-  const size = e.target.value;
-  applyFontSize(size);
-  localStorage.setItem("calcFontSize", size);
+  applyFontSize(e.target.value);
+  localStorage.setItem("rxCalcFont", e.target.value);
 });
 
-// 右下角控制面板與深色模式控制
+// 控制面板與深色模式
 const settingsBtn = document.getElementById("settingsBtn");
 const settingsPanel = document.getElementById("settingsPanel");
 const modeBtn = document.getElementById("modeBtn");
 
-settingsBtn.addEventListener("click", (e) => {
-  e.stopPropagation();
-  settingsPanel.classList.toggle("show");
-});
-
-settingsPanel.addEventListener("click", (e) => {
-  e.stopPropagation();
-});
-
-document.addEventListener("click", () => {
-  settingsPanel.classList.remove("show");
-});
+settingsBtn.addEventListener("click", (e) => { e.stopPropagation(); settingsPanel.classList.toggle("show"); });
+settingsPanel.addEventListener("click", (e) => { e.stopPropagation(); });
+document.addEventListener("click", () => { settingsPanel.classList.remove("show"); });
 
 const savedTheme = localStorage.getItem("theme");
 if (savedTheme === "dark") {
@@ -692,8 +737,8 @@ modeBtn.addEventListener("click", () => {
   }
 });
 
-// 首次載入執行計算
-calculateAndRender();
+// 啟動計算
+calculateAll();
 
 </script>
 
