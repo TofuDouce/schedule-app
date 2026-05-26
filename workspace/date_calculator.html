@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-<title>中正診所 - 慢處箋三期動態排程與天數計算器</title>
+<title>中正診所 - 慢箋排程與天數計算器</title>
 
 <style>
 :root {
@@ -29,6 +29,9 @@
   
   --note-accent: #0d9488;
   --note-accent-light: #ccfbf1;
+  
+  /* 浮水印淺色模式顏色 */
+  --watermark-color: rgba(15, 23, 42, 0.06);
 }
 
 body.dark {
@@ -53,6 +56,9 @@ body.dark {
 
   --note-accent: #2dd4bf;
   --note-accent-light: #115e59;
+  
+  /* 浮水印深色模式顏色 */
+  --watermark-color: rgba(255, 255, 255, 0.04);
 }
 
 * { box-sizing: border-box; }
@@ -226,6 +232,7 @@ body.dark .small-note { color: #94a3b8; }
 }
 .toast.show { opacity: 1; bottom: 106px; }
 
+/* 右下角齒輪 */
 .settings-btn {
   position: fixed; right: 24px; bottom: 24px; width: 60px; height: 60px;
   border: none; border-radius: 50%; background: var(--accent); color: white;
@@ -242,6 +249,22 @@ body.dark .small-note { color: #94a3b8; }
 .range { width: 100%; margin-bottom: 20px; accent-color: var(--accent); }
 .mode-btn { width: 100%; border: none; border-radius: 16px; padding: 12px; font-size: 15px; background: var(--accent); color: white; cursor: pointer; font-weight: 800; }
 
+/* 🌟 中正診所 右下角半透明浮水印樣式 */
+.clinic-watermark {
+  position: fixed;
+  right: 24px;
+  bottom: 94px; /* 置於齒輪按鈕正上方、或是與面板錯開 */
+  font-size: 32px;
+  font-weight: 900;
+  color: var(--watermark-color);
+  letter-spacing: 2px;
+  user-select: none;
+  pointer-events: none; /* 滑鼠可直接穿透點擊下方元素，不造成任何操作阻礙 */
+  z-index: 998;
+  font-family: "SF Pro Text", "Helvetica Neue", "Helvetica", "Arial", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  transition: color 0.3s;
+}
+
 .footer-space { height: 80px; }
 </style>
 </head>
@@ -250,7 +273,7 @@ body.dark .small-note { color: #94a3b8; }
 
 <div class="header-row">
   <div class="title-area">
-    <div class="title">慢處箋三期排程與天數計算器</div>
+    <div class="title">中正診所 - 慢處箋三期動態排程與天數計算器</div>
     <div class="subtitle">📋 自動推算一二三期領藥區間與截止日，支持不准時拿藥之動態調整</div>
   </div>
   <button class="quick-jump-btn" id="clearDataBtn">清除資料 🧹</button>
@@ -283,7 +306,7 @@ body.dark .small-note { color: #94a3b8; }
     <div class="input-row two-cols">
       <div class="input-group">
         <label class="input-label">起始日期</label>
-        <input type="date" class="input-field" id="diffStart" />
+        <inputType type="date" class="input-field" id="diffStart" />
       </div>
       <div class="input-group">
         <label class="input-label">結束日期</label>
@@ -297,6 +320,9 @@ body.dark .small-note { color: #94a3b8; }
 <div id="container"></div>
 
 <div class="toast" id="toast">已複製</div>
+
+<div class="clinic-watermark">中正診所</div>
+
 <button class="settings-btn" id="settingsBtn">⚙️</button>
 
 <div class="settings-panel" id="settingsPanel">
@@ -354,11 +380,10 @@ function calculateSchedule() {
     const f2StartStandard = formatDateObj(d2StartStandard);
     const f2ExpireStandard = formatDateObj(d2ExpireStandard);
 
-    // 2. 決定第 3 次的計算基準點 (看有沒有輸入第 2 次實際領藥日)
+    // 2. 決定第 3 次的計算基準點
     let d3Start, d3Expire, isDynamic = false;
 
     if (rxSecondActualVal) {
-      // 依病人實際來拿第 2 次藥的日期做基底往後推
       const d2Actual = new Date(rxSecondActualVal);
       d2Actual.setHours(0,0,0,0);
       
@@ -369,7 +394,6 @@ function calculateSchedule() {
       d3Start.setDate(d3Expire.getDate() - 10);
       isDynamic = true;
     } else {
-      // 標準流程推算
       d3Expire = new Date(d1);
       d3Expire.setDate(d1.getDate() + (perDays * 2));
       
@@ -380,7 +404,7 @@ function calculateSchedule() {
     const f3Start = formatDateObj(d3Start);
     const f3Expire = formatDateObj(d3Expire);
 
-    // 3. 嚴格鎖定：最終健保截止日 (第 1 次開立日 + 每期天數*3 - 1)
+    // 3. 最終限制截止日
     const dFinalDeadline = new Date(d1);
     dFinalDeadline.setDate(d1.getDate() + (perDays * 3) - 1);
     const fFinal = formatDateObj(dFinalDeadline);
@@ -391,7 +415,6 @@ function calculateSchedule() {
       { code: `${f2StartStandard.roc} ～ ${f2ExpireStandard.roc}`, name: `第 2 次可拿藥期間 <span class='small-note'>預設吃完前10天開放：${f2StartStandard.detail} 起</span>`, type: 'c-accent' }
     ];
 
-    // 如果有動態輸入第 2 次拿藥日期，卡片做特別提示
     if (isDynamic) {
       rxCards.push({
         code: `${f3Start.roc} ～ ${f3Expire.roc}`,
@@ -406,7 +429,6 @@ function calculateSchedule() {
       });
     }
 
-    // 最後領藥截止日卡片
     rxCards.push({ 
       code: fFinal.roc, 
       name: `🛑 整張處方箋領藥截止日<span class='small-note'>健保法規硬性限制，第3次最晚必須於此日期前領取 (${fFinal.detail})</span>`, 
@@ -416,9 +438,7 @@ function calculateSchedule() {
     renderSection("📊 慢處箋三期健保排程表 (點擊可複製日期)", rxCards);
   }
 
-  // ------------------------------------------
   // 兩日期天數與相差天數
-  // ------------------------------------------
   const dStartVal = document.getElementById("diffStart").value;
   const dEndVal = document.getElementById("diffEnd").value;
 
@@ -483,7 +503,7 @@ function applyFontSize(size){
   });
 }
 
-// 監聽所有輸入
+// 監聽事件
 document.getElementById("rxStartDate").addEventListener("input", calculateSchedule);
 document.getElementById("perPeriodDays").addEventListener("input", calculateSchedule);
 document.getElementById("rxSecondActualDate").addEventListener("input", calculateSchedule);
