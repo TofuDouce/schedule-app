@@ -97,7 +97,7 @@ body {
 }
 
 .quick-jump-btn {
-  background: linear-gradient(135deg, var(--note-accent), #0f766e);
+  background: linear-gradient(135deg, var(--danger), #be123c);
   color: white;
   border: none;
   padding: 12px 20px;
@@ -105,7 +105,7 @@ body {
   font-size: 15px;
   font-weight: 800;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(13, 148, 136, 0.3);
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
   transition: transform 0.2s, box-shadow 0.2s;
   white-space: nowrap;
 }
@@ -254,10 +254,10 @@ body.dark .small-note { color: #94a3b8; }
 
 <div class="header-row">
   <div class="title-area">
-    <div class="title">慢處箋三期排程計算器</div>
-    <div class="subtitle">📋 自動推算一二三期領藥區間與截止日，點擊可複製日期</div>
+    <div class="title">慢處箋三期排程與天數計算器</div>
+    <div class="subtitle">📋 自動推算一二三期領藥區間與截止日，點擊可複製結果</div>
   </div>
-  <button class="quick-jump-btn" id="resetSampleBtn">帶入範例日期 (115.04.25) 🧪</button>
+  <button class="quick-jump-btn" id="clearDataBtn">清除資料 🧹</button>
 </div>
 
 <div class="calculator-layout">
@@ -277,7 +277,7 @@ body.dark .small-note { color: #94a3b8; }
   </div>
 
   <div class="control-card">
-    <div class="section-title" style="font-size:15px; padding:4px 16px; background:var(--note-accent-light); color:var(--note-accent);">🧮 兩日期相差天數</div>
+    <div class="section-title" style="font-size:15px; padding:4px 16px; background:var(--note-accent-light); color:var(--note-accent);">🧮 兩日期天數計算</div>
     <div class="input-row two-cols">
       <div class="input-group">
         <label class="input-label">起始日期</label>
@@ -384,7 +384,7 @@ function calculateSchedule() {
   }
 
   // ------------------------------------------
-  // 輔助功能：原有的兩日期相差天數
+  // 輔助功能：兩日期天數與相差天數
   // ------------------------------------------
   const dStartVal = document.getElementById("diffStart").value;
   const dEndVal = document.getElementById("diffEnd").value;
@@ -399,11 +399,11 @@ function calculateSchedule() {
     const remainingDays = Math.abs(totalDays) % 7;
 
     const diffCards = [
-      { code: `${totalDays} 天`, name: `總相差天數 <span class='small-note'>等同於 ${weeks} 週 ${remainingDays} 天</span>`, type: 'c-orange' },
-      { code: `${totalDays > 0 ? totalDays - 1 : 0} 天`, name: `實際住院/療程天數 <span class='small-note'>扣除尾日計算</span>`, type: 'c-orange' }
+      { code: `${totalDays} 天`, name: `總相差天數 <span class='small-note'>包含首尾間隔，等同於 ${weeks} 週 ${remainingDays} 天</span>`, type: 'c-orange' },
+      { code: `${totalDays > 0 ? totalDays - 1 : 0} 天`, name: `實際療程天數 <span class='small-note'>扣除尾日計算</span>`, type: 'c-orange' }
     ];
 
-    renderSection("🧮 兩日期相差天數計算結果", diffCards);
+    renderSection("🧮 兩日期天數計算結果", diffCards);
   }
 
   applyFontSize(fontSlider.value);
@@ -456,12 +456,13 @@ document.getElementById("perPeriodDays").addEventListener("input", calculateSche
 document.getElementById("diffStart").addEventListener("input", calculateSchedule);
 document.getElementById("diffEnd").addEventListener("input", calculateSchedule);
 
-// 帶入您給的 115.04.25 經典範例按鈕
-document.getElementById("resetSampleBtn").addEventListener("click", () => {
-  document.getElementById("rxStartDate").value = "2026-04-25";
-  document.getElementById("perPeriodDays").value = 28;
-  calculateSchedule();
-  showToast("已帶入 115.04.25 經典範例！");
+// 🛠️ 「清除資料」按鈕邏輯
+document.getElementById("clearDataBtn").addEventListener("click", () => {
+  document.getElementById("rxStartDate").value = "";
+  document.getElementById("diffStart").value = "";
+  document.getElementById("diffEnd").value = "";
+  container.innerHTML = ""; // 直接清空下方結果圖表
+  showToast("欄位已清空 🧹");
 });
 
 // 字體無級縮放
