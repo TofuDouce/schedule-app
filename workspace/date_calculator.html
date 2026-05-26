@@ -4,11 +4,10 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-<title>中正診所 - 慢處箋三期排程與天數計算器</title>
+<title>中正診所 - 慢處箋三期動態排程與天數計算器</title>
 
 <style>
 :root {
-  /* 中正診所 Portal 經典藍天白雲風格變數 */
   --bg: linear-gradient(135deg, #f0f4f8 0%, #e6eff9 100%);
   --card: rgba(255, 255, 255, 0.9);
   --card-hover: #ffffff;
@@ -21,7 +20,6 @@
   --card-shadow: 0 4px 16px rgba(2, 132, 199, 0.08);
   --backdrop: blur(12px);
 
-  /* 拿藥狀態與次數色系變數 */
   --success: #10b981;
   --success-light: #d1fae5;
   --danger: #ef4444;
@@ -163,6 +161,7 @@ body {
 
 .input-group { display: flex; flex-direction: column; }
 .input-label { font-size: 15px; font-weight: 800; margin-bottom: 8px; }
+.input-label .optional { color: var(--note-accent); font-size: 12px; font-weight: bold; }
 
 .input-field {
   width: 100%;
@@ -184,7 +183,6 @@ body.dark .input-field { background: rgba(15, 23, 42, 0.5); }
   gap: 16px;
 }
 
-/* 結果卡片樣式 */
 .card {
   background: var(--card);
   backdrop-filter: var(--backdrop);
@@ -220,7 +218,6 @@ body.dark .input-field { background: rgba(15, 23, 42, 0.5); }
 .small-note { font-size: 85%; font-weight: 600; color: #64748b; display: block; margin-top: 4px; }
 body.dark .small-note { color: #94a3b8; }
 
-/* 複製提示 */
 .toast {
   position: fixed; bottom: 96px; left: 50%; transform: translateX(-50%);
   background: var(--text); color: var(--card); padding: 14px 28px;
@@ -229,7 +226,6 @@ body.dark .small-note { color: #94a3b8; }
 }
 .toast.show { opacity: 1; bottom: 106px; }
 
-/* 右下角齒輪 */
 .settings-btn {
   position: fixed; right: 24px; bottom: 24px; width: 60px; height: 60px;
   border: none; border-radius: 50%; background: var(--accent); color: white;
@@ -255,7 +251,7 @@ body.dark .small-note { color: #94a3b8; }
 <div class="header-row">
   <div class="title-area">
     <div class="title">慢處箋三期排程與天數計算器</div>
-    <div class="subtitle">📋 自動推算一二三期領藥區間與截止日，點擊可複製結果</div>
+    <div class="subtitle">📋 自動推算一二三期領藥區間與截止日，支持不准時拿藥之動態調整</div>
   </div>
   <button class="quick-jump-btn" id="clearDataBtn">清除資料 🧹</button>
 </div>
@@ -263,7 +259,7 @@ body.dark .small-note { color: #94a3b8; }
 <div class="calculator-layout">
   
   <div class="control-card">
-    <div class="section-title" style="font-size:15px; padding:4px 16px;">💊 輸入第 1 次開立/調劑日</div>
+    <div class="section-title" style="font-size:15px; padding:4px 16px;">💊 輸入開立與領藥紀錄</div>
     <div class="input-row two-cols">
       <div class="input-group">
         <label class="input-label">第 1 次開立日期</label>
@@ -272,6 +268,12 @@ body.dark .small-note { color: #94a3b8; }
       <div class="input-group">
         <label class="input-label">每期開立天數 (通常為28天)</label>
         <input type="number" class="input-field" id="perPeriodDays" value="28" min="1" />
+      </div>
+    </div>
+    <div class="input-row">
+      <div class="input-group">
+        <label class="input-label">第 2 次實際領藥日 <span class="optional">(有延遲/提前拿藥再填)</span></label>
+        <input type="date" class="input-field" id="rxSecondActualDate" style="border-color: var(--note-accent);" />
       </div>
     </div>
   </div>
@@ -306,7 +308,6 @@ body.dark .small-note { color: #94a3b8; }
 <div class="footer-space"></div>
 
 <script>
-// 初始化設定
 const fontSlider = document.getElementById("fontSlider");
 const container = document.getElementById("container");
 
@@ -317,7 +318,6 @@ document.getElementById("rxStartDate").value = todayStr;
 document.getElementById("diffStart").value = todayStr;
 document.getElementById("diffEnd").value = todayStr;
 
-// 格式化日期工具 (含民國年與星期)
 function formatDateObj(dateObj) {
   const y = dateObj.getFullYear();
   const m = String(dateObj.getMonth() + 1).padStart(2, '0');
@@ -337,37 +337,50 @@ function calculateSchedule() {
   container.innerHTML = "";
   
   const rxStartDateVal = document.getElementById("rxStartDate").value;
+  const rxSecondActualVal = document.getElementById("rxSecondActualDate").value;
   const perDays = parseInt(document.getElementById("perPeriodDays").value) || 28;
 
-  // ------------------------------------------
-  // 核心功能：慢處箋三期排程計算
-  // ------------------------------------------
   if (rxStartDateVal) {
     const d1 = new Date(rxStartDateVal);
     d1.setHours(0,0,0,0);
-
-    // 第 1 次
     const f1 = formatDateObj(d1);
 
-    // 第 2 次 藥吃完日與拿藥區間
-    const d2Expire = new Date(d1);
-    d2Expire.setDate(d1.getDate() + perDays);
-    const d2Start = new Date(d2Expire);
-    d2Start.setDate(d2Expire.getDate() - 10);
+    // 1. 計算標準狀態下的第 2 次
+    const d2ExpireStandard = new Date(d1);
+    d2ExpireStandard.setDate(d1.getDate() + perDays);
+    const d2StartStandard = new Date(d2ExpireStandard);
+    d2StartStandard.setDate(d2ExpireStandard.getDate() - 10);
     
-    const f2Start = formatDateObj(d2Start);
-    const f2Expire = formatDateObj(d2Expire);
+    const f2StartStandard = formatDateObj(d2StartStandard);
+    const f2ExpireStandard = formatDateObj(d2ExpireStandard);
 
-    // 第 3 次 藥吃完日與拿藥區間
-    const d3Expire = new Date(d1);
-    d3Expire.setDate(d1.getDate() + (perDays * 2));
-    const d3Start = new Date(d3Expire);
-    d3Start.setDate(d3Expire.getDate() - 10);
+    // 2. 決定第 3 次的計算基準點 (看有沒有輸入第 2 次實際領藥日)
+    let d3Start, d3Expire, isDynamic = false;
+
+    if (rxSecondActualVal) {
+      // 依病人實際來拿第 2 次藥的日期做基底往後推
+      const d2Actual = new Date(rxSecondActualVal);
+      d2Actual.setHours(0,0,0,0);
+      
+      d3Expire = new Date(d2Actual);
+      d3Expire.setDate(d2Actual.getDate() + perDays);
+      
+      d3Start = new Date(d3Expire);
+      d3Start.setDate(d3Expire.getDate() - 10);
+      isDynamic = true;
+    } else {
+      // 標準流程推算
+      d3Expire = new Date(d1);
+      d3Expire.setDate(d1.getDate() + (perDays * 2));
+      
+      d3Start = new Date(d3Expire);
+      d3Start.setDate(d3Expire.getDate() - 10);
+    }
 
     const f3Start = formatDateObj(d3Start);
     const f3Expire = formatDateObj(d3Expire);
 
-    // 最後領藥截止日 = 整張處方箋吃完前 1 天
+    // 3. 嚴格鎖定：最終健保截止日 (第 1 次開立日 + 每期天數*3 - 1)
     const dFinalDeadline = new Date(d1);
     dFinalDeadline.setDate(d1.getDate() + (perDays * 3) - 1);
     const fFinal = formatDateObj(dFinalDeadline);
@@ -375,16 +388,36 @@ function calculateSchedule() {
     // 封裝卡片資料
     const rxCards = [
       { code: f1.roc, name: `第 1 次開立 / 領藥日<span class='small-note'>${f1.detail}</span>`, type: 'c-success' },
-      { code: `${f2Start.roc} ～ ${f2Expire.roc}`, name: `第 2 次可拿藥期間 <span class='small-note'>吃完前10天開放：${f2Start.detail} 起</span>`, type: 'c-accent' },
-      { code: `${f3Start.roc} ～ ${f3Expire.roc}`, name: `第 3 次可拿藥期間 <span class='small-note'>吃完前10天開放：${f3Start.detail} 起</span>`, type: 'c-accent' },
-      { code: fFinal.roc, name: `🛑 最後可以領藥截止日<span class='small-note'>必須於此日期前領取第3次藥物 (${fFinal.detail})</span>`, type: 'c-danger' }
+      { code: `${f2StartStandard.roc} ～ ${f2ExpireStandard.roc}`, name: `第 2 次可拿藥期間 <span class='small-note'>預設吃完前10天開放：${f2StartStandard.detail} 起</span>`, type: 'c-accent' }
     ];
+
+    // 如果有動態輸入第 2 次拿藥日期，卡片做特別提示
+    if (isDynamic) {
+      rxCards.push({
+        code: `${f3Start.roc} ～ ${f3Expire.roc}`,
+        name: `✨ 第 3 次可拿藥期間 (已根據第2次實際領藥日重新計算) <span class='small-note'>第2次實際吃完前10天開放：${f3Start.detail} 起</span>`,
+        type: 'c-orange'
+      });
+    } else {
+      rxCards.push({
+        code: `${f3Start.roc} ～ ${f3Expire.roc}`,
+        name: `第 3 次可拿藥期間 <span class='small-note'>預設吃完前10天開放：${f3Start.detail} 起</span>`,
+        type: 'c-accent'
+      });
+    }
+
+    // 最後領藥截止日卡片
+    rxCards.push({ 
+      code: fFinal.roc, 
+      name: `🛑 整張處方箋領藥截止日<span class='small-note'>健保法規硬性限制，第3次最晚必須於此日期前領取 (${fFinal.detail})</span>`, 
+      type: 'c-danger' 
+    });
 
     renderSection("📊 慢處箋三期健保排程表 (點擊可複製日期)", rxCards);
   }
 
   // ------------------------------------------
-  // 輔助功能：兩日期天數與相差天數
+  // 兩日期天數與相差天數
   // ------------------------------------------
   const dStartVal = document.getElementById("diffStart").value;
   const dEndVal = document.getElementById("diffEnd").value;
@@ -450,27 +483,27 @@ function applyFontSize(size){
   });
 }
 
-// 綁定更動事件
+// 監聽所有輸入
 document.getElementById("rxStartDate").addEventListener("input", calculateSchedule);
 document.getElementById("perPeriodDays").addEventListener("input", calculateSchedule);
+document.getElementById("rxSecondActualDate").addEventListener("input", calculateSchedule);
 document.getElementById("diffStart").addEventListener("input", calculateSchedule);
 document.getElementById("diffEnd").addEventListener("input", calculateSchedule);
 
-// 🛠️ 「清除資料」按鈕邏輯
+// 清除資料
 document.getElementById("clearDataBtn").addEventListener("click", () => {
   document.getElementById("rxStartDate").value = "";
+  document.getElementById("rxSecondActualDate").value = "";
   document.getElementById("diffStart").value = "";
   document.getElementById("diffEnd").value = "";
-  container.innerHTML = ""; // 直接清空下方結果圖表
+  container.innerHTML = "";
   showToast("欄位已清空 🧹");
 });
 
-// 字體無級縮放
 fontSlider.addEventListener("input", (e) => {
   applyFontSize(e.target.value);
 });
 
-// 控制面板與深色模式
 const settingsBtn = document.getElementById("settingsBtn");
 const settingsPanel = document.getElementById("settingsPanel");
 const modeBtn = document.getElementById("modeBtn");
@@ -484,7 +517,6 @@ modeBtn.addEventListener("click", () => {
   modeBtn.innerText = document.body.classList.contains("dark") ? "☀️ 切換日間模式" : "🌙 切換深色模式";
 });
 
-// 首次載入執行
 calculateSchedule();
 </script>
 
