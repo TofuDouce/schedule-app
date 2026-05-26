@@ -334,11 +334,34 @@ body {
 // 區塊細分資料庫，搭配直觀 Emoji 標籤
 const data = {
 
+"📝 門診常用與新舊對照 (手寫筆記)":[
+  ["[341] K297", "胃炎"],
+  ["[151] K529", "胃腸炎"],
+  ["[353] N341", "尿道炎"],
+  ["[CE P*] L0390", "蜂窩性組織炎"],
+  ["[HE] B029", "疱疹"],
+  ["[7062] L723", "皮脂腺囊腫"],
+  ["[C/] L0291", "皮膚膿瘍"],
+  ["L0292", "癤"],
+  ["[ABS] L980", "化膿性肉芽腫 (處置後要加上 CD 才能接第二次換藥)"],
+  ["[MB] R42", "頭暈"],
+  ["[HEA] R519", "頭痛"],
+  ["K590", "便秘"],
+  ["[305] K649", "痔瘡"],
+  ["[TA] K056", "牙周疾病"],
+  ["J111", "流感 (未確認)"],
+  ["J09X2", "A流"],
+  ["[V*] B079", "病毒疣"],
+  ["[UB] K922", "腸胃道出血"],
+  ["Z712", "看報告的諮詢"],
+  ["K061", "牙齦腫大"]
+],
+
 "🦴 M00 關節痛 (一般)":[
-  ["M2550","關節痛"]
-  ["M5450","下背痛"]
-  ["M549","背痛"]
-  ["S335XXA","腰(部)脊椎[腰椎]韌帶扭傷及拉傷(勞損)之初期照護"]
+  ["M2550","關節痛"],
+  ["M5450","下背痛"],
+  ["M549","背痛"],
+  ["S335XXA","腰椎扭傷拉傷初期照護"]
 ],
 
 "🦺 M01 肩部關節痛":[
@@ -513,8 +536,13 @@ function render(keyword=""){
       `;
 
       card.onclick = () => {
-        navigator.clipboard.writeText(item[0]);
-        showToast();
+        // 提取標準的 ICD-10 代碼用於複製（過濾掉中括號和舊代碼）
+        let cleanCode = item[0];
+        if (cleanCode.includes("]")) {
+          cleanCode = cleanCode.split("]").pop().trim();
+        }
+        navigator.clipboard.writeText(cleanCode);
+        showToast(cleanCode);
       };
 
       grid.appendChild(card);
@@ -528,8 +556,9 @@ function render(keyword=""){
 }
 
 // 提示浮磚功能
-function showToast(){
+function showToast(code){
   const toast = document.getElementById("toast");
+  toast.innerText = `已複製病代: ${code}`;
   toast.classList.add("show");
   setTimeout(() => {
     toast.classList.remove("show");
