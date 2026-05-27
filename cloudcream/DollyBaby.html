@@ -1,366 +1,666 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌸 萌物專屬・Emoji 互動療癒摸摸機 🌸</title>
-    <style>
-        /* 日式簡約粉彩柔和配色 */
-        :root {
-            --bg-pastel: #fbf5f3;      /* 溫柔極簡米白 */
-            --card-bg: #ffffff;        /* 純白卡片 */
-            --primary-pink: #ffdae0;   /* 粉彩櫻花粉 */
-            --primary-blue: #d6eaff;   /* 粉彩天空藍 */
-            --text-main: #6d6465;      /* 溫柔深栗褐 */
-            --text-sub: #9e9394;       /* 柔和灰褐 */
-            --border-line: #f0e6e6;    /* 極細線條 */
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
-        }
+<title>✦ 萌物專屬・多娃養成觀測站 ✦</title>
 
-        body {
-            min-height: 100vh;
-            background-color: var(--bg-pastel);
-            color: var(--text-main);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            overflow-x: hidden;
-        }
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght=500;700&family=Zen+Maru+Gothic:wght=500;700&display=swap" rel="stylesheet">
 
-        /* 主療癒卡片容器 */
-        .container {
-            width: 100%;
-            max-width: 650px;
-            background: var(--card-bg);
-            border-radius: 32px;
-            padding: 30px;
-            box-shadow: 0 16px 40px rgba(224, 211, 211, 0.4);
-            border: 1px solid var(--border-line);
-            text-align: center;
-        }
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
 
-        h1 {
-            font-size: 24px;
-            color: var(--text-main);
-            margin-bottom: 6px;
-            letter-spacing: 1px;
-        }
+:root{
+    --bg-base:#fff9f6;
+    --bg-gradient:#ffebe3;
+    --card-bg:#ffffff;
+    --text-main:#54433a;
+    --text-sub:#8e7a70;
+    --gold:#f6c86c;
+    --gold-hover:#efb94d;
+    --pink:#f79999;
+    --line:#eadfd8;
+    --base-font-size:20px;
+}
 
-        .subtitle {
-            font-size: 14px;
-            color: var(--text-sub);
-            margin-bottom: 24px;
-        }
+body{
+    min-height:100vh;
+    background:linear-gradient(180deg, var(--bg-base) 0%, var(--bg-gradient) 100%);
+    font-family: "Zen Maru Gothic", "Quicksand", "Microsoft JhengHei", sans-serif;
+    color:var(--text-main);
+    padding:28px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    position:relative;
+}
 
-        /* 隱藏原生檔案上傳，做成漂亮按鈕 */
-        .upload-box {
-            margin-bottom: 20px;
-        }
-        
-        #fileInput {
-            display: none;
-        }
+.decor-border{
+    position:fixed;
+    inset:12px;
+    border:2px dashed rgba(142,122,112,0.15);
+    border-radius:24px;
+    pointer-events:none;
+}
 
-        .upload-btn {
-            display: inline-block;
-            padding: 10px 24px;
-            background-color: #ffffff;
-            border: 2px dashed #e2d5d5;
-            color: var(--text-sub);
-            border-radius: 50px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
+.container{
+    width:100%;
+    max-width:1200px;
+    position:relative;
+    z-index:2;
+}
 
-        .upload-btn:hover {
-            border-color: #ffb8c6;
-            color: #ff8fa4;
-            background-color: #fffafb;
-        }
+.topbar{
+    display:flex;
+    justify-content:flex-end;
+    gap:8px;
+    margin-bottom:18px;
+}
 
-        /* 模式切換器（魔法道具包） */
-        .mode-selector {
-            display: flex;
-            justify-content: center;
-            gap: 16px;
-            margin-bottom: 24px;
-        }
+.top-btn{
+    border:none;
+    background:white;
+    border:1px solid rgba(142,122,112,0.18);
+    color:var(--text-main);
+    padding:8px 16px;
+    border-radius:999px;
+    cursor:pointer;
+    font-family:inherit;
+    font-size:15px;
+    font-weight:700;
+    transition:0.2s;
+}
 
-        .mode-btn {
-            padding: 12px 28px;
-            font-size: 16px;
-            font-weight: bold;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s, background-color 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-        }
+.top-btn:hover{
+    background:#fff4ec;
+    border-color:var(--gold);
+}
 
-        /* 撫摸模式按鈕樣式 */
-        .btn-stroke {
-            background-color: #fff0f2;
-            color: #ff6b8b;
-            border: 2px solid #ffdae0;
-        }
-        .btn-stroke.active {
-            background-color: #ffdae0;
-            transform: scale(1.05);
-            box-shadow: 0 6px 15px rgba(255, 218, 224, 0.6);
-        }
+.hero{
+    text-align:center;
+    margin-bottom:28px;
+}
 
-        /* 洗澡模式按鈕樣式 */
-        .btn-bath {
-            background-color: #f0f6ff;
-            color: #4a90e2;
-            border: 2px solid #d6eaff;
-        }
-        .btn-bath.active {
-            background-color: #d6eaff;
-            transform: scale(1.05);
-            box-shadow: 0 6px 15px rgba(214, 234, 255, 0.6);
-        }
+.badge{
+    display:inline-block;
+    background:rgba(246,200,108,0.18);
+    color:#b57d18;
+    padding:7px 16px;
+    border-radius:999px;
+    font-size:15px;
+    font-weight:700;
+    margin-bottom:14px;
+}
 
-        .mode-btn:active {
-            transform: scale(0.98);
-        }
+.title{
+    font-size:clamp(34px,5vw,50px);
+    line-height:1.4;
+    letter-spacing:1px;
+}
 
-        /* 互動大舞台 */
-        .stage {
-            position: relative;
-            width: 100%;
-            height: 420px;
-            background-color: #faf6f6;
-            border-radius: 24px;
-            overflow: hidden;
-            border: 1px solid var(--border-line);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+.subtitle{
+    margin-top:10px;
+    color:var(--text-sub);
+    font-size:16px;
+}
 
-        /* 預設提示文字 */
-        .placeholder-text {
-            color: var(--text-sub);
-            font-size: 15px;
-            pointer-events: none;
-            z-index: 1;
-        }
+.layout{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:24px;
+}
 
-        /* 娃娃本體照片 */
-        .doll-img {
-            max-width: 90%;
-            max-height: 90%;
-            object-fit: contain;
-            border-radius: 16px;
-            user-select: none;
-            -webkit-user-drag: none;
-            z-index: 2;
-            display: none;
-            transition: transform 0.1s ease-out; /* 讓被摸時的晃動更絲滑 */
-        }
+@media(min-width:900px){
+    .layout{
+        grid-template-columns:1.2fr 0.8fr;
+    }
+}
 
-        /* ✨ 關鍵自訂游標：當滑鼠移入舞台時，隱藏原本箭頭 */
-        .stage.has-img {
-            cursor: none;
-        }
+.card{
+    background:var(--card-bg);
+    border-radius:28px;
+    border:1px solid rgba(142,122,112,0.1);
+    padding:30px;
+    box-shadow: 0 10px 30px rgba(84,67,58,0.05);
+}
 
-        /* 追隨滑鼠的自訂 Emoji 游標 */
-        .custom-cursor {
-            position: fixed;
-            top: 0;
-            left: 0;
-            font-size: 42px; /* 道具手掌與肥皂的大小 */
-            pointer-events: none;
-            z-index: 9999;
-            display: none;
-            transform: translate(-50%, -50%);
-            user-select: none;
-        }
+.section-title{
+    font-size:24px;
+    margin-bottom:18px;
+}
 
-        /* 噴發出來的 Emoji 特效 */
-        .particle {
-            position: absolute;
-            font-size: 32px;
-            pointer-events: none;
-            z-index: 10;
-            animation: floatUp 0.8s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
-            user-select: none;
-        }
+.section-desc{
+    color:var(--text-sub);
+    line-height:1.8;
+    margin-bottom:22px;
+}
 
-        @keyframes floatUp {
-            0% {
-                opacity: 1;
-                transform: translate(-50%, -50%) scale(0.4) rotate(0deg);
-            }
-            100% {
-                opacity: 0;
-                transform: translate(var(--x), var(--y)) scale(1.3) rotate(var(--r));
-            }
-        }
-    </style>
+/* 互動舞台相關 */
+.stage-container {
+    position: relative;
+    width: 100%;
+}
+
+.stage-wrapper {
+    position: relative;
+    width: 100%;
+    background: #fffcfb;
+    border: 2px dashed rgba(142,122,112,0.2);
+    border-radius: 20px;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+    margin-bottom: 20px;
+}
+
+.stage-wrapper.has-img {
+    cursor: none; /* 有圖片時隱藏原生滑鼠 */
+}
+
+.upload-placeholder {
+    text-align: center;
+    color: var(--text-sub);
+    pointer-events: none;
+}
+
+#dollImage {
+    max-width: 85%;
+    max-height: 380px;
+    object-fit: contain;
+    pointer-events: none;
+    display: none;
+    transform-origin: center bottom;
+}
+
+/* 實體道具跟隨游標 */
+.custom-cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    font-size: 42px;
+    pointer-events: none;
+    z-index: 9999;
+    display: none;
+    transform: translate(-50%, -50%);
+    user-select: none;
+}
+
+/* 噴出的粒子動效 */
+.click-emoji {
+    position: absolute;
+    font-size: 32px;
+    pointer-events: none;
+    z-index: 10;
+    animation: floatUp 0.7s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+}
+
+@keyframes floatUp {
+    0% { transform: translate(-50%, -50%) scale(0.4); opacity: 1; }
+    100% { transform: translate(var(--x), var(--y)) scale(1.3) rotate(var(--r)); opacity: 0; }
+}
+
+/* 道具包工具列樣式 */
+.tool-selector {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.tool-btn {
+    background: #fffaf7;
+    border: 1.5px solid rgba(142,122,112,0.16);
+    border-radius: 16px;
+    padding: 12px 6px;
+    font-size: 20px;
+    cursor: pointer;
+    transition: 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-family: inherit;
+    font-weight: 700;
+}
+
+.tool-btn span {
+    font-size: 12px;
+    color: var(--text-sub);
+}
+
+.tool-btn:hover {
+    background: #fff4ec;
+    border-color: var(--gold);
+}
+
+.tool-btn.active {
+    background: #fff4ec;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 4px rgba(246,200,108,0.3);
+}
+
+/* 表單與輸入 */
+.input-group { margin-bottom: 14px; }
+.label { display: block; margin-bottom: 6px; font-weight: 700; font-size: 15px; }
+.input { width: 100%; padding: 12px 14px; border-radius: 14px; border: 1.5px solid rgba(142,122,112,0.16); background: #fffbf9; color: var(--text-main); font-size: 15px; font-family: inherit; }
+.input:focus { outline: none; border-color: var(--gold); background: white; box-shadow: 0 0 0 4px rgba(246,200,108,0.2); }
+.file-btn { background: #4d4038; color: white; padding: 12px; border-radius: 14px; cursor: pointer; text-align: center; font-size: 14px; font-weight: 700; display: block; margin-top: 6px; }
+
+/* 娃娃列表卡片 */
+.list { display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; padding-right: 4px; }
+.list-item { background: #fffcfb; border: 1px solid rgba(142,122,112,0.08); border-radius: 16px; padding: 14px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: 0.2s; position: relative; }
+.list-item:hover { border-color: var(--gold); background: #fffbf9; }
+.list-item.active { border-color: var(--pink); background: #fff6f7; box-shadow: 0 4px 12px rgba(247,153,153,0.15); }
+.list-thumb { width: 50px; height: 50px; border-radius: 10px; object-fit: cover; background: #eee; }
+.list-info { flex: 1; }
+.list-item-title { font-weight: 700; font-size: 16px; display: flex; align-items: center; gap: 6px; }
+.list-item-text { color: var(--text-sub); font-size: 13px; margin-top: 2px; }
+.delete-btn { background: none; border: none; color: var(--pink); font-size: 18px; cursor: pointer; padding: 4px; position: absolute; right: 12px; top: 12px; z-index: 5; }
+.delete-btn:hover { transform: scale(1.1); }
+
+/* 狀態面板 */
+.status-bar {
+    background: #fffaf7;
+    border-radius: 16px;
+    padding: 14px;
+    margin-bottom: 18px;
+    border: 1px solid rgba(142,122,112,0.1);
+}
+.status-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 14px; }
+.status-val { font-weight: 700; color: var(--pink); }
+
+.main-btn { width: 100%; border: none; background: var(--gold); color: var(--text-main); padding: 14px; border-radius: 16px; cursor: pointer; font-family: inherit; font-size: 16px; font-weight: 700; box-shadow: 0 6px 16px rgba(246,200,108,0.25); transition: 0.2s; }
+.main-btn:hover { background: var(--gold-hover); transform: translateY(-2px); }
+.footer { text-align: center; margin-top: 36px; color: var(--text-sub); font-size: 14px; }
+.footer b { color: var(--pink); }
+.watermark { position: fixed; right: 24px; bottom: 24px; color: rgba(142,122,112,0.4); font-size: 12px; letter-spacing: 0.5px; pointer-events: none; }
+</style>
 </head>
+
 <body>
 
-    <div class="container">
-        <h1>✨ 萌物專屬・Emoji 互動療癒摸摸機 ✨</h1>
-        <div class="subtitle">拍下你的棉花娃或寵物，換上道具好好的寵愛牠吧！</div>
+<div class="decor-border"></div>
+<div class="watermark">Made with pastel thoughts by <b>ChuChu</b> ✦</div>
 
-        <div class="upload-box">
-            <label for="fileInput" class="upload-btn">📸 點擊上傳你的娃娃照片</label>
-            <input type="file" id="fileInput" accept="image/*">
-        </div>
+<div class="container">
 
-        <div class="mode-selector">
-            <button class="mode-btn btn-stroke active" onclick="setMode('stroke')">🖐️ 撫摸模式</button>
-            <button class="mode-btn btn-bath" onclick="setMode('bath')">🧼 洗澡模式</button>
-        </div>
-
-        <div class="stage" id="stage" onmousemove="handleMove(event)" onmousedown="triggerInteraction(event)">
-            <div class="placeholder-text" id="placeholder">請先在上方上傳照片，才能開始互動唷 🌸</div>
-            <img src="" alt="娃娃" class="doll-img" id="doll">
-        </div>
+    <div class="topbar">
+        <button class="top-btn" onclick="adjustFontSize(-2)">A -</button>
+        <button class="top-btn" onclick="adjustFontSize(0)">A</button>
+        <button class="top-btn" onclick="adjustFontSize(2)">A +</button>
     </div>
 
-    <div class="custom-cursor" id="customCursor">🖐️</div>
+    <div class="hero">
+        <div class="badge">🌸 萌物多娃大世界 v2.0</div>
+        <h1 class="title">我的娃娃養成觀測站</h1>
+        <p class="subtitle">切換不同的魔法道具，親手撫摸、洗澡、餵食你最心愛的寶貝們吧！</p>
+    </div>
 
-    <script>
-        const fileInput = document.getElementById('fileInput');
-        const stage = document.getElementById('stage');
-        const doll = document.getElementById('doll');
-        const placeholder = document.getElementById('placeholder');
-        const customCursor = document.getElementById('customCursor');
+    <div class="layout">
 
-        // 當前模式：'stroke' (撫摸) 或 'bath' (洗澡)
-        let currentMode = 'stroke';
-        let hasImage = false;
-
-        // 圖片上傳解析
-        fileInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    doll.src = event.target.result;
-                    doll.style.display = 'block';
-                    placeholder.style.display = 'none';
-                    stage.classList.add('has-img');
-                    hasImage = true;
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-        // 切換模式（更換游標與噴發物件設定）
-        function setMode(mode) {
-            currentMode = mode;
+        <!-- LEFT: 核心互動大舞台 -->
+        <div class="card">
+            <h2 class="section-title" id="currentDollName">🔮 請選擇或新增一隻娃娃</h2>
             
-            // 更新按鈕高亮
-            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
-            if (mode === 'stroke') {
-                document.querySelector('.btn-stroke').classList.add('active');
-                customCursor.innerText = '🖐️';
-            } else {
-                document.querySelector('.btn-bath').classList.add('active');
-                customCursor.innerText = '🧼';
-            }
-        }
+            <div class="status-bar">
+                <div class="status-row">
+                    <span>👑 羈絆稱號：<b id="dollTitle" style="color: #b57d18;">無</b></span>
+                    <span>💖 親密指數：<b id="dollLove" class="status-val">0</b></span>
+                </div>
+                <div class="status-row">
+                    <span>💬 寶貝備註：<span id="dollDesc" style="color: var(--text-sub);">尚未選擇娃娃</span></span>
+                </div>
+            </div>
 
-        // 處理游標跟隨與滑動即時觸發
-        let lastSpawnTime = 0;
-        function handleMove(e) {
-            if (!hasImage) return;
+            <!-- 魔法道具包切換 -->
+            <div class="tool-selector">
+                <button class="tool-btn active" onclick="setTool('stroke', '🖐️', '💖', this)">🖐️<span>撫摸</span></button>
+                <button class="tool-btn" onclick="setTool('bath', '🧼', '✨', this)">🧼<span>洗澡</span></button>
+                <button class="tool-btn" onclick="setTool('feed', '🍼', '🥛', this)">🍼<span>餵奶</span></button>
+                <button class="tool-btn" onclick="setTool('poke', '🥊', '💢', this)">🥊<span>輕敲</span></button>
+            </div>
 
-            // 讓自訂道具（手掌/肥皂）跟著滑鼠移動
-            customCursor.style.display = 'block';
-            customCursor.style.left = e.clientX + 'px';
-            customCursor.style.top = e.clientY + 'px';
+            <!-- 互動舞台 -->
+            <div class="stage-container">
+                <div class="stage-wrapper" id="stage" onmousemove="handleStageMove(event)" onmousedown="handleStageClick(event)">
+                    <div class="upload-placeholder" id="placeholder">
+                        <div style="font-size:48px;">🧸</div>
+                        <p>目前沒有正在互動的娃娃<br>請在右側選擇或新增一隻唷！</p>
+                    </div>
+                    <img id="dollImage" src="" alt="娃娃本體">
+                </div>
+            </div>
+        </div>
 
-            // 滑動時自動噴發的效果（加點冷卻時間，每 60 毫秒最多噴一個，避免畫面太密集）
-            const now = Date.now();
-            if (now - lastSpawnTime > 60) {
-                // 只有滑鼠在娃娃圖片上方滑動時才噴發
-                if (e.target === doll) {
-                    spawnEmoji(e);
-                    bounceDoll();
-                    lastSpawnTime = now;
-                }
-            }
-        }
-
-        // 點擊滑鼠時也絕對會噴發
-        function triggerInteraction(e) {
-            if (!hasImage) return;
-            if (e.target === doll || e.target === stage) {
-                spawnEmoji(e);
-                bounceDoll();
-            }
-        }
-
-        // 離開舞台時隱藏專屬游標
-        stage.addEventListener('mouseleave', () => {
-            customCursor.style.display = 'none';
-        });
-
-        // 產生噴發 Emoji 核心邏輯
-        function spawnEmoji(e) {
-            const rect = stage.getBoundingClientRect();
-            // 計算出相對於舞台內部的精確 X, Y 座標
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-
-            const particle = document.createElement('div');
-            particle.className = 'particle';
+        <!-- RIGHT: 新增娃娃與收藏清單 -->
+        <div class="card">
+            <h2 class="section-title">✨ 召喚新夥伴</h2>
             
-            // 根據目前模式決定噴出的特效
-            if (currentMode === 'stroke') {
-                particle.innerText = '💖'; // 撫摸出愛心
-            } else {
-                particle.innerText = '✨'; // 洗澡出閃亮泡泡
-            }
+            <div class="input-group">
+                <label class="label">娃娃名字</label>
+                <input class="input" type="text" id="newName" placeholder="例如：阿熊隊長、努Ki...">
+            </div>
 
-            particle.style.left = `${x}px`;
-            particle.style.top = `${y}px`;
+            <div class="input-group">
+                <label class="label">類別 / 備註</label>
+                <input class="input" type="text" id="newDesc" placeholder="例如：10cm棉花娃 / 超級傲嬌">
+            </div>
 
-            // 讓每個噴出來的 Emoji 有隨機的噴射軌跡與角度
-            const randomX = (Math.random() - 0.5) * 160; // 左右擴散
-            const randomY = -60 - Math.random() * 100;    // 向上噴發
-            const randomRotate = (Math.random() - 0.5) * 60; // 隨機旋轉
+            <div class="input-group">
+                <label class="label">上傳照片</label>
+                <label for="fileInput" class="file-btn">📸 選擇相簿照片</label>
+                <input type="file" id="fileInput" accept="image/*" onchange="previewImage(this)">
+                <div id="uploadStatus" style="font-size: 13px; color: var(--pink); margin-top: 6px; display: none; font-weight: bold;">✓ 照片已就緒</div>
+            </div>
 
-            particle.style.setProperty('--x', `${randomX}px`);
-            particle.style.setProperty('--y', `${randomY}px`);
-            particle.style.setProperty('--r', `${randomRotate}deg`);
+            <button class="main-btn" onclick="addDoll()">✦ 收入收藏大帳本 ✦</button>
 
-            stage.appendChild(particle);
+            <hr style="border: none; border-top: 1px dashed var(--line); margin: 20px 0;">
 
-            // 動畫結束後自動洗掉標籤，保持網頁輕量不卡頓
-            particle.addEventListener('animationend', () => {
-                particle.remove();
-            });
+            <h2 class="section-title">🧸 我的娃娃大軍 (<span id="dollCount">0</span>)</h2>
+            <div class="list" id="dollList">
+                <!-- 娃娃清單會動態生成在這邊 -->
+            </div>
+        </div>
+
+    </div>
+
+    <div class="footer">
+        <div>✦ Pastel Minimal Doll Diary ✦</div>
+        <div>Designed by <b>ChuChu</b> © 2026</div>
+    </div>
+</div>
+
+<!-- 實體道具跟隨游標 -->
+<div class="custom-cursor" id="customCursor">🖐️</div>
+
+<script>
+// 養成系統全域變數
+let dolls = [];
+let activeDollId = null;
+let currentTool = 'stroke';
+let cursorEmoji = '🖐️';
+let particleEmoji = '💖';
+let tempImgBase64 = "";
+
+// 載入 localStorage 資料
+window.onload = function() {
+    const savedDolls = localStorage.getItem('pastel_dolls');
+    if (savedDolls) {
+        dolls = JSON.parse(savedDolls);
+        renderDollList();
+        if (dolls.length > 0) {
+            selectDoll(dolls[0].id);
         }
+    }
+};
 
-        // 娃娃被撫摸或洗澡時的縮放晃動反饋
-        function bounceDoll() {
-            // 隨機產生微幅的左右搖擺與縮放，像真的被揉捏一樣
-            const randomRot = (Math.random() - 0.5) * 6; // -3 到 3 度
-            doll.style.transform = `scale(0.96) rotate(${randomRot}deg)`;
-            
-            // 0.1秒後彈回原狀
-            setTimeout(() => {
-                doll.style.transform = 'scale(1) rotate(0deg)';
-            }, 100);
+// 儲存至 localStorage
+function saveToStorage() {
+    localStorage.setItem('pastel_dolls', JSON.stringify(dolls));
+}
+
+// 預覽與暫存圖片
+function previewImage(input) {
+    const file = input.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            tempImgBase64 = e.target.result;
+            document.getElementById('uploadStatus').style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// 新增一隻娃娃
+function addDoll() {
+    const nameInput = document.getElementById('newName');
+    const descInput = document.getElementById('newDesc');
+    
+    if (!nameInput.value.trim()) {
+        alert("請幫娃娃取個名字嘛 🌸");
+        return;
+    }
+    if (!tempImgBase64) {
+        alert("請上傳一張娃娃的照片唷 📸");
+        return;
+    }
+
+    const newDoll = {
+        id: 'doll_' + Date.now(),
+        name: nameInput.value.trim(),
+        desc: descInput.value.trim() || "尚無備註",
+        image: tempImgBase64,
+        love: 0
+    };
+
+    dolls.push(newDoll);
+    saveToStorage();
+    renderDollList();
+    selectDoll(newDoll.id);
+
+    // 清空表單
+    nameInput.value = "";
+    descInput.value = "";
+    tempImgBase64 = "";
+    document.getElementById('fileInput').value = "";
+    document.getElementById('uploadStatus').style.display = 'none';
+}
+
+// 刪除娃娃
+function deleteDoll(id, event) {
+    event.stopPropagation(); // 防止觸發選擇娃娃
+    if (!confirm("確定要讓這隻娃娃離開你的大帳本嗎？🥺")) return;
+    
+    dolls = dolls.filter(d => d.id !== id);
+    saveToStorage();
+    renderDollList();
+
+    if (activeDollId === id) {
+        if (dolls.length > 0) {
+            selectDoll(dolls[0].id);
+        } else {
+            activeDollId = null;
+            document.getElementById('dollImage').style.display = 'none';
+            document.getElementById('placeholder').style.display = 'block';
+            document.getElementById('stage').classList.remove('has-img');
+            document.getElementById('currentDollName').innerText = "🔮 請選擇或新增一隻娃娃";
+            document.getElementById('dollTitle').innerText = "無";
+            document.getElementById('dollLove').innerText = "0";
+            document.getElementById('dollDesc').innerText = "尚未選擇娃娃";
         }
-    </script>
+    }
+}
+
+// 渲染右側列表
+function renderDollList() {
+    const listContainer = document.getElementById('dollList');
+    document.getElementById('dollCount').innerText = dolls.length;
+    listContainer.innerHTML = "";
+
+    dolls.forEach(doll => {
+        const titleText = getTitleByLove(doll.love);
+        const item = document.createElement('div');
+        item.className = `list-item ${doll.id === activeDollId ? 'active' : ''}`;
+        item.onclick = () => selectDoll(doll.id);
+
+        item.innerHTML = `
+            <img src="${doll.image}" class="list-thumb">
+            <div class="list-info">
+                <div class="list-item-title">${doll.name} <span style="font-size:11px; background:rgba(247,153,153,0.15); color:var(--pink); padding:2px 6px; border-radius:99px;">${titleText}</span></div>
+                <div class="list-item-text">💖 親密：${doll.love} | ${doll.desc}</div>
+            </div>
+            <button class="delete-btn" onclick="deleteDoll('${doll.id}', event)">🗑️</button>
+        `;
+        listContainer.appendChild(item);
+    });
+}
+
+// 選擇某隻娃娃進入舞台
+function selectDoll(id) {
+    activeDollId = id;
+    const doll = dolls.find(d => d.id === id);
+    if (!doll) return;
+
+    // 更新左側舞台資訊
+    document.getElementById('currentDollName').innerText = `🧸 正在與「${doll.name}」互動中`;
+    document.getElementById('dollDesc').innerText = doll.desc;
+    document.getElementById('dollLove').innerText = doll.love;
+    document.getElementById('dollTitle').innerText = getTitleByLove(doll.love);
+
+    const img = document.getElementById('dollImage');
+    const placeholder = document.getElementById('placeholder');
+    img.src = doll.image;
+    img.style.display = 'block';
+    placeholder.style.display = 'none';
+    document.getElementById('stage').classList.add('has-img');
+
+    // 刷新列表高亮
+    document.querySelectorAll('.list-item').forEach(item => item.classList.remove('active'));
+    renderDollList();
+}
+
+// 依據親密度計算稱號
+function getTitleByLove(love) {
+    if (love < 50) return "素昧平生";
+    if (love < 200) return "略有默契 🌸";
+    if (love < 600) return "情同手足 🧸";
+    if (love < 1500) return "掌上明珠 ✨";
+    return "💖 靈魂伴侶 💖";
+}
+
+// 切換道具
+function setTool(toolName, cEmoji, pEmoji, btn) {
+    currentTool = toolName;
+    cursorEmoji = cEmoji;
+    particleEmoji = pEmoji;
+    
+    document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('customCursor').innerText = cEmoji;
+}
+
+// 舞台上滑鼠移動動效
+const stage = document.getElementById('stage');
+const customCursor = document.getElementById('customCursor');
+let lastSpawn = 0;
+
+function handleStageMove(e) {
+    if (!activeDollId) return;
+
+    // 實體道具跟隨滑鼠
+    customCursor.style.display = 'block';
+    customCursor.style.left = e.clientX + 'px';
+    customCursor.style.top = e.clientY + 'px';
+
+    // 滑動刷親密感
+    const now = Date.now();
+    if (now - lastSpawn > 60) {
+        if (e.target === document.getElementById('dollImage')) {
+            spawnParticle(e);
+            addLove(1);
+            animateDoll();
+            lastSpawn = now;
+        }
+    }
+}
+
+function handleStageClick(e) {
+    if (!activeDollId) return;
+    spawnParticle(e);
+    addLove(3); // 點擊加更多親密值！
+    animateDoll();
+}
+
+// 離開舞台隱藏道具
+stage.addEventListener('mouseleave', () => {
+    customCursor.style.display = 'none';
+});
+
+// 增加親密度
+function addLove(amount) {
+    const doll = dolls.find(d => d.id === activeDollId);
+    if (!doll) return;
+
+    doll.love += amount;
+    document.getElementById('dollLove').innerText = doll.love;
+    document.getElementById('dollTitle').innerText = getTitleByLove(doll.love);
+    
+    // 節流儲存，避免卡頓
+    saveToStorage();
+}
+
+// 噴發粒子核心
+function spawnParticle(e) {
+    const rect = stage.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const el = document.createElement('div');
+    el.className = 'click-emoji';
+    el.innerText = particleEmoji;
+    el.style.left = `${x}px`;
+    el.style.top = `${y}px`;
+
+    // 隨機彈道運動軌跡
+    const rx = (Math.random() - 0.5) * 180 + 'px';
+    const ry = (-80 - Math.random() * 120) + 'px';
+    const rr = (Math.random() - 0.5) * 80 + 'deg';
+
+    el.style.setProperty('--x', rx);
+    el.style.setProperty('--y', ry);
+    el.style.setProperty('--r', rr);
+
+    stage.appendChild(el);
+    el.addEventListener('animationend', () => el.remove());
+}
+
+// 依據不同道具，娃娃產生截然不同的「神經病反饋動畫」
+function animateDoll() {
+    const img = document.getElementById('dollImage');
+    
+    if (currentTool === 'stroke') {
+        // 撫摸：左右溫柔晃動、害羞縮放
+        const rot = (Math.random() - 0.5) * 6;
+        img.style.transform = `scale(0.96, 1.04) rotate(${rot}deg)`;
+    } else if (currentTool === 'bath') {
+        // 洗澡：上下舒服浮動
+        img.style.transform = `translateY(-15px) scale(1)`;
+    } else if (currentTool === 'feed') {
+        // 餵奶：開心地長大一下下
+        img.style.transform = `scale(1.08)`;
+    } else if (currentTool === 'poke') {
+        // 輕敲：劇烈左右晃動（被揍了）
+        const rot = (Math.random() - 0.5) * 20;
+        img.style.transform = `translateX(${(Math.random() - 0.5) * 15}px) rotate(${rot}deg)`;
+    }
+
+    setTimeout(() => {
+        img.style.transform = 'scale(1) translate(0) rotate(0deg)';
+    }, 120);
+}
+
+// 字體調整縮放
+let currentSize = 20;
+function adjustFontSize(modifier) {
+    if (modifier === 0) currentSize = 20;
+    else {
+        currentSize += modifier;
+        if (currentSize < 14) currentSize = 14;
+        if (currentSize > 28) currentSize = 28;
+    }
+    document.body.style.fontSize = currentSize + 'px';
+}
+</script>
 </body>
 </html>
