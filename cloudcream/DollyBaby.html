@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>✦ 萌物專屬・Emoji 互動療癒摸摸機 ✦</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+:root{
+    --bg-base:#fff9f6;
+    --bg-gradient:#ffebe3;
+
+    --card-bg:#ffffff;
+
+    --text-main:#54433a;
+    --text-sub:#8e7a70;
+
+    --gold:#f6c86c;
+    --gold-hover:#efb94d;
+
+    --pink:#f79999;
+
+    --line:#eadfd8;
+
+    --base-font-size:20px;
+}
+
+body{
+    min-height:100vh;
+    background:linear-gradient(
+        180deg,
+        var(--bg-base) 0%,
+        var(--bg-gradient) 100%
+    );
+
+    font-family:
+    "Zen Maru Gothic",
+    "Quicksand",
+    "Microsoft JhengHei",
+    sans-serif;
+
+    color:var(--text-main);
+
+    padding:28px;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    position:relative;
+}
+
+.decor-border{
+    position:fixed;
+    inset:12px;
+
+    border:2px dashed rgba(142,122,112,0.15);
+    border-radius:24px;
+
+    pointer-events:none;
+}
+
+.container{
+    width:100%;
+    max-width:1200px;
+
+    position:relative;
+    z-index:2;
+}
+
+.topbar{
+    display:flex;
+    justify-content:flex-end;
+    gap:8px;
+
+    margin-bottom:18px;
+}
+
+.top-btn{
+    border:none;
+
+    background:white;
+
+    border:1px solid rgba(142,122,112,0.18);
+
+    color:var(--text-main);
+
+    padding:8px 16px;
+
+    border-radius:999px;
+
+    cursor:pointer;
+
+    font-family:inherit;
+    font-size:15px;
+    font-weight:700;
+
+    transition:0.2s;
+}
+
+.top-btn:hover{
+    background:#fff4ec;
+    border-color:var(--gold);
+}
+
+.hero{
+    text-align:center;
+    margin-bottom:28px;
+}
+
+.badge{
+    display:inline-block;
+
+    background:rgba(246,200,108,0.18);
+
+    color:#b57d18;
+
+    padding:7px 16px;
+
+    border-radius:999px;
+
+    font-size:15px;
+    font-weight:700;
+
+    margin-bottom:14px;
+}
+
+.title{
+    font-size:clamp(34px,5vw,50px);
+    line-height:1.4;
+    letter-spacing:1px;
+}
+
+.subtitle{
+    margin-top:10px;
+
+    color:var(--text-sub);
+
+    font-size:16px;
+}
+
+.layout{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:24px;
+}
+
+@media(min-width:900px){
+    .layout{
+        grid-template-columns:1.2fr 0.8fr;
+    }
+}
+
+.card{
+    background:var(--card-bg);
+
+    border-radius:28px;
+
+    border:1px solid rgba(142,122,112,0.1);
+
+    padding:30px;
+
+    box-shadow:
+    0 10px 30px rgba(84,67,58,0.05);
+
+    display: flex;
+    flex-direction: column;
+}
+
+.section-title{
+    font-size:24px;
+    margin-bottom:18px;
+}
+
+.section-desc{
+    color:var(--text-sub);
+    line-height:1.8;
+    margin-bottom:22px;
+}
+
+/* 互動舞台區 */
+.stage-wrapper {
+    position: relative;
+    width: 100%;
+    background: #fffcfb;
+    border: 2px dashed rgba(142,122,112,0.2);
+    border-radius: 20px;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 450px;
+    margin-bottom: 20px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.upload-placeholder {
+    text-align: center;
+    color: var(--text-sub);
+    pointer-events: none;
+}
+
+.upload-placeholder div {
+    font-size: 48px;
+    margin-bottom: 10px;
+}
+
+#dollImage {
+    max-width: 100%;
+    max-height: 500px;
+    object-fit: contain;
+    pointer-events: none;
+    display: none;
+    transition: transform 0.1s ease-out;
+    transform-origin: center bottom;
+}
+
+/* 點擊時的娃娃縮放動畫特效 */
+.stage-wrapper:active #dollImage {
+    transform: scale(0.95, 1.05);
+}
+
+/* 噴出的 Emoji 特效樣式 */
+.click-emoji {
+    position: absolute;
+    font-size: 45px;
+    pointer-events: none;
+    z-index: 10;
+    animation: floatUp 0.8s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+    user-select: none;
+}
+
+@keyframes floatUp {
+    0% {
+        transform: translate(-50%, -50%) scale(0.3) rotate(0deg);
+        opacity: 0;
+    }
+    15% {
+        transform: translate(-50%, -70%) scale(1.2) rotate(var(--rand-rot));
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -150%) scale(1) rotate(var(--rand-rot));
+        opacity: 0;
+    }
+}
+
+/* 魔法 Emoji 選擇器 */
+.emoji-selector {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.emoji-btn {
+    background: #fffaf7;
+    border: 1.5px solid rgba(142,122,112,0.16);
+    border-radius: 16px;
+    padding: 12px;
+    font-size: 24px;
+    cursor: pointer;
+    transition: 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.emoji-btn span {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-sub);
+}
+
+.emoji-btn:hover {
+    background: #fff4ec;
+    border-color: var(--gold);
+    transform: translateY(-2px);
+}
+
+.emoji-btn.active {
+    background: #fff4ec;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 4px rgba(246,200,108,0.3);
+}
+
+.file-input-label {
+    display: block;
+    text-align: center;
+    background: #4d4038;
+    color: white;
+    padding: 14px;
+    border-radius: 16px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 700;
+    transition: 0.2s;
+}
+
+.file-input-label:hover {
+    opacity: 0.9;
+}
+
+#fileInput {
+    display: none;
+}
+
+/* 側邊統計樣式 */
+.list {
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+}
+
+.list-item{
+    background:#fffcfb;
+    border:1px solid rgba(142,122,112,0.08);
+    border-radius:16px;
+    padding:16px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.list-item-title{
+    font-weight:700;
+}
+
+.counter-num {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--pink);
+}
+
+.main-btn{
+    width:100%;
+    border:none;
+    background:var(--gold);
+    color:var(--text-main);
+    padding:16px;
+    border-radius:18px;
+    cursor:pointer;
+    font-family:inherit;
+    font-size:17px;
+    font-weight:700;
+    margin-top:10px;
+    box-shadow:0 6px 16px rgba(246,200,108,0.25);
+    transition:0.2s;
+}
+
+.main-btn:hover{
+    background:var(--gold-hover);
+    transform:translateY(-2px);
+}
+
+.footer{
+    text-align:center;
+    margin-top:36px;
+    color:var(--text-sub);
+    font-size:14px;
+}
+
+.footer b{
+    color:var(--pink);
+}
+
+.watermark{
+    position:fixed;
+    right:24px;
+    bottom:24px;
+    color:rgba(142,122,112,0.4);
+    font-size:12px;
+    letter-spacing:0.5px;
+    pointer-events:none;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="decor-border"></div>
+
+<div class="watermark">
+    Made with pastel thoughts by <b>ChuChu</b> ✦
+</div>
+
+<div class="container">
+
+    <div class="topbar">
+        <button class="top-btn" onclick="adjustFontSize(-2)">A -</button>
+        <button class="top-btn" onclick="adjustFontSize(0)">A</button>
+        <button class="top-btn" onclick="adjustFontSize(2)">A +</button>
+    </div>
+
+    <div class="hero">
+        <div class="badge">
+            Emoji 互動療癒工坊 🧸
+        </div>
+
+        <h1 class="title">
+            萌物專屬・摸摸觀測站
+        </h1>
+
+        <p class="subtitle">
+            上傳心愛的娃娃照片，用滿滿的愛意點擊摸摸它吧！
+        </p>
+    </div>
+
+    <div class="layout">
+
+        <div class="card">
+
+            <h2 class="section-title">
+                🔮 娃娃互動大舞台
+            </h2>
+
+            <div class="stage-wrapper" id="stage" onclick="spawnEmoji(event)">
+                <div class="upload-placeholder" id="placeholder">
+                    <div>📸</div>
+                    <p>點擊下方按鈕或把娃娃照片拖曳進來</p>
+                </div>
+                <img id="dollImage" src="" alt="您的寶貝娃娃">
+            </div>
+
+            <label class="label">✨ 選擇傳達的愛意</label>
+            <div class="emoji-selector">
+                <button class="emoji-btn active" onclick="changeEmoji('🫳', '摸頭', this)">🫳<span>摸頭</span></button>
+                <button class="emoji-btn" onclick="changeEmoji('❤️', '愛心', this)">❤️<span>愛心</span></button>
+                <button class="emoji-btn" onclick="changeEmoji('✨', '閃亮', this)">✨<span>閃亮</span></button>
+                <button class="emoji-btn" onclick="changeEmoji('🥳', '歡呼', this)">🥳<span>歡呼</span></button>
+                <button class="emoji-btn" onclick="changeEmoji('😭', '貼貼', this)">😭<span>貼貼</span></button>
+            </div>
+
+            <label for="fileInput" class="file-input-label">📁 召喚我的寶貝娃娃照片</label>
+            <input type="file" id="fileInput" accept="image/*" onchange="loadDoll(this)">
+
+        </div>
+
+        <div class="card">
+
+            <h2 class="section-title">
+                📊 幸福能量大帳本
+            </h2>
+
+            <p class="section-desc">
+                這裡記錄了你今天對娃娃付出的所有愛意與次數。
+            </p>
+
+            <div class="list">
+
+                <div class="list-item">
+                    <div class="list-item-title">✨ 今日總摸摸次數</div>
+                    <div class="counter-num" id="totalCount">0</div>
+                </div>
+
+                <div class="list-item">
+                    <div class="list-item-title">🫳 溫柔摸頭次數</div>
+                    <div class="counter-num" id="count-🫳">0</div>
+                </div>
+
+                <div class="list-item">
+                    <div class="list-item-title">❤️ 狂刷愛心次數</div>
+                    <div class="counter-num" id="count-❤️">0</div>
+                </div>
+
+                <div class="list-item">
+                    <div class="list-item-title">✨ 閃亮加持次數</div>
+                    <div class="counter-num" id="count-✨">0</div>
+                </div>
+
+                <div class="list-item">
+                    <div class="list-item-title">🥳 快樂歡呼次數</div>
+                    <div class="counter-num" id="count-🥳">0</div>
+                </div>
+
+                <div class="list-item">
+                    <div class="list-item-title">😭 瘋狂貼貼次數</div>
+                    <div class="counter-num" id="count-😭">0</div>
+                </div>
+
+            </div>
+
+            <button class="main-btn" onclick="resetCounters()">
+                🧹 洗滌心靈（數據重設）
+            </button>
+
+        </div>
+
+    </div>
+
+    <div class="footer">
+        <div>
+            ✦ Pastel Minimal Petting Machine ✦
+        </div>
+
+        <div>
+            Designed by <b>ChuChu</b> © 2026
+        </div>
+    </div>
+
+</div>
+
+<script>
+// 當前選擇的表情
+let currentEmoji = '🫳';
+
+// 計數器資料庫
+const stats = {
+    total: 0,
+    '🫳': 0,
+    '❤️': 0,
+    '✨': 0,
+    '🥳': 0,
+    '😭': 0
+};
+
+// 1. 處理娃娃照片讀取
+function loadDoll(input) {
+    const file = input.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = document.getElementById('dollImage');
+            const placeholder = document.getElementById('placeholder');
+            img.src = e.target.result;
+            img.style.display = 'block';
+            placeholder.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// 拖曳上傳支援
+const stage = document.getElementById('stage');
+stage.addEventListener('dragover', (e) => {
+    e.preventDefault();
+});
+stage.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+        const input = document.getElementById('fileInput');
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        input.files = dt.files;
+        loadDoll(input);
+    }
+});
+
+// 2. 切換表情
+function changeEmoji(emoji, name, btn) {
+    currentEmoji = emoji;
+    // 切換按鈕的高亮樣式
+    document.querySelectorAll('.emoji-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+}
+
+// 3. 核心功能：生成噴出的 Emoji 特效
+function spawnEmoji(e) {
+    // 如果還沒有上傳圖片，點擊舞台不累加計數（或是只當作點擊舞台）
+    const img = document.getElementById('dollImage');
+    if (!img.src || img.style.display === 'none') {
+        // 如果還沒有圖片，點擊先觸發檔案上傳，方便使用者
+        document.getElementById('fileInput').click();
+        return;
+    }
+
+    // 取得點擊相對於舞台的局部座標
+    const rect = stage.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // 建立 Emoji 元素
+    const emojiEl = document.createElement('div');
+    emojiEl.classList.add('click-emoji');
+    emojiEl.innerText = currentEmoji;
+    emojiEl.style.left = `${x}px`;
+    emojiEl.style.top = `${y}px`;
+
+    // 注入隨機的偏轉角度變數，讓特效更活潑
+    const randomRotation = (Math.random() * 40 - 20) + 'deg'; // -20度 到 20度
+    emojiEl.style.setProperty('--rand-rot', randomRotation);
+
+    // 塞進舞台
+    stage.appendChild(emojiEl);
+
+    // 動畫結束後自動移除，避免網頁卡頓
+    emojiEl.addEventListener('animationend', () => {
+        emojiEl.remove();
+    });
+
+    // 更新計數器數據
+    stats.total++;
+    stats[currentEmoji]++;
+    updateDashboard();
+}
+
+// 4. 更新大帳本數據
+function updateDashboard() {
+    document.getElementById('totalCount').innerText = stats.total;
+    document.getElementById('count-🫳').innerText = stats['🫳'];
+    document.getElementById('count-❤️').innerText = stats['❤️'];
+    document.getElementById('count-✨').innerText = stats['✨'];
+    document.getElementById('count-🥳').innerText = stats['🥳'];
+    document.getElementById('count-😭').innerText = stats['😭'];
+}
+
+// 5. 重設數據
+function resetCounters() {
+    stats.total = 0;
+    for (let key in stats) {
+        stats[key] = 0;
+    }
+    updateDashboard();
+}
+
+// 6. 字體大小魔法調整
+let currentSize = 20;
+function adjustFontSize(modifier) {
+    if (modifier === 0) {
+        currentSize = 20;
+    } else {
+        currentSize += modifier;
+        if (currentSize < 14) currentSize = 14;
+        if (currentSize > 28) currentSize = 28;
+    }
+    document.documentElement.style.setProperty('--base-font-size', currentSize + 'px');
+    document.body.style.fontSize = currentSize + 'px';
+}
+</script>
+
+</body>
+</html>
