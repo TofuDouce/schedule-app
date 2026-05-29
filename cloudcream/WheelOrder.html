@@ -25,6 +25,7 @@
             --butter-gold: #f6c86c; 
             --butter-gold-hover: #f3b946;
             --berry-pink: #f79999;
+            --edit-blue: #6ca0f6;
             --base-font-size: 21px;
         }
 
@@ -63,6 +64,7 @@
         .form-label { display: block; font-size: calc(var(--base-font-size) * 0.95); font-weight: 700; color: var(--text-main); margin-bottom: 8px; }
         .classic-input { width: 100%; background: #fffbf9; border: 1.5px solid rgba(142, 122, 112, 0.18); border-radius: 14px; padding: 12px 16px; color: var(--text-main); font-size: calc(var(--base-font-size) * 1.0); font-family: inherit; }
         .classic-input:focus { outline: none; border-color: var(--butter-gold); background: #ffffff; box-shadow: 0 0 0 3px rgba(246, 200, 108, 0.25); }
+        .classic-input.editing-mode { border-color: var(--edit-blue); background: #f0f5ff; }
 
         .category-tabs { display: flex; gap: 6px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 4px; }
         .tab-btn { background: #f7f3f0; border: 1px solid transparent; color: var(--text-sub); padding: 10px 16px; border-radius: 12px; cursor: pointer; font-size: calc(var(--base-font-size) * 0.8); font-weight: 700; white-space: nowrap; font-family: inherit; }
@@ -83,12 +85,17 @@
 
         .magic-btn { width: 100%; background: var(--butter-gold); border: none; color: var(--text-main); padding: 16px; border-radius: 16px; cursor: pointer; font-family: inherit; font-weight: 700; font-size: calc(var(--base-font-size) * 1.0); box-shadow: 0 4px 12px rgba(246, 200, 108, 0.3); margin-top: auto; }
         .magic-btn:hover { background: var(--butter-gold-hover); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(246, 200, 108, 0.4); }
+        .magic-btn.editing-mode { background: #5a95f5; color: white; box-shadow: 0 4px 12px rgba(90, 149, 245, 0.3); }
+        .magic-btn.editing-mode:hover { background: #417ee7; box-shadow: 0 6px 16px rgba(90, 149, 245, 0.4); }
 
         .ledger-list { max-height: 300px; overflow-y: auto; margin-bottom: 15px; padding-right: 4px; }
         .ledger-item { padding: 14px 0; border-bottom: 1px dashed rgba(142, 122, 112, 0.15); font-size: calc(var(--base-font-size) * 0.85); display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+        .ledger-item.being-edited { background: #f0f5ff; border-radius: 8px; padding: 14px 8px; border: 1px solid rgba(90, 149, 245, 0.3); }
         .ledger-name { color: var(--text-main); font-weight: 700; white-space: nowrap; }
         .ledger-detail { color: var(--text-sub); word-break: break-all; }
-        .delete-record { color: var(--berry-pink); cursor: pointer; margin-left: 12px; font-size: 16px; font-weight: 700; }
+        .action-records { display: flex; align-items: center; gap: 10px; margin-left: 12px; }
+        .edit-record { color: #417ee7; cursor: pointer; font-size: 15px; font-weight: 700; }
+        .delete-record { color: var(--berry-pink); cursor: pointer; font-size: 16px; font-weight: 700; }
 
         .filter-box { background: #fdfaf7; border: 1px dashed rgba(142, 122, 112, 0.25); border-radius: 14px; padding: 12px 14px; margin-bottom: 12px; }
         .filter-title { font-size: calc(var(--base-font-size) * 0.75); font-weight: 700; color: var(--text-sub); margin-bottom: 8px; display: flex; align-items: center; gap: 4px; }
@@ -153,8 +160,8 @@
     <div class="layout-grid">
         <div class="main-calculator" id="mainCorePanel">
             <div class="form-group">
-                <label class="form-label">Step 1. 輸入你的名字或暱稱</label>
-                <input type="text" id="memberInput" class="classic-input" placeholder="請輸入名字，主揪才找得到人喔..." autocomplete="off">
+                <label class="form-label" id="nameFieldLabel">Step 1. 輸入你的名字或暱稱</label>
+                <input type="text" id="memberInput" class="classic-input" placeholder="請輸入名字，主揪才找找到人喔..." autocomplete="off">
             </div>
 
             <label class="form-label">Step 2. 選擇口味與數量</label>
@@ -171,12 +178,18 @@
 
             <div class="smooth-hr"></div>
 
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                <span class="form-label" style="margin: 0;">您的本次點餐小計：</span>
-                <span style="font-size: 32px; font-weight: 700; color: #d96a6a;" id="singleTotal">$ 0</span>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span class="form-label" style="margin: 0;">您的本次點餐數量：</span>
+                    <span style="font-size: 22px; font-weight: 700; color: var(--text-main);" id="singleCount">0 顆</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span class="form-label" style="margin: 0;">您的本次點餐小計：</span>
+                    <span style="font-size: 32px; font-weight: 700; color: #d96a6a;" id="singleTotal">$ 0</span>
+                </div>
             </div>
 
-            <button class="magic-btn" onclick="submitOrder()">✦ 送出點餐 ✦</button>
+            <button class="magic-btn" id="submitBtn" onclick="submitOrder()">✦ 送出點餐 ✦</button>
         </div>
 
         <div class="sidebar-panel" id="sidebarPanel">
@@ -199,7 +212,7 @@
                         <input type="checkbox" id="showStatsOpt" checked onchange="onFilterChanged()"> 顯示全體品項加總 (B)
                     </label>
                     <label class="filter-label">
-                        <input type="checkbox" id="showTotalOpt" checked onchange="onFilterChanged()"> 顯示今日開團總金額 (C)
+                        <input type="checkbox" id="showTotalOpt" checked onchange="onFilterChanged()"> 顯示今日開團總金額與總數 (C)
                     </label>
                 </div>
             </div>
@@ -209,7 +222,11 @@
                     <span style="color: var(--text-sub); white-space: nowrap;">全體口味統計：</span>
                     <span id="allFlavorStats" style="font-size: 15px; text-align: right; max-width: 240px; word-break: break-all; color: var(--text-main); font-weight: 700; line-height: 1.4;">無</span>
                 </div>
-                <div class="summary-row" style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(142,122,112,0.2);">
+                <div class="summary-row" style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(142,122,112,0.2); align-items: center;">
+                    <span style="font-weight: 700; color: var(--text-sub);">全體訂購總數量：</span>
+                    <span style="font-size: 20px; font-weight: 700; color: var(--text-main);" id="grandCount">0 顆</span>
+                </div>
+                <div class="summary-row" style="margin-top: 6px; align-items: center;">
                     <span style="font-weight: 700; color: var(--text-main);">整單應付總金額：</span>
                     <span style="font-size: 28px; font-weight: 700; color: #d96a6a;" id="grandTotal">$ 0</span>
                 </div>
@@ -287,6 +304,7 @@ const menuData = {
 
 let currentSelection = {};
 let globalLedger = [];
+let editingId = null; // 用來追蹤目前正在修改哪一筆訂單
 
 function initSelections() {
     Object.keys(menuData).forEach(cat => { menuData[cat].forEach(item => { currentSelection[item.id] = 0; }); });
@@ -329,9 +347,18 @@ function findItemById(id) {
 
 function calculateSingleTotal() {
     let sum = 0;
-    Object.keys(currentSelection).forEach(id => { const qty = currentSelection[id]; const item = findItemById(id); if (item && qty > 0) sum += qty * item.price; });
+    let count = 0;
+    Object.keys(currentSelection).forEach(id => { 
+        const qty = currentSelection[id]; 
+        const item = findItemById(id); 
+        if (item && qty > 0) {
+            sum += qty * item.price; 
+            count += qty;
+        }
+    });
     document.getElementById('singleTotal').textContent = `$ ${sum}`;
-    return sum;
+    document.getElementById('singleCount').textContent = `${count} 顆`;
+    return { sum, count };
 }
 
 function showToast(msg) {
@@ -345,6 +372,7 @@ function submitOrder() {
     let hasItems = false; 
     let detailSegments = []; 
     let itemsOrdered = {};
+    let totalQty = 0;
     
     Object.keys(currentSelection).forEach(id => {
         const qty = currentSelection[id];
@@ -353,22 +381,87 @@ function submitOrder() {
             const item = findItemById(id); 
             detailSegments.push(`${item.name}${item.price}元 ${qty}個`); 
             itemsOrdered[id] = qty; 
+            totalQty += qty;
         }
     });
     if (!hasItems) { showToast('🥞 請先選擇任何一個口味與數量喔！'); return; }
-    const cost = calculateSingleTotal();
-    const copyText = `✦ 點餐完畢 ✦ 【${name}】\n明細如下：${detailSegments.join(' ')}\n合計金額 ${cost} 元。\nDesign by ChuChu ✦`;
-    globalLedger.push({ id: Date.now(), name: name, detailsText: detailSegments.join(' '), items: itemsOrdered, cost: cost });
+    const { sum: cost } = calculateSingleTotal();
+    const copyText = `✦ 點餐完畢 ✦ 【${name}】\n明細如下：${detailSegments.join(' ')}\n合計 ${totalQty} 顆，共 ${cost} 元。\nDesign by ChuChu ✦`;
     
-    navigator.clipboard.writeText(copyText).then(() => {
-        showToast(`✨ 點餐成功且明細已自動複製！快去貼在 LINE 吧！`);
-    }).catch(() => { showToast(`✨ 已成功寫入全體明細大帳本！`); });
+    if (editingId !== null) {
+        // 如果是在修改模式，尋找舊物件並更新它
+        const idx = globalLedger.findIndex(rec => rec.id === editingId);
+        if (idx !== -1) {
+            globalLedger[idx] = { id: editingId, name: name, detailsText: detailSegments.join(' '), items: itemsOrdered, cost: cost, totalQty: totalQty };
+            showToast(`✨ 訂單修改成功！`);
+        }
+        exitEditingMode();
+    } else {
+        // 一般新增模式
+        globalLedger.push({ id: Date.now(), name: name, detailsText: detailSegments.join(' '), items: itemsOrdered, cost: cost, totalQty: totalQty });
+        navigator.clipboard.writeText(copyText).then(() => {
+            showToast(`✨ 點餐成功且明細已自動複製！快去貼在 LINE 吧！`);
+        }).catch(() => { showToast(`✨ 已成功寫入全體明細大帳本！`); });
+    }
     
     document.getElementById('memberInput').value = ''; initSelections(); initSelectionsOnList(); calculateSingleTotal(); renderLedger();
 }
 
 function initSelectionsOnList() { Object.keys(currentSelection).forEach(id => { const element = document.getElementById(`count-${id}`); if(element) element.textContent = '0'; }); }
-function removeRecord(id) { globalLedger = globalLedger.filter(rec => rec.id !== id); renderLedger(); showToast('💡 已將該品項自帳本中移除'); }
+
+function removeRecord(id) { 
+    if (editingId === id) {
+        exitEditingMode();
+    }
+    globalLedger = globalLedger.filter(rec => rec.id !== id); 
+    renderLedger(); 
+    showToast('💡 已將該品項自帳本中移除'); 
+}
+
+function startEditRecord(id) {
+    const record = globalLedger.find(rec => rec.id === id);
+    if (!record) return;
+
+    editingId = id;
+    
+    // 進入修改UI視覺狀態
+    document.getElementById('memberInput').value = record.name;
+    document.getElementById('memberInput').classList.add('editing-mode');
+    document.getElementById('nameFieldLabel').textContent = 'Step 1. 修改中的名字或暱稱 ✏️';
+    
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.textContent = '✦ 確認修改此訂單 ✦';
+    submitBtn.classList.add('editing-mode');
+
+    // 還原點選的口味數量
+    initSelections();
+    Object.keys(record.items).forEach(flavorId => {
+        currentSelection[flavorId] = record.items[flavorId];
+    });
+    
+    // 刷新左側點餐介面的數字
+    Object.keys(currentSelection).forEach(flavorId => {
+        const el = document.getElementById(`count-${flavorId}`);
+        if (el) el.textContent = currentSelection[flavorId];
+    });
+    
+    calculateSingleTotal();
+    renderLedger(); // 重新渲染讓該列顯示高亮
+    showToast('✏️ 已將該訂單倒回左側點餐區，請直接進行修改！');
+    
+    // 自動滾動回到最上方方便使用者修改
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function exitEditingMode() {
+    editingId = null;
+    document.getElementById('memberInput').classList.remove('editing-mode');
+    document.getElementById('nameFieldLabel').textContent = 'Step 1. 輸入你的名字或暱稱';
+    
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.textContent = '✦ 送出點餐 ✦';
+    submitBtn.classList.remove('editing-mode');
+}
 
 function onFilterChanged() {
     if (globalLedger.length > 0) {
@@ -380,21 +473,36 @@ function renderLedger() {
     const listContainer = document.getElementById('ledgerList');
     if (globalLedger.length === 0) {
         listContainer.innerHTML = `<div id="emptyLedger" style="text-align: center; padding: 40px 0; color: var(--text-sub); font-size: 16px;">還沒有人點餐唷，快來當第一個！</div>`;
-        document.getElementById('allFlavorStats').textContent = '無'; document.getElementById('grandTotal').textContent = '$ 0';
+        document.getElementById('allFlavorStats').textContent = '無'; 
+        document.getElementById('grandTotal').textContent = '$ 0';
+        document.getElementById('grandCount').textContent = '0 顆';
         document.getElementById('imgPlaceholder').style.display = 'block';
         document.getElementById('outputCardImage').style.display = 'none';
         return;
     }
-    listContainer.innerHTML = ''; let totalMoney = 0; let totalFlavorCounters = {};
+    listContainer.innerHTML = ''; 
+    let totalMoney = 0; 
+    let totalPieces = 0;
+    let totalFlavorCounters = {};
+
     globalLedger.forEach(record => {
-        totalMoney += record.cost; Object.keys(record.items).forEach(id => { totalFlavorCounters[id] = (totalFlavorCounters[id] || 0) + record.items[id]; });
-        const div = document.createElement('div'); div.className = 'ledger-item';
-        div.innerHTML = `<div><span class="ledger-name">【${record.name}】</span><span class="ledger-detail">${record.detailsText}</span></div>
-                         <div style="display:flex;align-items:center;white-space:nowrap;"><span style="color:#d96a6a;font-weight:700;">$${record.cost}</span>
-                         <span class="delete-record" onclick="removeRecord(${record.id})">✕</span></div>`;
+        totalMoney += record.cost; 
+        totalPieces += (record.totalQty || 0);
+        Object.keys(record.items).forEach(id => { totalFlavorCounters[id] = (totalFlavorCounters[id] || 0) + record.items[id]; });
+        
+        const isEditing = record.id === editingId;
+        const div = document.createElement('div'); 
+        div.className = `ledger-item ${isEditing ? 'being-edited' : ''}`;
+        div.innerHTML = `<div><span class="ledger-name">【${record.name}】</span><span class="ledger-detail">${record.detailsText} (共${record.totalQty || 0}顆)</span></div>
+                         <div class="action-records">
+                             <span style="color:#d96a6a;font-weight:700;white-space:nowrap;">$${record.cost}</span>
+                             <span class="edit-record" onclick="startEditRecord(${record.id})" title="修改這筆訂單">✏️</span>
+                             <span class="delete-record" onclick="removeRecord(${record.id})" title="刪除">✕</span>
+                         </div>`;
         listContainer.appendChild(div);
     });
     document.getElementById('grandTotal').textContent = `$ ${totalMoney}`;
+    document.getElementById('grandCount').textContent = `${totalPieces} 顆`;
     
     let statSegments = []; 
     Object.keys(totalFlavorCounters).forEach(id => { 
@@ -425,7 +533,7 @@ function copyFilteredLedgerText() {
     if (showIndividual) {
         textSegments.push('📝 【個人點餐明細】');
         globalLedger.forEach(record => {
-            textSegments.push(`【${record.name}】${record.detailsText} 共 ${record.cost} 元`);
+            textSegments.push(`【${record.name}】${record.detailsText} 共 ${record.totalQty || 0} 顆， ${record.cost} 元`);
         });
         textSegments.push('');
     }
@@ -437,7 +545,8 @@ function copyFilteredLedgerText() {
     }
 
     if (showTotal) {
-        textSegments.push('💰 【本次開團應付總額】');
+        textSegments.push('💰 【本次開團應付總額與數量】');
+        textSegments.push(`總訂購數：${document.getElementById('grandCount').textContent}`);
         textSegments.push(`合計金額：${document.getElementById('grandTotal').textContent} 元`);
         textSegments.push('');
     }
@@ -491,7 +600,8 @@ function autoUpdateVisualCardImage() {
         let usableTextWidth = canvas.width - 150 - 130; 
 
         globalLedger.forEach(record => {
-            let words = record.detailsText.split(' ');
+            let fullDetailsStr = `${record.detailsText} (共${record.totalQty || 0}顆)`;
+            let words = fullDetailsStr.split(' ');
             let line = '';
             let extraLines = 0;
             for (let n = 0; n < words.length; n++) {
@@ -518,7 +628,7 @@ function autoUpdateVisualCardImage() {
         
         let boxPaddingAndTitle = 25;
         let statsSectionHeight = showStats ? (30 + (estimatedStatLines * 26)) : 0;
-        let totalSectionHeight = showTotal ? 55 : 0;
+        let totalSectionHeight = showTotal ? 85 : 0; // 高度微調容納總顆數
         
         summaryBoxHeight = boxPaddingAndTitle + statsSectionHeight + totalSectionHeight + 20;
     }
@@ -553,7 +663,8 @@ function autoUpdateVisualCardImage() {
             ctx.fillText(`$${record.cost}`, canvas.width - 45, currentY);
             
             ctx.textAlign = 'left'; ctx.font = '19px "Microsoft JhengHei", sans-serif'; ctx.fillStyle = '#8e7a70';
-            let textBlockHeight = drawTextWithWrapping(ctx, record.detailsText, 160, currentY, canvas.width - 160 - 120, 26);
+            let fullDetailsStr = `${record.detailsText} (共${record.totalQty || 0}顆)`;
+            let textBlockHeight = drawTextWithWrapping(ctx, fullDetailsStr, 160, currentY, canvas.width - 160 - 120, 26);
             
             currentY += Math.max(35, textBlockHeight + 35);
             
@@ -592,6 +703,13 @@ function autoUpdateVisualCardImage() {
             if (showStats) {
                 ctx.strokeStyle = 'rgba(142, 122, 112, 0.1)'; ctx.beginPath(); ctx.moveTo(65, boxInnerY - 15); ctx.lineTo(canvas.width - 65, boxInnerY - 15); ctx.stroke();
             }
+            ctx.textAlign = 'left';
+            ctx.font = 'bold 19px "Microsoft JhengHei", sans-serif'; ctx.fillStyle = '#8e7a70'; 
+            ctx.fillText('今日開團總數量：', 65, boxInnerY);
+            ctx.textAlign = 'right'; ctx.font = 'bold 20px "Microsoft JhengHei", sans-serif'; ctx.fillStyle = '#54433a';
+            ctx.fillText(document.getElementById('grandCount').textContent, canvas.width - 65, boxInnerY);
+            
+            boxInnerY += 35;
             ctx.textAlign = 'left';
             ctx.font = 'bold 20px "Microsoft JhengHei", sans-serif'; ctx.fillStyle = '#54433a'; 
             ctx.fillText('今日開團總金額：', 65, boxInnerY);
