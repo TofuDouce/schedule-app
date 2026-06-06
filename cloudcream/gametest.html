@@ -1,385 +1,339 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>極地荒野：開荒大師</title>
-    <style>
-        body {
-            margin: 0; background-color: #0f172a;
-            font-family: "Microsoft JhengHei", sans-serif;
-            overflow: hidden; display: flex; justify-content: center; align-items: center;
-            height: 100vh; user-select: none; touch-action: none;
-        }
-        #ui-header {
-            position: absolute; top: 15px; display: flex; gap: 15px;
-            background: rgba(15, 23, 42, 0.9); padding: 8px 16px;
-            border-radius: 20px; border: 2px solid #38bdf8;
-            color: white; font-size: 14px; font-weight: bold; z-index: 10;
-        }
-        #upgrade-panel {
-            position: absolute; bottom: 15px;
-            background: rgba(15, 23, 42, 0.92); padding: 12px;
-            border-radius: 16px; border: 2px solid #f59e0b;
-            display: flex; flex-direction: column; gap: 8px;
-            z-index: 10; width: 90%; max-width: 360px;
-        }
-        .menu-title { color: #fbbf24; font-size: 14px; font-weight: bold; text-align: center; }
-        .btn-row { display: flex; gap: 8px; justify-content: space-between; }
-        .btn {
-            background: #f59e0b; color: #0f172a; border: none;
-            padding: 10px 8px; font-size: 12px; font-weight: bold;
-            border-radius: 6px; flex: 1; text-align: center;
-        }
-        .btn:disabled { background: #475569; color: #94a3b8; }
-        canvas { background: #e2e8f0; display: block; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>極地開荒大師 Lite</title>
+
+<style>
+body{
+    margin:0;
+    overflow:hidden;
+    background:#dbeafe;
+    font-family:"Microsoft JhengHei";
+}
+
+#ui{
+    position:fixed;
+    top:10px;
+    left:10px;
+    background:rgba(0,0,0,.7);
+    color:white;
+    padding:12px;
+    border-radius:12px;
+    z-index:10;
+    min-width:160px;
+}
+
+button{
+    width:100%;
+    margin-top:5px;
+    padding:8px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+canvas{
+    display:block;
+}
+</style>
 </head>
+
 <body>
 
-    <div id="ui-header">
-        <div>🪵 <span id="wood-count">0</span></div>
-        <div>🍖 <span id="meat-count">0</span></div>
-        <div>💵 <span id="money-count">15</span></div>
-        <div>👷‍♂️ <span id="worker-count">0</span></div>
-        <div>🏹 <span id="turret-count">0</span></div>
-    </div>
+<div id="ui">
 
-    <div id="upgrade-panel">
-        <div class="menu-title">⛺ 營地戰略物資站</div>
-        <div class="btn-row">
-            <button class="btn" id="btn-axe" onclick="upgradePlayerAxe()">🪓 隨身飛斧 Lv.<span id="lvl-axe">1</span> (<span id="cost-axe">10</span>💵)</button>
-            <button class="btn" id="btn-turret" onclick="buildTurret()">🏹 防禦箭塔 (<span id="cost-turret">20</span>🪵)</button>
-        </div>
-        <div class="btn-row">
-            <button class="btn" id="btn-worker" onclick="hireWorker()">👷‍♂️ 雇傭伐木工 (<span id="cost-worker">15</span>🍖)</button>
-            <button class="btn" id="btn-sell" onclick="sellResources()">💰 手動售出資源</button>
-        </div>
-    </div>
+<div>🪵 木材：<span id="wood">0</span></div>
 
-    <canvas id="gameCanvas"></canvas>
+<div>💰 金幣：<span id="gold">15</span></div>
+
+<div>🪓 飛斧等級：<span id="level">1</span></div>
+
+<div>🗺️ 區域：<span id="zone">森林</span></div>
+
+<button onclick="upgradeAxe()">
+升級飛斧
+</button>
+
+<button onclick="sellWood()">
+賣掉木材
+</button>
+
+</div>
+
+<canvas id="game"></canvas>
 
 <script>
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
 
-function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-resizeCanvas();
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
 
-let resources = { wood: 0, meat: 0, money: 15 };
-let lvlAxe = 1;
-let costs = { axe: 10, turret: 20, worker: 15 };
+function resize(){
+    canvas.width=window.innerWidth;
+    canvas.height=window.innerHeight;
+}
+resize();
 
-let touchActive = false;
-let targetX = 0, targetY = 0;
+window.addEventListener("resize",resize);
 
-const player = { x: 50, y: 50, speed: 3.5, baseRadius: 35, axeAngle: 0 };
-const baseStation = { x: 0, y: 0 };
+let wood=0;
+let gold=15;
+let axeLevel=1;
 
-let workers = [];
-let turrets = [];
-let resourceTrees = [
-    { x: 120, y: -80, hp: 100, maxHp: 100 },
-    { x: -100, y: 120, hp: 100, maxHp: 100 },
-    { x: -150, y: -150, hp: 100, maxHp: 100 },
-    { x: 180, y: 140, hp: 100, maxHp: 100 }
+const zones=[
+"森林",
+"礦區",
+"冰原",
+"熊王區"
 ];
-let bears = [
-    { x: -250, y: -200, hp: 100, maxHp: 100, speed: 0.6 },
-    { x: 200, y: -250, hp: 120, maxHp: 120, speed: 0.5 }
-];
-let environmentDecor = [];
-for(let i=0; i<30; i++) {
-    let rx = (Math.random()-0.5)*800, ry = (Math.random()-0.5)*800;
-    if(Math.sqrt(rx*rx+ry*ry) > 80) environmentDecor.push({ x: rx, y: ry, type: Math.random()>0.5?"🌲":"🏔️" });
-}
-let floatingTexts = [];
 
-function toIso(x, y) {
-    return {
-        isoX: (x - y) + canvas.width / 2,
-        isoY: (x + y) / 2 + canvas.height / 2 - 20
-    };
-}
-function fromIso(screenX, screenY) {
-    let offsetX = screenX - canvas.width / 2;
-    let offsetY = screenY - canvas.height / 2 + 20;
-    return { x: (offsetY + offsetX / 2), y: (offsetY - offsetX / 2) };
-}
+let zoneIndex=0;
 
-function handleTouch(e) {
-    touchActive = true;
-    let clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    let clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    if (clientY < 70 || clientY > window.innerHeight - 130) return;
-    let worldPos = fromIso(clientX, clientY);
-    targetX = worldPos.x; targetY = worldPos.y;
-}
-window.addEventListener('touchstart', handleTouch, { passive: true }); 
-window.addEventListener('touchmove', handleTouch, { passive: true });
-window.addEventListener('touchend', () => touchActive = false);
-window.addEventListener('mousedown', handleTouch); 
-window.addEventListener('mouseup', () => touchActive = false);
-window.addEventListener('mousemove', (e) => { if(e.buttons === 1) handleTouch(e); });
+const player={
+    x:0,
+    y:0,
+    angle:0
+};
 
-function updateUI() {
-    document.getElementById('wood-count').innerText = resources.wood;
-    document.getElementById('meat-count').innerText = resources.meat;
-    document.getElementById('money-count').innerText = resources.money;
-    document.getElementById('worker-count').innerText = workers.length;
-    document.getElementById('turret-count').innerText = turrets.length;
-    document.getElementById('lvl-axe').innerText = lvlAxe;
-    document.getElementById('cost-axe').innerText = costs.axe;
-    document.getElementById('cost-turret').innerText = costs.turret;
-    document.getElementById('cost-worker').innerText = costs.worker;
+let targetX=0;
+let targetY=0;
+let moving=false;
 
-    document.getElementById('btn-axe').disabled = resources.money < costs.axe;
-    document.getElementById('btn-turret').disabled = resources.wood < costs.turret;
-    document.getElementById('btn-worker').disabled = resources.meat < costs.worker;
-}
+canvas.addEventListener("pointerdown",(e)=>{
+    moving=true;
 
-function upgradePlayerAxe() {
-    if (resources.money >= costs.axe) {
-        resources.money -= costs.axe;
-        lvlAxe++;
-        costs.axe = lvlAxe * 15;
-        updateUI();
-    }
-}
+    targetX=
+    e.clientX-canvas.width/2+player.x;
 
-function hireWorker() {
-    if (resources.meat >= costs.worker) {
-        resources.meat -= costs.worker;
-        workers.push({ x: 0, y: 0, speed: 1.8, workCooldown: 0 });
-        costs.worker = 15 + workers.length * 10;
-        updateUI();
-    }
-}
+    targetY=
+    e.clientY-canvas.height/2+player.y;
+});
 
-function buildTurret() {
-    if (resources.wood >= costs.turret) {
-        resources.wood -= costs.turret;
-        let angle = Math.random() * Math.PI * 2;
-        turrets.push({ x: Math.cos(angle)*50, y: Math.sin(angle)*50, fireCooldown: 0 });
-        costs.turret = 20 + turrets.length * 15;
-        updateUI();
-    }
-}
+canvas.addEventListener("pointermove",(e)=>{
+    if(!moving) return;
 
-function sellResources() {
-    if (resources.wood > 0 || resources.meat > 0) {
-        let earned = resources.wood * 1 + resources.meat * 2;
-        resources.money += earned; resources.wood = 0; resources.meat = 0;
-        let iso = toIso(player.x, player.y);
-        floatingTexts.push({ x: iso.isoX, y: iso.isoY - 30, text: `💵 +${earned}`, color: "#fbbf24" });
-        updateUI();
-    }
-}
+    targetX=
+    e.clientX-canvas.width/2+player.x;
 
-function spawnBear() {
-    let angle = Math.random() * Math.PI * 2;
-    bears.push({
-        x: Math.cos(angle) * 350, y: Math.sin(angle) * 350,
-        hp: 70 + lvlAxe * 20, maxHp: 70 + lvlAxe * 20, speed: 0.4 + Math.random()*0.3
+    targetY=
+    e.clientY-canvas.height/2+player.y;
+});
+
+window.addEventListener("pointerup",()=>{
+    moving=false;
+});
+
+const trees=[];
+
+for(let i=0;i<30;i++){
+
+    trees.push({
+
+        x:Math.random()*1800-900,
+
+        y:Math.random()*1800-900,
+
+        hp:40
+
     });
+
 }
 
-function update() {
-    if (touchActive) {
-        let dx = targetX - player.x, dy = targetY - player.y;
-        let dist = Math.sqrt(dx*dx + dy*dy);
-        if (dist > 5) { player.x += (dx/dist)*player.speed; player.y += (dy/dist)*player.speed; }
-    }
-    player.x = Math.max(-300, Math.min(300, player.x));
-    player.y = Math.max(-300, Math.min(300, player.y));
+function updateUI(){
 
-    player.axeAngle += 0.05;
-    let currentRadius = player.baseRadius + Math.min(15, lvlAxe * 2);
-    let axeCount = Math.min(4, lvlAxe);
+    woodEl.innerText=wood;
 
-    let distToBase = Math.sqrt(player.x*player.x + player.y*player.y);
-    if(distToBase < 40 && (resources.wood > 0 || resources.meat > 0)) {
-        sellResources();
-    }
+    goldEl.innerText=gold;
 
-    for(let i=0; i<axeCount; i++) {
-        let angleOffset = (Math.PI * 2 / axeCount) * i;
-        let finalAngle = player.axeAngle + angleOffset;
+    levelEl.innerText=axeLevel;
 
-        let axeWorldX = player.x + Math.cos(finalAngle) * currentRadius;
-        let axeWorldY = player.y + Math.sin(finalAngle) * currentRadius;
+    zoneEl.innerText=zones[zoneIndex];
 
-        resourceTrees.forEach(tree => {
-            let dist = Math.sqrt(Math.pow(axeWorldX - tree.x, 2) + Math.pow(axeWorldY - tree.y, 2));
-            if (dist < 25) {
-                tree.hp -= 1.2;
-                if (tree.hp <= 0) {
-                    tree.hp = tree.maxHp; resources.wood += 2;
-                    let iso = toIso(tree.x, tree.y);
-                    floatingTexts.push({ x: iso.isoX, y: iso.isoY - 20, text: "+2 🪵", color: "#22c55e" });
-                    updateUI();
-                }
-            }
-        });
+}
 
-        bears.forEach((bear, bIndex) => {
-            let dist = Math.sqrt(Math.pow(axeWorldX - bear.x, 2) + Math.pow(axeWorldY - bear.y, 2));
-            if (dist < 22) {
-                bear.hp -= (0.5 + lvlAxe * 0.15);
-                if (bear.hp <= 0) {
-                    resources.meat += 3;
-                    let iso = toIso(bear.x, bear.y);
-                    floatingTexts.push({ x: iso.isoX, y: iso.isoY - 20, text: "+3 🍖", color: "#ef4444" });
-                    bears.splice(bIndex, 1); spawnBear(); updateUI();
-                }
-            }
-        });
+const woodEl=document.getElementById("wood");
+const goldEl=document.getElementById("gold");
+const levelEl=document.getElementById("level");
+const zoneEl=document.getElementById("zone");
+
+function upgradeAxe(){
+
+    let cost=axeLevel*10;
+
+    if(gold<cost) return;
+
+    gold-=cost;
+
+    axeLevel++;
+
+    updateUI();
+}
+
+function sellWood(){
+
+    gold+=wood;
+
+    wood=0;
+
+    if(gold>=100 && zoneIndex<zones.length-1){
+
+        zoneIndex++;
+
     }
 
-    workers.forEach(w => {
-        let closestTree = null, minDist = 9999;
-        resourceTrees.forEach(t => {
-            let d = Math.sqrt(Math.pow(w.x-t.x,2)+Math.pow(w.y-t.y,2));
-            if(d < minDist) { minDist = d; closestTree = t; }
-        });
-        if (closestTree) {
-            let dx = closestTree.x - w.x, dy = closestTree.y - w.y;
-            let dist = Math.sqrt(dx*dx + dy*dy);
-            if (dist > 15) {
-                w.x += (dx/dist)*w.speed; w.y += (dy/dist)*w.speed;
-            } else {
-                if(w.workCooldown <= 0) {
-                    resources.wood += 1; updateUI(); w.workCooldown = 60;
-                    let iso = toIso(w.x, w.y);
-                    floatingTexts.push({ x: iso.isoX, y: iso.isoY-15, text: "+1 🪵", color: "#4ade80" });
-                } else { w.workCooldown--; }
+    updateUI();
+}
+
+function update(){
+
+    if(moving){
+
+        let dx=targetX-player.x;
+        let dy=targetY-player.y;
+
+        let dist=Math.hypot(dx,dy);
+
+        if(dist>5){
+
+            player.x+=dx/dist*3;
+
+            player.y+=dy/dist*3;
+        }
+    }
+
+    player.angle+=0.08;
+
+    trees.forEach(tree=>{
+
+        let dist=Math.hypot(
+
+            player.x-tree.x,
+
+            player.y-tree.y
+
+        );
+
+        if(dist<45+axeLevel*5){
+
+            tree.hp-=0.2*axeLevel;
+
+            if(tree.hp<=0){
+
+                wood+=2;
+
+                tree.hp=40;
+
+                tree.x=Math.random()*1800-900;
+
+                tree.y=Math.random()*1800-900;
+
+                updateUI();
             }
         }
+
     });
 
-    turrets.forEach(t => {
-        if(t.fireCooldown > 0) { t.fireCooldown--; return; }
-        let targetBear = null, minDist = 180;
-        bears.forEach(b => {
-            let d = Math.sqrt(Math.pow(t.x-b.x,2)+Math.pow(t.y-b.y,2));
-            if(d < minDist) { minDist = d; targetBear = b; }
-        });
-        if(targetBear) {
-            targetBear.hp -= 25; t.fireCooldown = 50;
-            let bIso = toIso(targetBear.x, targetBear.y);
-            floatingTexts.push({ x: bIso.isoX, y: bIso.isoY-25, text: "🏹 💥 -25", color: "#38bdf8" });
-        }
-    });
-
-    bears.forEach(bear => {
-        let dx = player.x - bear.x, dy = player.y - bear.y;
-        let dist = Math.sqrt(dx*dx + dy*dy);
-        if (dist > 140) { dx = baseStation.x - bear.x; dy = baseStation.y - bear.y; dist = Math.sqrt(dx*dx + dy*dy); }
-        if (dist > 15) { bear.x += (dx/dist)*bear.speed; bear.y += (dy/dist)*bear.speed; }
-    });
-
-    floatingTexts.forEach((ft, i) => { ft.y -= 0.6; ft.alpha = (ft.alpha || 1) - 0.02; if(ft.alpha<=0) floatingTexts.splice(i,1); });
 }
 
-function render() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+function draw(){
 
-    ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 1;
-    for (let i = -350; i <= 350; i += 50) {
-        let p1 = toIso(i, -350); let p2 = toIso(i, 350);
-        ctx.beginPath(); ctx.moveTo(p1.isoX, p1.isoY); ctx.lineTo(p2.isoX, p2.isoY); ctx.stroke();
-        let p3 = toIso(-350, i); let p4 = toIso(350, i);
-        ctx.beginPath(); ctx.moveTo(p3.isoX, p3.isoY); ctx.lineTo(p4.isoX, p4.isoY); ctx.stroke();
-    }
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
 
-    let isoPlayer = toIso(player.x, player.y);
-    let currentRadius = player.baseRadius + Math.min(15, lvlAxe * 2);
+    ctx.save();
+
+    ctx.translate(
+        canvas.width/2-player.x,
+        canvas.height/2-player.y
+    );
+
+    trees.forEach(tree=>{
+
+        ctx.fillStyle="#15803d";
+
+        ctx.beginPath();
+
+        ctx.arc(
+            tree.x,
+            tree.y,
+            18,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+
+    });
+
+    ctx.fillStyle="#2563eb";
+
     ctx.beginPath();
-    ctx.ellipse(isoPlayer.isoX, isoPlayer.isoY, currentRadius, currentRadius / 2, 0, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(56, 189, 248, 0.05)"; ctx.fill();
-    ctx.strokeStyle = "rgba(56, 189, 248, 0.4)"; ctx.lineWidth = 1.5; ctx.stroke();
 
-    let queue = [];
+    ctx.arc(
+        player.x,
+        player.y,
+        12,
+        0,
+        Math.PI*2
+    );
 
-    environmentDecor.forEach(d => {
-        queue.push({ z: d.x+d.y, run: () => {
-            let iso = toIso(d.x, d.y); ctx.font = "20px Arial"; ctx.textAlign = "center";
-            ctx.fillText(d.type, iso.isoX, iso.isoY);
-        }});
-    });
+    ctx.fill();
 
-    resourceTrees.forEach(t => {
-        queue.push({ z: t.x+t.y, run: () => {
-            let iso = toIso(t.x, t.y); ctx.font = "36px Arial"; ctx.textAlign = "center";
-            ctx.fillText("🌲", iso.isoX, iso.isoY);
-        }});
-    });
+    let axeCount=
+    Math.min(
+        axeLevel,
+        4
+    );
 
-    turrets.forEach(t => {
-        queue.push({ z: t.x+t.y, run: () => {
-            let iso = toIso(t.x, t.y); ctx.font = "32px Arial"; ctx.textAlign = "center";
-            ctx.fillText("🏹", iso.isoX, iso.isoY);
-        }});
-    });
+    for(let i=0;i<axeCount;i++){
 
-    workers.forEach(w => {
-        queue.push({ z: w.x+w.y, run: () => {
-            let iso = toIso(w.x, w.y); ctx.font = "26px Arial"; ctx.textAlign = "center";
-            ctx.fillText("👷‍♂️", iso.isoX, iso.isoY);
-        }});
-    });
+        let a=
+        player.angle+
+        i*(Math.PI*2/axeCount);
 
-    bears.forEach(b => {
-        queue.push({ z: b.x+b.y, run: () => {
-            let iso = toIso(b.x, b.y); ctx.font = "28px Arial"; ctx.textAlign = "center";
-            ctx.fillText("🐻‍❄️", iso.isoX, iso.isoY);
-            // 修正這裡的血條定位變數錯誤
-            ctx.fillStyle = "#ef4444"; ctx.fillRect(iso.isoX-15, iso.isoY-30, 30, 3);
-            ctx.fillStyle = "#22c55e"; ctx.fillRect(iso.isoX-15, iso.isoY-30, (b.hp/b.maxHp)*30, 3);
-        }});
-    });
+        let ax=
+        player.x+
+        Math.cos(a)*35;
 
-    let isoBase = toIso(baseStation.x, baseStation.y);
-    queue.push({ z: baseStation.x+baseStation.y, run: () => {
-        ctx.font = "50px Arial"; ctx.textAlign = "center"; ctx.fillText("⛺", isoBase.isoX, isoBase.isoY + 10);
-    }});
+        let ay=
+        player.y+
+        Math.sin(a)*35;
 
-    queue.push({ z: player.x+player.y, run: () => {
-        ctx.font = "32px Arial"; ctx.textAlign = "center"; ctx.fillText("🤠", isoPlayer.isoX, isoPlayer.isoY);
-    }});
+        ctx.fillStyle="#f59e0b";
 
-    queue.sort((a,b)=>a.z - b.z);
-    queue.forEach(q => q.run());
-
-    let axeCount = Math.min(4, lvlAxe);
-    for(let i=0; i<axeCount; i++) {
-        let angleOffset = (Math.PI * 2 / axeCount) * i;
-        let finalAngle = player.axeAngle + angleOffset;
-
-        let axeWorldX = player.x + Math.cos(finalAngle) * currentRadius;
-        let axeWorldY = player.y + Math.sin(finalAngle) * currentRadius;
-        let isoAxe = toIso(axeWorldX, axeWorldY);
-
-        ctx.save();
-        ctx.translate(isoAxe.isoX, isoAxe.isoY);
-        ctx.rotate(player.axeAngle * 6);
-        ctx.font = "22px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-        ctx.fillText("🪓", 0, 0);
-        ctx.restore();
+        ctx.fillRect(
+            ax-5,
+            ay-5,
+            10,
+            10
+        );
     }
 
-    floatingTexts.forEach(ft => {
-        ctx.fillStyle = ft.color || "#000"; ctx.globalAlpha = ft.alpha;
-        ctx.font = "bold 13px 'Microsoft JhengHei'"; ctx.textAlign = "center";
-        ctx.fillText(ft.text, ft.x, ft.y);
-        ctx.globalAlpha = 1.0;
-    });
+    ctx.restore();
+
 }
 
-function gameLoop() { update(); render(); requestAnimationFrame(gameLoop); }
-window.addEventListener('resize', () => { resizeCanvas(); updateUI(); });
+function gameLoop(){
+
+    update();
+
+    draw();
+
+    requestAnimationFrame(
+        gameLoop
+    );
+
+}
+
 updateUI();
+
 gameLoop();
+
 </script>
 
 </body>
