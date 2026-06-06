@@ -2,223 +2,320 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>寒霜模擬器</title>
+    <title>極地荒野生存模擬器 - 核心機制 Demo</title>
     <style>
         body {
             margin: 0;
-            background-color: #e0f2fe; /* 雪地背景色 */
-            font-family: Arial, sans-serif;
+            background-color: #cbd5e1;
+            font-family: "Microsoft JhengHei", sans-serif;
             overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
+            user-select: none;
         }
-        #ui-panel {
+        #ui-header {
             position: absolute;
             top: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            gap: 20px;
+            background: rgba(15, 23, 42, 0.8);
+            padding: 10px 25px;
+            border-radius: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            border: 2px solid #38bdf8;
             color: white;
-            padding: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            z-index: 10;
+        }
+        #upgrade-panel {
+            position: absolute;
+            bottom: 30px;
+            background: rgba(15, 23, 42, 0.85);
+            padding: 15px 30px;
+            border-radius: 15px;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.3);
+            border: 2px solid #f59e0b;
+            display: flex;
+            gap: 20px;
+            z-index: 10;
+        }
+        .btn {
+            background: #f59e0b;
+            color: #0f172a;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
             border-radius: 8px;
-            font-size: 18px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            pointer-events: none;
+            cursor: pointer;
+            transition: all 0.2s;
         }
-        .resource-item {
-            margin-bottom: 5px;
-        }
+        .btn:hover { background: #fbbf24; transform: scale(1.05); }
+        .btn:disabled { background: #64748b; color: #cbd5e1; cursor: not-allowed; transform: none; }
         canvas {
-            background: #f0fdf4; /* 畫布基底 */
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            border-radius: 4px;
+            background: #f1f5f9;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            border-radius: 8px;
         }
     </style>
 </head>
 <body>
 
-    <div id="ui-panel">
-        <div class="resource-item">🍖 肉塊 (Meat): <span id="meat-count">0</span></div>
-        <div class="resource-item">💵 鈔票 (Money): <span id="money-count">5</span></div>
+    <div id="ui-header">
+        <div>🪵 木材: <span id="wood-count">0</span></div>
+        <div>🍖 肉塊: <span id="meat-count">0</span></div>
+        <div>💵 金幣: <span id="money-count">10</span></div>
     </div>
 
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <div id="upgrade-panel">
+        <button class="btn" id="btn-tower" onclick="upgradeTower()">🛠️ 升級基地裝置 (需 10 💵)</button>
+        <button class="btn" id="btn-spawn" onclick="spawnBearManual()">🐻 召喚野生動物</button>
+    </div>
+
+    <canvas id="gameCanvas" width="900" height="650"></canvas>
 
 <script>
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-// 遊戲數據狀態
-let resources = { meat: 0, money: 5 };
+let resources = { wood: 0, meat: 0, money: 10 };
+let towerLevel = 1;
+let axeAngle = 0;
 
-// 1. 斜 45 度角（Isometric）座標轉換函數
-// 將傳統的 (x, y) 轉換成 45 度角的網頁畫面座標
 function toIso(x, y) {
     return {
         isoX: (x - y) + canvas.width / 2,
-        isoY: (x + y) / 2 + 150
+        isoY: (x + y) / 2 + 100
     };
 }
 
-// 2. 遊戲物件定義
-// 防禦塔（位於地圖中央）
-const tower = { x: 0, y: 0, range: 150, attackCooldown: 0 };
+let environmentTrees = [];
+for (let i = 0; i < 60; i++) {
+    let rx = (Math.random() - 0.5) * 700;
+    let ry = (Math.random() - 0.5) * 700;
+    if (Math.sqrt(rx*rx + ry*ry) > 120) {
+        environmentTrees.push({ x: rx, y: ry, emoji: Math.random() > 0.3 ? "🌲" : "🏔️", size: 24 + Math.random() * 12 });
+    }
+}
 
-// 北極熊陣列
-let bears = [
-    { id: 1, x: -300, y: -50, hp: 100, maxHp: 100, speed: 1.2, size: 25 },
-    { id: 2, x: -50, y: -300, hp: 120, maxHp: 120, speed: 0.9, size: 28 }
+const tower = { x: 0, y: 0, range: 160, baseDamage: 35 };
+
+let resourceTrees = [
+    { x: 80, y: -40, hp: 100, maxHp: 100, type: "🪵" },
+    { x: -60, y: 80, hp: 100, maxHp: 100, type: "🪵" }
 ];
 
-// 漂浮文字（用來顯示 +1 🍖 的特效）
+let bears = [
+    { x: -350, y: -100, hp: 100, maxHp: 100, speed: 1.0, size: 35 },
+    { x: 100, y: -350, hp: 120, maxHp: 120, speed: 0.8, size: 40 }
+];
+
 let floatingTexts = [];
 
-// 3. 遊戲主循環 (Game Loop)
+function updateUI() {
+    document.getElementById('wood-count').innerText = resources.wood;
+    document.getElementById('meat-count').innerText = resources.meat;
+    document.getElementById('money-count').innerText = resources.money;
+    
+    let cost = towerLevel * 10;
+    const btn = document.getElementById('btn-tower');
+    btn.innerText = `🛠️ 升級旋轉裝置 Lv.${towerLevel} (需 ${cost} 💵)`;
+    btn.disabled = resources.money < cost;
+}
+
+function upgradeTower() {
+    let cost = towerLevel * 10;
+    if (resources.money >= cost) {
+        resources.money -= cost;
+        towerLevel++;
+        tower.range += 15;
+        updateUI();
+    }
+}
+
+function spawnBearManual() {
+    spawnBear();
+}
+
+function spawnBear() {
+    const angle = Math.random() * Math.PI * 2;
+    const radius = 400;
+    bears.push({
+        x: Math.cos(angle) * radius,
+        y: Math.sin(angle) * radius,
+        hp: 80 + towerLevel * 20,
+        maxHp: 80 + towerLevel * 20,
+        speed: 0.7 + Math.random() * 0.8,
+        size: 32 + Math.random() * 12
+    });
+}
+
 function gameLoop() {
     update();
     render();
     requestAnimationFrame(gameLoop);
 }
 
-// 4. 邏輯更新
 function update() {
-    // 減少防禦塔冷卻時間
-    if (tower.attackCooldown > 0) tower.attackCooldown--;
+    axeAngle += 0.05 + (towerLevel * 0.01);
+    let currentAxeX = Math.cos(axeAngle) * tower.range;
+    let currentAxeY = Math.sin(axeAngle) * tower.range;
 
-    bears.forEach((bear, index) => {
-        // 讓北極熊往中央的防禦塔 (0,0) 移動
-        let dx = tower.x - bear.x;
-        let dy = tower.y - bear.y;
-        let dist = Math.sqrt(dx * dx + dy * dy);
+    resourceTrees.forEach(tree => {
+        let dx = currentAxeX - tree.x;
+        let dy = currentAxeY - tree.y;
+        let dist = Math.sqrt(dx*dx + dy*dy);
 
-        if (dist > 10) {
-            bear.x += (dx / dist) * bear.speed;
-            bear.y += (dy / dist) * bear.speed;
-        }
-
-        // 防禦塔自動攻擊邏輯
-        if (dist <= tower.range && tower.attackCooldown === 0) {
-            bear.hp -= 25; // 每次攻擊扣 25 血
-            tower.attackCooldown = 30; // 攻擊冷卻（約 0.5 秒）
-
-            // 如果北極熊死掉了
-            if (bear.hp <= 0) {
-                resources.meat += 5; // 獲得 5 個肉
-                document.getElementById('meat-count').innerText = resources.meat;
-
-                // 觸發漂浮文字
-                let isoPos = toIso(bear.x, bear.y);
-                floatingTexts.push({ x: isoPos.isoX, y: isoPos.isoY, text: "+5 🍖", alpha: 1 });
-
-                // 移除死掉的熊，並在遠方重新生成一隻新的
-                bears.splice(index, 1);
-                spawnBear();
+        if (dist < 40) {
+            tree.hp -= 2;
+            if (tree.hp <= 0) {
+                tree.hp = tree.maxHp;
+                resources.wood += 2;
+                resources.money += 1;
+                let iso = toIso(tree.x, tree.y);
+                floatingTexts.push({ x: iso.isoX, y: iso.isoY - 20, text: "+2 🪵 +1 💵", alpha: 1 });
+                updateUI();
             }
         }
     });
 
-    // 更新漂浮文字狀態
+    bears.forEach((bear, bIndex) => {
+        let bDx = tower.x - bear.x;
+        let bDy = tower.y - bear.y;
+        let bDist = Math.sqrt(bDx*bDx + bDy*bDy);
+
+        if (bDist > 20) {
+            bear.x += (bDx / bDist) * bear.speed;
+            bear.y += (bDy / bDist) * bear.speed;
+        } else {
+            if (resources.money > 0 && Math.random() < 0.02) {
+                resources.money = Math.max(0, resources.money - 1);
+                updateUI();
+            }
+        }
+
+        let aDx = currentAxeX - bear.x;
+        let aDy = currentAxeY - bear.y;
+        let aDist = Math.sqrt(aDx*aDx + aDy*aDy);
+
+        if (aDist < 35) {
+            bear.hp -= (1 + towerLevel * 0.2);
+            if (bear.hp <= 0) {
+                resources.meat += 3;
+                resources.money += 2;
+                let iso = toIso(bear.x, bear.y);
+                floatingTexts.push({ x: iso.isoX, y: iso.isoY - 20, text: "+3 🍖 +2 💵", alpha: 1 });
+                bears.splice(bIndex, 1);
+                spawnBear();
+                updateUI();
+            }
+        }
+    });
+
     floatingTexts.forEach((ft, index) => {
-        ft.y -= 1; // 往上漂
-        ft.alpha -= 0.02; // 逐漸透明
+        ft.y -= 1;
+        ft.alpha -= 0.02;
         if (ft.alpha <= 0) floatingTexts.splice(index, 1);
     });
 }
 
-// 遠端隨機生成新的北極熊
-function spawnBear() {
-    const angle = Math.random() * Math.PI * 2;
-    const radius = 350; // 從畫面外走進來
-    bears.push({
-        id: Date.now(),
-        x: Math.cos(angle) * radius,
-        y: Math.sin(angle) * radius,
-        hp: 100,
-        maxHp: 100,
-        speed: 0.8 + Math.random() * 0.8,
-        size: 20 + Math.random() * 10
-    });
-}
-
-// 5. 畫面渲染 (Drawing)
 function render() {
-    // 清空畫布
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // 畫出網格地板（增加 45 度角空間感）
     ctx.strokeStyle = "#e2e8f0";
     ctx.lineWidth = 1;
-    for (let i = -400; i <= 400; i += 50) {
-        let p1 = toIso(i, -400);
-        let p2 = toIso(i, 400);
-        ctx.beginPath(); ctx.moveTo(p1.isoX, p1.isoY); ctx.lineTo(p2.isoX, p2.isoY); ctx.stroke();
-
-        let p3 = toIso(-400, i);
-        let p4 = toIso(400, i);
+    for (let i = -500; i <= 500; i += 60) {
+        let p1 = toIso(i, -500); let p2 = toIso(i, 500);
+        ctx.beginPath(); ctx.moveTo(p1.isoX, p1.isoY); ctx.lineTo(p2.isoX, p2.isoY); stroke();
+        let p3 = toIso(-500, i); let p4 = toIso(500, i);
         ctx.beginPath(); ctx.moveTo(p3.isoX, p3.isoY); ctx.lineTo(p4.isoX, p4.isoY); ctx.stroke();
     }
 
-    // 畫出防禦塔的攻擊範圍圈（扁平橢圓以符合 45 度視角）
     let isoTower = toIso(tower.x, tower.y);
     ctx.beginPath();
     ctx.ellipse(isoTower.isoX, isoTower.isoY, tower.range, tower.range / 2, 0, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(59, 130, 246, 0.1)";
+    ctx.fillStyle = "rgba(245, 158, 11, 0.06)";
     ctx.fill();
-    ctx.strokeStyle = "rgba(59, 130, 246, 0.4)";
+    ctx.strokeStyle = "rgba(245, 158, 11, 0.25)";
+    ctx.lineWidth = 2;
     ctx.stroke();
 
-    // 畫防禦塔本體（簡單幾何圖形代替）
-    ctx.fillStyle = "#b45309"; // 棕色木頭建築
-    ctx.fillRect(isoTower.isoX - 20, isoTower.isoY - 50, 40, 60);
-    ctx.fillStyle = "#f59e0b"; // 塔頂黃色核心
-    ctx.beginPath();
-    ctx.arc(isoTower.isoX, isoTower.isoY - 50, 15, 0, Math.PI * 2);
-    ctx.fill();
+    let renderQueue = [];
 
-    // 畫北極熊
-    bears.forEach(bear => {
-        let isoBear = toIso(bear.x, bear.y);
-
-        // 熊身體（白色橢圓）
-        ctx.fillStyle = "#ffffff";
-        ctx.strokeStyle = "#cbd5e1";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.ellipse(isoBear.isoX, isoBear.isoY, bear.size, bear.size * 0.6, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-
-        // 熊眼睛（代表方向）
-        ctx.fillStyle = "#000000";
-        ctx.beginPath();
-        ctx.arc(isoBear.isoX + 5, isoBear.isoY - 2, 2, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 畫血條 (HP Bar)
-        let barWidth = 40;
-        let barHeight = 5;
-        let barX = isoBear.isoX - barWidth / 2;
-        let barY = isoBear.isoY - bear.size - 10;
-
-        // 血條背景（灰色）
-        ctx.fillStyle = "#ef4444";
-        ctx.fillRect(barX, barY, barWidth, barHeight);
-        // 當前血量（綠色）
-        ctx.fillStyle = "#22c55e";
-        let currentBarWidth = (bear.hp / bear.maxHp) * barWidth;
-        ctx.fillRect(barX, barY, currentBarWidth, barHeight);
+    environmentTrees.forEach(t => {
+        renderQueue.push({ ySort: t.x + t.y, draw: () => {
+            let iso = toIso(t.x, t.y);
+            ctx.font = `${t.size}px Arial`;
+            ctx.textAlign = "center";
+            ctx.fillText(t.emoji, iso.isoX, iso.isoY);
+        }});
     });
 
-    // 畫漂浮文字
+    resourceTrees.forEach(tree => {
+        renderQueue.push({ ySort: tree.x + tree.y, draw: () => {
+            let iso = toIso(tree.x, tree.y);
+            ctx.font = "45px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText("🌲", iso.isoX, iso.isoY);
+            ctx.fillStyle = "#cbd5e1";
+            ctx.fillRect(iso.isoX - 20, iso.isoY - 50, 40, 4);
+            ctx.fillStyle = "#eab308";
+            ctx.fillRect(iso.isoX - 20, iso.isoY - 50, (tree.hp / tree.maxHp) * 40, 4);
+        }});
+    });
+
+    bears.forEach(bear => {
+        renderQueue.push({ ySort: bear.x + bear.y, draw: () => {
+            let iso = toIso(bear.x, bear.y);
+            ctx.font = `${bear.size}px Arial`;
+            ctx.textAlign = "center";
+            ctx.fillText("🐻‍❄️", iso.isoX, iso.isoY);
+
+            let bWidth = 35;
+            ctx.fillStyle = "rgba(0,0,0,0.5)";
+            ctx.fillRect(iso.isoX - bWidth/2, iso.isoY - bear.size, bWidth, 5);
+            ctx.fillStyle = "#ef4444";
+            ctx.fillRect(iso.isoX - bWidth/2, iso.isoY - bear.size, (bear.hp / bear.maxHp) * bWidth, 5);
+        }});
+    });
+
+    renderQueue.push({ ySort: tower.x + tower.y, draw: () => {
+        ctx.font = "65px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText("🎪", isoTower.isoX, isoTower.isoY + 10);
+        ctx.font = "20px Arial";
+        ctx.fillStyle = "#0f172a";
+        ctx.fillText(`LV.${towerLevel}`, isoTower.isoX, isoTower.isoY - 55);
+    }});
+
+    renderQueue.sort((a, b) => a.ySort - b.ySort);
+    renderQueue.forEach(obj => obj.draw());
+
+    let currentAxeX = Math.cos(axeAngle) * tower.range;
+    let currentAxeY = Math.sin(axeAngle) * tower.range;
+    let isoAxe = toIso(currentAxeX, currentAxeY);
+    
+    ctx.save();
+    ctx.translate(isoAxe.isoX, isoAxe.isoY);
+    ctx.rotate(axeAngle * 5);
+    ctx.font = "30px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("🪓", 0, 0);
+    ctx.restore();
+
     floatingTexts.forEach(ft => {
-        ctx.fillStyle = `rgba(220, 38, 38, ${ft.alpha})`;
-        ctx.font = "bold 16px Arial";
+        ctx.fillStyle = `rgba(15, 23, 42, ${ft.alpha})`;
+        ctx.font = "bold 16px 'Microsoft JhengHei'";
+        ctx.textAlign = "center";
         ctx.fillText(ft.text, ft.x, ft.y);
     });
 }
 
-// 啟動遊戲
+updateUI();
 gameLoop();
 </script>
 
