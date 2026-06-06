@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>✦ Pastel 紅豆餅店 ✦</title>
+<title>✦ 魔法植物溫室 ✦</title>
 
 <style>
 :root{
---pink:#ffe4f1;
---purple:#f0e7ff;
+--bg1:#f4e8ff;
+--bg2:#ffeaf5;
 --card:rgba(255,255,255,.75);
---text:#6d5a7d;
+--text:#5f5875;
 }
 
 *{
@@ -21,232 +21,166 @@ font-family:"Microsoft JhengHei",sans-serif;
 }
 
 body{
-background:linear-gradient(135deg,var(--pink),var(--purple));
 min-height:100vh;
+background:linear-gradient(135deg,var(--bg1),var(--bg2));
 color:var(--text);
 }
 
 .topbar{
-position:sticky;
-top:0;
 display:flex;
 justify-content:center;
 gap:12px;
-padding:12px;
-z-index:100;
+padding:15px;
+position:sticky;
+top:0;
+z-index:10;
 }
 
-.stat{
+.card{
 background:var(--card);
 backdrop-filter:blur(10px);
-padding:12px 16px;
+padding:12px 18px;
 border-radius:18px;
+box-shadow:0 5px 12px rgba(0,0,0,.1);
 font-weight:bold;
-box-shadow:0 4px 12px rgba(0,0,0,.1);
-}
-
-.shop{
-padding:20px;
-max-width:1000px;
-margin:auto;
 }
 
 .title{
 text-align:center;
 font-size:34px;
 font-weight:bold;
-margin-bottom:15px;
+margin-top:10px;
 }
 
-.layout{
+.subtitle{
+text-align:center;
+margin-bottom:20px;
+}
+
+.container{
+max-width:1000px;
+margin:auto;
+padding:20px;
+}
+
+.grid{
 display:grid;
-grid-template-columns:220px 1fr 220px;
+grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
 gap:15px;
 }
 
-.panel{
-background:var(--card);
-backdrop-filter:blur(10px);
+.plot{
+aspect-ratio:1;
+background:rgba(255,255,255,.7);
 border-radius:25px;
-padding:15px;
-box-shadow:0 4px 12px rgba(0,0,0,.1);
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+cursor:pointer;
+box-shadow:0 4px 12px rgba(0,0,0,.08);
+transition:.2s;
 }
 
-.panel h3{
-margin-bottom:10px;
+.plot:hover{
+transform:translateY(-4px);
 }
 
-.worker{
-padding:10px;
-margin-bottom:10px;
-background:white;
-border-radius:15px;
+.plant{
+font-size:42px;
 }
 
-.worker button{
-width:100%;
+.name{
+font-size:12px;
 margin-top:6px;
 }
 
-.grill{
-display:grid;
-grid-template-columns:repeat(2,1fr);
-gap:15px;
-}
-
-.slot{
-aspect-ratio:1;
-background:#fff6ee;
-border-radius:25px;
+.controls{
 display:flex;
-align-items:center;
-justify-content:center;
-font-size:42px;
-cursor:pointer;
-border:4px solid transparent;
-}
-
-.slot.selected{
-border-color:#ff7cc6;
-}
-
-.actions{
-display:grid;
-grid-template-columns:repeat(2,1fr);
+flex-wrap:wrap;
 gap:10px;
-margin-top:15px;
+justify-content:center;
+margin:20px 0;
 }
 
 button{
 border:none;
-padding:12px;
+padding:12px 18px;
 border-radius:15px;
 cursor:pointer;
 font-weight:bold;
 background:white;
+box-shadow:0 4px 10px rgba(0,0,0,.08);
 }
 
-.queue{
-display:flex;
-flex-direction:column;
+.panel{
+background:rgba(255,255,255,.75);
+padding:20px;
+border-radius:25px;
+margin-top:20px;
+box-shadow:0 4px 12px rgba(0,0,0,.08);
+}
+
+.collection{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(100px,1fr));
 gap:10px;
+margin-top:15px;
 }
 
-.customer{
+.item{
 background:white;
-border-radius:15px;
 padding:10px;
-font-size:14px;
-}
-
-#message{
+border-radius:15px;
 text-align:center;
-margin-top:12px;
-font-weight:bold;
+}
+
+.message{
+text-align:center;
 height:24px;
-}
-
-@media(max-width:850px){
-
-.layout{
-grid-template-columns:1fr;
-}
-
+font-weight:bold;
+color:#b1559f;
 }
 </style>
 </head>
 <body>
 
 <div class="topbar">
+<div class="card">💰 <span id="gold">100</span></div>
+<div class="card">✨ <span id="essence">0</span></div>
+<div class="card">📖 <span id="discoveries">0</span>/15</div>
+</div>
 
-<div class="stat">💰 <span id="gold">100</span></div>
-<div class="stat">⭐ <span id="fame">0</span></div>
-<div class="stat">👥 <span id="served">0</span></div>
+<div class="title">🌙 魔法植物溫室 🌙</div>
+<div class="subtitle">收集神秘植物圖鑑</div>
+
+<div class="container">
+
+<div class="controls">
+
+<button onclick="plantSeed()">
+🌱 種植種子 (10💰)
+</button>
+
+<button onclick="harvestAll()">
+✂️ 全部收成
+</button>
+
+<button onclick="buyPlot()">
+🪴 擴充花盆 (50💰)
+</button>
 
 </div>
 
-<div class="shop">
+<div class="message" id="message"></div>
 
-<div class="title">
-🥮 ✦ Pastel 紅豆餅店 ✦ 🥮
-</div>
-
-<div class="layout">
+<div id="garden" class="grid"></div>
 
 <div class="panel">
 
-<h3>👩‍🍳 員工</h3>
+<h2>📖 植物圖鑑</h2>
 
-<div class="worker">
-👵 阿嬤<br>
-自動倒麵糊
-<button onclick="hireGrandma()">
-雇用 (50💰)
-</button>
-</div>
-
-<div class="worker">
-👨‍🍳 師傅<br>
-自動加餡
-<button onclick="hireChef()">
-雇用 (120💰)
-</button>
-</div>
-
-<div class="worker">
-👧 工讀生<br>
-自動出餐
-<button onclick="hireStudent()">
-雇用 (80💰)
-</button>
-</div>
-
-<div class="worker">
-🐶 店狗 Lv.<span id="dogLv">1</span>
-<button onclick="upgradeDog()">
-升級店狗
-</button>
-</div>
-
-</div>
-
-<div class="panel">
-
-<h3>🔥 烤盤</h3>
-
-<div id="grill" class="grill"></div>
-
-<div class="actions">
-
-<button onclick="addBatter()">
-🥣 倒麵糊
-</button>
-
-<button onclick="addBean()">
-🫘 加紅豆
-</button>
-
-<button onclick="startCook()">
-🔥 開始烤
-</button>
-
-<button onclick="serveCake()">
-🥮 出餐
-</button>
-
-</div>
-
-<div id="message"></div>
-
-</div>
-
-<div class="panel">
-
-<h3>🧍 客人隊伍</h3>
-
-<div id="queue" class="queue"></div>
-
-</div>
+<div id="collection" class="collection"></div>
 
 </div>
 
@@ -255,121 +189,235 @@ grid-template-columns:1fr;
 <script>
 
 let gold=100;
-let fame=0;
-let served=0;
+let essence=0;
 
-let selected=-1;
+const discovered=new Set();
 
-const workers={
-grandma:0,
-chef:0,
-student:0
-};
+const plants=[
 
-const dog={
-level:1
-};
+{
+name:"月光花",
+emoji:"🌸",
+time:10,
+value:20
+},
 
-const grill=[];
+{
+name:"星塵草",
+emoji:"🌿",
+time:15,
+value:35
+},
 
-for(let i=0;i<4;i++){
+{
+name:"發光蘑菇",
+emoji:"🍄",
+time:20,
+value:60
+},
 
-grill.push({
-state:"empty",
-timer:0
+{
+name:"精靈花",
+emoji:"🧚",
+time:25,
+value:100
+},
+
+{
+name:"黑玫瑰",
+emoji:"🌹",
+time:30,
+value:150
+},
+
+{
+name:"極光百合",
+emoji:"🌺",
+time:40,
+value:250
+},
+
+{
+name:"彩虹果",
+emoji:"🍎",
+time:45,
+value:350
+},
+
+{
+name:"銀月藤",
+emoji:"🌱",
+time:50,
+value:450
+},
+
+{
+name:"水晶花",
+emoji:"💎",
+time:60,
+value:700
+},
+
+{
+name:"龍息草",
+emoji:"🔥",
+time:70,
+value:900
+},
+
+{
+name:"幽夜蘭",
+emoji:"🌙",
+time:80,
+value:1200
+},
+
+{
+name:"星河樹",
+emoji:"🌳",
+time:90,
+value:1500
+},
+
+{
+name:"夢境花",
+emoji:"💜",
+time:100,
+value:1800
+},
+
+{
+name:"神諭果",
+emoji:"✨",
+time:120,
+value:2500
+},
+
+{
+name:"世界樹幼苗",
+emoji:"🌲",
+time:150,
+value:5000
+}
+
+];
+
+const plots=[];
+
+for(let i=0;i<6;i++){
+
+plots.push({
+plant:null,
+progress:0
 });
 
 }
 
-const customers=[];
+function randomPlant(){
 
-function createCustomer(){
+let roll=Math.random();
 
-customers.push({
+if(roll<0.4) return plants[0];
+if(roll<0.6) return plants[1];
+if(roll<0.72) return plants[2];
+if(roll<0.82) return plants[3];
+if(roll<0.88) return plants[4];
+if(roll<0.92) return plants[5];
+if(roll<0.95) return plants[6];
+if(roll<0.97) return plants[7];
+if(roll<0.985) return plants[8];
+if(roll<0.992) return plants[9];
+if(roll<0.996) return plants[10];
+if(roll<0.998) return plants[11];
+if(roll<0.999) return plants[12];
 
-emoji:["👧","👩","👨","👵"]
-[Math.floor(Math.random()*4)],
+return plants[
+13+Math.floor(Math.random()*2)
+];
 
-order:"🫘"
+}
+
+function plantSeed(){
+
+let empty=
+plots.find(
+p=>p.plant===null
+);
+
+if(!empty){
+
+msg("沒有空花盆");
+
+return;
+}
+
+if(gold<10){
+
+msg("金幣不足");
+
+return;
+}
+
+gold-=10;
+
+empty.plant=randomPlant();
+
+empty.progress=0;
+
+update();
+
+}
+
+function harvestAll(){
+
+plots.forEach(plot=>{
+
+if(
+plot.plant &&
+plot.progress>=plot.plant.time
+){
+
+gold+=plot.plant.value;
+
+essence+=1;
+
+discovered.add(
+plot.plant.name
+);
+
+plot.plant=null;
+
+plot.progress=0;
+
+}
 
 });
 
-}
-
-for(let i=0;i<3;i++){
-createCustomer();
-}
-
-function updateUI(){
-
-goldEl.textContent=gold;
-fameEl.textContent=fame;
-servedEl.textContent=served;
-dogLv.textContent=dog.level;
-
-renderGrill();
-renderQueue();
+update();
 
 }
 
-function renderGrill(){
+function buyPlot(){
 
-grillDiv.innerHTML="";
+let cost=50+plots.length*20;
 
-grill.forEach((slot,index)=>{
+if(gold<cost){
 
-let icon="⭕";
+msg("金幣不足");
 
-if(slot.state==="batter") icon="🥣";
-if(slot.state==="bean") icon="🫘";
-if(slot.state==="cooking") icon="🔥";
-if(slot.state==="done") icon="🥮";
-if(slot.state==="burnt") icon="💀";
-
-const div=document.createElement("div");
-
-div.className="slot";
-
-if(index===selected){
-
-div.classList.add("selected");
-
+return;
 }
 
-div.textContent=icon;
+gold-=cost;
 
-div.onclick=()=>{
+plots.push({
 
-selected=index;
-
-renderGrill();
-
-};
-
-grillDiv.appendChild(div);
+plant:null,
+progress:0
 
 });
 
-}
-
-function renderQueue(){
-
-queue.innerHTML="";
-
-customers.forEach(c=>{
-
-const d=document.createElement("div");
-
-d.className="customer";
-
-d.innerHTML=`
-${c.emoji}
-想吃 ${c.order} 紅豆餅
-`;
-
-queue.appendChild(d);
-
-});
+update();
 
 }
 
@@ -379,229 +427,131 @@ message.textContent=text;
 
 }
 
-function addBatter(){
+function renderGarden(){
 
-if(selected<0) return;
+garden.innerHTML="";
 
-if(grill[selected].state!=="empty")
-return;
+plots.forEach(plot=>{
 
-grill[selected].state="batter";
+const div=
+document.createElement("div");
 
-updateUI();
+div.className="plot";
 
-}
+if(!plot.plant){
 
-function addBean(){
-
-if(selected<0) return;
-
-if(grill[selected].state!=="batter")
-return;
-
-grill[selected].state="bean";
-
-updateUI();
+div.innerHTML=`
+<div class="plant">🪴</div>
+<div class="name">空花盆</div>
+`;
 
 }
+else{
 
-function startCook(){
-
-if(selected<0) return;
-
-if(grill[selected].state!=="bean")
-return;
-
-grill[selected].state="cooking";
-
-grill[selected].timer=180;
-
-updateUI();
-
-}
-
-function serveCake(){
-
-if(selected<0) return;
-
-const slot=grill[selected];
-
-if(slot.state!=="done")
-return;
-
-if(customers.length===0)
-return;
-
-customers.shift();
-
-createCustomer();
-
-gold+=15;
-
-fame+=1;
-
-served++;
-
-slot.state="empty";
-
-updateUI();
-
-}
-
-function hireGrandma(){
-
-if(gold<50) return;
-
-gold-=50;
-
-workers.grandma++;
-
-updateUI();
-
-}
-
-function hireChef(){
-
-if(gold<120) return;
-
-gold-=120;
-
-workers.chef++;
-
-updateUI();
-
-}
-
-function hireStudent(){
-
-if(gold<80) return;
-
-gold-=80;
-
-workers.student++;
-
-updateUI();
-
-}
-
-function upgradeDog(){
-
-let cost=dog.level*100;
-
-if(gold<cost) return;
-
-gold-=cost;
-
-dog.level++;
-
-updateUI();
-
-}
-
-function workerAI(){
-
-for(let i=0;i<workers.grandma;i++){
-
-let slot=
-grill.find(
-s=>s.state==="empty"
+let percent=
+Math.floor(
+plot.progress/
+plot.plant.time*100
 );
 
-if(slot){
+if(percent>100)
+percent=100;
 
-slot.state="batter";
-
-}
-
-}
-
-for(let i=0;i<workers.chef;i++){
-
-let slot=
-grill.find(
-s=>s.state==="batter"
-);
-
-if(slot){
-
-slot.state="bean";
+div.innerHTML=`
+<div class="plant">
+${plot.plant.emoji}
+</div>
+<div class="name">
+${plot.plant.name}
+</div>
+<div class="name">
+${percent}%
+</div>
+`;
 
 }
 
-}
-
-for(let i=0;i<workers.student;i++){
-
-let slot=
-grill.find(
-s=>s.state==="done"
-);
-
-if(slot && customers.length){
-
-slot.state="empty";
-
-customers.shift();
-
-createCustomer();
-
-gold+=15;
-
-served++;
-
-}
-
-}
-
-}
-
-function updateCooking(){
-
-grill.forEach(slot=>{
-
-if(slot.state!=="cooking")
-return;
-
-slot.timer--;
-
-if(slot.timer<=0){
-
-slot.state="done";
-
-}
+garden.appendChild(div);
 
 });
 
 }
 
-function dogAI(){
+function renderCollection(){
 
-if(Math.random()<0.002*dog.level){
+collection.innerHTML="";
 
-createCustomer();
+plants.forEach(p=>{
+
+const div=
+document.createElement("div");
+
+div.className="item";
+
+if(discovered.has(p.name)){
+
+div.innerHTML=`
+<div style="font-size:28px">
+${p.emoji}
+</div>
+${p.name}
+`;
+
+}else{
+
+div.innerHTML=`
+<div style="font-size:28px">
+❔
+</div>
+?????
+`;
 
 }
 
+collection.appendChild(div);
+
+});
+
 }
 
-const goldEl=document.getElementById("gold");
-const fameEl=document.getElementById("fame");
-const servedEl=document.getElementById("served");
-const grillDiv=document.getElementById("grill");
+function update(){
+
+goldEl.textContent=gold;
+essenceEl.textContent=essence;
+discoveriesEl.textContent=
+discovered.size;
+
+renderGarden();
+renderCollection();
+
+}
+
+const goldEl=
+document.getElementById("gold");
+
+const essenceEl=
+document.getElementById("essence");
+
+const discoveriesEl=
+document.getElementById("discoveries");
 
 setInterval(()=>{
 
-workerAI();
+plots.forEach(plot=>{
 
-updateCooking();
+if(plot.plant){
 
-dogAI();
+plot.progress++;
 
-updateUI();
+}
 
-},100);
+});
 
-updateUI();
+update();
+
+},1000);
+
+update();
 
 </script>
 
