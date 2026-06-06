@@ -2,80 +2,63 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <!-- 加入 viewport 讓手機畫面正確縮放，並防止雙擊放大 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>極地荒野生存模擬器 - 手機觸控版</title>
+    <title>極地開荒：營地守護者</title>
     <style>
         body {
-            margin: 0;
-            background-color: #cbd5e1;
+            margin: 0; background-color: #0f172a;
             font-family: "Microsoft JhengHei", sans-serif;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            user-select: none;
-            touch-action: none; /* 防止手機瀏覽器預設的下拉重新整理或縮放行為 */
+            overflow: hidden; display: flex; justify-content: center; align-items: center;
+            height: 100vh; user-select: none; touch-action: none;
         }
+        /* 頂部資源面板 */
         #ui-header {
-            position: absolute;
-            top: 15px;
-            display: flex;
-            gap: 15px;
-            background: rgba(15, 23, 42, 0.85);
-            padding: 8px 18px;
-            border-radius: 30px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            border: 2px solid #38bdf8;
-            color: white;
-            font-size: 16px;
-            font-weight: bold;
-            z-index: 10;
+            position: absolute; top: 15px; display: flex; gap: 12px;
+            background: rgba(15, 23, 42, 0.9); padding: 8px 16px;
+            border-radius: 20px; border: 2px solid #38bdf8;
+            color: white; font-size: 14px; font-weight: bold; z-index: 10;
         }
+        /* 底部戰略升級選單 */
         #upgrade-panel {
-            position: absolute;
-            bottom: 20px;
-            background: rgba(15, 23, 42, 0.85);
-            padding: 10px 20px;
-            border-radius: 15px;
-            box-shadow: 0 -4px 15px rgba(0,0,0,0.3);
-            border: 2px solid #f59e0b;
-            display: flex;
-            gap: 10px;
-            z-index: 10;
-            width: 90%;
-            max-width: 400px;
-            justify-content: space-around;
+            position: absolute; bottom: 15px;
+            background: rgba(15, 23, 42, 0.9); padding: 12px;
+            border-radius: 16px; border: 2px solid #f59e0b;
+            display: flex; flex-direction: column; gap: 8px;
+            z-index: 10; width: 90%; max-width: 360px;
         }
+        .menu-title {
+            color: #fbbf24; font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 2px;
+        }
+        .btn-row { display: flex; gap: 8px; justify-content: space-between; }
         .btn {
-            background: #f59e0b;
-            color: #0f172a;
-            border: none;
-            padding: 8px 12px;
-            font-size: 14px;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
+            background: #f59e0b; color: #0f172a; border: none;
+            padding: 8px 10px; font-size: 12px; font-weight: bold;
+            border-radius: 6px; flex: 1; text-align: center;
         }
-        .btn:disabled { background: #64748b; color: #cbd5e1; }
-        canvas {
-            background: #f1f5f9;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
+        .btn:disabled { background: #475569; color: #94a3b8; }
+        canvas { background: #f8fafc; }
     </style>
 </head>
 <body>
 
     <div id="ui-header">
-        <div>🪵 木材: <span id="wood-count">0</span></div>
-        <div>🍖 肉塊: <span id="meat-count">0</span></div>
-        <div>💵 金幣: <span id="money-count">10</span></div>
+        <div>🪵 <span id="wood-count">0</span></div>
+        <div>🍖 <span id="meat-count">0</span></div>
+        <div>💵 <span id="money-count">15</span></div>
+        <div>👷‍♂️ <span id="worker-count">0</span></div>
+        <div>🏹 <span id="turret-count">0</span></div>
     </div>
 
     <div id="upgrade-panel">
-        <button class="btn" id="btn-tower" onclick="upgradePlayerAxe()">🛠️ 升級裝備 (需 10 💵)</button>
-        <button class="btn" id="btn-spawn" onclick="spawnBearManual()">Bear 🐻</button>
+        <div class="menu-title">⛺ 基地戰略指揮中心</div>
+        <div class="btn-row">
+            <button class="btn" id="btn-axe" onclick="upgradePlayerAxe()">🪓 隨身飛斧 Lv.<span id="lvl-axe">1</span> (<span id="cost-axe">10</span>💵)</button>
+            <button class="btn" id="btn-turret" onclick="buildTurret()">🏹 建防禦箭塔 (<span id="cost-turret">20</span>🪵)</button>
+        </div>
+        <div class="btn-row">
+            <button class="btn" id="btn-worker" onclick="hireWorker()">👷‍♂️ 雇傭伐木工 (<span id="cost-worker">15</span>🍖)</button>
+            <button class="btn" id="btn-sell" onclick="sellResources()">💰 資源換金幣 (全部🪵🍖)</button>
+        </div>
     </div>
 
     <canvas id="gameCanvas"></canvas>
@@ -84,313 +67,349 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-// 讓畫布大小自動填滿手機螢幕
-function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-}
+function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
 resizeCanvas();
 
-let resources = { wood: 0, meat: 0, money: 10 };
-let axeLevel = 1;
-let axeAngle = 0;
+// 遊戲核心數據
+let resources = { wood: 0, meat: 0, money: 15 };
+let lvlAxe = 1;
+let costs = { axe: 10, turret: 20, worker: 15 };
 
-// 觸控與目標位置狀態
+// 操控狀態
 let touchActive = false;
-let targetX = 0; // 企鵝想走去的目標世界座標 X
-let targetY = 0; // 企鵝想走去的目標世界座標 Y
+let targetX = 0, targetY = 0;
 
-const player = { x: 0, y: 0, speed: 3.0, range: 100, size: 36 };
+// 1. 遊戲物件定義
+const player = { x: 40, y: 40, speed: 3.2, range: 45, axeAngle: 0, size: 35 }; // 縮小 range，緊貼角色
 const baseStation = { x: 0, y: 0 };
 
-// 螢幕畫面座標轉回世界座標（用於點擊判定）
-function fromIso(screenX, screenY) {
-    let offsetX = screenX - canvas.width / 2;
-    let offsetY = screenY - canvas.height / 2; // 讓中心對準畫面中央
-    return {
-        x: (offsetY + offsetX / 2),
-        y: (offsetY - offsetX / 2)
-    };
+let workers = [];     // 雇傭的伐木工系統
+let turrets = [];     // 建造的防禦箭塔系統
+let resourceTrees = [ // 資源樹
+    { x: 120, y: -100, hp: 100, maxHp: 100 },
+    { x: -140, y: 140, hp: 100, maxHp: 100 },
+    { x: -180, y: -120, hp: 100, maxHp: 100 },
+    { x: 200, y: 180, hp: 100, maxHp: 100 }
+];
+let bears = [         // 野生北極熊
+    { x: -350, y: -200, hp: 100, maxHp: 100, speed: 0.5 },
+    { x: 250, y: -300, hp: 120, maxHp: 120, speed: 0.4 }
+];
+let environmentDecor = []; // 環境裝飾
+for(let i=0; i<35; i++) {
+    let rx = (Math.random()-0.5)*900, ry = (Math.random()-0.5)*900;
+    if(Math.sqrt(rx*rx+ry*ry) > 70) environmentDecor.push({ x: rx, y: ry, type: Math.random()>0.4?"🌲":"🏔️", size: 16+Math.random()*8 });
 }
+let floatingTexts = [];
 
-// 世界座標轉畫面座標
+// 2. 斜 45 度座標轉換 (修正飛斧軌道的關鍵)
 function toIso(x, y) {
     return {
         isoX: (x - y) + canvas.width / 2,
-        isoY: (x + y) / 2 + canvas.height / 2
+        isoY: (x + y) / 2 + canvas.height / 2 - 40
     };
 }
+function fromIso(screenX, screenY) {
+    let offsetX = screenX - canvas.width / 2;
+    let offsetY = screenY - canvas.height / 2 + 40;
+    return { x: (offsetY + offsetX / 2), y: (offsetY - offsetX / 2) };
+}
 
-// 手機觸控事件監聽 (同時支援點擊與滑動拖曳)
+// 3. 觸控事件
 function handleTouch(e) {
     touchActive = true;
     let clientX = e.touches ? e.touches[0].clientX : e.clientX;
     let clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    
-    // 排除點擊到頂部或底部 UI 的觸發
-    if (clientY < 80 || clientY > window.innerHeight - 80) return;
-
+    if (clientY < 70 || clientY > window.innerHeight - 130) return; // 避開 UI 面板
     let worldPos = fromIso(clientX, clientY);
-    targetX = worldPos.x;
-    targetY = worldPos.y;
+    targetX = worldPos.x; targetY = worldPos.y;
 }
-
-window.addEventListener('touchstart', handleTouch, { passive: false });
-window.addEventListener('touchmove', handleTouch, { passive: false });
+window.addEventListener('touchstart', handleTouch); window.addEventListener('touchmove', handleTouch);
 window.addEventListener('touchend', () => touchActive = false);
-// 兼顧滑鼠測試
-window.addEventListener('mousedown', handleTouch);
+window.addEventListener('mousedown', handleTouch); window.addEventListener('mouseup', () => touchActive = false);
 window.addEventListener('mousemove', (e) => { if(e.buttons === 1) handleTouch(e); });
-window.addEventListener('mouseup', () => touchActive = false);
 
-// 初始化環境樹木
-let environmentTrees = [];
-for (let i = 0; i < 40; i++) {
-    let rx = (Math.random() - 0.5) * 800;
-    let ry = (Math.random() - 0.5) * 800;
-    if (Math.sqrt(rx*rx + ry*ry) > 60) {
-        environmentTrees.push({ x: rx, y: ry, emoji: Math.random() > 0.3 ? "🌲" : "🏔️", size: 20 + Math.random() * 10 });
-    }
-}
-
-let resourceTrees = [
-    { x: 120, y: -80, hp: 100, maxHp: 100 },
-    { x: -100, y: 120, hp: 100, maxHp: 100 },
-    { x: -150, y: -150, hp: 100, maxHp: 100 }
-];
-
-let bears = [
-    { x: -300, y: -100, hp: 100, maxHp: 100, speed: 0.5, size: 32 },
-    { x: 150, y: -300, hp: 120, maxHp: 120, speed: 0.4, size: 36 }
-];
-
-let floatingTexts = [];
-
+// 4. 戰略可玩性功能函數
 function updateUI() {
     document.getElementById('wood-count').innerText = resources.wood;
     document.getElementById('meat-count').innerText = resources.meat;
     document.getElementById('money-count').innerText = resources.money;
-    
-    let cost = axeLevel * 10;
-    const btn = document.getElementById('btn-tower');
-    btn.innerText = `🛠️ 升級 Lv.${axeLevel} (${cost}💵)`;
-    btn.disabled = resources.money < cost;
+    document.getElementById('worker-count').innerText = workers.length;
+    document.getElementById('turret-count').innerText = turrets.length;
+
+    document.getElementById('lvl-axe').innerText = lvlAxe;
+    document.getElementById('cost-axe').innerText = costs.axe;
+    document.getElementById('cost-turret').innerText = costs.turret;
+    document.getElementById('cost-worker').innerText = costs.worker;
+
+    document.getElementById('btn-axe').disabled = resources.money < costs.axe;
+    document.getElementById('btn-turret').disabled = resources.wood < costs.turret;
+    document.getElementById('btn-worker').disabled = resources.meat < costs.worker;
 }
 
+// 功能 A：升級隨身武器（提升傷害與輕微擴大半徑）
 function upgradePlayerAxe() {
-    let cost = axeLevel * 10;
-    if (resources.money >= cost) {
-        resources.money -= cost;
-        axeLevel++;
-        player.range += 12;
+    if (resources.money >= costs.axe) {
+        resources.money -= costs.axe;
+        lvlAxe++;
+        player.range += 5; // 每次只微調擴大，保持貼身感
+        costs.axe = lvlAxe * 12;
         updateUI();
     }
 }
 
-function spawnBearManual() {
-    spawnBear();
+// 功能 B：召喚隨從（自動尋找最近的樹木砍樹，完全自動化生產！）
+function hireWorker() {
+    if (resources.meat >= costs.worker) {
+        resources.meat -= costs.worker;
+        workers.push({ x: 0, y: 0, speed: 1.5, targetTree: null, workCooldown: 0 });
+        costs.worker = 15 + workers.length * 10;
+        updateUI();
+    }
+}
+
+// 功能 C：建造防禦箭塔（幫忙自動射擊走近營地的北極熊）
+function buildTurret() {
+    if (resources.wood >= costs.turret) {
+        resources.wood -= costs.turret;
+        // 在基地周圍隨機找個空地建塔
+        let angle = Math.random() * Math.PI * 2;
+        turrets.push({ x: Math.cos(angle)*60, y: Math.sin(angle)*60, fireCooldown: 0 });
+        costs.turret = 20 + turrets.length * 15;
+        updateUI();
+    }
+}
+
+// 功能 D：黑市商人（將收集的資源轉換為升級所需的金幣）
+function sellResources() {
+    if (resources.wood > 0 || resources.meat > 0) {
+        let earned = resources.wood * 1 + resources.meat * 2;
+        resources.money += earned;
+        resources.wood = 0; resources.meat = 0;
+        floatingTexts.push({ x: canvas.width/2, y: canvas.height/2, text: `💵 +${earned}`, alpha: 1 });
+        updateUI();
+    }
 }
 
 function spawnBear() {
-    const angle = Math.random() * Math.PI * 2;
-    const radius = 350;
+    let angle = Math.random() * Math.PI * 2;
     bears.push({
-        x: Math.cos(angle) * radius,
-        y: Math.sin(angle) * radius,
-        hp: 80 + axeLevel * 15,
-        maxHp: 80 + axeLevel * 15,
-        speed: 0.4 + Math.random() * 0.4,
-        size: 28 + Math.random() * 10
+        x: Math.cos(angle) * 400, y: Math.sin(angle) * 400,
+        hp: 80 + lvlAxe * 15, maxHp: 80 + lvlAxe * 15, speed: 0.4 + Math.random()*0.3
     });
 }
+function spawnBearManual() { spawnBear(); }
 
-function gameLoop() {
-    update();
-    render();
-    requestAnimationFrame(gameLoop);
-}
+// 5. 遊戲主循環邏輯
+function gameLoop() { update(); render(); requestAnimationFrame(gameLoop); }
 
 function update() {
-    // 手機移動邏輯：如果按住螢幕，角色就朝目標點移動
+    // 玩家移動
     if (touchActive) {
-        let dx = targetX - player.x;
-        let dy = targetY - player.y;
-        let dist = Math.sqrt(dx * dx + dy * dy);
-        
-        if (dist > 5) {
-            player.x += (dx / dist) * player.speed;
-            player.y += (dy / dist) * player.speed;
-        }
-    }
-
-    player.x = Math.max(-400, Math.min(400, player.x));
-    player.y = Math.max(-400, Math.min(400, player.y));
-
-    axeAngle += 0.05 + (axeLevel * 0.01);
-    let currentAxeX = player.x + Math.cos(axeAngle) * player.range;
-    let currentAxeY = player.y + Math.sin(axeAngle) * player.range;
-
-    resourceTrees.forEach(tree => {
-        let dx = currentAxeX - tree.x;
-        let dy = currentAxeY - tree.y;
+        let dx = targetX - player.x, dy = targetY - player.y;
         let dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist > 5) { player.x += (dx/dist)*player.speed; player.y += (dy/dist)*player.speed; }
+    }
+    player.x = Math.max(-350, Math.min(350, player.x));
+    player.y = Math.max(-350, Math.min(350, player.y));
 
-        if (dist < 35) {
-            tree.hp -= 2;
+    // 飛斧角度
+    player.axeAngle += 0.06;
+
+    // 計算貼身飛斧在斜 45 度座標系下的精準打擊點
+    let axeX = player.x + Math.cos(player.axeAngle) * player.range;
+    let axeY = player.y + Math.sin(player.axeAngle) * player.range;
+
+    // 玩家砍樹
+    resourceTrees.forEach(tree => {
+        let dist = Math.sqrt(Math.pow(axeX - tree.x, 2) + Math.pow(axeY - tree.y, 2));
+        if (dist < 28) {
+            tree.hp -= 1.5;
             if (tree.hp <= 0) {
-                tree.hp = tree.maxHp;
-                resources.wood += 2;
-                resources.money += 1;
+                tree.hp = tree.maxHp; resources.wood += 2;
                 let iso = toIso(tree.x, tree.y);
-                floatingTexts.push({ x: iso.isoX, y: iso.isoY - 20, text: "+2 🪵 +1 💵", alpha: 1 });
+                floatingTexts.push({ x: iso.isoX, y: iso.isoY - 15, text: "+2 🪵", alpha: 1 });
                 updateUI();
             }
         }
     });
 
-    bears.forEach((bear, bIndex) => {
-        let bDx = player.x - bear.x;
-        let bDy = player.y - bear.y;
-        let bDist = Math.sqrt(bDx*bDx + bDy*bDy);
-
-        if (bDist > 15) {
-            bear.x += (bDx / bDist) * bear.speed;
-            bear.y += (bDy / bDist) * bear.speed;
-        } else {
-            if (resources.money > 0 && Math.random() < 0.01) {
-                resources.money = Math.max(0, resources.money - 1);
-                updateUI();
+    // 隨從/工人 AI：自動去離自己最近的樹木採集，滿了回基地
+    workers.forEach(w => {
+        let closestTree = null, minDist = 9999;
+        resourceTrees.forEach(t => {
+            let d = Math.sqrt(Math.pow(w.x-t.x,2)+Math.pow(w.y-t.y,2));
+            if(d < minDist) { minDist = d; closestTree = t; }
+        });
+        
+        if (closestTree) {
+            let dx = closestTree.x - w.x, dy = closestTree.y - w.y;
+            let dist = Math.sqrt(dx*dx + dy*dy);
+            if (dist > 20) {
+                w.x += (dx/dist)*w.speed; w.y += (dy/dist)*w.speed;
+            } else { // 到達樹木開始工作
+                if(w.workCooldown <= 0) {
+                    resources.wood += 1; updateUI();
+                    w.workCooldown = 50; // 工作間隔
+                    let iso = toIso(w.x, w.y);
+                    floatingTexts.push({ x: iso.isoX, y: iso.isoY-15, text: "+1 🪵", alpha: 0.8 });
+                } else { w.workCooldown--; }
             }
         }
+    });
 
-        let aDx = currentAxeX - bear.x;
-        let aDy = currentAxeY - bear.y;
-        let aDist = Math.sqrt(aDx*aDx + aDy*aDy);
+    // 箭塔自動鎖定並攻擊最近的熊
+    turrets.forEach(t => {
+        if(t.fireCooldown > 0) { t.fireCooldown--; return; }
+        let targetBear = null, minDist = 220; // 箭塔射程
+        bears.forEach(b => {
+            let d = Math.sqrt(Math.pow(t.x-b.x,2)+Math.pow(t.y-b.y,2));
+            if(d < minDist) { minDist = d; targetBear = b; }
+        });
+        if(targetBear) {
+            targetBear.hp -= 20; // 箭塔傷害
+            t.fireCooldown = 60; // 射擊冷卻
+            // 生成箭矢特效軌跡（簡化為直接跳字提示）
+            let bIso = toIso(targetBear.x, targetBear.y);
+            floatingTexts.push({ x: bIso.isoX, y: bIso.isoY-10, text: "💥 -20", alpha: 1 });
+        }
+    });
 
-        if (aDist < 30) {
-            bear.hp -= (1 + axeLevel * 0.2);
+    // 北極熊進攻邏輯
+    bears.forEach((bear, bIndex) => {
+        // 熊會朝著基地的帳篷或者玩家走去（優先攻擊玩家）
+        let dx = player.x - bear.x, dy = player.y - bear.y;
+        let dist = Math.sqrt(dx*dx + dy*dy);
+        
+        // 如果離玩家遠，就往中心基地走
+        if (dist > 180) {
+            dx = baseStation.x - bear.x; dy = baseStation.y - bear.y;
+            dist = Math.sqrt(dx*dx + dy*dy);
+        }
+
+        if (dist > 15) {
+            bear.x += (dx/dist)*bear.speed; bear.y += (dy/dist)*bear.speed;
+        }
+
+        // 玩家的飛斧攻擊北極熊
+        let aDist = Math.sqrt(Math.pow(axeX - bear.x, 2) + Math.pow(axeY - bear.y, 2));
+        if (aDist < 25) {
+            bear.hp -= (0.8 + lvlAxe*0.2);
             if (bear.hp <= 0) {
                 resources.meat += 3;
-                resources.money += 2;
                 let iso = toIso(bear.x, bear.y);
-                floatingTexts.push({ x: iso.isoX, y: iso.isoY - 20, text: "+3 🍖 +2 💵", alpha: 1 });
-                bears.splice(bIndex, 1);
-                spawnBear();
-                updateUI();
+                floatingTexts.push({ x: iso.isoX, y: iso.isoY - 15, text: "+3 🍖", alpha: 1 });
+                bears.splice(bIndex, 1); spawnBear(); updateUI();
             }
         }
     });
 
-    floatingTexts.forEach((ft, index) => {
-        ft.y -= 1;
-        ft.alpha -= 0.02;
-        if (ft.alpha <= 0) floatingTexts.splice(index, 1);
-    });
+    // 文字動畫更新
+    floatingTexts.forEach((ft, i) => { ft.y -= 0.8; ft.alpha -= 0.02; if(ft.alpha<=0) floatingTexts.splice(i,1); });
 }
 
+// 6. 畫面渲染
 function render() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // 畫雪地網格
-    ctx.strokeStyle = "#e2e8f0";
-    ctx.lineWidth = 1;
-    for (let i = -500; i <= 500; i += 60) {
-        let p1 = toIso(i, -500); let p2 = toIso(i, 500);
+    // 網格地板
+    ctx.strokeStyle = "#e2e8f0"; ctx.lineWidth = 1;
+    for (let i = -400; i <= 400; i += 50) {
+        let p1 = toIso(i, -400); let p2 = toIso(i, 400);
         ctx.beginPath(); ctx.moveTo(p1.isoX, p1.isoY); ctx.lineTo(p2.isoX, p2.isoY); ctx.stroke();
-        let p3 = toIso(-500, i); let p4 = toIso(500, i);
+        let p3 = toIso(-400, i); let p4 = toIso(400, i);
         ctx.beginPath(); ctx.moveTo(p3.isoX, p3.isoY); ctx.lineTo(p4.isoX, p4.isoY); ctx.stroke();
     }
 
+    // 正確的斜 45 度「貼身飛斧環繞軌道」（壓扁的扁平橢圓）
     let isoPlayer = toIso(player.x, player.y);
     ctx.beginPath();
+    // 關鍵修正：橢圓的寬度是長度的兩倍（player.range 與 player.range/2），完美貼合 2.5D 透視！
     ctx.ellipse(isoPlayer.isoX, isoPlayer.isoY, player.range, player.range / 2, 0, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(56, 189, 248, 0.05)";
-    ctx.fill();
-    ctx.strokeStyle = "rgba(56, 189, 248, 0.3)";
-    ctx.lineWidth = 2;
-    ctx.stroke();
+    ctx.fillStyle = "rgba(56, 189, 248, 0.03)"; ctx.fill();
+    ctx.strokeStyle = "rgba(56, 189, 248, 0.25)"; ctx.stroke();
 
-    let renderQueue = [];
+    let queue = [];
 
-    environmentTrees.forEach(t => {
-        renderQueue.push({ ySort: t.x + t.y, draw: () => {
-            let iso = toIso(t.x, t.y);
-            ctx.font = `${t.size}px Arial`;
-            ctx.textAlign = "center";
-            ctx.fillText(t.emoji, iso.isoX, iso.isoY);
+    // 環境美化裝飾
+    environmentDecor.forEach(d => {
+        queue.push({ z: d.x+d.y, run: () => {
+            let iso = toIso(d.x, d.y); ctx.font = `${d.size}px Arial`; ctx.textAlign = "center";
+            ctx.fillText(d.type, iso.isoX, iso.isoY);
         }});
     });
 
-    resourceTrees.forEach(tree => {
-        renderQueue.push({ ySort: tree.x + tree.y, draw: () => {
-            let iso = toIso(tree.x, tree.y);
-            ctx.font = "38px Arial";
-            ctx.textAlign = "center";
+    // 資源樹木
+    resourceTrees.forEach(t => {
+        queue.push({ z: t.x+t.y, run: () => {
+            let iso = toIso(t.x, t.y); ctx.font = "38px Arial"; ctx.textAlign = "center";
             ctx.fillText("🌲", iso.isoX, iso.isoY);
-            ctx.fillStyle = "#cbd5e1";
-            ctx.fillRect(iso.isoX - 15, iso.isoY - 40, 30, 4);
-            ctx.fillStyle = "#eab308";
-            ctx.fillRect(iso.isoX - 15, iso.isoY - 40, (tree.hp / tree.maxHp) * 30, 4);
         }});
     });
 
-    bears.forEach(bear => {
-        renderQueue.push({ ySort: bear.x + bear.y, draw: () => {
-            let iso = toIso(bear.x, bear.y);
-            ctx.font = `${bear.size}px Arial`;
-            ctx.textAlign = "center";
+    // 建造的防禦塔
+    turrets.forEach(t => {
+        queue.push({ z: t.x+t.y, run: () => {
+            let iso = toIso(t.x, t.y); ctx.font = "34px Arial"; ctx.textAlign = "center";
+            ctx.fillText("🏹", iso.isoX, iso.isoY);
+        }});
+    });
+
+    // 雇傭的隨從工人
+    workers.forEach(w => {
+        queue.push({ z: w.x+w.y, run: () => {
+            let iso = toIso(w.x, w.y); ctx.font = "26px Arial"; ctx.textAlign = "center";
+            ctx.fillText("👷‍♂️", iso.isoX, iso.isoY);
+        }});
+    });
+
+    // 北極熊
+    bears.forEach(b => {
+        queue.push({ z: b.x+b.y, run: () => {
+            let iso = toIso(b.x, b.y); ctx.font = "30px Arial"; ctx.textAlign = "center";
             ctx.fillText("🐻‍❄️", iso.isoX, iso.isoY);
-
-            let bWidth = 30;
-            ctx.fillStyle = "rgba(0,0,0,0.5)";
-            ctx.fillRect(iso.isoX - bWidth/2, iso.isoY - bear.size, bWidth, 4);
-            ctx.fillStyle = "#ef4444";
-            ctx.fillRect(iso.isoX - bWidth/2, iso.isoY - bear.size, (bear.hp / bear.maxHp) * bWidth, 4);
+            // 血條
+            ctx.fillStyle = "#ef4444"; ctx.fillRect(iso.isoX-15, iso.isoY-32, 30, 3);
+            ctx.fillStyle = "#22c55e"; ctx.fillRect(iso.isoX-15, iso.isoY-32, (b.hp/b.maxHp)*30, 3);
         }});
     });
 
+    // 核心大本營
     let isoBase = toIso(baseStation.x, baseStation.y);
-    renderQueue.push({ ySort: baseStation.x + baseStation.y, draw: () => {
-        ctx.font = "50px Arial";
-        ctx.textAlign = "center";
-        ctx.fillText("🎪", isoBase.isoX, isoBase.isoY + 10);
+    queue.push({ z: baseStation.x+baseStation.y, run: () => {
+        ctx.font = "52px Arial"; ctx.textAlign = "center"; ctx.fillText("⛺", isoBase.isoX, isoBase.isoY + 10);
     }});
 
-    renderQueue.push({ ySort: player.x + player.y, draw: () => {
-        ctx.font = `${player.size}px Arial`;
-        ctx.textAlign = "center";
-        ctx.fillText("🐧", isoPlayer.isoX, isoPlayer.isoY);
+    // 操控角色（換成人類：冒險者/指揮官）
+    queue.push({ z: player.x+player.y, run: () => {
+        ctx.font = "32px Arial"; ctx.textAlign = "center"; ctx.fillText("🤠", isoPlayer.isoX, isoPlayer.isoY);
     }});
 
-    renderQueue.sort((a, b) => a.ySort - b.ySort);
-    renderQueue.forEach(obj => obj.draw());
+    // 2.5D 深度渲染
+    queue.sort((a,b)=>a.z - b.z);
+    queue.forEach(q => q.run());
 
-    let currentAxeX = player.x + Math.cos(axeAngle) * player.range;
-    let currentAxeY = player.y + Math.sin(axeAngle) * player.range;
-    let isoAxe = toIso(currentAxeX, currentAxeY);
-    
+    // 繪製精確貼身的「飛斧 🪓」
+    // 關鍵修正：計算飛斧繪製位置時，也要套用 toIso，使其圍繞人轉時產生正確的高低差
+    let axeWorldX = player.x + Math.cos(player.axeAngle) * player.range;
+    let axeWorldY = player.y + Math.sin(player.axeAngle) * player.range;
+    let isoAxe = toIso(axeWorldX, axeWorldY);
+
     ctx.save();
     ctx.translate(isoAxe.isoX, isoAxe.isoY);
-    ctx.rotate(axeAngle * 5);
-    ctx.font = "24px Arial";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
+    ctx.rotate(player.axeAngle * 6);
+    ctx.font = "22px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.fillText("🪓", 0, 0);
     ctx.restore();
 
+    // 跳字特效
     floatingTexts.forEach(ft => {
-        ctx.fillStyle = `rgba(15, 23, 42, ${ft.alpha})`;
-        ctx.font = "bold 14px 'Microsoft JhengHei'";
-        ctx.textAlign = "center";
-        ctx.fillText(ft.text, ft.x, ft.y);
+        ctx.fillStyle = `rgba(251, 191, 36, ${ft.alpha})`; ctx.font = "bold 13px 'Microsoft JhengHei'";
+        ctx.textAlign = "center"; ctx.fillText(ft.text, ft.x, ft.y);
     });
 }
 
-// 監聽螢幕旋轉或大小變動
-window.addEventListener('resize', () => {
-    resizeCanvas();
-});
-
+window.addEventListener('resize', () => { resizeCanvas(); });
 updateUI();
 gameLoop();
 </script>
