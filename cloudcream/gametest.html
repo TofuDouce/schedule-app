@@ -2,365 +2,237 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>✦ Pastel 紅豆餅帝國 ✦</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pastel 紅豆餅</title>
 
 <style>
-:root{
---pink:#ffe6f2;
---purple:#f2e7ff;
---card:rgba(255,255,255,.75);
---text:#5e5473;
-}
-
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:"Microsoft JhengHei",sans-serif;
-}
-
 body{
-height:100vh;
-overflow:hidden;
-background:linear-gradient(135deg,var(--pink),var(--purple));
-}
-
-.top{
-position:fixed;
-top:12px;
-left:12px;
-right:12px;
+margin:0;
+font-family:"Microsoft JhengHei";
+background:linear-gradient(135deg,#ffe5f3,#f0e7ff);
 display:flex;
-justify-content:space-between;
-gap:10px;
-z-index:10;
+flex-direction:column;
+align-items:center;
+color:#6b5a7a;
 }
 
-.card{
-background:var(--card);
-backdrop-filter:blur(12px);
+h1{
+margin-top:20px;
+}
+
+#top{
+background:rgba(255,255,255,.7);
+padding:15px;
 border-radius:20px;
-padding:12px;
-box-shadow:0 8px 20px rgba(0,0,0,.12);
+backdrop-filter:blur(10px);
+margin:10px;
 }
 
-.stat{
-font-weight:bold;
-color:var(--text);
+#customer{
+font-size:28px;
+margin:10px;
 }
 
-.main{
-height:100vh;
+#grill{
+display:grid;
+grid-template-columns:repeat(2,120px);
+gap:15px;
+margin-top:20px;
+}
+
+.slot{
+width:120px;
+height:120px;
+background:white;
+border-radius:25px;
 display:flex;
 justify-content:center;
 align-items:center;
-padding:20px;
-}
-
-.shop{
-width:100%;
-max-width:420px;
-text-align:center;
-background:var(--card);
-backdrop-filter:blur(12px);
-border-radius:30px;
-padding:25px;
-box-shadow:0 10px 30px rgba(0,0,0,.12);
-}
-
-.title{
-font-size:28px;
-font-weight:bold;
-color:#7a5ea5;
-margin-bottom:10px;
-}
-
-.dog{
-font-size:56px;
-animation:float 2s infinite;
-}
-
-.customer{
-font-size:52px;
-margin-top:10px;
-}
-
-.order{
-font-size:18px;
-font-weight:bold;
-margin:12px 0;
-color:#7a5ea5;
-}
-
-.cake{
-font-size:80px;
+font-size:40px;
 cursor:pointer;
-transition:.15s;
-user-select:none;
+box-shadow:0 4px 12px rgba(0,0,0,.1);
 }
 
-.cake:active{
-transform:scale(.9);
-}
-
-.bottom{
-position:fixed;
-bottom:12px;
-left:12px;
-right:12px;
-display:grid;
-grid-template-columns:1fr 1fr 1fr;
+#actions{
+margin-top:20px;
+display:flex;
 gap:10px;
+flex-wrap:wrap;
+justify-content:center;
 }
 
 button{
 border:none;
-border-radius:18px;
-padding:16px;
-font-size:16px;
+padding:12px 20px;
+border-radius:15px;
 font-weight:bold;
-background:white;
 cursor:pointer;
-box-shadow:0 6px 15px rgba(0,0,0,.1);
-}
-
-button:active{
-transform:scale(.96);
 }
 
 #message{
-margin-top:15px;
-height:24px;
+margin-top:20px;
+height:30px;
 font-weight:bold;
-color:#ff6fa8;
 }
 
-@keyframes float{
-50%{
-transform:translateY(-8px);
-}
-}
 </style>
 </head>
-
 <body>
 
-<div class="top">
+<h1>🥮 Pastel 紅豆餅店</h1>
 
-<div class="card stat">
+<div id="top">
 💰 金幣：<span id="gold">50</span>
 </div>
 
-<div class="card stat">
-🥮 庫存：<span id="cakes">0</span>
+<div id="customer">
+👧 想吃 🫘 紅豆餅
 </div>
 
-<div class="card stat">
-⭐ 聲望：<span id="fame">0</span>
-</div>
+<div id="grill"></div>
 
-</div>
-
-<div class="main">
-
-<div class="shop">
-
-<div class="title">
-✦ Pastel 紅豆餅帝國 ✦
-</div>
-
-<div class="dog">🐶</div>
-
-<div class="customer" id="customer">
-👧
-</div>
-
-<div class="order" id="order">
-想吃 🫘 紅豆餅
-</div>
-
-<div class="cake" id="cakeBtn">
-🥮
+<div id="actions">
+<button onclick="fillBatter()">🥣 倒麵糊</button>
+<button onclick="addBean()">🫘 加紅豆</button>
+<button onclick="flipCake()">🔄 翻面</button>
+<button onclick="serveCake()">🥮 出餐</button>
 </div>
 
 <div id="message"></div>
 
-</div>
-
-</div>
-
-<div class="bottom">
-
-<button id="sellBtn">
-🥮 販售
-</button>
-
-<button id="upgradeBtn">
-🏪 升級
-</button>
-
-<button id="hireBtn">
-👩‍🍳 員工
-</button>
-
-</div>
-
 <script>
 
 let gold=50;
-let cakes=0;
-let fame=0;
-let level=1;
-let workers=0;
+let selected=-1;
 
-const customers=["👧","👩","👨","👵","🧑"];
-const flavors=[
-"🫘紅豆",
-"🧈奶油",
-"🍫巧克力",
-"🍓草莓",
-"🍵抹茶"
-];
+const grill=[];
+
+for(let i=0;i<4;i++){
+grill.push({
+state:"empty"
+});
+}
 
 function updateUI(){
-goldEl.textContent=gold;
-cakesEl.textContent=cakes;
-fameEl.textContent=fame;
-}
 
-const goldEl=document.getElementById("gold");
-const cakesEl=document.getElementById("cakes");
-const fameEl=document.getElementById("fame");
+document.getElementById("gold").textContent=gold;
 
-const customerEl=document.getElementById("customer");
-const orderEl=document.getElementById("order");
-const messageEl=document.getElementById("message");
+const grillDiv=document.getElementById("grill");
 
-function newCustomer(){
+grillDiv.innerHTML="";
 
-customerEl.textContent=
-customers[
-Math.floor(
-Math.random()*customers.length
-)
-];
+grill.forEach((slot,index)=>{
 
-orderEl.textContent=
-"想吃 "+
-flavors[
-Math.floor(
-Math.random()*flavors.length
-)
-]+" 餅";
+let emoji="⭕";
+
+if(slot.state==="batter") emoji="🥣";
+if(slot.state==="bean") emoji="🫘";
+if(slot.state==="cooking") emoji="🔥";
+if(slot.state==="done") emoji="🥮";
+
+let div=document.createElement("div");
+
+div.className="slot";
+
+div.textContent=emoji;
+
+if(index===selected){
+
+div.style.outline="4px solid hotpink";
 
 }
 
-document
-.getElementById("cakeBtn")
-.onclick=()=>{
+div.onclick=()=>{
 
-cakes++;
-
-messageEl.textContent=
-"🥮 製作成功！";
+selected=index;
 
 updateUI();
 
 };
 
-document
-.getElementById("sellBtn")
-.onclick=()=>{
+grillDiv.appendChild(div);
 
-if(cakes<=0){
+});
 
-messageEl.textContent=
-"沒有紅豆餅🥹";
+}
 
+function msg(text){
+
+document.getElementById("message")
+.textContent=text;
+
+}
+
+function fillBatter(){
+
+if(selected<0) return msg("先選烤盤");
+
+if(grill[selected].state!=="empty")
 return;
-}
 
-cakes--;
-
-let earn=
-5+level;
-
-gold+=earn;
-
-fame++;
-
-messageEl.textContent=
-`售出成功 +${earn}💰`;
-
-newCustomer();
+grill[selected].state="batter";
 
 updateUI();
 
-};
+}
 
-document
-.getElementById("upgradeBtn")
-.onclick=()=>{
+function addBean(){
 
-let cost=
-level*100;
+if(selected<0) return msg("先選烤盤");
 
-if(gold<cost){
-
-messageEl.textContent=
-`需要 ${cost}💰`;
-
+if(grill[selected].state!=="batter")
 return;
-}
 
-gold-=cost;
-level++;
-
-messageEl.textContent=
-`🏪 店面升級 Lv.${level}`;
+grill[selected].state="bean";
 
 updateUI();
 
-};
+}
 
-document
-.getElementById("hireBtn")
-.onclick=()=>{
+function flipCake(){
 
-let cost=50;
+if(selected<0) return msg("先選烤盤");
 
-if(gold<cost){
-
-messageEl.textContent=
-"金幣不足";
-
+if(grill[selected].state!=="bean")
 return;
-}
 
-gold-=cost;
-workers++;
-
-messageEl.textContent=
-`👩‍🍳 員工 +1`;
+grill[selected].state="cooking";
 
 updateUI();
 
-};
+setTimeout(()=>{
 
-setInterval(()=>{
+if(grill[selected]
+&&
+grill[selected].state==="cooking"){
 
-if(workers>0){
-
-cakes+=workers;
+grill[selected].state="done";
 
 updateUI();
 
 }
 
-},3000);
+},2000);
 
-newCustomer();
+}
+
+function serveCake(){
+
+if(selected<0) return msg("先選烤盤");
+
+if(grill[selected].state!=="done")
+return msg("還沒做好");
+
+grill[selected].state="empty";
+
+gold+=15;
+
+msg("🥮 客人超滿意！ +15💰");
+
+updateUI();
+
+}
+
 updateUI();
 
 </script>
