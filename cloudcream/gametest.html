@@ -1,232 +1,848 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>極地開荒大師 Lite</title>
+
+<title>極地開荒大師 V2</title>
 
 <style>
-body{
+
+*{
+    box-sizing:border-box;
     margin:0;
+    padding:0;
+}
+
+body{
     overflow:hidden;
     background:#dbeafe;
-    font-family:"Microsoft JhengHei";
-}
-
-#ui{
-    position:fixed;
-    top:10px;
-    left:10px;
-    background:rgba(0,0,0,.7);
-    color:white;
-    padding:12px;
-    border-radius:12px;
-    z-index:10;
-    min-width:160px;
-}
-
-button{
-    width:100%;
-    margin-top:5px;
-    padding:8px;
-    border:none;
-    border-radius:8px;
-    cursor:pointer;
+    font-family:"Microsoft JhengHei",sans-serif;
+    touch-action:none;
 }
 
 canvas{
     display:block;
+    background:#e0f2fe;
 }
+
+#topBar{
+    position:absolute;
+    top:10px;
+    left:50%;
+    transform:translateX(-50%);
+    
+    display:flex;
+    gap:10px;
+
+    background:rgba(15,23,42,.92);
+
+    color:white;
+
+    padding:10px 18px;
+
+    border-radius:20px;
+
+    border:2px solid #38bdf8;
+
+    z-index:100;
+}
+
+.resource{
+
+    font-weight:bold;
+    font-size:14px;
+
+}
+
+#bottomPanel{
+
+    position:absolute;
+
+    bottom:10px;
+    left:50%;
+
+    transform:translateX(-50%);
+
+    width:95%;
+    max-width:420px;
+
+    background:rgba(15,23,42,.92);
+
+    border:2px solid #f59e0b;
+
+    border-radius:18px;
+
+    padding:10px;
+
+    z-index:100;
+}
+
+.panelTitle{
+
+    color:#fbbf24;
+
+    text-align:center;
+
+    font-weight:bold;
+
+    margin-bottom:8px;
+}
+
+.btnRow{
+
+    display:flex;
+
+    gap:6px;
+
+    margin-bottom:6px;
+}
+
+.gameBtn{
+
+    flex:1;
+
+    border:none;
+
+    border-radius:10px;
+
+    padding:10px;
+
+    font-size:12px;
+
+    font-weight:bold;
+
+    background:#f59e0b;
+
+    color:#0f172a;
+
+    cursor:pointer;
+}
+
+.gameBtn:disabled{
+
+    background:#475569;
+
+    color:#94a3b8;
+}
+
+#zoneBanner{
+
+    position:absolute;
+
+    top:70px;
+
+    left:50%;
+
+    transform:translateX(-50%);
+
+    background:rgba(0,0,0,.7);
+
+    color:white;
+
+    padding:8px 18px;
+
+    border-radius:20px;
+
+    z-index:100;
+}
+
 </style>
 </head>
 
 <body>
 
-<div id="ui">
+<div id="topBar">
 
-<div>🪵 木材：<span id="wood">0</span></div>
+<div class="resource">
+🪵 <span id="woodCount">0</span>
+</div>
 
-<div>💰 金幣：<span id="gold">15</span></div>
+<div class="resource">
+🍖 <span id="meatCount">0</span>
+</div>
 
-<div>🪓 飛斧等級：<span id="level">1</span></div>
+<div class="resource">
+⛏️ <span id="oreCount">0</span>
+</div>
 
-<div>🗺️ 區域：<span id="zone">森林</span></div>
+<div class="resource">
+💰 <span id="goldCount">20</span>
+</div>
 
-<button onclick="upgradeAxe()">
-升級飛斧
+<div class="resource">
+👷 <span id="workerCount">0</span>
+</div>
+
+<div class="resource">
+🏹 <span id="turretCount">0</span>
+</div>
+
+</div>
+
+<div id="zoneBanner">
+
+🌲 森林區
+
+</div>
+
+<div id="bottomPanel">
+
+<div class="panelTitle">
+
+⛺ 極地營地
+
+</div>
+
+<div class="btnRow">
+
+<button class="gameBtn"
+id="btnAxe">
+
+🪓 升級飛斧
 </button>
 
-<button onclick="sellWood()">
-賣掉木材
+<button class="gameBtn"
+id="btnWorker">
+
+👷 雇工人
 </button>
 
 </div>
 
-<canvas id="game"></canvas>
+<div class="btnRow">
+
+<button class="gameBtn"
+id="btnTurret">
+
+🏹 箭塔
+</button>
+
+<button class="gameBtn"
+id="btnSell">
+
+💰 售出資源
+</button>
+
+</div>
+
+<div class="btnRow">
+
+<button class="gameBtn"
+id="btnCamp">
+
+⛺ 升級營地
+</button>
+
+</div>
+
+</div>
+
+<canvas id="gameCanvas"></canvas>
 
 <script>
 
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
+const canvas =
+document.getElementById("gameCanvas");
 
-function resize(){
-    canvas.width=window.innerWidth;
-    canvas.height=window.innerHeight;
+const ctx =
+canvas.getContext("2d");
+
+function resizeCanvas(){
+
+    canvas.width =
+    window.innerWidth;
+
+    canvas.height =
+    window.innerHeight;
 }
-resize();
 
-window.addEventListener("resize",resize);
+resizeCanvas();
 
-let wood=0;
-let gold=15;
-let axeLevel=1;
+window.addEventListener(
+"resize",
+resizeCanvas
+);
 
-const zones=[
-"森林",
-"礦區",
-"冰原",
-"熊王區"
-];
+let resources={
 
-let zoneIndex=0;
+    wood:0,
 
-const player={
-    x:0,
-    y:0,
-    angle:0
+    meat:0,
+
+    ore:0,
+
+    gold:20
 };
 
-let targetX=0;
-let targetY=0;
-let moving=false;
+let axeLevel=1;
 
-canvas.addEventListener("pointerdown",(e)=>{
-    moving=true;
+let campLevel=1;
 
-    targetX=
-    e.clientX-canvas.width/2+player.x;
+let zoneLevel=0;
 
-    targetY=
-    e.clientY-canvas.height/2+player.y;
-});
+const zones=[
 
-canvas.addEventListener("pointermove",(e)=>{
-    if(!moving) return;
+{
+name:"🌲 森林區",
+unlock:0
+},
 
-    targetX=
-    e.clientX-canvas.width/2+player.x;
+{
+name:"⛏️ 礦區",
+unlock:100
+},
 
-    targetY=
-    e.clientY-canvas.height/2+player.y;
-});
+{
+name:"❄️ 冰原區",
+unlock:250
+},
 
-window.addEventListener("pointerup",()=>{
-    moving=false;
-});
+{
+name:"👑 熊王區",
+unlock:500
+}
+
+];
+
+const player={
+
+    x:0,
+    y:0,
+
+    speed:3.5,
+
+    axeAngle:0,
+
+    radius:40
+};
+
+const camp={
+
+    x:0,
+    y:0
+};
+
+const workers=[];
+
+const turrets=[];
+
+const bears=[];
 
 const trees=[];
 
-for(let i=0;i<30;i++){
+const ores=[];
+
+const floatingTexts=[];
+
+for(let i=0;i<40;i++){
 
     trees.push({
 
-        x:Math.random()*1800-900,
+        x:(Math.random()-0.5)*1200,
 
-        y:Math.random()*1800-900,
+        y:(Math.random()-0.5)*1200,
 
-        hp:40
+        hp:100,
+
+        maxHp:100
+    });
+}
+
+for(let i=0;i<20;i++){
+
+    ores.push({
+
+        x:(Math.random()-0.5)*1400,
+
+        y:(Math.random()-0.5)*1400,
+
+        hp:120,
+
+        maxHp:120
+    });
+}
+
+for(let i=0;i<8;i++){
+
+    bears.push({
+
+        x:(Math.random()-0.5)*1500,
+
+        y:(Math.random()-0.5)*1500,
+
+        hp:100,
+
+        maxHp:100,
+
+        speed:0.7
+    });
+}
+
+let moveTargetX=0;
+let moveTargetY=0;
+
+let moving=false;
+
+canvas.addEventListener(
+"pointerdown",
+e=>{
+
+    moving=true;
+
+    moveTargetX=
+    player.x+
+    (e.clientX-canvas.width/2);
+
+    moveTargetY=
+    player.y+
+    (e.clientY-canvas.height/2);
+});
+
+canvas.addEventListener(
+"pointermove",
+e=>{
+
+    if(!moving) return;
+
+    moveTargetX=
+    player.x+
+    (e.clientX-canvas.width/2);
+
+    moveTargetY=
+    player.y+
+    (e.clientY-canvas.height/2);
+});
+
+window.addEventListener(
+"pointerup",
+()=>moving=false
+);
+
+function updateUI(){
+
+    woodCount.innerText=
+    resources.wood;
+
+    meatCount.innerText=
+    resources.meat;
+
+    oreCount.innerText=
+    resources.ore;
+
+    goldCount.innerText=
+    resources.gold;
+
+    workerCount.innerText=
+    workers.length;
+
+    turretCount.innerText=
+    turrets.length;
+
+    zoneBanner.innerText=
+    zones[zoneLevel].name;
+}
+
+// ======================
+// 按鈕功能
+// ======================
+
+btnAxe.onclick=()=>{
+
+    let cost=axeLevel*20;
+
+    if(resources.gold<cost) return;
+
+    resources.gold-=cost;
+
+    axeLevel++;
+
+    updateUI();
+};
+
+btnWorker.onclick=()=>{
+
+    if(resources.meat<15) return;
+
+    resources.meat-=15;
+
+    workers.push({
+
+        x:camp.x,
+
+        y:camp.y,
+
+        speed:1.2,
+
+        cooldown:0
+
+    });
+
+    updateUI();
+};
+
+btnTurret.onclick=()=>{
+
+    if(resources.wood<30) return;
+
+    resources.wood-=30;
+
+    let angle=
+    Math.random()*Math.PI*2;
+
+    turrets.push({
+
+        x:Math.cos(angle)*80,
+
+        y:Math.sin(angle)*80,
+
+        cooldown:0
+    });
+
+    updateUI();
+};
+
+btnSell.onclick=()=>{
+
+    let earned=
+    resources.wood+
+    resources.meat*2+
+    resources.ore*3;
+
+    resources.gold+=earned;
+
+    resources.wood=0;
+    resources.meat=0;
+    resources.ore=0;
+
+    updateUI();
+};
+
+btnCamp.onclick=()=>{
+
+    let cost=
+    campLevel*50;
+
+    if(resources.gold<cost)
+    return;
+
+    resources.gold-=cost;
+
+    campLevel++;
+
+    updateUI();
+};
+
+// ======================
+// 玩家移動
+// ======================
+
+function updatePlayer(){
+
+    if(!moving) return;
+
+    let dx=
+    moveTargetX-player.x;
+
+    let dy=
+    moveTargetY-player.y;
+
+    let dist=
+    Math.hypot(dx,dy);
+
+    if(dist<5) return;
+
+    player.x+=
+    dx/dist*player.speed;
+
+    player.y+=
+    dy/dist*player.speed;
+}
+
+// ======================
+// 飛斧攻擊
+// ======================
+
+function updateAxes(){
+
+    player.axeAngle+=0.08;
+
+    let axeCount=
+    Math.min(
+    axeLevel,
+    4
+    );
+
+    let radius=
+    player.radius+
+    axeLevel*3;
+
+    for(
+        let i=0;
+        i<axeCount;
+        i++
+    ){
+
+        let angle=
+        player.axeAngle+
+        i*(Math.PI*2/axeCount);
+
+        let axeX=
+        player.x+
+        Math.cos(angle)*radius;
+
+        let axeY=
+        player.y+
+        Math.sin(angle)*radius;
+
+        trees.forEach(tree=>{
+
+            let dist=
+            Math.hypot(
+
+            axeX-tree.x,
+
+            axeY-tree.y
+
+            );
+
+            if(dist<28){
+
+                tree.hp-=1;
+
+                if(tree.hp<=0){
+
+                    tree.hp=
+                    tree.maxHp;
+
+                    resources.wood+=3;
+
+                    floatingTexts.push({
+
+                        x:tree.x,
+
+                        y:tree.y,
+
+                        text:"+3🪵",
+
+                        life:60,
+
+                        color:"#22c55e"
+                    });
+
+                    updateUI();
+                }
+            }
+        });
+
+        ores.forEach(ore=>{
+
+            let dist=
+            Math.hypot(
+
+            axeX-ore.x,
+
+            axeY-ore.y
+
+            );
+
+            if(dist<28){
+
+                ore.hp-=1;
+
+                if(ore.hp<=0){
+
+                    ore.hp=
+                    ore.maxHp;
+
+                    resources.ore+=2;
+
+                    floatingTexts.push({
+
+                        x:ore.x,
+
+                        y:ore.y,
+
+                        text:"+2⛏️",
+
+                        life:60,
+
+                        color:"#94a3b8"
+                    });
+
+                    updateUI();
+                }
+            }
+        });
+
+        bears.forEach((bear,index)=>{
+
+            let dist=
+            Math.hypot(
+
+            axeX-bear.x,
+
+            axeY-bear.y
+
+            );
+
+            if(dist<28){
+
+                bear.hp-=
+                0.6+
+                axeLevel*0.2;
+
+                if(bear.hp<=0){
+
+                    resources.meat+=5;
+
+                    floatingTexts.push({
+
+                        x:bear.x,
+
+                        y:bear.y,
+
+                        text:"+5🍖",
+
+                        life:60,
+
+                        color:"#ef4444"
+                    });
+
+                    bears.splice(index,1);
+
+                    bears.push({
+
+                        x:(Math.random()-0.5)*1600,
+
+                        y:(Math.random()-0.5)*1600,
+
+                        hp:100,
+
+                        maxHp:100,
+
+                        speed:0.7
+                    });
+
+                    updateUI();
+                }
+            }
+        });
+
+    }
+
+}
+
+// ======================
+// 熊AI
+// ======================
+
+function updateBears(){
+
+    bears.forEach(bear=>{
+
+        let dx=
+        player.x-bear.x;
+
+        let dy=
+        player.y-bear.y;
+
+        let dist=
+        Math.hypot(dx,dy);
+
+        if(dist>20){
+
+            bear.x+=
+            dx/dist*
+            bear.speed;
+
+            bear.y+=
+            dy/dist*
+            bear.speed;
+        }
 
     });
 
 }
 
-function updateUI(){
+// ======================
+// 工人AI
+// ======================
 
-    woodEl.innerText=wood;
+function updateWorkers(){
 
-    goldEl.innerText=gold;
+    workers.forEach(worker=>{
 
-    levelEl.innerText=axeLevel;
+        let target=null;
 
-    zoneEl.innerText=zones[zoneIndex];
+        let min=999999;
 
-}
+        trees.forEach(tree=>{
 
-const woodEl=document.getElementById("wood");
-const goldEl=document.getElementById("gold");
-const levelEl=document.getElementById("level");
-const zoneEl=document.getElementById("zone");
+            let d=
+            Math.hypot(
 
-function upgradeAxe(){
+            worker.x-tree.x,
 
-    let cost=axeLevel*10;
+            worker.y-tree.y
 
-    if(gold<cost) return;
+            );
 
-    gold-=cost;
+            if(d<min){
 
-    axeLevel++;
+                min=d;
 
-    updateUI();
-}
+                target=tree;
+            }
 
-function sellWood(){
+        });
 
-    gold+=wood;
+        if(!target) return;
 
-    wood=0;
+        let dx=
+        target.x-worker.x;
 
-    if(gold>=100 && zoneIndex<zones.length-1){
+        let dy=
+        target.y-worker.y;
 
-        zoneIndex++;
+        let dist=
+        Math.hypot(dx,dy);
 
-    }
+        if(dist>15){
 
-    updateUI();
-}
+            worker.x+=
+            dx/dist*
+            worker.speed;
 
-function update(){
-
-    if(moving){
-
-        let dx=targetX-player.x;
-        let dy=targetY-player.y;
-
-        let dist=Math.hypot(dx,dy);
-
-        if(dist>5){
-
-            player.x+=dx/dist*3;
-
-            player.y+=dy/dist*3;
+            worker.y+=
+            dy/dist*
+            worker.speed;
         }
-    }
+        else{
 
-    player.angle+=0.08;
+            if(worker.cooldown>0){
 
-    trees.forEach(tree=>{
+                worker.cooldown--;
 
-        let dist=Math.hypot(
+            }else{
 
-            player.x-tree.x,
+                resources.wood++;
 
-            player.y-tree.y
+                worker.cooldown=60;
 
-        );
+                floatingTexts.push({
 
-        if(dist<45+axeLevel*5){
+                    x:worker.x,
 
-            tree.hp-=0.2*axeLevel;
+                    y:worker.y,
 
-            if(tree.hp<=0){
+                    text:"+1🪵",
 
-                wood+=2;
+                    life:50,
 
-                tree.hp=40;
-
-                tree.x=Math.random()*1800-900;
-
-                tree.y=Math.random()*1800-900;
+                    color:"#4ade80"
+                });
 
                 updateUI();
             }
@@ -236,7 +852,259 @@ function update(){
 
 }
 
-function draw(){
+// ======================
+// 箭塔AI
+// ======================
+
+function updateTurrets(){
+
+    turrets.forEach(turret=>{
+
+        if(turret.cooldown>0){
+
+            turret.cooldown--;
+
+            return;
+        }
+
+        let target=null;
+
+        let min=180;
+
+        bears.forEach(bear=>{
+
+            let d=
+            Math.hypot(
+
+            turret.x-bear.x,
+
+            turret.y-bear.y
+
+            );
+
+            if(d<min){
+
+                min=d;
+
+                target=bear;
+            }
+
+        });
+
+        if(target){
+
+            target.hp-=25;
+
+            turret.cooldown=50;
+
+            floatingTexts.push({
+
+                x:target.x,
+
+                y:target.y,
+
+                text:"🏹-25",
+
+                life:50,
+
+                color:"#38bdf8"
+            });
+
+        }
+
+    });
+
+}
+
+// ======================
+// 世界更新
+// ======================
+
+function updateWorld(){
+
+    updatePlayer();
+
+    updateAxes();
+
+    updateBears();
+
+    updateWorkers();
+
+    // ======================
+// 浮動文字
+// ======================
+
+function updateFloatingTexts(){
+
+    for(
+        let i=floatingTexts.length-1;
+        i>=0;
+        i--
+    ){
+
+        let ft=
+        floatingTexts[i];
+
+        ft.y-=0.5;
+
+        ft.life--;
+
+        if(ft.life<=0){
+
+            floatingTexts.splice(i,1);
+
+        }
+
+    }
+
+}
+
+// ======================
+// 區域解鎖
+// ======================
+
+function updateZone(){
+
+    let totalValue=
+
+    resources.gold+
+
+    resources.wood+
+
+    resources.meat*2+
+
+    resources.ore*3;
+
+    if(
+        totalValue>=100 &&
+        zoneLevel<1
+    ){
+        zoneLevel=1;
+    }
+
+    if(
+        totalValue>=250 &&
+        zoneLevel<2
+    ){
+        zoneLevel=2;
+    }
+
+    if(
+        totalValue>=500 &&
+        zoneLevel<3
+    ){
+        zoneLevel=3;
+    }
+
+}
+
+// ======================
+// 自動存檔
+// ======================
+
+function saveGame(){
+
+    const data={
+
+        resources,
+
+        axeLevel,
+
+        campLevel,
+
+        zoneLevel
+
+    };
+
+    localStorage.setItem(
+        "polarLiteSave",
+        JSON.stringify(data)
+    );
+
+}
+
+function loadGame(){
+
+    let save=
+    localStorage.getItem(
+        "polarLiteSave"
+    );
+
+    if(!save) return;
+
+    try{
+
+        let data=
+        JSON.parse(save);
+
+        resources=
+        data.resources ||
+        resources;
+
+        axeLevel=
+        data.axeLevel ||
+        axeLevel;
+
+        campLevel=
+        data.campLevel ||
+        campLevel;
+
+        zoneLevel=
+        data.zoneLevel ||
+        zoneLevel;
+
+    }catch(e){
+
+        console.log(e);
+
+    }
+
+}
+
+loadGame();
+
+setInterval(
+saveGame,
+5000
+);
+
+// ======================
+// 繪製營地
+// ======================
+
+function drawCamp(){
+
+    let icon="⛺";
+
+    if(campLevel>=2)
+    icon="🏠";
+
+    if(campLevel>=4)
+    icon="🏘️";
+
+    if(campLevel>=6)
+    icon="🏰";
+
+    ctx.font="50px Arial";
+
+    ctx.textAlign="center";
+
+    ctx.fillText(
+
+        icon,
+
+        camp.x,
+        camp.y
+
+    );
+
+}
+
+// ======================
+// 繪製世界
+// ======================
+
+function drawWorld(){
 
     ctx.clearRect(
         0,
@@ -248,41 +1116,203 @@ function draw(){
     ctx.save();
 
     ctx.translate(
+
         canvas.width/2-player.x,
+
         canvas.height/2-player.y
+
     );
 
-    trees.forEach(tree=>{
+    // 地面
 
-        ctx.fillStyle="#15803d";
+    ctx.strokeStyle=
+    "#cbd5e1";
+
+    for(
+        let x=-2000;
+        x<=2000;
+        x+=80
+    ){
 
         ctx.beginPath();
 
-        ctx.arc(
-            tree.x,
-            tree.y,
-            18,
-            0,
-            Math.PI*2
+        ctx.moveTo(
+            x,
+            -2000
         );
 
-        ctx.fill();
+        ctx.lineTo(
+            x,
+            2000
+        );
+
+        ctx.stroke();
+
+    }
+
+    for(
+        let y=-2000;
+        y<=2000;
+        y+=80
+    ){
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            -2000,
+            y
+        );
+
+        ctx.lineTo(
+            2000,
+            y
+        );
+
+        ctx.stroke();
+
+    }
+
+    // 樹
+
+    trees.forEach(tree=>{
+
+        ctx.font="34px Arial";
+
+        ctx.textAlign="center";
+
+        ctx.fillText(
+
+            "🌲",
+
+            tree.x,
+
+            tree.y
+
+        );
 
     });
 
-    ctx.fillStyle="#2563eb";
+    // 礦石
 
-    ctx.beginPath();
+    ores.forEach(ore=>{
 
-    ctx.arc(
+        ctx.font="30px Arial";
+
+        ctx.fillText(
+
+            "⛏️",
+
+            ore.x,
+
+            ore.y
+
+        );
+
+    });
+
+    // 營地
+
+    drawCamp();
+
+    // 箭塔
+
+    turrets.forEach(t=>{
+
+        ctx.font="28px Arial";
+
+        ctx.fillText(
+
+            "🏹",
+
+            t.x,
+
+            t.y
+
+        );
+
+    });
+
+    // 工人
+
+    workers.forEach(w=>{
+
+        ctx.font="26px Arial";
+
+        ctx.fillText(
+
+            "👷",
+
+            w.x,
+
+            w.y
+
+        );
+
+    });
+
+    // 熊
+
+    bears.forEach(b=>{
+
+        ctx.font="32px Arial";
+
+        ctx.fillText(
+
+            "🐻",
+
+            b.x,
+
+            b.y
+
+        );
+
+        ctx.fillStyle=
+        "#ef4444";
+
+        ctx.fillRect(
+
+            b.x-15,
+
+            b.y-28,
+
+            30,
+
+            4
+
+        );
+
+        ctx.fillStyle=
+        "#22c55e";
+
+        ctx.fillRect(
+
+            b.x-15,
+
+            b.y-28,
+
+            30*(b.hp/b.maxHp),
+
+            4
+
+        );
+
+    });
+
+    // 玩家
+
+    ctx.font="34px Arial";
+
+    ctx.fillText(
+
+        "🤠",
+
         player.x,
-        player.y,
-        12,
-        0,
-        Math.PI*2
+
+        player.y
+
     );
 
-    ctx.fill();
+    // 飛斧
 
     let axeCount=
     Math.min(
@@ -290,39 +1320,89 @@ function draw(){
         4
     );
 
-    for(let i=0;i<axeCount;i++){
+    let radius=
+    player.radius+
+    axeLevel*3;
 
-        let a=
-        player.angle+
+    for(
+        let i=0;
+        i<axeCount;
+        i++
+    ){
+
+        let angle=
+
+        player.axeAngle+
+
         i*(Math.PI*2/axeCount);
 
         let ax=
+
         player.x+
-        Math.cos(a)*35;
+
+        Math.cos(angle)*radius;
 
         let ay=
+
         player.y+
-        Math.sin(a)*35;
 
-        ctx.fillStyle="#f59e0b";
+        Math.sin(angle)*radius;
 
-        ctx.fillRect(
-            ax-5,
-            ay-5,
-            10,
-            10
+        ctx.font="22px Arial";
+
+        ctx.fillText(
+
+            "🪓",
+
+            ax,
+
+            ay
+
         );
+
     }
+
+    // 浮動文字
+
+    floatingTexts.forEach(ft=>{
+
+        ctx.fillStyle=
+        ft.color;
+
+        ctx.font=
+        "bold 14px Arial";
+
+        ctx.fillText(
+
+            ft.text,
+
+            ft.x,
+
+            ft.y
+
+        );
+
+    });
 
     ctx.restore();
 
 }
 
+// ======================
+// 主迴圈
+// ======================
+
 function gameLoop(){
 
-    update();
+    updateWorld();
 
-    draw();
+    updateFloatingTexts();
+
+    updateZone();
+
+    drawWorld();
+
+    updateUI();
 
     requestAnimationFrame(
         gameLoop
@@ -330,11 +1410,9 @@ function gameLoop(){
 
 }
 
-updateUI();
-
 gameLoop();
 
 </script>
 
 </body>
-</html>
+</html>   
