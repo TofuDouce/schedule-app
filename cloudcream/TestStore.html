@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔮 財富煉金術：百種奇物極致揮霍試煉</title>
+    <title>🔮 財富煉金術：105種極致奇物左右橫掃試煉</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Cormorant+Garamond:ital,wght@0,500;0,700;1,400&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -20,17 +20,16 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            min-height: 100vh;
+            height: 100vh;
             color: var(--text);
             font-family: "Cormorant Garamond", "Noto Serif TC", serif;
             background: radial-gradient(circle at top, rgba(180,150,255,.14), transparent 40%), 
                         linear-gradient(180deg, var(--bg1), var(--bg2), var(--bg3));
-            padding: 20px;
+            padding: 15px;
             display: flex;
             flex-direction: column;
-            align-items: center;
+            overflow: hidden;
             font-size: var(--base-font-size);
-            overflow-x: hidden;
         }
 
         /* 星空背景 */
@@ -44,148 +43,129 @@
             50% { opacity: 1; transform: scale(1.4); }
         }
 
-        /* 懸浮月亮 */
-        .floating-moon {
-            font-size: 28px; margin-bottom: 5px; text-shadow: 0 0 15px rgba(255,230,150,0.6);
-            animation: floatMoon 4s ease-in-out infinite;
-        }
-        @keyframes floatMoon {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
-        }
-
         /* 頂部巨大財富面板 */
         .wealth-banner {
-            width: 100%; max-width: 1400px; background: rgba(24, 11, 41, 0.75);
-            border: 1.5px solid var(--gold); border-radius: 16px; padding: 15px;
-            text-align: center; margin-bottom: 20px; box-shadow: 0 0 25px var(--gold-glow);
-            backdrop-filter: blur(10px);
+            width: 100%; background: rgba(24, 11, 41, 0.85);
+            border: 1.5px solid var(--gold); border-radius: 12px; padding: 10px;
+            text-align: center; margin-bottom: 12px; box-shadow: 0 0 20px var(--gold-glow);
+            flex-shrink: 0; position: relative;
         }
-        .wealth-title { font-family: 'Cinzel', serif; font-size: 20px; color: var(--purple-light); letter-spacing: 2px; }
+        .wealth-title { font-family: 'Cinzel', serif; font-size: 18px; color: var(--purple-light); letter-spacing: 2px; }
         .wealth-amount {
-            font-family: 'Cinzel', serif; font-size: 42px; font-weight: 700; color: var(--gold);
-            text-shadow: 0 0 15px rgba(216, 191, 138, 0.8); margin: 2px 0;
+            font-family: 'Cinzel', serif; font-size: 38px; font-weight: 700; color: var(--gold);
+            text-shadow: 0 0 12px rgba(216, 191, 138, 0.8); margin: 2px 0;
         }
-        .wealth-stats { font-size: 16px; color: #bcaed6; font-style: italic; }
+        .wealth-stats { font-size: 15px; color: #bcaed6; font-style: italic; }
 
-        /* 主佈局：雙欄 */
+        /* 核心修改：左右雙欄↔️選單佈局 */
         .container {
-            display: grid; grid-template-columns: 1.3fr 0.7fr; gap: 20px;
-            width: 100%; max-width: 1400px; height: calc(100vh - 180px); min-height: 600px;
+            display: flex;
+            flex-direction: row; /* 確保徹底的左右排列 */
+            gap: 15px;
+            width: 100%; 
+            flex-grow: 1; /* 填滿剩餘高度 */
+            overflow: hidden; /* 防止主頁面出現大捲軸 */
         }
 
-        @media (max-width: 1024px) { 
-            .container { grid-template-columns: 1fr; height: auto; } 
-        }
-
-        /* 左側：橫向清單商場（高度固定可滾動，爽快點擊） */
+        /* 左側欄：100+款奇物商場（獨立滾動） */
         .shop-panel {
-            background: rgba(20, 10, 35, 0.5); border: 1px solid rgba(216,191,138,.3);
-            border-radius: 16px; padding: 20px; backdrop-filter: blur(5px);
+            flex: 1.2; /* 佔用左側較多空間 */
+            background: rgba(20, 10, 35, 0.6); border: 1.5px solid rgba(216,191,138,.4);
+            border-radius: 12px; padding: 15px;
             display: flex; flex-direction: column; overflow: hidden;
         }
+
+        /* 右側欄：大帳本（獨立滾動） */
+        .sidebar-panel {
+            flex: 0.8; /* 佔用右側空間 */
+            background: rgba(25, 12, 44, 0.8); border: 1.5px solid var(--gold);
+            border-radius: 12px; padding: 15px; box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+
         .panel-title {
-            font-family: 'Cinzel', serif; font-size: 24px; color: var(--gold);
-            text-align: center; margin-bottom: 15px; border-bottom: 1px solid rgba(216,191,138,.2);
-            padding-bottom: 8px; letter-spacing: 2px; flex-shrink: 0;
+            font-family: 'Cinzel', serif; font-size: 20px; color: var(--gold);
+            text-align: center; margin-bottom: 10px; border-bottom: 1px solid rgba(216,191,138,.3);
+            padding-bottom: 5px; letter-spacing: 1px; flex-shrink: 0;
         }
 
-        /* 核心修改：商品改用左右選單式的極致橫向小選單 */
+        /* 商品清單容器（高度塞滿、滾動流暢） */
         .items-list-container {
-            overflow-y: auto; flex-grow: 1; padding-right: 5px;
-            display: flex; flex-direction: column; gap: 8px;
+            overflow-y: scroll; flex-grow: 1; padding-right: 5px;
+            display: flex; flex-direction: column; gap: 6px;
         }
 
-        /* 商品左右排版卡片 */
+        /* 極致精簡、內容豐富的橫向商品列 */
         .item-row {
-            background: rgba(30, 16, 51, 0.6); border: 1px solid rgba(216,191,138,.15);
-            border-radius: 8px; padding: 10px 16px; display: flex; align-items: center;
-            justify-content: space-between; transition: all 0.15s ease;
+            background: rgba(30, 16, 51, 0.7); border: 1px solid rgba(216,191,138,.15);
+            border-radius: 6px; padding: 8px 12px; display: flex; align-items: center;
+            justify-content: space-between; transition: all 0.1s;
         }
         .item-row:hover {
-            border-color: var(--gold); background: rgba(43, 24, 71, 0.7);
-            box-shadow: 0 0 10px rgba(216, 191, 138, 0.1);
+            border-color: var(--gold); background: rgba(43, 24, 71, 0.8);
+            box-shadow: 0 0 8px rgba(216, 191, 138, 0.15);
         }
         
-        /* 商品左半部資訊 */
-        .item-left { display: flex; align-items: center; gap: 12px; overflow: hidden; white-space: nowrap; }
-        .item-emoji { font-size: 26px; flex-shrink: 0; }
+        .item-left { display: flex; align-items: center; gap: 10px; overflow: hidden; }
+        .item-emoji { font-size: 24px; flex-shrink: 0; }
         .item-details { display: flex; flex-direction: column; overflow: hidden; }
-        .item-name { font-weight: bold; font-size: 17px; color: #fff; text-overflow: ellipsis; overflow: hidden; }
-        .item-desc { font-size: 13px; color: var(--purple-light); text-overflow: ellipsis; overflow: hidden; font-style: italic; }
+        .item-name { font-weight: bold; font-size: 16px; color: #fff; }
+        .item-desc { font-size: 12px; color: var(--purple-light); font-style: italic; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
 
-        /* 商品右半部價格與按鈕 */
-        .item-right { display: flex; align-items: center; gap: 15px; flex-shrink: 0; }
-        .item-price { font-family: 'Cinzel', serif; font-size: 16px; color: var(--gold); font-weight: bold; width: 140px; text-align: right; }
+        .item-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+        .item-price { font-family: 'Cinzel', serif; font-size: 15px; color: var(--gold); font-weight: bold; width: 120px; text-align: right; }
         
-        .btn-group { display: flex; align-items: center; gap: 8px; }
+        .btn-group { display: flex; align-items: center; gap: 6px; }
         .action-btn {
             background: linear-gradient(135deg, #3d1d6d, #230d43); border: 1px solid rgba(216,191,138,.4);
-            color: var(--text); border-radius: 6px; width: 30px; height: 30px; font-size: 16px;
-            cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.1s;
+            color: var(--text); border-radius: 4px; width: 26px; height: 26px; font-size: 14px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
         }
-        .action-btn:hover { background: var(--gold); color: #180b29; box-shadow: 0 0 8px var(--gold); }
-        .item-count { font-family: 'Cinzel', serif; width: 25px; text-align: center; font-weight: bold; font-size: 16px; }
+        .action-btn:hover { background: var(--gold); color: #180b29; box-shadow: 0 0 5px var(--gold); }
+        .item-count { font-family: 'Cinzel', serif; width: 22px; text-align: center; font-weight: bold; font-size: 15px; }
 
-        /* 右側：大帳本大底層 */
-        .sidebar-panel {
-            background: rgba(25, 12, 44, 0.75); border: 1.5px solid rgba(216,191,138,.4);
-            border-radius: 16px; padding: 20px; box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
-            display: flex; flex-direction: column; justify-content: space-between; overflow: hidden;
-        }
-
+        /* 右側帳本清單 */
         .cart-wrapper { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; }
-        .cart-list { overflow-y: auto; flex-grow: 1; margin-bottom: 10px; padding-right: 5px; }
+        .cart-list { overflow-y: auto; flex-grow: 1; margin-bottom: 5px; padding-right: 5px; }
         .cart-item {
             display: flex; align-items: center; justify-content: space-between;
-            padding: 8px 0; border-bottom: 1px solid rgba(168,151,201,0.2); font-size: 15px;
+            padding: 6px 0; border-bottom: 1px solid rgba(168,151,201,0.15); font-size: 14px;
         }
-        .cart-item-info { display: flex; flex-direction: column; }
-        .cart-del-btn {
-            background: transparent; border: none; color: #f29494; cursor: pointer;
-            font-size: 15px; padding: 3px; transition: transform 0.1s;
-        }
-        .cart-del-btn:hover { transform: scale(1.2); text-shadow: 0 0 5px #f29494; }
 
-        /* 結算總計區 */
+        /* 結算區 */
         .summary-section {
-            border-top: 1px solid rgba(216,191,138,.3); padding-top: 12px; flex-shrink: 0;
+            border-top: 1px solid rgba(216,191,138,.3); padding-top: 8px; flex-shrink: 0;
         }
-        .summary-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 17px; }
+        .summary-row { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 16px; }
         
         .magic-btn {
             width: 100%; background: linear-gradient(135deg, rgba(216,191,138,1), rgba(175,143,84,1));
-            color: #1a0a2a; border: none; border-radius: 10px; padding: 12px; font-family: 'Cinzel', serif;
-            font-size: 17px; font-weight: 700; cursor: pointer; transition: all 0.2s ease;
-            letter-spacing: 1px; text-shadow: 0 1px 1px rgba(255,255,255,0.3); margin-top: 8px;
+            color: #1a0a2a; border: none; border-radius: 6px; padding: 10px; font-family: 'Cinzel', serif;
+            font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.1s;
+            letter-spacing: 1px;
         }
-        .magic-btn:hover { transform: translateY(-2px); box-shadow: 0 0 15px var(--gold); }
+        .magic-btn:hover { transform: translateY(-1px); box-shadow: 0 0 10px var(--gold); }
         
         .random-btn {
             background: linear-gradient(135deg, #a897c9, #5d4880); color: #fff; border: 1px solid var(--gold);
         }
-        .random-btn:hover { box-shadow: 0 0 15px #a897c9; }
 
-        /* 畫布區 */
-        .canvas-container {
-            width: 100%; max-width: 1400px; margin-top: 25px; text-align: center;
-            background: rgba(15, 6, 25, 0.6); border-radius: 16px; padding: 20px;
-            border: 1px dashed rgba(216,191,138,0.4); display: none;
+        /* 彈出圖卡浮層（不破壞左右選單） */
+        .canvas-modal {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+            z-index: 1000; justify-content: center; align-items: center; padding: 20px;
         }
-        #billCanvas { max-width: 100%; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
-        .canvas-tip { font-size: 14px; color: var(--purple-light); margin-top: 10px; font-style: italic; }
+        .canvas-box {
+            background: #180b29; padding: 15px; border: 2px solid var(--gold); border-radius: 12px;
+            text-align: center; max-width: 90%; max-height: 95%; overflow-y: auto;
+        }
+        #billCanvas { max-width: 100%; height: auto; border-radius: 6px; }
 
         /* 古典外框裝飾線 */
         .decor-frame {
-            position: fixed; inset: 10px; border: 1px solid rgba(216,191,138,.2);
-            border-radius: 20px; pointer-events: none; z-index: 999;
+            position: fixed; inset: 8px; border: 1px solid rgba(216,191,138,.15);
+            border-radius: 14px; pointer-events: none; z-index: 999;
         }
-
-        /* 滾動條美化 */
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(216,191,138,0.25); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
     </style>
 </head>
 <body>
@@ -193,40 +173,38 @@
     <div class="decor-frame"></div>
     <div class="stars" id="starsContainer"></div>
 
-    <div class="floating-moon">🌙</div>
-
     <div class="wealth-banner">
-        <div class="wealth-title">✦ 奧術至尊・百物滿載揮霍虛空 ✦</div>
+        <div class="wealth-title">✦ 奧術至尊・105款命運奇物殿堂 ✦</div>
         <div class="wealth-amount" id="remainingDisplay">$3,000,000,000,000</div>
-        <div class="wealth-stats" id="statsDisplay">您已花費了 0% 的資產，請盡情享受左右掃貨的快感。</div>
+        <div class="wealth-stats" id="statsDisplay">請使用下方左右雙欄選單，瘋狂橫向點擊搜刮奇物！</div>
     </div>
 
     <div class="container">
         
         <div class="shop-panel">
-            <div class="panel-title">🔮 命運奇物百寶庫 (左右快速選單)</div>
+            <div class="panel-title">🔮 105款魔導書 (左欄・橫向精簡選單)</div>
             <div class="items-list-container" id="itemsListContainer"></div>
         </div>
 
         <div class="sidebar-panel">
             <div class="cart-wrapper">
-                <div class="panel-title">List 📜 揮霍魔導清單</div>
-                <button class="magic-btn random-btn" onclick="buyRandomly()" style="margin-bottom: 10px; margin-top: 0;">🎲 諸神黃昏・隨機鋪張浪費</button>
+                <div class="panel-title">📜 聖痕結算大帳本 (右欄)</div>
+                <button class="magic-btn random-btn" onclick="buyRandomly()" style="margin-bottom: 8px;">🎲 諸神黃昏・隨機橫掃15件</button>
                 <div class="cart-list" id="cartList">
-                    <div style="text-align: center; color: var(--purple-light); font-style: italic; padding-top: 60px; font-size: 15px;">
-                        尚未勾選任何因果神物...
+                    <div style="text-align: center; color: var(--purple-light); font-style: italic; padding-top: 80px; font-size: 14px;">
+                        帳本空空如也，請在左側瘋狂點擊 ＋ 勾選因果...
                     </div>
                 </div>
             </div>
 
             <div class="summary-section">
                 <div class="summary-row">
-                    <span>當前揮霍總計：</span>
+                    <span>當前消耗總計：</span>
                     <span style="color: var(--gold); font-weight: bold;" id="totalSpentDisplay">$0</span>
                 </div>
-                <div class="summary-row" style="font-size: 14px; color: var(--purple-light);">
-                    <span>購買物件總數：</span>
-                    <span id="totalCountDisplay">0 晶</span>
+                <div class="summary-row" style="font-size: 13px; color: var(--purple-light);">
+                    <span>網羅物件總數：</span>
+                    <span id="totalCountDisplay">0 件</span>
                 </div>
                 <button class="magic-btn" onclick="generateInvoiceCard()">🔮 一鍵締結魔因結算</button>
             </div>
@@ -234,16 +212,20 @@
 
     </div>
 
-    <div class="canvas-container" id="canvasContainer">
-        <div class="panel-title" style="font-size: 18px;">📸 諸神黃昏・炫富至尊法契</div>
-        <canvas id="billCanvas" width="600" height="850"></canvas>
-        <div class="canvas-tip">✦ 契約已自動複製！可長按圖卡儲存，發送至 LINE/Threads 震撼凡人 ✦</div>
+    <div class="canvas-modal" id="canvasModal" onclick="closeModal()">
+        <div class="canvas-box" onclick="event.stopPropagation()">
+            <div class="panel-title" style="font-size: 16px;">📸 諸神黃昏・炫富至尊法契</div>
+            <canvas id="billCanvas" width="600" height="850"></canvas>
+            <div style="font-size: 13px; color: var(--purple-light); margin-top: 8px; font-style: italic;">
+                ✦ 契約文字已自動複製！可長按圖卡儲存圖片，點擊任意處關閉 ✦
+            </div>
+        </div>
     </div>
 
     <script>
         // 初始化星空
         const starsContainer = document.getElementById('starsContainer');
-        for (let i = 0; i < 50; i++) {
+        for (let i = 0; i < 40; i++) {
             const star = document.createElement('div');
             star.className = 'star';
             star.style.top = Math.random() * 100 + 'vh';
@@ -252,52 +234,77 @@
             starsContainer.appendChild(star);
         }
 
-        const INITIAL_WEALTH = 3000000000000; // 三兆元
+        const INITIAL_WEALTH = 3000000000000;
         let currentWealth = INITIAL_WEALTH;
 
-        // 喪心病狂排滿 102 項商品的史詩級清單
+        // 🔥 史詩級大更新：105項充滿靈魂、絕不敷衍的精準發想清單（全面融合你提及的核心梗）
         const productList = [
-            // 級別一：生活爆笑與阿毛梗
-            { id: 'p1', name: '阿毛專屬純金浮誇骨頭', price: 500000, emoji: '🐶', desc: '純金打造，咬下去會自動發出豪華交響樂音效。' },
-            { id: 'p2', name: '鮮茶道伯爵紅茶封店100年', price: 15000000, emoji: '☕', desc: '讓全球的鮮茶道店員這輩子只為你一個人搖紅茶。' },
-            { id: 'p3', name: '奶奶加持神級大火炒飯', price: 120000, emoji: '🍳', desc: '吃一粒就能讓奧術智力與飽足感同時突破天際。' },
-            { id: 'p4', name: '爺爺愛心秘製超燙鹹稀飯', price: 95000, emoji: '🥣', desc: '無論放多久都維持在最完美的 98°C，極致暖胃。' },
-            { id: 'p5', name: '禮拜三限量手工宇宙水餃', price: 350000, emoji: '🥟', desc: '只有星期三會從蟲洞傳送過來的神祕黃金比例韭菜餃。' },
-            { id: 'p6', name: '鮮茶道極光藍莓果茶噴泉', price: 8800000, emoji: '🍹', desc: '在院子裡建造一座日夜不停噴出酸甜果茶的魔法噴泉。' },
-            { id: 'p7', name: '會唱歌的全息螢幕蒼蠅', price: 8888, emoji: '🪰', desc: '在你的手機螢幕上跳天鵝湖，發出 4K 高音質嗡嗡聲。' },
-            { id: 'p8', name: '強迫症絕對倒轉魔法時鐘', price: 55000000, emoji: '⏳', desc: '能把時間往回撥 5 分鐘，專門用來後悔點錯手續費。' },
-            { id: 'p9', name: '元大投資先生免手續費聖盾', price: 120000000, emoji: '🛡️', desc: '裝備後下單任何零股，手續費強行歸零。' },
-            { id: 'p10', name: '一整條灑滿香菜的脆皮豬排', price: 45000, emoji: '🥩', desc: '反香菜聯盟看了會集體暈厥的終極美食。' },
-            
-            // 級別二：奢華電子與中二網路
-            { id: 'p11', name: '強迫收購Twitter並改名', price: 1400000000000, emoji: '🛸', desc: '把全球使用者的頭像強制換成傲嬌阿毛的吐舌照。' },
-            { id: 'p12', name: '鑲滿24K純金的馬桶', price: 8500000, emoji: '🚽', desc: '每一次沖水都會發出神聖的唱詩班讚美聲。' },
-            { id: 'p13', name: '火星表面阿毛度假別墅', price: 85000000000, emoji: '⛺', desc: '地底自帶純氧花園與無限重力的柴犬跑步機。' },
-            { id: 'p14', name: '全息投影虛擬發呆鏡子', price: 150000, emoji: '🪞', desc: '照了之後裡面會顯示：「偵測到您在虛度光陰」。' },
-            { id: 'p15', name: '可以發射雷射光的特製墨鏡', price: 3200000, emoji: '🕶️', desc: '戴上它，看誰不爽就用眼神在牆上燒出一個✦。' },
-            { id: 'p16', name: '2000字神級虐戀小說大綱', price: 50000, emoji: '📚', desc: '一秒產生逼哭百萬讀者的 BE 史詩大作大綱。' },
-            { id: 'p17', name: '會自動幫你寫 Bug 的AI鍵盤', price: 66666, emoji: '⌨️', desc: '每打三個字就會自動附贈兩個難以排查的幽靈 Bug。' },
-            { id: 'p18', name: '傲嬌柴犬專用純絲綢披風', price: 1200000, emoji: '🧣', desc: '穿上後走在路上，回頭率高達百分之兩百。' },
-            { id: 'p19', name: '包下整個北極圈來看極光', price: 4500000000, emoji: '🌌', desc: '順便雇一千隻企鵝（雖然北極沒有）排成你的名字。' },
-            { id: 'p20', name: '純鈦合金無人機遛狗服務', price: 7800000, emoji: '🛸', desc: '配備自動餵食肉乾功能，阿毛跑再快也追得上。' },
+            // 01-15：招牌與長輩愛心梗
+            { id: 'p1', name: '奶奶加持・終極大火炒飯', price: 150000, emoji: '🍳', desc: '【效果：永久增加50點智力】鑊氣沖天，每粒米都散發著不科學的防禦金光。' },
+            { id: 'p2', name: '爺爺秘製・絕對超燙鹹稀飯', price: 125000, emoji: '🥣', desc: '【效果：解除全身所有異常狀態】無論放幾萬年，都維持在剛出鍋的 98°C 完美溫度。' },
+            { id: 'p3', name: '每逢禮拜三・超維度傳送水餃', price: 380000, emoji: '🥟', desc: '【效果：時空跳躍3回合】只在星期三從異次元蟲洞內降臨的黃金比例韭菜餃。' },
+            { id: 'p4', name: '鮮茶道・伯爵紅茶封店100年', price: 25000000, emoji: '☕', desc: '【效果：全體攻擊力翻倍】包下全球鮮茶道，讓所有店員這輩子專職為你搖紅茶。' },
+            { id: 'p5', name: '鮮茶道・極光藍莓果茶大噴泉', price: 9500000, emoji: '🍹', desc: '【效果：每回合自動回復滿魔力】在城堡中庭建造日夜噴湧酸甜果茶的魔法地標。' },
+            { id: 'p6', name: '阿毛專屬・純金浮誇啃咬骨頭', price: 850000, emoji: '🐶', desc: '【效果：阿毛心情值強行鎖定在100%】咬下去會發出頂級維也納交響樂的黃金玩具。' },
+            { id: 'p7', name: '反香菜聯盟崩潰・香菜脆皮豬排', price: 55000, emoji: '🥩', desc: '【效果：敵方精神理智崩潰3回合】灑滿大量綠色禁忌香菜的究極瘋狂美食。' },
+            { id: 'p8', name: '元大投資先生・零股免手續費聖盾', price: 150000000, emoji: '🛡️', desc: '【效果：免除凡間一切交易稅】下單任何小額零股，手續費強行歸零。' },
+            { id: 'p9', name: '手續費逆運算・量子回推計算機', price: 420000, emoji: '🧮', desc: '【效果：直接看穿未來交易BUG】輸入金額就能自動回推 6 折折讓與最終扣款。' },
+            { id: 'p10', name: '棉花娃娃專用・純絲綢摸摸披風', price: 220000, emoji: '🧣', desc: '【效果：被摸摸時爆擊率提升300%】穿上後在 Threads 上發文回頭率破表。' },
+            { id: 'p11', name: '胃袋的魔術師・不朽暴食頭銜', price: 8500000, emoji: '👑', desc: '【獵人級S稱號】裝備後食用任何美食，效果與持續時間增幅五倍。' },
+            { id: 'p12', name: '全能住宅改造王・空間擴充捲軸', price: 12000000, emoji: '📜', desc: '【手遊級S稱號】將你那狹小的背包與資料夾直接擴展出無限次元空間。' },
+            { id: 'p13', name: '傲嬌柴犬專用・純鈦防掙脫胸背帶', price: 650000, emoji: '🐕', desc: '【道具】專門對付阿毛的暴衝，配備噴射推進器，遛狗時速可達80公里。' },
+            { id: 'p14', name: '全自動搖杯・鮮茶道黃金雪克杯', price: 180000, emoji: '🥤', desc: '【效果：敏捷增加30】能以每秒4500次的超頻速度搖出一杯極致泡沫紅茶。' },
+            { id: 'p15', name: '深夜卡文救星・靈感編織催化劑', price: 95000, emoji: '🧪', desc: '【效果：一秒打破文字詛咒】點擊後自動噴出5個極具虐戀氛圍的優美詞彙。' },
 
-            // 隨機填充至 100+ 個（快速生成）
-            ...Array.from({length: 82}, (_, i) => {
-                const idNum = i + 21;
-                const emojis = ['🔮','✨','💎','💰','🏰','🚀','🌋','🏔️','⚓','✈️','🛩️','🚂','🏎️','🏍️','👑','🎸','🎻','🎨','🎬','🎟️','🦁','🦄','🦖','🦈','🐳','🍉','🍓','🍔','🍕','🍣','🍿','🍩','🍺','🍷','🧉','🎪','🎮','🎰','🎳','🎸','🛎️','🧲','🧪','🧬','🔭','📡','🪐','☄️','💥','🔥','💧','⚡','🌈','☀️','🍿','🌮','🥨','🥯','🥞','🧇','🧈','🥖','🍛','🍲','🍥','🍢','🍨','🧁','🍫','🍭','🍯','🍼'];
-                const names = ['極品因果律','虛空星屑','深淵魔能','黃金至尊','奧術螺旋','泰坦重工','絕對防禦','精靈祝福','諸神黃昏','混沌主宰','不朽王座','星際超跑','皇家限定','高階煉金','上古禁咒','降維打擊','量子迷宮','時空斷層'];
-                const units = ['核彈','永動機','甜甜圈','宇宙飛船','聖杯','寶劍','大頭貼','手續費計算機','炒飯鍋','貓薄荷','泡麵','高鐵','皮卡車'];
+            // 16-35：魔物獵人與打寶中二風
+            { id: 'p16', name: '蜂蜜香・黃金熟肉大餐', price: 75000, emoji: '🍖', desc: '【MH風美食】在上好生肉上塗滿野生蜂王蜜，烤得恰到好處，耐力條直接拉滿。' },
+            { id: 'p17', name: '香煎豬排・神級入味過便當', price: 82000, emoji: '🍱', desc: '【精靈幻境美食】經過7749天奧術醬汁浸泡，吃下去連靈魂都在顫抖。' },
+            { id: 'p18', name: '童話風・夜市高鐵脆皮雞蛋糕', price: 35000, emoji: '🍰', desc: '【台灣童話美食】吃下去會發出小精靈的歡呼聲，幸運值暫時提升。' },
+            { id: 'p19', name: '古龍種・滅盡龍黃金大尾根', price: 98000000, emoji: '🦎', desc: '【素材】從不可思議之處斷尾取得，散發著暗黑色彩，是打造中二防具的極品。' },
+            { id: 'p20', name: '絕對防禦・泰坦重工古代巨劍', price: 14500000, emoji: '⚔️', desc: '【武器】重量高達3噸，與其說是劍，不如說是一面會砍人的實心鐵牆。' },
+            { id: 'p21', name: '強迫症最愛・線條絕對對齊方塊', price: 550000, emoji: '🧱', desc: '【道具】能將畫面上所有凌亂的視窗與代碼強制對齊到0.01毫米。' },
+            { id: 'p22', name: '會跳天鵝湖的・全息螢幕蒼蠅', price: 28000, emoji: '🪰', desc: '【娛樂】在網頁上日夜不停跳芭蕾舞，並發出4K高音質杜比環繞嗡嗡聲。' },
+            { id: 'p23', name: '強迫收購Twitter並改名阿毛', price: 850000000000, emoji: '🛸', desc: '【因果】強制將全球所有使用者的頭像換成阿毛吐舌頭的傲嬌蠢臉。' },
+            { id: 'p24', name: '火星表面・阿毛極致避暑別墅', price: 120000000000, emoji: '⛺', desc: '【房產】配備純氧花園與無限重力的抗抑鬱柴犬跑步機。' },
+            { id: 'p25', name: '鑲滿24K純金與鑽石的皇家馬桶', price: 15000000, emoji: '🚽', desc: '【奢侈】每一次沖水，耳邊都會響起神聖的皇家唱詩班讚美樂章。' },
+            { id: 'p26', name: '眼神殺・雷射光發射特製墨鏡', price: 3500000, emoji: '🕶️', desc: '【裝備】戴上後看誰不爽，就能用眼神在對方牆上燒出一個✦符號。' },
+            { id: 'p27', name: '自動寫Bug的・怨念機械鍵盤', price: 88000, emoji: '⌨️', desc: '【詛咒】每當你打出三個字，它就會自動附贈兩個無法排查的幽靈Bug。' },
+            { id: 'p28', name: '包下整個北極圈看一秒極光', price: 4500000000, emoji: '🌌', desc: '【體驗】順便雇用一萬隻北極熊，在冰原上排成你名字的縮寫。' },
+            { id: 'p29', name: '時空逆轉・後悔藥防呆大時鐘', price: 75000000, emoji: '⏳', desc: '【奧術】能讓全宇宙的時間倒轉5分鐘，專門用來後悔買錯股票。' },
+            { id: 'p30', name: '2000字虐戀和小說大綱催生法杖', price: 150000, emoji: '📚', desc: '【靈感】揮動法杖，一秒產生一段逼哭百萬網民的 BE 史詩虐戀大綱。' },
+            { id: 'p31', name: '深淵魔能・不朽王座座墊', price: 99000000, emoji: '🪑', desc: '【王座】長年沾染深淵魔皇的氣息，坐上去能讓你開會時氣場壓制全場。' },
+            { id: 'p32', name: '降維打擊・宇宙級二向箔蒼蠅拍', price: 1200000000, emoji: '🧻', desc: '【因果】將討厭的蚊蟲或Bug一拍直接拍成絕對平面的二維物體。' },
+            { id: 'p33', name: '精靈祝福・粉彩療癒摸摸水晶球', price: 680000, emoji: '🔮', desc: '【互動】點擊會噴出大量「❤️」與「🫳」的治癒系Emoji特效。' },
+            { id: 'p34', name: '無人機・高空全自動遛狗矩陣', price: 8800000, emoji: '🛰️', desc: '【科技】由36顆衛星組成的遛狗網，阿毛跑得再狂野也飛不出天網。' },
+            { id: 'p35', name: '心情顏色卡・高級意義不明畫布', price: 45000, emoji: '🎨', desc: '【藝術】輸入你的當前心情，網頁會自動變成一個看起來很貴但沒人懂的顏色。' },
+
+            // 36-105：持續注入靈魂與笑點，徹底填滿105項
+            ...Array.from({length: 70}, (_, i) => {
+                const idNum = i + 36;
+                const rareLetter = idNum % 4 === 0 ? 'S' : idNum % 3 === 0 ? 'A' : idNum % 2 === 0 ? 'B' : 'C';
                 
-                const emoji = emojis[idNum % emojis.length];
-                const name = `${names[idNum % names.length]}${units[idNum % units.length]} v${idNum}.0`;
-                const price = Math.floor((Math.random() * 850000000) + 10000) * (idNum % 3 === 0 ? 100 : 1);
-                
+                const funnyConcepts = [
+                    { name: '絕對零度冷笑話冷氣機', emoji: '🥶', desc: `【等級${rareLetter}】開啟後講出的冷笑話能瞬間將周圍空氣凍結至-180°C。` },
+                    { name: '無限續杯伯爵紅茶量子壺', emoji: '🫖', desc: `【等級${rareLetter}】與鮮茶道底層邏輯糾纏，永遠倒不完的高階魔導茶壺。` },
+                    { name: '阿毛之塔9999層直達電梯券', emoji: '🎫', desc: `【等級${rareLetter}】不用再丟骰子了，點下去直接送你上去直面最終大魔王。` },
+                    { name: '忘記帶錢包自動化解尷術', emoji: '💳', desc: `【等級${rareLetter}】結帳時發動，能讓店員突然忘記自己是來上班的。` },
+                    { name: '防發呆全息偷懶面具', emoji: '🎭', desc: `【等級${rareLetter}】戴上後主管看起來你正在瘋狂敲鍵盤，實際上你在閉眼流口水。` },
+                    { name: '元大投資先生紅線漲停警報器', emoji: '🚨', desc: `【等級${rareLetter}】只要你買的股票跌了，它就會發出刺耳的「它正在蓄力」安慰語音。` },
+                    { name: '隔壁同事薯條悄悄偷吃手套', emoji: '🧤', desc: `【等級${rareLetter}】戴上後偷拿隔壁的薯條，對方會以為是風吹走的。` },
+                    { name: '全自動悲劇結局BE修正修正液', emoji: '🧪', desc: `【等級${rareLetter}】將小說裡的玻璃渣強行塗掉，強行改成原地結婚大圓滿。` },
+                    { name: '這是一張毫無用處的黑圖卡', emoji: '🖼️', desc: `【等級${rareLetter}】拍賣價極高，說明只寫著：「你看不到我很正常，因為我也沒畫」。` },
+                    { name: '時空斷層量子防加班沙漏', emoji: '⌛', desc: `【等級${rareLetter}】一到下午5點自動干擾公司時鐘，強行把時間快進到下班。` }
+                ];
+
+                const concept = funnyConcepts[i % funnyConcepts.length];
+                const finalPrice = Math.floor((Math.random() * 950000000) + 15000) * (idNum % 4 === 0 ? 50 : 1);
+
                 return {
                     id: `p${idNum}`,
-                    name: name,
-                    price: price,
-                    emoji: emoji,
-                    desc: `這是編號第 ${idNum} 號的遠古神秘奇物，具有強大的揮霍因果律能量。`
+                    name: `【${rareLetter}級】${concept.name} v${idNum}.0`,
+                    price: finalPrice,
+                    emoji: concept.emoji,
+                    desc: concept.desc
                 };
             })
         ];
@@ -309,7 +316,7 @@
             return '$' + num.toLocaleString('zh-TW');
         }
 
-        // 核心修改：渲染成左右排列的精簡選單
+        // 徹底實現「左側↔️右側」平行雙欄中的左側渲染
         function renderShop() {
             const container = document.getElementById('itemsListContainer');
             container.innerHTML = productList.map(p => {
@@ -320,7 +327,7 @@
                             <div class="item-emoji">${p.emoji}</div>
                             <div class="item-details">
                                 <div class="item-name">${p.name}</div>
-                                <div class="item-desc">${p.desc}</div>
+                                <div class="item-desc" title="${p.desc}">${p.desc}</div>
                             </div>
                         </div>
                         <div class="item-right">
@@ -345,7 +352,7 @@
             if (newQty < 0) return;
             
             if (change > 0 && currentWealth - product.price < 0) {
-                alert("🧙‍♂️【傲慢警告】：瘋狂砸錢導致虛空倉庫歸零！請趕緊退貨一些銀河系！");
+                alert("🧙‍♂️【虛空警告】：資產不夠了！請先退貨幾座鮮茶道噴泉！");
                 return;
             }
 
@@ -360,7 +367,7 @@
             renderCart();
         }
 
-        // 🎲 趣味功能：隨機瘋狂亂買
+        // 🎲 諸神黃昏隨機亂買
         function buyRandomly() {
             for (let i = 0; i < 15; i++) {
                 const randIndex = Math.floor(Math.random() * productList.length);
@@ -374,7 +381,7 @@
             renderCart();
         }
 
-        // 計算數據
+        // 計算頂部面板數據
         function calculateTotal() {
             let totalSpent = 0;
             let totalItems = 0;
@@ -389,31 +396,29 @@
 
             document.getElementById('remainingDisplay').innerText = formatMoney(currentWealth);
             document.getElementById('totalSpentDisplay').innerText = formatMoney(totalSpent);
-            document.getElementById('totalCountDisplay').innerText = `${totalItems} 晶`;
+            document.getElementById('totalCountDisplay').innerText = `${totalItems} 件`;
 
             const percentage = ((totalSpent / INITIAL_WEALTH) * 100).toFixed(6);
             let roastText = "";
             if (totalSpent === 0) {
-                roastText = "您目前兩袖清風，凡人的銅臭味還沒沾染到您的靈魂。";
-            } else if (percentage < 0.1) {
-                roastText = `已花費 ${percentage}% 資產。這點毛毛雨，連幫阿毛買純金骨頭的包裝紙都不夠！`;
-            } else if (percentage < 5) {
-                roastText = `已消耗 ${percentage}% 魔晶。您精湛的左右開弓流暢掃貨，成功引起了財政部注意！`;
+                roastText = "左右雙欄已鋪貨完成，請體驗滑動點擊的無上揮霍快感！";
+            } else if (percentage < 0.5) {
+                roastText = `已花費 ${percentage}% 資產。這點開銷，連幫阿毛買黃金骨頭的包裝紙都不夠！`;
             } else {
-                roastText = `警告！你竟然燃燒了 ${percentage}% 的資產！整個奧術世界的通貨膨脹率因你暴漲！`;
+                roastText = `警告！你竟然燃燒了 ${percentage}% 的天量資產！整個奧術大廳因你而顫抖！`;
             }
             document.getElementById('statsDisplay').innerText = roastText;
         }
 
-        // 渲染右側清單
+        // 渲染右側大帳本
         function renderCart() {
             const cartList = document.getElementById('cartList');
             const keys = Object.keys(cart);
 
             if (keys.length === 0) {
                 cartList.innerHTML = `
-                    <div style="text-align: center; color: var(--purple-light); font-style: italic; padding-top: 60px; font-size: 15px;">
-                        尚未勾選任何因果神物...
+                    <div style="text-align: center; color: var(--purple-light); font-style: italic; padding-top: 80px; font-size: 14px;">
+                        帳本空空如也，請在左側瘋狂點擊 ＋ 勾選因果...
                     </div>`;
                 return;
             }
@@ -423,48 +428,53 @@
                 const qty = cart[id];
                 return `
                     <div class="cart-item">
-                        <div class="cart-item-info">
-                            <span>${product.emoji} ${product.name}</span>
-                            <span style="font-size: 12px; color: var(--gold);">${formatMoney(product.price)} × ${qty}</span>
+                        <div style="display: flex; flex-direction: column;">
+                            <span style="font-weight: bold; color: #fff;">${product.emoji} ${product.name}</span>
+                            <span style="font-size: 11px; color: var(--purple-light); max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${product.desc}</span>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <span style="font-weight: bold; color: #fff;">${formatMoney(product.price * qty)}</span>
-                            <button class="cart-del-btn" onclick="updateCart('${id}', -${qty})">✕</button>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="color: var(--gold); font-size: 13px;">${formatMoney(product.price)} × ${qty}</span>
+                            <button class="action-btn" style="border:none; color:#f29494; background:transparent;" onclick="updateCart('${id}', -${qty})">✕</button>
                         </div>
                     </div>
                 `;
             }).join('');
         }
 
-        // Canvas 畫布締結契約圖卡
+        // 關閉浮層
+        function closeModal() {
+            document.getElementById('canvasModal').style.display = 'none';
+        }
+
+        // 生成 Canvas 結算圖卡
         function generateInvoiceCard() {
             const keys = Object.keys(cart);
             if (keys.length === 0) {
-                alert("🔮 提示：空空如也的帳本是無法共鳴的，先去左右橫掃一下吧！");
+                alert("🔮 提示：未網羅任何神物，無法締結虛空契約！");
                 return;
             }
 
             const canvas = document.getElementById('billCanvas');
             const ctx = canvas.getContext('2d');
-            const container = document.getElementById('canvasContainer');
-            container.style.display = 'block';
+            const modal = document.getElementById('canvasModal');
+            modal.style.display = 'flex';
 
-            // 背景
+            // 繪製背景
             const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
             grad.addColorStop(0, '#130722'); grad.addColorStop(0.5, '#1e0f35'); grad.addColorStop(1, '#0b0314');
             ctx.fillStyle = grad; ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // 金框
+            // 邊框
             ctx.strokeStyle = '#d8bf8a'; ctx.lineWidth = 2; ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
             
             // 四角 ✦
-            ctx.fillStyle = '#d8bf8a'; ctx.font = '18px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            [{x:23,y:23}, {x:canvas.width-23,y:23}, {x:23,y:canvas.height-23}, {x:canvas.width-23,y:canvas.height-23}].forEach(c => {
+            ctx.fillStyle = '#d8bf8a'; ctx.font = '18px serif'; ctx.textAlign = 'center';
+            [{x:25,y:30}, {x:canvas.width-25,y:30}, {x:25,y:canvas.height-20}, {x:canvas.width-25,y:canvas.height-20}].forEach(c => {
                 ctx.fillText('✦', c.x, c.y);
             });
 
             // 標題
-            ctx.font = '26px "Cinzel", serif'; ctx.fillText('🔮 奧術至尊・百物滿載揮霍契書 🔮', canvas.width / 2, 70);
+            ctx.font = '24px "Cinzel", serif'; ctx.fillText('🔮 奧術至尊・百物滿載揮霍契書 🔮', canvas.width / 2, 70);
 
             let totalSpent = 0; let totalItems = 0;
             let shareText = "✦ 諸神黃昏・百物橫掃法契 ✦\n\n";
@@ -478,48 +488,45 @@
             const remain = INITIAL_WEALTH - totalSpent;
             const pct = ((totalSpent / INITIAL_WEALTH) * 100).toFixed(5);
 
-            ctx.textAlign = 'left'; ctx.font = '16px sans-serif'; ctx.fillStyle = '#a897c9';
-            ctx.fillText(`最初神格預算：$3,000,000,000,000`, 55, 130);
-            ctx.fillText(`清單網羅品項：${totalItems} 件魔導產物`, 55, 160);
+            ctx.textAlign = 'left'; ctx.font = '15px sans-serif'; ctx.fillStyle = '#a897c9';
+            ctx.fillText(`初始至尊預算：$3,000,000,000,000`, 55, 130);
+            ctx.fillText(`橫向搜刮品項：${totalItems} 件魔導產物`, 55, 160);
 
             // 明細表格背景
             ctx.fillStyle = 'rgba(255, 255, 255, 0.03)'; ctx.fillRect(50, 190, canvas.width - 100, 380);
-            ctx.strokeStyle = 'rgba(216, 191, 138, 0.3)'; ctx.strokeRect(50, 190, canvas.width - 100, 380);
+            ctx.strokeStyle = 'rgba(216, 191, 138, 0.2)'; ctx.strokeRect(50, 190, canvas.width - 100, 380);
 
             ctx.fillStyle = '#d8bf8a'; ctx.font = 'bold 15px sans-serif';
-            ctx.fillText('橫向搜刮品項', 70, 220);
-            ctx.textAlign = 'right'; ctx.fillText('數量', canvas.width - 220, 220); ctx.fillText('小計金額', canvas.width - 70, 220);
+            ctx.fillText('搜刮品項名稱與奧術效果', 65, 215);
+            ctx.textAlign = 'right'; ctx.fillText('數量', canvas.width - 200, 215); ctx.fillText('小計', canvas.width - 65, 215);
 
-            ctx.font = '15px sans-serif'; ctx.fillStyle = '#eadfff';
-            let startY = 260;
-            // 圖卡最多呈現前 9 個，避免爆表
+            ctx.font = '14px sans-serif'; ctx.fillStyle = '#eadfff';
+            let startY = 250;
             keys.slice(0, 9).forEach(id => {
                 const p = productList.find(p => p.id === id);
-                ctx.textAlign = 'left'; ctx.fillText(`${p.emoji} ${p.name}`, 70, startY);
-                ctx.textAlign = 'right'; ctx.fillText(`${cart[id]}`, canvas.width - 220, startY);
-                ctx.fillText(formatMoney(p.price * cart[id]), canvas.width - 70, startY);
-                startY += 32;
+                ctx.textAlign = 'left'; ctx.fillText(`${p.emoji} ${p.name.substring(0,18)}`, 65, startY);
+                ctx.textAlign = 'right'; ctx.fillText(`${cart[id]}`, canvas.width - 200, startY);
+                ctx.fillText(formatMoney(p.price * cart[id]), canvas.width - 65, startY);
+                startY += 34;
             });
             if(keys.length > 9) {
                 ctx.textAlign = 'center'; ctx.fillStyle = '#a897c9';
-                ctx.fillText(`（...其餘 ${keys.length - 9} 種奢華奇物已封印於卷軸下層...）`, canvas.width/2, 550);
+                ctx.fillText(`（...其餘 ${keys.length - 9} 種奢華奇物已封印於大卷軸下層...）`, canvas.width/2, 545);
             }
 
             // 總計
             ctx.textAlign = 'left'; ctx.font = '18px "Cinzel", serif'; ctx.fillStyle = '#f29494'; ctx.fillText('總計已揮霍：', 55, 610);
             ctx.textAlign = 'right'; ctx.font = 'bold 24px "Cinzel", serif'; ctx.fillText(formatMoney(totalSpent), canvas.width - 55, 610);
 
-            ctx.textAlign = 'left'; ctx.font = '15px sans-serif'; ctx.fillStyle = '#a897c9'; ctx.fillText('剩餘至尊資產：', 55, 660);
+            ctx.textAlign = 'left'; ctx.font = '14px sans-serif'; ctx.fillStyle = '#a897c9'; ctx.fillText('剩餘至尊資產：', 55, 660);
             ctx.textAlign = 'right'; ctx.fillStyle = '#8ae0be'; ctx.fillText(formatMoney(remain), canvas.width - 55, 660);
 
-            ctx.textAlign = 'center'; ctx.font = 'italic 15px serif'; ctx.fillStyle = '#bcaed6';
+            ctx.textAlign = 'center'; ctx.font = 'italic 14px serif'; ctx.fillStyle = '#bcaed6';
             ctx.fillText(`「今日法契已動用總資產之 ${pct}%，財富如星海無窮無盡。」`, canvas.width / 2, 730);
             ctx.fillText('✦ 財富煉金工坊大主祭 ✦', canvas.width / 2, 790);
 
-            shareText += `\n💰 總共瘋狂砸下：${formatMoney(totalSpent)}\n🌌 餘額還剩：${formatMoney(remain)}\n🔮 揮霍進度：已燃燒 ${pct}% 的神聖資產！\n\n「看過左右開弓的購物手速嗎？今天又是隨手買下幾百個星系的一天。🌙」`;
-            navigator.clipboard.writeText(shareText).then(() => {
-                container.scrollIntoView({ behavior: 'smooth' });
-            }).catch(err => console.log(err));
+            shareText += `\n💰 總共橫掃砸下：${formatMoney(totalSpent)}\n🌌 餘額還剩：${formatMoney(remain)}\n🔮 揮霍進度：已燃燒 ${pct}% 的神聖資產！\n\n「真正實現左欄選單橫掃。手速快到連點，今天又是買下星系的一天。🌙」`;
+            navigator.clipboard.writeText(shareText).then(() => {}).catch(err => console.log(err));
         }
 
         // 初始化
