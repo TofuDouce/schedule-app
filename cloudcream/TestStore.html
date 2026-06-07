@@ -2,195 +2,140 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔮 財富煉金術：無限魔晶揮霍試煉場</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🔮 無限魔晶揮霍試煉場</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Cormorant+Garamond:wght@600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg1: #0d081b;
-            --bg2: #160f29;
-            --bg3: #1f143d;
+            --bg: #0d081b;
+            --card-bg: rgba(255, 255, 255, 0.03);
             --gold: #d8bf8a;
-            --gold-hover: #f3dfb6;
             --text: #eadfff;
             --text-muted: #a897c9;
-            --base-font-size: 18px;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            min-height: 100vh;
+            background-color: var(--bg);
             color: var(--text);
             font-family: "Cormorant Garamond", serif;
-            background: radial-gradient(circle at top, rgba(180,150,255,.15), transparent 45%), 
-                        linear-gradient(180deg, var(--bg1), var(--bg2), var(--bg3));
-            padding: 24px;
+            min-height: 100vh;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: var(--base-font-size);
+            flex-direction: column;
+            overflow-x: hidden;
+            padding: 16px;
         }
 
-        /* 滿天星空 */
-        .stars {
-            position: fixed;
-            inset: 0;
-            overflow: hidden;
-            z-index: -3;
-            pointer-events: none;
-        }
-        .star {
-            position: absolute;
-            width: 2px;
-            height: 2px;
-            background: white;
-            border-radius: 50%;
-            opacity: .6;
-            animation: twinkle 4s infinite;
-        }
-        @keyframes twinkle {
-            0%, 100% { opacity: .2; transform: scale(.8); }
-            50% { opacity: 1; transform: scale(1.3); }
-        }
-
-        /* 古典邊框 */
-        .frame {
-            position: fixed;
-            inset: 12px;
-            border: 1.5px solid rgba(216,191,138,.4);
-            border-radius: 24px;
-            pointer-events: none;
-            z-index: 999;
-        }
-        .frame::before {
-            content: "✦";
-            position: absolute;
-            color: var(--gold);
-            font-size: 14px;
-            top: 8px; left: 12px;
-        }
-
-        /* 響應式雙欄佈局 */
-        .container {
-            width: 100%;
-            max-width: 1100px;
-            display: grid;
-            grid-template-columns: 1.2fr 0.8fr;
-            gap: 24px;
-            z-index: 10;
-        }
-
-        @media (max-width: 850px) {
-            .container {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* 共通奢華卡片 */
-        .magic-card {
-            background: rgba(20, 12, 38, 0.7);
-            border: 1px solid rgba(216, 191, 138, 0.25);
-            border-radius: 16px;
-            padding: 28px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(138, 92, 246, 0.1);
-            backdrop-filter: blur(8px);
-            position: relative;
-        }
-
-        .card-corner {
-            position: absolute;
-            color: rgba(216, 191, 138, 0.3);
-            font-size: 12px;
-            pointer-events: none;
-        }
-        .top-left { top: 8px; left: 10px; }
-        .top-right { top: 8px; right: 10px; }
-
-        /* 標題與巨額資產區 */
+        /* 頂部固定資產看板 */
         .header-zone {
             text-align: center;
-            margin-bottom: 24px;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(216, 191, 138, 0.2);
+            margin-bottom: 16px;
         }
-        h1 {
+        .header-zone h1 {
             font-family: "Cinzel", serif;
-            font-size: 26px;
-            letter-spacing: 2px;
+            font-size: 20px;
             color: var(--gold);
-            text-shadow: 0 0 10px rgba(216,191,138,0.3);
-            margin-bottom: 10px;
+            margin-bottom: 4px;
         }
         .wealth-display {
             font-family: "Cinzel", serif;
-            font-size: 38px;
+            font-size: 32px;
             font-weight: bold;
-            color: #fff;
-            text-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
-            margin: 10px 0;
-            letter-spacing: 1px;
-        }
-        .wealth-subtitle {
-            font-size: 14px;
-            color: var(--text-muted);
-            font-style: italic;
+            text-shadow: 0 0 10px rgba(255,255,255,0.2);
         }
 
-        /* 商品列表佈局優化 (寬鬆、比例合適的垂直條目) */
-        .shop-list {
+        /* 上方分類標籤：橫向滑動 */
+        .category-tabs {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+            scrollbar-width: none; /* Firefox */
+        }
+        .category-tabs::-webkit-scrollbar {
+            display: none; /* Chrome/Safari */
+        }
+        .tab-btn {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(216, 191, 138, 0.15);
+            color: var(--text-muted);
+            padding: 8px 16px;
+            border-radius: 20px;
+            white-space: nowrap;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .tab-btn.active {
+            border-color: var(--gold);
+            color: var(--gold);
+            background: rgba(216, 191, 138, 0.1);
+        }
+
+        /* 核心精華：商品橫向滑動輸送帶（往左往右滑去找） */
+        .product-slider {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory; /* 滑動時自動吸附 */
+            padding: 8px 4px 24px 4px;
+            scrollbar-width: none;
+        }
+        .product-slider::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* 單個商品卡片：一格一格滑過去 */
+        .product-card {
+            flex: 0 0 85%; /* 手機上露出一點隔壁卡片，暗示可以滑動 */
+            max-width: 340px;
+            background: var(--card-bg);
+            border: 1px solid rgba(216, 191, 138, 0.2);
+            border-radius: 16px;
+            padding: 24px;
+            scroll-snap-align: center; /* 吸附置中 */
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
             display: flex;
             flex-direction: column;
-            gap: 16px;
-            margin-top: 12px;
+            justify-content: space-between;
+            min-height: 280px;
         }
 
-        .shop-item {
+        .product-info h3 {
+            font-size: 19px;
+            color: #fff;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        .product-price {
+            font-family: "Cinzel", serif;
+            font-size: 15px;
+            color: var(--gold);
+        }
+
+        /* 控制按鈕 */
+        .controls {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 16px 20px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(216, 191, 138, 0.12);
-            border-radius: 10px;
-            transition: all 0.25s ease;
+            margin-top: 20px;
+            background: rgba(0,0,0,0.2);
+            padding: 8px 16px;
+            border-radius: 25px;
+            border: 1px solid rgba(255,255,255,0.05);
         }
-        .shop-item:hover {
-            border-color: rgba(216, 191, 138, 0.35);
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .item-info {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            flex: 1;
-            padding-right: 16px;
-        }
-        .item-name {
-            font-size: 19px;
-            font-weight: 600;
-            color: var(--text);
-        }
-        .item-price {
-            font-family: "Cinzel", serif;
-            font-size: 14px;
-            color: var(--gold);
-            letter-spacing: 0.5px;
-        }
-
-        /* 互動控制項 */
-        .item-controls {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .btn-calc {
-            width: 34px;
-            height: 34px;
+        .btn-action {
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             border: 1px solid var(--gold);
             background: transparent;
@@ -200,266 +145,168 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s;
         }
-        .btn-calc:hover:not(:disabled) {
-            background: var(--gold);
-            color: var(--bg1);
-            box-shadow: 0 0 8px var(--gold);
+        .btn-action:disabled {
+            opacity: 0.2;
         }
-        .btn-calc:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-            border-color: var(--text-muted);
-            color: var(--text-muted);
-        }
-
-        .item-count {
+        .qty-display {
             font-family: "Cinzel", serif;
             font-size: 18px;
-            min-width: 28px;
-            text-align: center;
-        }
-
-        /* 右側大帳本欄位 */
-        .sidebar-title {
-            font-family: "Cinzel", serif;
-            font-size: 19px;
-            color: var(--gold);
-            text-align: center;
-            border-bottom: 1px solid rgba(216,191,138,0.2);
-            padding-bottom: 12px;
-            margin-bottom: 16px;
-            letter-spacing: 1px;
-        }
-
-        .receipt-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            max-height: 350px;
-            overflow-y: auto;
-            padding-right: 4px;
-        }
-        /* 客製化滾動條 */
-        .receipt-list::-webkit-scrollbar { width: 4px; }
-        .receipt-list::-webkit-scrollbar-thumb { background: rgba(216,191,138,0.2); border-radius: 4px; }
-
-        .receipt-item {
-            display: flex;
-            justify-content: space-between;
-            font-size: 15px;
-            color: var(--text-muted);
-            padding: 4px 0;
-            border-bottom: 1px dashed rgba(255,255,255,0.05);
-        }
-
-        .total-zone {
-            margin-top: 20px;
-            padding-top: 14px;
-            border-top: 1px solid rgba(216,191,138,0.2);
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-        .total-row {
-            display: flex;
-            justify-content: space-between;
-            font-size: 15px;
-        }
-        .grand-total {
-            font-size: 18px;
-            color: var(--gold);
             font-weight: bold;
         }
 
-        .footer {
-            text-align: center;
-            margin-top: 30px;
-            font-size: 13px;
-            color: var(--text-muted);
-            font-style: italic;
+        /* 底部迷你購物小計 */
+        .summary-bar {
+            margin-top: auto;
+            background: rgba(20, 12, 38, 0.9);
+            border: 1px solid rgba(216, 191, 138, 0.3);
+            border-radius: 12px;
+            padding: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
 
-    <div class="stars" id="starContainer"></div>
-    <div class="frame"></div>
+    <div class="header-zone">
+        <h1>🔮 剩餘魔晶資產</h1>
+        <div class="wealth-display" id="walletDisplay">$3.00 T</div>
+    </div>
 
-    <div class="container">
-        <div class="magic-card">
-            <div class="card-corner top-left">✦</div>
-            <div class="card-corner top-right">✦</div>
-            
-            <div class="header-zone">
-                <h1>財富煉金術・無限魔晶試煉</h1>
-                <div class="wealth-display" id="remainingAssets">$3.00 T</div>
-                <div class="wealth-subtitle">此生註定揮霍，靈魂不染銅臭</div>
-            </div>
+    <div class="category-tabs" id="tabsContainer"></div>
 
-            <div class="shop-list" id="shopList"></div>
-        </div>
+    <div class="product-slider" id="sliderContainer"></div>
 
-        <div class="magic-card" style="height: fit-content;">
-            <div class="card-corner top-left">☾</div>
-            <div class="card-corner top-right">☾</div>
-            
-            <div class="sidebar-title">✦ 揮霍物資清冊 ✦</div>
-            <div class="receipt-list" id="receiptList"></div>
-            
-            <div class="total-zone">
-                <div class="total-row">
-                    <span>已消耗件數</span>
-                    <span id="totalItems">0 件</span>
-                </div>
-                <div class="total-row grand-total">
-                    <span>已揮霍總額</span>
-                    <span id="spentTotal">$0</span>
-                </div>
-            </div>
-        </div>
+    <div class="summary-bar">
+        <div>已搶購：<span id="totalQty" style="color:var(--gold); font-weight:bold;">0</span> 件品項</div>
+        <div>已揮霍：<span id="totalSpent" style="color:var(--gold); font-family:'Cinzel'; font-weight:bold;">$0</span></div>
     </div>
 
     <script>
-        // 初始神級資產：三兆元
-        const INITIAL_ASSETS = 3000000000000;
-        
-        // 荒謬奢華的購物清單
-        const products = [
-            { id: 1, name: "🍿 阿毛專屬奢華純金骨頭", price: 500000 },
-            { id: 2, name: "☕ 包下整間鮮茶道喝 100 年", price: 15000000 },
-            { id: 3, name: "🏰 附帶沉睡惡龍的歐洲古堡", price: 8500000000 },
-            { id: 4, name: "🚀 搭乘火箭去月球背面偷挖隕石", price: 120000000000 },
-            { id: 5, name: "🪐 買下一顆以自己命名的小行星", price: 950000000000 }
-        ];
+        const START_MONEY = 3000000000000; // 三兆
 
-        // 紀錄購物數量的狀態
+        const cats = {
+            "trivial": "🍿 塵世無聊小事",
+            "luxury": "🏰 凡人奢華極限",
+            "cosmic": "🪐 宇宙級大買賣",
+            "abstract": "🧬 概念與超自然"
+        };
+
+        // 100種商品陣列
+        const items = [];
+        const tNames = ["阿毛專屬純金咬咬骨頭", "包下全台鮮茶道喝到下輩子", "請全辦公室吃一萬年紅豆餅", "買下隔壁同事的滑鼠左鍵", "買斷全台灣星期一早上的陽光", "把這輩子看過的冷笑話做成法典", "雇用100個人天天在路邊對我鼓掌", "買下網頁裡所有會眨眼的星星", "買一條永遠不會斷線的充電線", "請香菜大師在全城灑滿香菜", "買下元大投資先生App當單機遊戲", "讓全公司的印表機只印阿毛的照片", "把所有討厭的通知聲換成貓叫", "買下全台灣所有鹽酥雞攤的九層塔", "買下一座專門藏私房錢的垃圾桶", "投資研發「自動幫你回LINE」機器人", "買斷全台所有手搖飲的微糖微冰", "請人每天早上幫我把棉被折成豆腐干", "買下暗戀對象看過的所有星座運勢", "買一隻會說「主人好棒」的尖叫雞", "把全公司鍵盤的Enter鍵鍍金", "買一架專門幫我送下午茶的無人機", "買下所有星期五下午的快樂心情", "買一個永遠能精準四捨五入的計算機", "買斷這輩子所有不用上班的週日"];
+        const lNames = ["附帶沉睡惡龍的歐洲古堡", "買下杜拜塔改名為「阿毛大樓」", "訂製純金打造的防彈外賣外送箱", "包下整條高鐵當作私人玩具火車", "買下好萊塢劇組幫我拍一集上班日常", "包下整個馬爾地夫給流浪狗辦派對", "買下全日本所有溫泉旅館一整年", "訂製一台能自動吐出鈔票的ATM", "買下一整座裝滿珍貴跑車的地下車庫", "請私人交響樂團每天在我起床時演奏", "買下一座純金做成的水上樂園", "聘請米其林三星主廚當我的宵夜管家", "買下巴黎鐵塔並把它漆成紫色", "買下一艘帶有停機坪的超巨大遊艇", "包下紐約時代廣場大螢幕播阿毛", "買下私人小島並宣布獨立建國", "用鑽石打造一具專屬的辦公椅", "買下世界最大的寶石拿來砸核桃", "買下十架私人飛機編隊在空中畫愛心", "包下整座迪士尼樂園讓我自己玩", "買下一條街的店面全部開貓咪咖啡廳", "用純金線編織一條睡覺用的毯子", "買下一座古代皇家御用藏書閣", "買下一艘可以潛入馬里亞納海溝的潛艇", "買下地中海某處的私人珊瑚礁半島"];
+        const cNames = ["搭乘火箭去月球背面偷挖隕石", "買下一顆以自己命名的小行星", "在火星上蓋一座私人度假別墅", "買斷土星環的一整段當作私人戒指", "投資研發「太陽系第一條星際鐵路」", "把自己的名字用雷射刻在月球表面", "買下一整顆充滿鑽石的超前衛行星", "包下哈伯太空望遠鏡拍我的自拍照", "買下一艘退役的太空梭放在後院當裝飾", "在太空軌道上建一座懸浮游泳池", "買下冥王星的冠名權並改名「阿毛星」", "雇用全人類最頂尖科學家幫我找外星人", "買下一座小型的室內人造黑洞模擬器", "在地球軌道上打一個超巨大的探照燈", "買下一片人造流星雨隨時發射", "買下木星上那個大紅斑的永久所有權", "投資一個可以把垃圾送到太陽燒掉的計畫", "買下一整座停滿外星幽浮的祕密機庫", "在月球上開第一家連鎖鮮茶道分店", "買下一套真實比例的鋼彈並裝上火箭推進器", "在星際間發射一個裝滿我歌聲的廣播器", "買下一片星雲當作我的專屬畫布", "買斷水星上所有面向太陽那側的土地", "投資建造一個太空電梯直接直達平流層", "買下全銀河系最好看的一束超新星爆炸"];
+        const aNames = ["向時間老人買回我浪費掉的青春", "買斷全人類所有做惡夢的權利", "買下一條絕對能實現的命運喜劇線", "跟惡魔簽約買下「永遠不會胖」的體質", "買下全宇宙所有冷笑話的智慧財產權", "購買一個能看透同事在想什麼的水晶球", "買下「一秒學會所有程式語言」魔法", "購買100個不會出任何Bug的幽靈工程師", "買下一個能把時間暫停5秒的懷錶", "購買全宇宙最神祕的「塔羅預言解答本」", "向命運買下一輩子抽獎都中頭獎的運氣", "買下一個能跟家裡寵物對話的萬能翻譯器", "購買一朵永遠不會凋謝的星光玫瑰", "買下一段能讓人瞬間忘記尷尬回憶的咒語", "購買能隨意穿梭到古代看恐龍的旅行門票", "買下一個放在口袋裡能無限生錢的福袋", "向重力學買下「隨時可以懸浮10公分」特權", "買下一個能自動過濾所有廢話的耳機", "購買全人類最完美的「強迫症方塊消除器」", "買下一整夜絕對不會失眠的完美睡眠", "向死神買下「多活100年」的奢華保固期", "買下一個能自動把負能量轉化為黃金的魔方", "購買一雙穿上去走路永遠不會累的隱形鞋", "買下一套讓全世界在同一秒一起咳嗽的奧術", "買斷這個揮霍網站的最終最高神明控制權"];
+
+        for(let i=0; i<25; i++) items.push({ id:`t-${i}`, cat:"trivial", name:tNames[i], price: 60000 * (i+1) });
+        for(let i=0; i<25; i++) items.push({ id:`l-${i}`, cat:"luxury", name:lNames[i], price: 920000000 * (i+1) });
+        for(let i=0; i<25; i++) items.push({ id:`c-${i}`, cat:"cosmic", name:cNames[i], price: 14000000000 * (i+1) });
+        for(let i=0; i<25; i++) items.push({ id:`a-${i}`, cat:"abstract", name:aNames[i], price: 72000000000 * (i+1) });
+
         let cart = {};
-        products.forEach(p => cart[p.id] = 0);
+        let currentCat = "trivial";
 
-        // 核心高質感格式化引擎：將滿畫面的 0 換成優雅縮寫 (K, M, B, T)
-        function formatElegant(num) {
+        // K, M, B, T 質感大額縮寫
+        function formatMoney(num) {
             if (num === 0) return "$0";
-            const absNum = Math.abs(num);
-            let formatted = "";
-            let suffix = "";
-
-            if (absNum >= 1e12) {
-                formatted = (num / 1e12).toFixed(2);
-                suffix = " T"; // Trillion 兆
-            } else if (absNum >= 1e9) {
-                formatted = (num / 1e9).toFixed(2);
-                suffix = " B"; // Billion 十億
-            } else if (absNum >= 1e6) {
-                formatted = (num / 1e6).toFixed(2);
-                suffix = " M"; // Million 百萬
-            } else if (absNum >= 1e3) {
-                formatted = (num / 1e3).toFixed(2);
-                suffix = " K"; // Thousand 千
-            } else {
-                formatted = num.toLocaleString();
-            }
-
-            // 移除尾隨不必要的 .00 保持簡潔
-            if (formatted.endsWith(".00")) {
-                formatted = formatted.substring(0, formatted.length - 3);
-            }
-            return `$${formatted}${suffix}`;
+            const abs = Math.abs(num);
+            let res = "";
+            let suf = "";
+            if (abs >= 1e12) { res = (num / 1e12).toFixed(2); suf = " T"; }
+            else if (abs >= 1e9) { res = (num / 1e9).toFixed(2); suf = " B"; }
+            else if (abs >= 1e6) { res = (num / 1e6).toFixed(2); suf = " M"; }
+            else if (abs >= 1e3) { res = (num / 1e3).toFixed(2); suf = " K"; }
+            else { res = num.toLocaleString(); }
+            return `$${res.endsWith(".00") ? res.substring(0, res.length - 3) : res}${suf}`;
         }
 
-        // 計算目前大帳本狀態
-        function calculateStats() {
-            let totalSpent = 0;
-            let totalCount = 0;
+        // 渲染橫向分類標籤
+        function renderTabs() {
+            const container = document.getElementById('tabsContainer');
+            container.innerHTML = Object.keys(cats).map(key => `
+                <button class="tab-btn ${key === currentCat ? 'active' : ''}" onclick="switchCat('${key}')">
+                    ${cats[key]}
+                </button>
+            `).join('');
+        }
 
-            products.forEach(p => {
-                const qty = cart[p.id];
-                totalSpent += qty * p.price;
-                totalCount += qty;
+        function switchCat(key) {
+            currentCat = key;
+            renderTabs();
+            renderSlider();
+            // 切換分類時，把滑動軸拉回最前面
+            document.getElementById('sliderContainer').scrollLeft = 0;
+        }
+
+        // 渲染橫向滑動商品
+        function renderSlider() {
+            const container = document.getElementById('sliderContainer');
+            const filtered = items.filter(item => item.cat === currentCat);
+
+            container.innerHTML = filtered.map(item => {
+                const qty = cart[item.id] || 0;
+                return `
+                    <div class="product-card">
+                        <div class="product-info">
+                            <h3>${item.name}</h3>
+                            <div class="product-price">代價：${formatMoney(item.price)}</div>
+                        </div>
+                        <div class="controls">
+                            <button class="btn-action" onclick="changeQty('${item.id}', -1)" ${qty === 0 ? 'disabled' : ''}>−</button>
+                            <span class="qty-display">${qty}</span>
+                            <button class="btn-action" onclick="changeQty('${item.id}', 1)">+</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function changeQty(id, delta) {
+            const currentQty = cart[id] || 0;
+            const newQty = Math.max(0, currentQty + delta);
+
+            let tempTotal = 0;
+            items.forEach(item => {
+                const q = item.id === id ? newQty : (cart[item.id] || 0);
+                tempTotal += q * item.price;
             });
 
-            const remaining = INITIAL_ASSETS - totalSpent;
-
-            // 更新介面
-            document.getElementById('remainingAssets').innerText = formatElegant(remaining);
-            document.getElementById('spentTotal').innerText = formatElegant(totalSpent);
-            document.getElementById('totalItems').innerText = `${totalCount} 件`;
-
-            renderReceipt();
-        }
-
-        // 修改數量機制
-        function updateQty(id, change) {
-            cart[id] = Math.max(0, cart[id] + change);
-            
-            // 防呆：確認是否超過總資產限制
-            let currentTotal = 0;
-            products.forEach(p => currentTotal += cart[p.id] * p.price);
-            if (currentTotal > INITIAL_ASSETS) {
-                cart[id] = cart[id] - change; // 退回
-                alert("🔮 奧術警告：您的財富流動已達凡世巔峰，無法容納更多物資！");
+            if (tempTotal > START_MONEY) {
+                alert("🔮 額度爆表！你的超能力不夠支付這個新玩具了！");
                 return;
             }
 
-            document.getElementById(`count-${id}`).innerText = cart[id];
-            document.getElementById(`btn-minus-${id}`).disabled = cart[id] === 0;
-            calculateStats();
+            if (newQty === 0) delete cart[id];
+            else cart[id] = newQty;
+
+            renderSlider();
+            updateTotals();
         }
 
-        // 渲染商品區塊 (優化版面高度與寬度，舒爽好閱讀)
-        function renderShop() {
-            const container = document.getElementById('shopList');
-            container.innerHTML = products.map(p => `
-                <div class="shop-item">
-                    <div class="item-info">
-                        <span class="item-name">${p.name}</span>
-                        <span class="item-price">代價：${formatElegant(p.price)}</span>
-                    </div>
-                    <div class="item-controls">
-                        <button class="btn-calc" id="btn-minus-${p.id}" onclick="updateQty(${p.id}, -1)" disabled>−</button>
-                        <span class="item-count" id="count-${p.id}">0</span>
-                        <button class="btn-calc" onclick="updateQty(${p.id}, 1)">+</button>
-                    </div>
-                </div>
-            `).join('');
-        }
+        function updateTotals() {
+            let totalSpent = 0;
+            let totalQty = 0;
 
-        // 渲染右側清單
-        function renderReceipt() {
-            const container = document.getElementById('receiptList');
-            const activeItems = products.filter(p => cart[p.id] > 0);
+            items.forEach(item => {
+                if (cart[item.id]) {
+                    totalSpent += cart[item.id] * item.price;
+                    totalQty += cart[item.id];
+                }
+            });
 
-            if (activeItems.length === 0) {
-                container.innerHTML = `<div style="text-align:center; color:var(--text-muted); font-style:italic; padding:20px 0;">尚未染指任何塵世寶物</div>`;
-                return;
-            }
-
-            container.innerHTML = activeItems.map(p => `
-                <div class="receipt-item">
-                    <span>${p.name} × ${cart[p.id]}</span>
-                    <span class="color-gold">${formatElegant(p.price * cart[p.id])}</span>
-                </div>
-            `).join('');
-        }
-
-        // 產生閃爍星空
-        function createStars() {
-            const container = document.getElementById('starContainer');
-            for (let i = 0; i < 40; i++) {
-                const star = document.createElement('div');
-                star.className = 'star';
-                star.style.top = `${Math.random() * 100}%`;
-                star.style.left = `${Math.random() * 100}%`;
-                star.style.animationDelay = `${Math.random() * 4}s`;
-                container.appendChild(star);
-            }
+            document.getElementById('walletDisplay').innerText = formatMoney(START_MONEY - totalSpent);
+            document.getElementById('totalSpent').innerText = formatMoney(totalSpent);
+            document.getElementById('totalQty').innerText = totalQty;
         }
 
         // 初始化
-        createStars();
-        renderShop();
-        calculateStats();
+        renderTabs();
+        renderSlider();
+        updateTotals();
     </script>
 </body>
 </html>
