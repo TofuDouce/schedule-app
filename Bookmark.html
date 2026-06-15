@@ -197,6 +197,92 @@ body.theme-tarot .toast{background:#e8d5ff;color:#1a1028;}
 ::-webkit-scrollbar{width:6px;height:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:999px;}
+
+/* ── SAVE INDICATOR ── */
+.save-indicator{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:0.6em;font-weight:700;color:var(--sub);
+  padding:3px 10px;border-radius:999px;
+  background:var(--accent-soft);
+  transition:0.3s;
+}
+.save-indicator.saved{color:#4a9460;background:rgba(74,148,96,0.12);}
+.save-indicator.saving{color:var(--accent-hover);background:var(--accent-soft);}
+.save-dot{width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block;}
+
+/* ── IMPORT MODAL ── */
+.modal-overlay{
+  position:fixed;inset:0;z-index:3000;
+  background:rgba(0,0,0,0.55);backdrop-filter:blur(6px);
+  display:none;align-items:center;justify-content:center;padding:20px;
+}
+.modal-overlay.show{display:flex;}
+.modal-box{
+  background:var(--card);border-radius:24px;
+  border:1px solid var(--border);
+  box-shadow:0 20px 60px rgba(0,0,0,0.25);
+  width:100%;max-width:560px;
+  max-height:88vh;overflow:hidden;
+  display:flex;flex-direction:column;
+  animation:modalIn 0.25s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes modalIn{from{opacity:0;transform:scale(0.9);}to{opacity:1;transform:scale(1);}}
+.modal-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 22px 16px;
+  border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.modal-hdr h3{font-size:0.95em;font-weight:700;}
+.modal-close{border:none;background:none;color:var(--sub);font-size:1.3em;cursor:pointer;padding:4px 8px;border-radius:8px;transition:0.2s;}
+.modal-close:hover{background:var(--bg2);color:var(--pink);}
+.modal-body{padding:20px 22px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:14px;}
+
+/* import tabs */
+.import-tabs{display:flex;gap:0;border-radius:12px;overflow:hidden;border:1.5px solid var(--border);}
+.import-tab{flex:1;padding:9px;border:none;background:var(--bg2);color:var(--sub);font-family:inherit;font-size:0.72em;font-weight:700;cursor:pointer;transition:0.2s;}
+.import-tab.active{background:var(--accent);color:var(--text);}
+
+/* drop zone */
+.drop-zone{
+  border:2px dashed var(--border);border-radius:16px;
+  padding:32px 20px;text-align:center;cursor:pointer;
+  transition:0.2s;color:var(--sub);font-size:0.75em;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+}
+.drop-zone:hover,.drop-zone.drag-over{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-hover);}
+.drop-zone .dz-icon{font-size:2.2em;}
+.drop-zone input[type=file]{display:none;}
+
+/* import textarea */
+.import-textarea{
+  width:100%;min-height:160px;resize:vertical;
+  border:1.5px solid var(--border);border-radius:12px;
+  padding:12px;font-family:"Courier New",monospace;font-size:0.68em;
+  background:var(--bg1);color:var(--text);line-height:1.5;
+}
+body.theme-tarot .import-textarea{background:#1a1028;}
+.import-textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);}
+.import-hint{font-size:0.65em;color:var(--sub);line-height:1.7;}
+.import-hint b{color:var(--accent-hover);}
+
+/* import result */
+.import-result{
+  padding:10px 14px;border-radius:10px;font-size:0.72em;font-weight:700;
+  display:none;
+}
+.import-result.ok{background:rgba(74,148,96,0.12);color:#3a7a50;border:1px solid rgba(74,148,96,0.2);}
+.import-result.err{background:rgba(192,57,43,0.1);color:#c0392b;border:1px solid rgba(192,57,43,0.2);}
+body.theme-tarot .import-result.ok{color:#6fcf8a;}
+body.theme-tarot .import-result.err{color:#f87171;}
+
+.import-confirm-btn{
+  width:100%;padding:13px;border:none;border-radius:12px;
+  background:linear-gradient(135deg,var(--accent),var(--pink));
+  color:var(--text);font-family:inherit;font-size:0.85em;font-weight:700;
+  cursor:pointer;transition:0.2s;
+}
+.import-confirm-btn:hover{opacity:0.88;transform:translateY(-1px);}
+body.theme-tarot .import-confirm-btn{color:#fff;}
 </style>
 </head>
 <body>
@@ -210,6 +296,12 @@ body.theme-tarot .toast{background:#e8d5ff;color:#1a1028;}
   <h1 class="title">✦ 書籤網站產生器 ✦</h1>
   <p class="subtitle">輸入你的最愛網址，一鍵生成你的專屬收藏頁 🌸</p>
   <p class="subtitle-deco">･ ｡ ☆∴｡　 ･ﾟ*｡★･ ∴｡　 ･ﾟ*｡☆</p>
+  <div style="margin-top:10px;display:flex;align-items:center;justify-content:center;gap:10px;">
+    <span class="save-indicator" id="saveIndicator"><span class="save-dot"></span> 尚未儲存</span>
+    <button class="ctrl-btn" onclick="manualSave()" style="font-size:0.62em;padding:5px 12px;">💾 手動儲存備份</button>
+    <button class="ctrl-btn" onclick="openImport()" style="font-size:0.62em;padding:5px 12px;">📥 匯入 HTML</button>
+    <button class="ctrl-btn" onclick="clearAll()" style="font-size:0.62em;padding:5px 12px;color:var(--pink);">🗑 清空重來</button>
+  </div>
 </div>
 
 <div class="toolbar">
@@ -389,6 +481,52 @@ body.theme-tarot .toast{background:#e8d5ff;color:#1a1028;}
 
 </div>
 
+<!-- ═══ IMPORT MODAL ═══ -->
+<div class="modal-overlay" id="importOverlay" onclick="if(event.target===this)closeImport()">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <h3>📥 匯入已生成的書籤 HTML</h3>
+      <button class="modal-close" onclick="closeImport()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="import-hint">
+        將之前用產生器做的 <b>.html 檔案</b>匯入，即可還原所有書籤和分類繼續編輯 ✨<br>
+        ⚠️ 匯入後會<b>覆蓋</b>目前編輯中的資料，請先儲存備份！
+      </p>
+
+      <div class="import-tabs">
+        <button class="import-tab active" id="itab-file" onclick="switchImportTab('file')">📁 上傳 .html 檔案</button>
+        <button class="import-tab" id="itab-paste" onclick="switchImportTab('paste')">📋 貼上原始碼</button>
+      </div>
+
+      <!-- 上傳區 -->
+      <div id="import-file-zone">
+        <div class="drop-zone" id="dropZone"
+          onclick="document.getElementById('fileInput').click()"
+          ondragover="event.preventDefault();this.classList.add('drag-over')"
+          ondragleave="this.classList.remove('drag-over')"
+          ondrop="handleFileDrop(event)">
+          <div class="dz-icon">☁</div>
+          <div><b>點擊選擇</b>或拖曳 .html 檔案到這裡</div>
+          <div style="font-size:0.9em;opacity:0.6;">支援由本產生器生成的 HTML 檔案</div>
+          <input type="file" id="fileInput" accept=".html,.htm" onchange="handleFileSelect(event)">
+        </div>
+      </div>
+
+      <!-- 貼碼區 -->
+      <div id="import-paste-zone" style="display:none;">
+        <textarea class="import-textarea" id="pasteCode" placeholder="將 HTML 原始碼貼在這裡..."></textarea>
+      </div>
+
+      <div class="import-result" id="importResult"></div>
+
+      <button class="import-confirm-btn" onclick="confirmImport()">
+        ✦ 確認匯入並還原書籤 ✦
+      </button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ─── STATE ─── */
 let categories=[
@@ -430,6 +568,7 @@ function selectOutputTheme(t){
     document.getElementById('tp-'+x).classList.toggle('selected',x===t);
     document.getElementById('tp-check-'+x).style.opacity=x===t?'1':'0';
   });
+  markDirty();
 }
 
 /* ─── CATEGORIES ─── */
@@ -451,8 +590,9 @@ function addCategory(){
   categories.push({id:'c'+Date.now(),name:nm,icon:ic});
   document.getElementById('catInput').value='';
   renderCats();showToast(`已新增分類「${ic} ${nm}」✨`);
+  markDirty();
 }
-function deleteCat(id){categories=categories.filter(c=>c.id!==id);renderCats();}
+function deleteCat(id){categories=categories.filter(c=>c.id!==id);renderCats();markDirty();}
 function updateCatSelects(){
   document.querySelectorAll('.bm-cat-sel').forEach(sel=>{
     const cur=sel.dataset.val||'';
@@ -534,9 +674,10 @@ function addBookmark(){
   bookmarks.push({id:'b'+Date.now(),url:'',title:'',note:'',cat:'',icon:'✨'});
   renderBmList();
   setTimeout(()=>{scrollToCard(bookmarks.length-1);showToast('✨ 已新增書籤！向右滑看看～');},100);
+  markDirty();
 }
-function deleteBm(id){bookmarks=bookmarks.filter(b=>b.id!==id);renderBmList();}
-function updateBm(id,field,val){const bm=bookmarks.find(b=>b.id===id);if(bm)bm[field]=val;updateStats();}
+function deleteBm(id){bookmarks=bookmarks.filter(b=>b.id!==id);renderBmList();markDirty();}
+function updateBm(id,field,val){const bm=bookmarks.find(b=>b.id===id);if(bm)bm[field]=val;updateStats();markDirty();}
 async function fetchTitle(id){
   const bm=bookmarks.find(b=>b.id===id);
   if(!bm||!bm.url)return showToast('請先輸入網址 🌸');
@@ -951,9 +1092,284 @@ function showToast(msg){
   toastTimer=setTimeout(()=>t.classList.remove('show'),2600);
 }
 
+/* ════════════════════════════════════════
+   SAVE / LOAD — localStorage
+════════════════════════════════════════ */
+const LS_KEY = 'chuchu_bookmark_gen_v1';
+let autoSaveTimer = null;
+let isDirty = false;
+
+function getProjectData(){
+  return {
+    version: 1,
+    savedAt: new Date().toISOString(),
+    categories,
+    bookmarks,
+    meta:{
+      siteTitle:    document.getElementById('siteTitle').value,
+      siteSubtitle: document.getElementById('siteSubtitle').value,
+      sitePageTitle:document.getElementById('sitePageTitle').value,
+    },
+    settings:{
+      outputTheme:  selectedOutputTheme,
+      layout:       document.getElementById('layoutOpt').value,
+      optSearch:    document.getElementById('optSearch').checked,
+      optFilter:    document.getElementById('optFilter').checked,
+      optFontCtrl:  document.getElementById('optFontCtrl').checked,
+      optFavicon:   document.getElementById('optFavicon').checked,
+      optDesc:      document.getElementById('optDesc').checked,
+      optNewTab:    document.getElementById('optNewTab').checked,
+      optWatermark: document.getElementById('optWatermark').checked,
+    }
+  };
+}
+
+function applyProjectData(data){
+  if(!data||data.version!==1) throw new Error('格式不符');
+  categories = data.categories || [];
+  bookmarks  = data.bookmarks  || [];
+  const m = data.meta || {};
+  if(m.siteTitle)     document.getElementById('siteTitle').value     = m.siteTitle;
+  if(m.siteSubtitle)  document.getElementById('siteSubtitle').value  = m.siteSubtitle;
+  if(m.sitePageTitle) document.getElementById('sitePageTitle').value = m.sitePageTitle;
+  const s = data.settings || {};
+  if(s.outputTheme) selectOutputTheme(s.outputTheme);
+  if(s.layout)      document.getElementById('layoutOpt').value = s.layout;
+  const chks = ['optSearch','optFilter','optFontCtrl','optFavicon','optDesc','optNewTab','optWatermark'];
+  chks.forEach(id=>{ if(s[id]!==undefined) document.getElementById(id).checked = s[id]; });
+  renderCats();
+  renderBmList();
+}
+
+function saveToLS(silent=false){
+  try{
+    const data = getProjectData();
+    localStorage.setItem(LS_KEY, JSON.stringify(data));
+    isDirty = false;
+    setSaveIndicator('saved', '已自動儲存 ✓');
+    if(!silent) showToast('💾 儲存成功！');
+  }catch(e){
+    setSaveIndicator('saving','儲存失敗');
+    if(!silent) showToast('❌ 儲存失敗，localStorage 可能已滿');
+  }
+}
+
+function loadFromLS(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw) return false;
+    const data = JSON.parse(raw);
+    applyProjectData(data);
+    const t = data.savedAt ? new Date(data.savedAt).toLocaleString('zh-TW') : '─';
+    setSaveIndicator('saved', `上次儲存：${t}`);
+    return true;
+  }catch(e){ return false; }
+}
+
+function manualSave(){
+  saveToLS(false);
+  // also offer JSON download as backup
+  const data = getProjectData();
+  const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'bookmark-project-backup.json';
+  a.click();
+  showToast('💾 已儲存＋下載備份 JSON ✨');
+}
+
+function clearAll(){
+  if(!confirm('確定要清空所有書籤和分類嗎？\n（此動作無法復原）')) return;
+  categories = [];
+  bookmarks  = [];
+  document.getElementById('siteTitle').value     = '我的最愛收藏 ✦';
+  document.getElementById('siteSubtitle').value  = '混沌、靈感與奶油雲朵 ✦';
+  document.getElementById('sitePageTitle').value = 'My Bookmark ☁';
+  localStorage.removeItem(LS_KEY);
+  renderCats(); renderBmList();
+  setSaveIndicator('saving','已清空');
+  showToast('🗑 已清空，重新開始囉 ☁');
+}
+
+/* 自動儲存 — 有修改後 2 秒觸發 */
+function markDirty(){
+  isDirty = true;
+  setSaveIndicator('saving','修改中…');
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(()=>saveToLS(true), 2000);
+}
+
+function setSaveIndicator(state, msg){
+  const el = document.getElementById('saveIndicator');
+  if(!el) return;
+  el.className = 'save-indicator ' + state;
+  el.innerHTML = `<span class="save-dot"></span> ${msg}`;
+}
+
+/* ════════════════════════════════════════
+   IMPORT — parse generated HTML
+════════════════════════════════════════ */
+let importPendingData = null;
+let importTabMode = 'file';
+
+function openImport(){
+  document.getElementById('importOverlay').classList.add('show');
+  document.getElementById('importResult').style.display='none';
+  document.getElementById('importResult').textContent='';
+  importPendingData = null;
+}
+function closeImport(){
+  document.getElementById('importOverlay').classList.remove('show');
+  document.getElementById('pasteCode').value='';
+  document.getElementById('dropZone').innerHTML=`
+    <div class="dz-icon">☁</div>
+    <div><b>點擊選擇</b>或拖曳 .html 檔案到這裡</div>
+    <div style="font-size:0.9em;opacity:0.6;">支援由本產生器生成的 HTML 檔案</div>
+    <input type="file" id="fileInput" accept=".html,.htm" onchange="handleFileSelect(event)">`;
+  importPendingData = null;
+}
+
+function switchImportTab(tab){
+  importTabMode = tab;
+  document.getElementById('itab-file').classList.toggle('active', tab==='file');
+  document.getElementById('itab-paste').classList.toggle('active', tab==='paste');
+  document.getElementById('import-file-zone').style.display  = tab==='file'  ? '' : 'none';
+  document.getElementById('import-paste-zone').style.display = tab==='paste' ? '' : 'none';
+  document.getElementById('importResult').style.display='none';
+  importPendingData = null;
+}
+
+function handleFileDrop(e){
+  e.preventDefault();
+  document.getElementById('dropZone').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if(file) readImportFile(file);
+}
+function handleFileSelect(e){
+  const file = e.target.files[0];
+  if(file) readImportFile(file);
+}
+function readImportFile(file){
+  if(!file.name.match(/\.html?$/i)){
+    showImportResult('err','❌ 請選擇 .html 檔案');return;
+  }
+  const fr = new FileReader();
+  fr.onload = e => parseImportHTML(e.target.result);
+  fr.readAsText(file,'utf-8');
+  document.getElementById('dropZone').innerHTML=`
+    <div class="dz-icon">✓</div>
+    <div style="color:var(--accent-hover);font-weight:700;">${file.name}</div>
+    <div style="font-size:0.85em;opacity:0.6;">正在解析...</div>
+    <input type="file" id="fileInput" accept=".html,.htm" onchange="handleFileSelect(event)">`;
+}
+
+function parseImportHTML(htmlStr){
+  /* Strategy: look for the embedded JSON data blocks BMS=... and CATS=...
+     that every generated output contains in its <script> block.
+     Also read site title from <title> and from .site-title text. */
+  const result = {version:1, savedAt: new Date().toISOString(), categories:[], bookmarks:[], meta:{}, settings:{}};
+
+  // 1. Extract BMS JSON
+  const bmsMatch = htmlStr.match(/const\s+BMS\s*=\s*(\[[\s\S]*?\]);/);
+  const catsMatch = htmlStr.match(/const\s+CATS\s*=\s*(\[[\s\S]*?\]);/);
+
+  if(!bmsMatch || !catsMatch){
+    showImportResult('err','❌ 無法辨識此 HTML — 請確認是由本產生器生成的檔案');
+    importPendingData = null;
+    return;
+  }
+
+  try{
+    const rawBms  = JSON.parse(bmsMatch[1]);
+    const rawCats = JSON.parse(catsMatch[1]);
+
+    // Re-assign fresh IDs so there's no collision
+    const catIdMap = {};
+    result.categories = rawCats.map((c,i)=>{
+      const newId = 'c'+(Date.now()+i);
+      catIdMap[c.id] = newId;
+      return {id:newId, name:c.name, icon:c.icon||'☁'};
+    });
+    result.bookmarks = rawBms.map((b,i)=>({
+      id: 'b'+(Date.now()+i+1000),
+      url:   b.url   || '',
+      title: b.title || '',
+      note:  b.note  || '',
+      cat:   catIdMap[b.cat] || '',
+      icon:  b.icon  || '✨',
+    }));
+
+    // 2. Try to get page title
+    const titleMatch = htmlStr.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+    if(titleMatch) result.meta.sitePageTitle = titleMatch[1].trim();
+
+    // 3. Try site-title h1 text
+    const h1Match = htmlStr.match(/class="site-title"[^>]*>([\s\S]*?)<\/h1>/i);
+    if(h1Match) result.meta.siteTitle = h1Match[1].replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').trim();
+
+    // 4. Try subtitle
+    const subMatch = htmlStr.match(/class="site-sub"[^>]*>([\s\S]*?)<\/p>/i);
+    if(subMatch) result.meta.siteSubtitle = subMatch[1].replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').trim();
+
+    importPendingData = result;
+    showImportResult('ok',
+      `✓ 解析成功！找到 ${result.bookmarks.length} 個書籤、${result.categories.length} 個分類。\n點「確認匯入」即可還原 ✨`);
+
+  }catch(e){
+    showImportResult('err','❌ JSON 解析失敗：' + e.message);
+    importPendingData = null;
+  }
+}
+
+function confirmImport(){
+  // If paste mode, parse first
+  if(importTabMode==='paste'){
+    const code = document.getElementById('pasteCode').value.trim();
+    if(!code){ showImportResult('err','❌ 請先貼上 HTML 原始碼'); return; }
+    parseImportHTML(code);
+    // parseImportHTML sets importPendingData synchronously
+  }
+  if(!importPendingData){
+    showImportResult('err','❌ 請先選擇檔案或貼上原始碼');
+    return;
+  }
+  try{
+    applyProjectData(importPendingData);
+    saveToLS(true);
+    markDirty();
+    closeImport();
+    showToast(`✨ 匯入成功！${bookmarks.length} 個書籤已還原 🌸`);
+  }catch(e){
+    showImportResult('err','❌ 匯入失敗：' + e.message);
+  }
+}
+
+function showImportResult(type, msg){
+  const el = document.getElementById('importResult');
+  el.className = 'import-result ' + type;
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
 /* ─── INIT ─── */
-renderCats();
-renderBmList();
+(function init(){
+  const loaded = loadFromLS();
+  if(!loaded){
+    // default sample data
+    renderCats();
+    renderBmList();
+    setSaveIndicator('saving','尚未儲存');
+  } else {
+    showToast('☁ 已自動還原上次的編輯進度！');
+  }
+  // Hook all inputs for auto-save
+  document.querySelectorAll('.field-input').forEach(el=>{
+    el.addEventListener('input', markDirty);
+  });
+  document.querySelectorAll('#layoutOpt, #optSearch, #optFilter, #optFontCtrl, #optFavicon, #optDesc, #optNewTab, #optWatermark').forEach(el=>{
+    el.addEventListener('change', markDirty);
+  });
+})();
 </script>
 </body>
 </html>
