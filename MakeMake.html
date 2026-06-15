@@ -101,6 +101,48 @@ body::before{
 .empty-text{font-size:15px;font-weight:700;}
 .empty-sub{font-size:13px;font-weight:600;opacity:.7;text-align:center;line-height:1.6;}
 
+
+/* code panel */
+.code-panel{
+  background:var(--surf);border:2px solid var(--border);
+  border-radius:16px;overflow:hidden;
+  box-shadow:0 4px 20px rgba(44,95,138,.10);
+  display:none;flex-direction:column;
+  margin-top:4px;
+}
+.code-panel.show{display:flex;}
+.code-panel-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;border-bottom:1px solid var(--border);
+  background:var(--surf2);flex-shrink:0;
+}
+.code-panel-title{font-size:12px;font-weight:800;color:var(--muted);letter-spacing:1.5px;}
+.code-panel-btns{display:flex;gap:8px;}
+.copy-btn{
+  padding:6px 14px;border:1.5px solid var(--border);border-radius:8px;
+  background:var(--surf);color:var(--muted);font-size:12px;font-weight:800;
+  cursor:pointer;transition:.15s;font-family:inherit;display:flex;align-items:center;gap:5px;
+}
+.copy-btn:hover{border-color:var(--blue);color:var(--blue);background:#EDF2F7;}
+.copy-btn.copied{background:#DCFCE7;border-color:#86EFAC;color:#166534;}
+.code-wrap{
+  overflow:auto;max-height:320px;
+  padding:16px;
+  background:#0F172A;
+  font-family:"Fira Code","Cascadia Code","Consolas",monospace;
+  font-size:12px;line-height:1.7;
+  color:#E2E8F0;
+  white-space:pre;
+}
+.code-wrap::-webkit-scrollbar{width:6px;height:6px;}
+.code-wrap::-webkit-scrollbar-track{background:transparent;}
+.code-wrap::-webkit-scrollbar-thumb{background:#334155;border-radius:3px;}
+.code-stats{
+  padding:8px 16px;border-top:1px solid var(--border);
+  background:var(--surf2);font-size:11px;font-weight:700;color:var(--muted);
+  display:flex;gap:16px;flex-shrink:0;
+}
+
 @media(max-width:900px){.body{grid-template-columns:1fr;}.sidebar{height:auto;position:static;}}
 @media(max-width:580px){.hdr{padding:0 16px;}.sidebar-inner{padding:16px 14px 40px;}.preview-pane{padding:16px;}}
 </style>
@@ -166,8 +208,9 @@ body::before{
   <div class="preview-pane">
     <div class="preview-label">預覽</div>
     <div class="preview-tabs">
-      <button class="ptab on" id="tab-after"  onclick="switchTab('after')">轉換後</button>
+      <button class="ptab on" id="tab-after"  onclick="switchTab('after')">👁 轉換後</button>
       <button class="ptab"    id="tab-before" onclick="switchTab('before')">原始</button>
+      <button class="ptab"    id="tab-code"   onclick="switchTab('code')">💻 程式碼</button>
     </div>
     <div class="frame-wrap" id="frameWrap">
       <div class="empty-state" id="emptyState">
@@ -177,6 +220,24 @@ body::before{
       </div>
       <iframe id="previewFrame" style="display:none;"></iframe>
     </div>
+
+    <!-- CODE PANEL -->
+    <div class="code-panel" id="codePanel">
+      <div class="code-panel-hdr">
+        <div class="code-panel-title">💻 轉換後 HTML 程式碼</div>
+        <div class="code-panel-btns">
+          <button class="copy-btn" id="copyAllBtn" onclick="copyCode()">
+            📋 複製全部
+          </button>
+          <button class="copy-btn" onclick="copyStyleOnly()">
+            🎨 只複製 CSS
+          </button>
+        </div>
+      </div>
+      <div class="code-wrap" id="codeWrap"></div>
+      <div class="code-stats" id="codeStats"></div>
+    </div>
+
   </div>
 </div>
 
@@ -388,7 +449,100 @@ function switchTab(tab) {
   currentTab = tab;
   document.getElementById('tab-after').classList.toggle('on', tab === 'after');
   document.getElementById('tab-before').classList.toggle('on', tab === 'before');
-  showPreview(tab === 'after' ? convertedHtml : originalHtml);
+  document.getElementById('tab-code').classList.toggle('on', tab === 'code');
+
+  const frame  = document.getElementById('previewFrame');
+  const code   = document.getElementById('codePanel');
+  const empty  = document.getElementById('emptyState');
+
+  if (tab === 'code') {
+    frame.style.display  = 'none';
+    code.classList.add('show');
+    empty.style.display  = 'none';
+    if (convertedHtml) renderCode(convertedHtml);
+  } else {
+    code.classList.remove('show');
+    showPreview(tab === 'after' ? convertedHtml : originalHtml);
+  }
+}
+
+function renderCode(html) {
+  const wrap  = document.getElementById('codeWrap');
+  const stats = document.getElementById('codeStats');
+
+  // Safe escape
+  const escaped = html
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  // Simple line-by-line colorization
+  const lines = escaped.split('\n');
+  const colorized = lines.map(line => {
+    // comment line
+    if (line.trim().startsWith('&lt;!--')) {
+      return '<span style="color:#64748B">' + line + '</span>';
+    }
+    // closing tag
+    line = line.replace(/(&lt;\/[\w-]+&gt;)/g, '<span style="color:#94A3B8">$1</span>');
+    // self-closing or opening tag
+    line = line.replace(/(&lt;)([\w-]+)/g, '$1<span style="color:#7DD3FC">$2</span>');
+    // attribute values in quotes
+    line = line.replace(/([\w-]+)(=)("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g,
+      '<span style="color:#93C5FD">$1</span><span style="color:#94A3B8">$2</span><span style="color:#86EFAC">$3</span>');
+    // hex colors
+    line = line.replace(/(#[0-9a-fA-F]{3,8})\b/g, '<span style="color:#FCA5A5">$1</span>');
+    // css property keywords
+    line = line.replace(/\b(background|color|border|padding|margin|font|display|position|width|height|border-radius|box-shadow|transform)(\s*:)/g,
+      '<span style="color:#C4B5FD">$1</span>$2');
+    return line;
+  }).join('\n');
+
+  wrap.innerHTML = colorized;
+
+  // stats
+  const lineCount = lines.length;
+  const kb   = (new Blob([html]).size / 1024).toFixed(1);
+  const chars = html.length.toLocaleString();
+  stats.innerHTML = '<span>\u{1F4C4} ' + lineCount.toLocaleString() + ' \u884C</span>'
+    + '<span>\u{1F4DD} ' + chars + ' \u5B57\u5143</span>'
+    + '<span>\u{1F4BE} ' + kb + ' KB</span>';
+}
+
+function copyCode() {
+  if (!convertedHtml) return;
+  navigator.clipboard.writeText(convertedHtml).then(() => {
+    const btn = document.getElementById('copyAllBtn');
+    btn.textContent = '✅ 已複製！';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '📋 複製全部'; btn.classList.remove('copied'); }, 2000);
+  }).catch(() => {
+    // fallback
+    const ta = document.createElement('textarea');
+    ta.value = convertedHtml;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    const btn = document.getElementById('copyAllBtn');
+    btn.textContent = '✅ 已複製！';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '📋 複製全部'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function copyStyleOnly() {
+  if (!convertedHtml) return;
+  // extract the override style block
+  const match = convertedHtml.match(/<style id="__style-converter-override__">([\s\S]*?)<\/style>/i);
+  const toCopy = match ? match[1].trim() : '';
+  if (!toCopy) { alert('找不到樣式區塊'); return; }
+  navigator.clipboard.writeText(toCopy).then(() => {
+    const btns = document.querySelectorAll('.copy-btn');
+    btns[1].textContent = '✅ CSS 已複製！';
+    btns[1].classList.add('copied');
+    setTimeout(() => { btns[1].textContent = '🎨 只複製 CSS'; btns[1].classList.remove('copied'); }, 2000);
+  });
 }
 
 function showPreview(html) {
@@ -579,6 +733,8 @@ function doConvert() {
     currentTab = 'after';
     document.getElementById('tab-after').classList.add('on');
     document.getElementById('tab-before').classList.remove('on');
+    document.getElementById('tab-code').classList.remove('on');
+    document.getElementById('codePanel').classList.remove('show');
     showPreview(convertedHtml);
 
   } catch(e) {
