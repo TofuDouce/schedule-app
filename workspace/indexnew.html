@@ -135,7 +135,8 @@ body::after {
 #clock { font-family:"Inter",monospace; font-size:clamp(20px,2vw,28px); font-weight:900; color:var(--text); font-variant-numeric:tabular-nums; letter-spacing:1.5px; }
 #date  { font-size:12px; font-weight:700; color:var(--muted); margin-top:2px; }
 
-
+/* weather */
+#weatherWidget { display:flex; align-items:center; gap:6px; font-size:14px; font-weight:700; color:var(--sub); padding:6px 12px; background:var(--surf2); border:1px solid var(--border); border-radius:10px; white-space:nowrap; }
 
 /* ═══════════════════════════════════════════════════
    MAIN
@@ -403,30 +404,11 @@ body::after {
 }
 @media(max-width:360px){ .grid{ grid-template-columns:1fr!important; } }
 
-
-
-#bgLayer{
-position:fixed;inset:0;z-index:-2;
-background-size:cover;
-background-position:center;
-background-repeat:no-repeat;
-opacity:.18;
-pointer-events:none;
-}
-#bgOverlay{
-position:fixed;inset:0;z-index:-1;
-background:rgba(255,255,255,.55);
-pointer-events:none;
-}
-:root[data-theme="dark"] #bgOverlay{
-background:rgba(0,0,0,.45);
-}
-
+/* saturation filter */
+body.desaturate { filter:saturate(.55); }
 </style>
 </head>
 <body>
-<div id="bgLayer"></div>
-<div id="bgOverlay"></div>
 
 <!-- ═══ HEADER ═══ -->
 <header class="hdr">
@@ -445,8 +427,7 @@ background:rgba(0,0,0,.45);
     </div>
   </div>
 
-  <div class="hdr-right">
-    <div>
+  <div class="hdr-right"><div>
       <div id="clock">00:00:00</div>
       <div id="date">─</div>
     </div>
@@ -521,6 +502,12 @@ background:rgba(0,0,0,.45);
         <div class="cdot" id="dot-indigo" style="background:#3D4E8C" onclick="setColor('indigo')" title="靛紫"></div>
       </div>
 
+      <label class="plabel">降低飽和度</label>
+      <div class="tog-group">
+        <button class="tog" id="sat-off" onclick="setSat(false)">正常</button>
+        <button class="tog" id="sat-on"  onclick="setSat(true)">柔和低飽和</button>
+      </div>
+
       <label class="plabel">卡片風格</label>
       <div class="tog-group">
         <button class="tog" id="card-glass" onclick="setCard('glass')">玻璃</button>
@@ -584,14 +571,6 @@ background:rgba(0,0,0,.45);
       <button class="btn-prim" onclick="saveLink()">＋ 儲存並新增</button>
     </div>
 
-    
-<div class="pcard">
-<div class="pcard-title">🖼 背景圖片</div>
-<input type="file" id="bgUpload" class="pin" accept="image/*" onchange="uploadBg(event)">
-<button class="btn-ghost" onclick="removeBg()">移除背景</button>
-</div>
-
-
     <!-- 管理已存書籤 -->
     <div id="manageWrap"></div>
 
@@ -613,26 +592,6 @@ let selIcon  = '🔗';
 let links    = JSON.parse(localStorage.getItem(LS.links))  || { primary:[], secondary:[] };
 let recent   = JSON.parse(localStorage.getItem(LS.recent)) || [];
 
-const BG_KEY='clinic_bg';
-
-function uploadBg(event){
- const file=event.target.files[0];
- if(!file) return;
- const reader=new FileReader();
- reader.onload=function(e){
-   const img=e.target.result;
-   document.getElementById('bgLayer').style.backgroundImage=`url(${img})`;
-   localStorage.setItem(BG_KEY,img);
- };
- reader.readAsDataURL(file);
-}
-
-function removeBg(){
- localStorage.removeItem(BG_KEY);
- document.getElementById('bgLayer').style.backgroundImage='';
-}
-
-
 /* ═══════════════════════════════════════════════
    THEME / COLOR / STYLE
 ═══════════════════════════════════════════════ */
@@ -651,7 +610,12 @@ function toggleTheme() {
   localStorage.setItem(LS.theme, next);
 }
 
-
+function setSat(on) {
+  document.body.classList.toggle('desaturate', on);
+  document.getElementById('sat-on').classList.toggle('on', on);
+  document.getElementById('sat-off').classList.toggle('on', !on);
+  saveCfg();
+}
 
 function setCard(s) {
   document.documentElement.setAttribute('data-card', s);
@@ -698,7 +662,7 @@ function saveCfg() {
     card: document.documentElement.getAttribute('data-card'),
     font: document.documentElement.getAttribute('data-font'),
     tex:  document.documentElement.getAttribute('data-texture'),
-    
+    sat:  document.body.classList.contains('desaturate'),
   }));
 }
 
@@ -711,13 +675,13 @@ function restoreCfg() {
   setCard(c.card || 'glass');
   setFont(c.font || 'sans');
   setTexture(c.tex || 'none');
-  
+  setSat(!!c.sat);
   const g = parseInt(c.grid) || 4;
   setGrid(g);
 }
 
 function initToggles() {
-  setCard('glass'); setFont('sans'); setTexture('none'); setGrid(4);
+  setCard('glass'); setFont('sans'); setTexture('none'); setSat(false); setGrid(4);
 }
 
 /* ═══════════════════════════════════════════════
@@ -905,7 +869,18 @@ function renderManage() {
   });
 })();
 
-
+/* ═══════════════════════════════════════════════
+   WEATHER
+═══════════════════════════════════════════════ */
+async function fetchWeather() {
+  try {
+    const r = await fetch(WEATHER_API);
+    const t = await r.text();
+    document.getElementById('weatherWidget').textContent = t.trim();
+  } catch(e) {
+    document.getElementById('weatherWidget').textContent = '─';
+  }
+}
 
 /* ═══════════════════════════════════════════════
    CLOCK
@@ -941,9 +916,6 @@ window.addEventListener('DOMContentLoaded', () => {
   // cfg
   restoreCfg();
 
-  const bg=localStorage.getItem(BG_KEY);
-  if(bg){document.getElementById('bgLayer').style.backgroundImage=`url(${bg})`;}
-
   // memo
   const memo = localStorage.getItem(LS.memo);
   if (memo) document.getElementById('memoText').value = memo;
@@ -952,7 +924,7 @@ window.addEventListener('DOMContentLoaded', () => {
   tick(); setInterval(tick, 1000);
 
   // weather
-  
+  // weather removed
 
   // recent
   renderRecent();
@@ -960,6 +932,39 @@ window.addEventListener('DOMContentLoaded', () => {
   // data
   fetchCloud();
 });
+
+const BG_KEY='clinic_bg_image';
+
+function uploadBg(event){
+ const file=event.target.files[0];
+ if(!file) return;
+ const reader=new FileReader();
+ reader.onload=e=>{
+   localStorage.setItem(BG_KEY,e.target.result);
+   applyBg();
+ };
+ reader.readAsDataURL(file);
+}
+
+function applyBg(){
+ const bg=localStorage.getItem(BG_KEY);
+ if(!bg) return;
+ let layer=document.getElementById('bgLayer');
+ if(!layer){
+   layer=document.createElement('div');
+   layer.id='bgLayer';
+   layer.style.cssText='position:fixed;inset:0;background-size:cover;background-position:center;opacity:.18;z-index:-1;pointer-events:none';
+   document.body.prepend(layer);
+ }
+ layer.style.backgroundImage=`url(${bg})`;
+}
+
+function removeBg(){
+ localStorage.removeItem(BG_KEY);
+ const layer=document.getElementById('bgLayer');
+ if(layer) layer.style.backgroundImage='';
+}
+
 </script>
 </body>
 </html>
