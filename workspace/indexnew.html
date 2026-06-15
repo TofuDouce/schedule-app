@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" data-theme="light" data-color="blue">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>中正診所 Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* ─── Token System ─────────────────────────────────────── */
+        :root {
+            --dynamic-title-size: 15px;
+            --dynamic-desc-size: 12px;
+            --grid-cols: 5;
+
+            /* Brand palette */
+            --navy:   #0B1F3A;
+            --teal:   #00A896;
+            --teal2:  #00C9B1;
+            --amber:  #F5A623;
+            --slate:  #F4F7FB;
+            --white:  #FFFFFF;
+            --muted:  #64748B;
+            --border: #E2E8F0;
+            --danger: #EF4444;
+
+            /* Theme-aware tokens */
+            --bg:           var(--slate);
+            --surface:      var(--white);
+            --surface2:     #EEF2F8;
+            --text-primary: var(--navy);
+            --text-sec:     var(--muted);
+            --header-bg:    rgba(255,255,255,0.92);
+            --card-shadow:  0 2px 12px rgba(11,31,58,0.07);
+            --card-shadow-h:0 8px 28px rgba(11,31,58,0.13);
+            --accent:       var(--teal);
+            --accent2:      var(--teal2);
+        }
+
+        :root[data-color="blue"]   { --accent:#0284c7; --accent2:#38bdf8; }
+        :root[data-color="teal"]   { --accent:#00A896; --accent2:#00C9B1; }
+        :root[data-color="green"]  { --accent:#059669; --accent2:#34d399; }
+        :root[data-color="purple"] { --accent:#7c3aed; --accent2:#a78bfa; }
+
+        :root[data-theme="dark"] {
+            --bg:           #0B1628;
+            --surface:      #162032;
+            --surface2:     #1E2D44;
+            --text-primary: #F1F5F9;
+            --text-sec:     #94A3B8;
+            --header-bg:    rgba(11,28,50,0.96);
+            --border:       #243452;
+            --card-shadow:  0 2px 12px rgba(0,0,0,0.3);
+            --card-shadow-h:0 8px 28px rgba(0,0,0,0.5);
+        }
+
+        /* ─── Reset & Base ─────────────────────────────────────── */
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+        body {
+            min-height: 100vh;
+            background: var(--bg);
+            color: var(--text-primary);
+            font-family: "Noto Sans TC", "Inter", sans-serif;
+            transition: background .35s, color .35s;
+            overflow-x: hidden;
+        }
+
+        /* ─── Header ────────────────────────────────────────────── */
+        .header {
+            position: fixed; top:0; left:0; right:0; z-index:1000;
+            height: 68px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 32px;
+            background: var(--header-bg);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 1px 0 rgba(0,0,0,.04);
+        }
+        .header::after {
+            content:'';
+            position:absolute; bottom:-3px; left:0; right:0; height:3px;
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            border-radius:0 0 3px 3px;
+        }
+
+        .logo-group { display:flex; align-items:center; gap:14px; }
+        .logo-mark {
+            width:40px; height:40px; border-radius:10px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            display:flex; align-items:center; justify-content:center;
+            font-size:20px; flex-shrink:0;
+            box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 40%, transparent);
+        }
+        .logo-text { line-height:1; }
+        .logo-name {
+            font-size: 20px; font-weight:900;
+            color: var(--text-primary);
+            letter-spacing: .5px;
+        }
+        .logo-sub { font-size:10px; font-weight:600; color:var(--accent); letter-spacing:3px; margin-top:3px; }
+
+        .header-right { display:flex; align-items:center; gap:24px; }
+        .clock-block { text-align:right; }
+        #clock {
+            font-family: "Inter", monospace;
+            font-size: clamp(20px,3.5vw,28px);
+            font-weight:700;
+            color: var(--text-primary);
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 1px;
+        }
+        #date { font-size:11px; font-weight:600; color:var(--text-sec); margin-top:2px; letter-spacing:.5px; }
+
+        /* ─── Main ──────────────────────────────────────────────── */
+        .main {
+            max-width: 1440px; margin:0 auto;
+            padding: 92px 28px 100px;
+        }
+
+        .section-label {
+            display:flex; align-items:center; gap:10px;
+            margin: 36px 0 16px;
+        }
+        .section-label-bar {
+            width:4px; height:20px; border-radius:2px;
+            background: linear-gradient(to bottom, var(--accent), var(--accent2));
+            flex-shrink:0;
+        }
+        .section-label-text {
+            font-size:13px; font-weight:700;
+            color:var(--text-sec);
+            letter-spacing:2px;
+            text-transform:uppercase;
+        }
+
+        /* ─── Grid & Cards ──────────────────────────────────────── */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(var(--grid-cols, 5), 1fr);
+            gap: 14px;
+        }
+
+        .card {
+            background: var(--surface);
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            box-shadow: var(--card-shadow);
+            transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .card::before {
+            content:'';
+            position:absolute; left:0; top:0; bottom:0; width:3px;
+            background: linear-gradient(to bottom, var(--accent), var(--accent2));
+            transform: scaleY(0);
+            transform-origin: bottom;
+            transition: transform .22s ease;
+            border-radius:0 2px 2px 0;
+        }
+        .card:hover { transform:translateY(-3px); box-shadow:var(--card-shadow-h); border-color:color-mix(in srgb,var(--accent) 35%,var(--border)); }
+        .card:hover::before { transform:scaleY(1); }
+
+        /* 🟡 Highlight card */
+        .card.highlight-card {
+            background: #FFFBEB;
+            border-color: #FCD34D;
+        }
+        :root[data-theme="dark"] .card.highlight-card { background:#2A2210; border-color:#92700A; }
+        .card.highlight-card .card-title { color:#92400E; }
+        .card.highlight-card .card-desc  { color:#B45309; font-weight:700; }
+        :root[data-theme="dark"] .card.highlight-card .card-title { color:#FCD34D; }
+        :root[data-theme="dark"] .card.highlight-card .card-desc  { color:#F59E0B; }
+
+        .card-link {
+            display:flex; flex-direction:column; align-items:center; justify-content:center;
+            padding: 22px 16px 20px;
+            text-decoration:none; color:inherit; text-align:center; height:100%;
+            gap:8px;
+        }
+        .icon-box {
+            font-size: 36px;
+            line-height:1;
+            display:block;
+            transition: transform .2s ease;
+        }
+        .card:hover .icon-box { transform:scale(1.1); }
+        .card-title {
+            font-size: var(--dynamic-title-size);
+            font-weight:800;
+            color: var(--text-primary);
+            line-height:1.3;
+        }
+        .card-desc {
+            font-size: var(--dynamic-desc-size);
+            font-weight:500;
+            color: var(--text-sec);
+            line-height:1.4;
+        }
+
+        /* ─── Floating Controls ─────────────────────────────────── */
+        .controls {
+            position:fixed; bottom:28px; right:28px;
+            display:flex; flex-direction:column; gap:10px; z-index:1000;
+        }
+        .ctrl-btn {
+            width:48px; height:48px; border-radius:12px;
+            border:1px solid var(--border);
+            background:var(--surface);
+            font-size:20px; cursor:pointer;
+            display:flex; align-items:center; justify-content:center;
+            box-shadow:0 4px 14px rgba(0,0,0,.1);
+            transition: transform .15s, box-shadow .15s;
+            color:var(--text-primary);
+        }
+        .ctrl-btn:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(0,0,0,.15); }
+
+        /* ─── Admin Panel ───────────────────────────────────────── */
+        .admin-panel {
+            position:fixed; top:0; right:-100%; width:420px; height:100vh;
+            background:var(--surface);
+            border-left:1px solid var(--border);
+            padding:0;
+            overflow-y:auto;
+            transition:right .35s cubic-bezier(.4,0,.2,1);
+            z-index:2000;
+            box-shadow: none;
+        }
+        .admin-panel.show { right:0; box-shadow:-20px 0 60px rgba(0,0,0,.12); }
+
+        .admin-header {
+            position:sticky; top:0; z-index:10;
+            display:flex; align-items:center; justify-content:space-between;
+            padding:20px 24px 18px;
+            background:var(--surface);
+            border-bottom:1px solid var(--border);
+        }
+        .admin-header h2 { font-size:18px; font-weight:800; color:var(--text-primary); }
+        .close-btn {
+            width:34px; height:34px; border-radius:8px;
+            border:1px solid var(--border); background:transparent;
+            cursor:pointer; font-size:18px;
+            display:flex; align-items:center; justify-content:center;
+            color:var(--text-sec); transition:.15s;
+        }
+        .close-btn:hover { background:var(--surface2); color:var(--danger); }
+
+        .admin-body { padding:20px 24px 40px; }
+
+        .admin-section {
+            background:var(--surface2);
+            border-radius:12px;
+            padding:18px;
+            margin-bottom:20px;
+        }
+        .admin-section-title {
+            font-size:12px; font-weight:700; color:var(--accent);
+            letter-spacing:2px; text-transform:uppercase; margin-bottom:14px;
+        }
+
+        .admin-label {
+            font-size:13px; font-weight:700; color:var(--text-sec);
+            display:block; margin:12px 0 8px;
+        }
+        .admin-label:first-of-type { margin-top:0; }
+
+        .color-picker { display:flex; gap:10px; }
+        .color-dot {
+            width:30px; height:30px; border-radius:50%; cursor:pointer;
+            border:3px solid var(--surface);
+            box-shadow:0 2px 6px rgba(0,0,0,.15);
+            transition:transform .15s;
+        }
+        .color-dot.active { transform:scale(1.2); outline:3px solid var(--accent); outline-offset:2px; }
+
+        .slider-row { display:flex; align-items:center; gap:10px; }
+        .slider-row input[type=range] { flex:1; height:6px; accent-color:var(--accent); }
+        .slider-val {
+            font-size:12px; font-weight:700; min-width:36px; text-align:right;
+            color:var(--accent);
+        }
+
+        .input {
+            width:100%; padding:10px 14px;
+            border:1px solid var(--border);
+            border-radius:10px;
+            font-size:14px; font-family:inherit;
+            background:var(--surface);
+            color:var(--text-primary);
+            margin-bottom:10px;
+            transition:border-color .15s;
+        }
+        .input:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 15%,transparent); }
+
+        .emoji-picker { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:12px; }
+        .emoji-opt {
+            font-size:22px; text-align:center; padding:8px 4px;
+            border:2px solid var(--border); border-radius:10px;
+            background:var(--surface); cursor:pointer; transition:.15s;
+        }
+        .emoji-opt.selected { border-color:var(--accent); background:color-mix(in srgb,var(--accent) 10%,var(--surface)); }
+
+        .btn-primary {
+            width:100%; padding:12px;
+            font-size:14px; font-weight:700; font-family:inherit;
+            border:none; border-radius:10px; cursor:pointer;
+            background:linear-gradient(135deg,var(--accent),var(--accent2));
+            color:#fff;
+            box-shadow:0 4px 14px color-mix(in srgb,var(--accent) 30%,transparent);
+            transition:opacity .15s, transform .15s;
+        }
+        .btn-primary:hover { opacity:.9; transform:translateY(-1px); }
+
+        .btn-ghost {
+            width:100%; padding:10px;
+            font-size:13px; font-weight:700; font-family:inherit;
+            border:1px solid var(--border); border-radius:10px; cursor:pointer;
+            background:transparent; color:var(--text-sec);
+            transition:.15s; margin-top:8px;
+        }
+        .btn-ghost:hover { background:var(--surface2); color:var(--text-primary); }
+
+        .manage-item {
+            display:flex; justify-content:space-between; align-items:center;
+            padding:10px 12px; border-radius:10px;
+            border:1px solid var(--border); margin-bottom:8px;
+            background:var(--surface);
+            font-size:13px; font-weight:600;
+        }
+        .mini-del-btn {
+            background:transparent; color:var(--danger);
+            border:1px solid var(--danger); padding:4px 10px;
+            border-radius:7px; cursor:pointer; font-size:12px; font-weight:700;
+            transition:.15s;
+        }
+        .mini-del-btn:hover { background:var(--danger); color:#fff; }
+
+        /* ─── RWD ───────────────────────────────────────────────── */
+        @media (max-width:1100px) { :root { --grid-cols:4; } }
+        @media (max-width:800px)  { .grid { grid-template-columns:repeat(3,1fr); } }
+        @media (max-width:540px)  {
+            .grid { grid-template-columns:repeat(2,1fr); }
+            .header { padding:0 16px; }
+            .main  { padding:88px 14px 100px; }
+            .admin-panel { width:100%; }
+        }
+        @media (max-width:340px) {
+            .grid { grid-template-columns:1fr; }
+        }
+    </style>
+</head>
+<body id="bodyRoot">
+
+<!-- ── Header ── -->
+<header class="header">
+    <div class="logo-group">
+        <div class="logo-mark">🏥</div>
+        <div class="logo-text">
+            <div class="logo-name">中正診所</div>
+            <div class="logo-sub">Portal System</div>
+        </div>
+    </div>
+    <div class="header-right">
+        <div class="clock-block">
+            <div id="clock">00:00:00</div>
+            <div id="date"></div>
+        </div>
+    </div>
+</header>
+
+<!-- ── Main ── -->
+<main class="main" id="mainContainer">
+    <div class="section-label">
+        <div class="section-label-bar"></div>
+        <div class="section-label-text">主要入口</div>
+    </div>
+    <div id="primaryGrid" class="grid"></div>
+
+    <div class="section-label">
+        <div class="section-label-bar"></div>
+        <div class="section-label-text">次要工具</div>
+    </div>
+    <div id="secondaryGrid" class="grid"></div>
+</main>
+
+<!-- ── Floating Controls ── -->
+<div class="controls">
+    <button class="ctrl-btn" onclick="toggleTheme()" id="themeBtn" title="切換主題">🌙</button>
+    <button class="ctrl-btn" onclick="toggleAdminMode()" title="介面管理">⚙️</button>
+</div>
+
+<!-- ── Admin Panel ── -->
+<div class="admin-panel" id="adminPanel">
+    <div class="admin-header">
+        <h2>介面管理</h2>
+        <button class="close-btn" onclick="closeAdmin()">✕</button>
+    </div>
+    <div class="admin-body">
+
+        <!-- 顯示設定 -->
+        <div class="admin-section">
+            <div class="admin-section-title">🎨 顯示設定</div>
+
+            <label class="admin-label">主題顏色</label>
+            <div class="color-picker">
+                <div class="color-dot" style="background:#0284c7" onclick="setColor('blue')"   id="dot-blue"></div>
+                <div class="color-dot" style="background:#00A896" onclick="setColor('teal')"   id="dot-teal"></div>
+                <div class="color-dot" style="background:#059669" onclick="setColor('green')"  id="dot-green"></div>
+                <div class="color-dot" style="background:#7c3aed" onclick="setColor('purple')" id="dot-purple"></div>
+            </div>
+
+            <label class="admin-label">標題大小</label>
+            <div class="slider-row">
+                <input type="range" id="titleSlider" min="11" max="22" value="15" oninput="applyUIStyle()">
+                <span class="slider-val" id="ts-val">15px</span>
+            </div>
+
+            <label class="admin-label">說明大小</label>
+            <div class="slider-row">
+                <input type="range" id="descSlider" min="10" max="18" value="12" oninput="applyUIStyle()">
+                <span class="slider-val" id="ds-val">12px</span>
+            </div>
+
+            <label class="admin-label">每列卡片數</label>
+            <select id="gridColSelect" class="input" onchange="applyUIStyle()">
+                <option value="6">6 張</option>
+                <option value="5" selected>5 張</option>
+                <option value="4">4 張</option>
+                <option value="3">3 張</option>
+            </select>
+        </div>
+
+        <!-- 新增書籤 -->
+        <div class="admin-section">
+            <div class="admin-section-title">🔗 新增書籤</div>
+
+            <label class="admin-label">放置區域</label>
+            <select id="linkCategory" class="input">
+                <option value="primary">主要入口區</option>
+                <option value="secondary" selected>次要工具區</option>
+            </select>
+
+            <label class="admin-label">選擇圖示</label>
+            <div class="emoji-picker" id="emojiPicker"></div>
+
+            <input id="linkTitle" class="input" placeholder="名稱（含「重要」自動標色）">
+            <input id="linkUrl"   class="input" placeholder="網址 https://…">
+            <input id="linkDesc"  class="input" placeholder="簡短說明">
+            <button class="btn-primary" onclick="saveLink()">儲存並新增</button>
+        </div>
+
+        <!-- 書籤管理 -->
+        <div id="customLinksList"></div>
+
+        <button class="btn-ghost" onclick="location.reload()">🔄 重新同步資料</button>
+    </div>
+</div>
+
+<script>
+    const SHEET_URL = `https://docs.google.com/spreadsheets/d/1uYBA_CncbEAydmzNC1SRnsKJdswNgQh3zg1x6TKo0UU/export?format=csv&gid=0`;
+    const emojis = ["🩺","💉","🏥","💊","📦","💻","🔍","📋","🧪","📅","📝","⭐","👤","⚙️","🔗","🏠"];
+    let selectedIcon = "🔗";
+    let userLinks = JSON.parse(localStorage.getItem('cz_user_links_v4')) || { primary:[], secondary:[] };
+
+    /* ── Color ── */
+    function setColor(color) {
+        document.documentElement.setAttribute('data-color', color);
+        document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+        const dot = document.getElementById('dot-' + color);
+        if (dot) dot.classList.add('active');
+        localStorage.setItem('cz_theme_color', color);
+    }
+
+    /* ── Theme ── */
+    function toggleTheme() {
+        const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', next);
+        document.getElementById('themeBtn').innerText = next === 'light' ? '🌙' : '☀️';
+        localStorage.setItem('cz_portal_theme', next);
+    }
+
+    /* ── Admin Panel ── */
+    function toggleAdminMode() { document.getElementById("adminPanel").classList.toggle("show"); }
+    function closeAdmin()      { document.getElementById("adminPanel").classList.remove("show"); }
+
+    /* ── UI Style ── */
+    function applyUIStyle() {
+        const ts  = document.getElementById('titleSlider').value;
+        const ds  = document.getElementById('descSlider').value;
+        const col = document.getElementById('gridColSelect').value;
+        document.getElementById('ts-val').innerText = ts + 'px';
+        document.getElementById('ds-val').innerText = ds + 'px';
+        document.documentElement.style.setProperty('--dynamic-title-size', ts + 'px');
+        document.documentElement.style.setProperty('--dynamic-desc-size',  ds + 'px');
+        document.documentElement.style.setProperty('--grid-cols', col);
+        localStorage.setItem('cz_ui_config', JSON.stringify({ ts, ds, col }));
+    }
+
+    /* ── Cloud Data ── */
+    async function fetchCloudData() {
+        try {
+            const res  = await fetch(SHEET_URL + "&cb=" + Date.now());
+            const text = await res.text();
+            const lines = text.split(/\r?\n/).slice(1);
+            const pg = document.getElementById("primaryGrid");
+            const sg = document.getElementById("secondaryGrid");
+            pg.innerHTML = ""; sg.innerHTML = "";
+
+            lines.forEach(line => {
+                const cols = line
+                    .split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
+                    .map(c => c.replace(/^"|"$/g, '').trim());
+                if (cols.length >= 3) {
+                    const [cat, title, url, desc, icon] = cols;
+                    const html = createCard({ title, url, desc, icon, isHighlight: title.includes("重要") });
+                    if (cat.toLowerCase().includes('primary')) pg.innerHTML += html;
+                    else sg.innerHTML += html;
+                }
+            });
+
+            userLinks.primary.forEach(l => {
+                l.isHighlight = l.title.includes("重要");
+                document.getElementById("primaryGrid").innerHTML += createCard(l);
+            });
+            userLinks.secondary.forEach(l => {
+                l.isHighlight = l.title.includes("重要");
+                document.getElementById("secondaryGrid").innerHTML += createCard(l);
+            });
+
+            updateManageList();
+        } catch(e) { console.error("Cloud sync error", e); }
+    }
+
+    /* ── Card HTML ── */
+    function createCard(l) {
+        return `
+        <div class="card ${l.isHighlight ? 'highlight-card' : ''}">
+            <a class="card-link" href="${l.url}" target="_blank" rel="noopener">
+                <span class="icon-box">${l.icon || '🔗'}</span>
+                <div class="card-title">${l.title}</div>
+                ${l.desc ? `<div class="card-desc">${l.desc}</div>` : ''}
+            </a>
+        </div>`;
+    }
+
+    /* ── Bookmark CRUD ── */
+    function saveLink() {
+        const title = document.getElementById('linkTitle').value.trim();
+        const url   = document.getElementById('linkUrl').value.trim();
+        const desc  = document.getElementById('linkDesc').value.trim();
+        const cat   = document.getElementById('linkCategory').value;
+        if (!title || !url) return alert("請填寫名稱與網址");
+        userLinks[cat].push({ id: Date.now(), title, url, desc, icon: selectedIcon });
+        localStorage.setItem('cz_user_links_v4', JSON.stringify(userLinks));
+        location.reload();
+    }
+
+    function deleteLink(id) {
+        if (!confirm("確定刪除？")) return;
+        userLinks.primary   = userLinks.primary.filter(x => x.id != id);
+        userLinks.secondary = userLinks.secondary.filter(x => x.id != id);
+        localStorage.setItem('cz_user_links_v4', JSON.stringify(userLinks));
+        location.reload();
+    }
+
+    function updateManageList() {
+        const all = [...userLinks.primary, ...userLinks.secondary];
+        if (!all.length) return;
+        const div = document.getElementById("customLinksList");
+        div.innerHTML = `<div class="admin-section">
+            <div class="admin-section-title">📋 已儲存書籤</div>
+            ${all.map(l => `
+                <div class="manage-item">
+                    <span>${l.icon} ${l.title}</span>
+                    <button class="mini-del-btn" onclick="deleteLink(${l.id})">刪除</button>
+                </div>`).join('')}
+        </div>`;
+    }
+
+    /* ── Emoji Picker ── */
+    (function initEmojiPicker() {
+        const picker = document.getElementById('emojiPicker');
+        emojis.forEach(e => {
+            const div = document.createElement('div');
+            div.className = 'emoji-opt' + (e === selectedIcon ? ' selected' : '');
+            div.innerText = e;
+            div.onclick = () => {
+                document.querySelectorAll('.emoji-opt').forEach(d => d.classList.remove('selected'));
+                div.classList.add('selected');
+                selectedIcon = e;
+            };
+            picker.appendChild(div);
+        });
+    })();
+
+    /* ── Clock ── */
+    function updateClock() {
+        const now = new Date();
+        document.getElementById("clock").innerText = now.toLocaleTimeString("zh-TW", { hour12:false });
+        const y = now.getFullYear();
+        const m = String(now.getMonth()+1).padStart(2,'0');
+        const d = String(now.getDate()).padStart(2,'0');
+        const weekdays = ['日','一','二','三','四','五','六'];
+        document.getElementById("date").innerText =
+            `民國 ${y-1911} 年  ${y}/${m}/${d}（${weekdays[now.getDay()]}）`;
+    }
+
+    /* ── Init ── */
+    window.onload = () => {
+        // Restore UI config
+        const cfg = JSON.parse(localStorage.getItem('cz_ui_config'));
+        if (cfg) {
+            document.getElementById('titleSlider').value    = cfg.ts;
+            document.getElementById('descSlider').value     = cfg.ds;
+            document.getElementById('gridColSelect').value  = cfg.col;
+            applyUIStyle();
+        }
+        // Restore color
+        setColor(localStorage.getItem('cz_theme_color') || 'blue');
+        // Restore theme
+        const savedTheme = localStorage.getItem('cz_portal_theme');
+        if (savedTheme) {
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            document.getElementById('themeBtn').innerText = savedTheme === 'light' ? '🌙' : '☀️';
+        }
+        // Clock
+        setInterval(updateClock, 1000);
+        updateClock();
+        // Data
+        fetchCloudData();
+    };
+</script>
+</body>
+</html>
