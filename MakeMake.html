@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>風格轉換器</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&family=Inter:wght@600;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --navy:#1A3550;--blue:#2C5F8A;--blue2:#3A7AB5;--blue-lt:#EDF2F7;
+  --surf:#fff;--surf2:#F4F8FC;--border:#D0E0F0;
+  --text:#1A3550;--muted:#5A7FA0;--danger:#C0392B;
+  --shadow:0 4px 20px rgba(44,95,138,.10);
+}
+body{
+  font-family:"Noto Sans TC","Inter",sans-serif;
+  background:linear-gradient(135deg,#EDF2F7 0%,#E8F0F8 100%);
+  min-height:100vh;color:var(--text);
+}
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 50% 40% at 5% 5%,rgba(44,95,138,.08) 0%,transparent 70%),
+    radial-gradient(ellipse 40% 35% at 95% 90%,rgba(58,122,181,.06) 0%,transparent 70%);
+}
+
+/* HEADER */
+.hdr{
+  position:sticky;top:0;z-index:100;
+  background:rgba(237,242,247,.95);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  padding:0 36px;height:68px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.hdr::after{
+  content:'';position:absolute;bottom:-2px;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,#2C5F8A,#3A7AB5,#5A96C8);
+}
+.logo{display:flex;align-items:center;gap:12px;}
+.logo-icon{
+  width:40px;height:40px;border-radius:10px;
+  background:linear-gradient(145deg,#2C5F8A,#3A7AB5);
+  display:flex;align-items:center;justify-content:center;font-size:20px;
+  box-shadow:0 4px 12px rgba(44,95,138,.25);
+}
+.logo-name{font-size:18px;font-weight:900;color:var(--text);}
+.logo-sub{font-size:10px;font-weight:700;letter-spacing:3px;color:var(--blue);margin-top:2px;}
+
+/* LAYOUT */
+.body{
+  display:grid;grid-template-columns:420px 1fr;
+  min-height:calc(100vh - 68px);
+  position:relative;z-index:1;
+}
+
+/* SIDEBAR */
+.sidebar{
+  background:var(--surf);border-right:1px solid var(--border);
+  overflow-y:auto;height:calc(100vh - 68px);
+  position:sticky;top:68px;
+}
+.sidebar-inner{padding:24px 22px 60px;}
+
+.sec{margin-bottom:28px;}
+.sec-title{
+  font-size:11px;font-weight:900;color:var(--blue);
+  letter-spacing:2.5px;text-transform:uppercase;
+  margin-bottom:14px;padding-bottom:8px;
+  border-bottom:2px solid var(--blue-lt);
+  display:flex;align-items:center;gap:7px;
+}
+
+.lbl{font-size:13px;font-weight:700;color:var(--muted);display:block;margin:12px 0 7px;}
+.lbl:first-of-type{margin-top:0;}
+
+/* style cards */
+.style-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:4px;}
+.style-card{
+  border:2px solid var(--border);border-radius:12px;
+  padding:12px 8px;text-align:center;cursor:pointer;
+  transition:.2s;background:var(--surf2);
+  user-select:none;
+}
+.style-card:hover{border-color:var(--blue);}
+.style-card.on{border-color:var(--blue);background:#EDF2F7;box-shadow:0 0 0 3px rgba(44,95,138,.12);}
+.style-preview{height:48px;border-radius:8px;margin-bottom:8px;overflow:hidden;position:relative;}
+.style-name{font-size:12px;font-weight:800;color:var(--text);}
+.style-sub{font-size:10px;color:var(--muted);margin-top:2px;}
+
+/* preview medical */
+.prev-medical{background:linear-gradient(135deg,#EDF2F7,#E8F0F8);}
+.prev-medical::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 20% 20%,rgba(44,95,138,.15) 0%,transparent 70%);}
+
+/* preview dream */
+.prev-dream{background:linear-gradient(180deg,#171320,#241a35,#31244d);}
+.prev-dream::before{content:'✦ ✧ ✦';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(216,191,138,.6);font-size:14px;}
+
+/* preview cream */
+.prev-cream{background:linear-gradient(180deg,#fff9f6,#ffebe3);}
+.prev-cream::before{content:'☁ ☁';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(246,200,108,.8);font-size:18px;}
+
+/* textarea */
+.ta-wrap{position:relative;}
+.ta{
+  width:100%;height:220px;resize:vertical;
+  border:1.5px solid var(--border);border-radius:11px;
+  padding:12px 14px;font-family:"Noto Sans TC",monospace;
+  font-size:12px;line-height:1.6;
+  background:var(--surf2);color:var(--text);
+  transition:.15s;
+}
+.ta:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(44,95,138,.10);}
+.ta-count{font-size:11px;color:var(--muted);text-align:right;margin-top:4px;font-weight:600;}
+
+/* clear btn */
+.clear-btn{
+  position:absolute;top:10px;right:10px;
+  width:24px;height:24px;border-radius:6px;
+  border:1px solid var(--border);background:var(--surf);
+  cursor:pointer;font-size:12px;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--muted);transition:.15s;
+}
+.clear-btn:hover{background:var(--surf2);color:var(--danger);}
+
+/* convert btn */
+.convert-btn{
+  width:100%;padding:14px;border:none;border-radius:12px;
+  cursor:pointer;font-family:inherit;font-size:15px;font-weight:900;
+  background:linear-gradient(135deg,#2C5F8A,#3A7AB5);
+  color:#fff;box-shadow:0 4px 16px rgba(44,95,138,.28);
+  transition:.2s;display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.convert-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(44,95,138,.35);}
+.convert-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+
+.dl-btn{
+  width:100%;padding:13px;border:none;border-radius:12px;
+  cursor:pointer;font-family:inherit;font-size:14px;font-weight:800;
+  background:linear-gradient(135deg,#166534,#16A34A);
+  color:#fff;box-shadow:0 4px 14px rgba(22,101,52,.25);
+  transition:.2s;margin-top:10px;
+  display:none;align-items:center;justify-content:center;gap:8px;
+}
+.dl-btn.show{display:flex;}
+.dl-btn:hover{transform:translateY(-1px);}
+
+/* status */
+.status{
+  margin-top:12px;padding:12px 14px;border-radius:10px;
+  font-size:13px;font-weight:700;
+  display:none;
+}
+.status.loading{display:block;background:#EDF2F7;color:var(--blue);border:1.5px solid var(--border);}
+.status.done{display:block;background:#DCFCE7;color:#166534;border:1.5px solid #86EFAC;}
+.status.error{display:block;background:#FEE2E2;color:#C0392B;border:1.5px solid #FCA5A5;}
+
+/* PREVIEW PANE */
+.preview-pane{
+  padding:28px 32px;overflow-y:auto;
+  display:flex;flex-direction:column;gap:16px;
+}
+.preview-label{
+  font-size:11px;font-weight:800;color:var(--muted);letter-spacing:2px;
+  text-transform:uppercase;display:flex;align-items:center;gap:8px;
+}
+.preview-label::after{content:'';flex:1;height:1px;background:var(--border);}
+
+.preview-tabs{display:flex;gap:8px;margin-bottom:4px;}
+.ptab{
+  padding:7px 16px;border:1.5px solid var(--border);border-radius:8px;
+  background:var(--surf);color:var(--muted);font-size:12px;font-weight:700;
+  cursor:pointer;transition:.15s;font-family:inherit;
+}
+.ptab.on{background:var(--blue);color:#fff;border-color:var(--blue);}
+
+.frame-wrap{
+  background:var(--surf);border:2px solid var(--border);
+  border-radius:16px;overflow:hidden;box-shadow:var(--shadow);
+  flex:1;min-height:500px;position:relative;
+}
+.frame-wrap iframe{width:100%;height:100%;border:none;min-height:500px;}
+
+.empty-state{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  color:var(--muted);gap:12px;min-height:400px;
+}
+.empty-icon{font-size:48px;opacity:.4;}
+.empty-text{font-size:15px;font-weight:700;}
+.empty-sub{font-size:13px;font-weight:600;opacity:.7;text-align:center;line-height:1.6;}
+
+/* spinner */
+@keyframes spin{to{transform:rotate(360deg);}}
+.spinner{
+  width:20px;height:20px;border-radius:50%;
+  border:2px solid rgba(255,255,255,.3);
+  border-top-color:#fff;
+  animation:spin .8s linear infinite;
+}
+
+/* RWD */
+@media(max-width:900px){
+  .body{grid-template-columns:1fr;}
+  .sidebar{height:auto;position:static;}
+}
+@media(max-width:580px){
+  .hdr{padding:0 16px;}
+  .sidebar-inner{padding:16px 14px 40px;}
+  .preview-pane{padding:16px;}
+}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="logo">
+    <div class="logo-icon">🎨</div>
+    <div>
+      <div class="logo-name">風格轉換器</div>
+      <div class="logo-sub">Style Converter</div>
+    </div>
+  </div>
+</header>
+
+<div class="body">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+  <div class="sidebar-inner">
+
+    <!-- 選擇目標風格 -->
+    <div class="sec">
+      <div class="sec-title">🎨 目標風格</div>
+      <div class="style-grid">
+        <div class="style-card on" data-style="medical" onclick="pickStyle(this)">
+          <div class="style-preview prev-medical"></div>
+          <div class="style-name">醫療藍</div>
+          <div class="style-sub">沉穩專業</div>
+        </div>
+        <div class="style-card" data-style="dream" onclick="pickStyle(this)">
+          <div class="style-preview prev-dream"></div>
+          <div class="style-name">星空紫</div>
+          <div class="style-sub">神秘夢幻</div>
+        </div>
+        <div class="style-card" data-style="cream" onclick="pickStyle(this)">
+          <div class="style-preview prev-cream"></div>
+          <div class="style-name">奶油粉</div>
+          <div class="style-sub">溫柔可愛</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 貼入原始 HTML -->
+    <div class="sec">
+      <div class="sec-title">📋 貼入原始 HTML</div>
+      <div class="ta-wrap">
+        <textarea class="ta" id="inputHtml" placeholder="把你要轉換的 HTML 完整貼在這裡...&#10;&#10;例如：紅豆餅網站、計算機工具、任何 HTML 都可以"></textarea>
+        <button class="clear-btn" onclick="clearInput()" title="清除">✕</button>
+      </div>
+      <div class="ta-count" id="charCount">0 字元</div>
+    </div>
+
+    <!-- 轉換 -->
+    <div class="sec">
+      <div class="sec-title">⚡ 執行轉換</div>
+      <button class="convert-btn" id="convertBtn" onclick="doConvert()">
+        ✨ 開始風格轉換
+      </button>
+      <button class="dl-btn" id="dlBtn" onclick="doDownload()">
+        ⬇️ 下載轉換後的 HTML
+      </button>
+      <div class="status" id="statusBox"></div>
+    </div>
+
+  </div>
+  </aside>
+
+  <!-- PREVIEW -->
+  <div class="preview-pane">
+    <div class="preview-label">預覽</div>
+    <div class="preview-tabs">
+      <button class="ptab on" id="tab-after"  onclick="switchTab('after')">轉換後</button>
+      <button class="ptab"    id="tab-before" onclick="switchTab('before')">原始</button>
+    </div>
+    <div class="frame-wrap" id="frameWrap">
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">🎨</div>
+        <div class="empty-text">尚未進行轉換</div>
+        <div class="empty-sub">貼入 HTML、選擇風格<br>點擊「開始風格轉換」即可</div>
+      </div>
+      <iframe id="previewFrame" style="display:none;"></iframe>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ════════════════════════════════════
+   STATE
+════════════════════════════════════ */
+let selectedStyle = 'medical';
+let convertedHtml = '';
+let originalHtml  = '';
+let currentTab    = 'after';
+
+/* ════════════════════════════════════
+   UI
+════════════════════════════════════ */
+function pickStyle(el) {
+  document.querySelectorAll('.style-card').forEach(c => c.classList.remove('on'));
+  el.classList.add('on');
+  selectedStyle = el.dataset.style;
+}
+
+function clearInput() {
+  document.getElementById('inputHtml').value = '';
+  document.getElementById('charCount').textContent = '0 字元';
+}
+
+document.getElementById('inputHtml').addEventListener('input', function() {
+  document.getElementById('charCount').textContent = this.value.length.toLocaleString() + ' 字元';
+});
+
+function setStatus(type, msg) {
+  const el = document.getElementById('statusBox');
+  el.className = 'status ' + type;
+  el.textContent = msg;
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('tab-after').classList.toggle('on', tab === 'after');
+  document.getElementById('tab-before').classList.toggle('on', tab === 'before');
+  showPreview(tab === 'after' ? convertedHtml : originalHtml);
+}
+
+function showPreview(html) {
+  if (!html) return;
+  const frame = document.getElementById('previewFrame');
+  const empty = document.getElementById('emptyState');
+  empty.style.display = 'none';
+  frame.style.display = 'block';
+  const blob = new Blob([html], {type:'text/html'});
+  frame.src = URL.createObjectURL(blob);
+}
+
+/* ════════════════════════════════════
+   STYLE DEFINITIONS
+════════════════════════════════════ */
+const STYLES = {
+
+  medical: {
+    name: '醫療藍',
+    fonts: 'https://fonts.googleapis.com/css2?family=Inter:wght@500;700;900&family=Noto+Sans+TC:wght@500;700;900&display=swap',
+    fontFamily: '"Noto Sans TC","Inter",sans-serif',
+    tokens: `
+      --bg:#EDF2F7; --bg2:#E8F0F8;
+      --surf:#FFFFFF; --surf2:#F0F5FA;
+      --border:#C8D9EC;
+      --shadow:rgba(44,95,138,.10);
+      --shadowH:rgba(44,95,138,.20);
+      --text:#1A3550; --sub:#2C5F8A; --muted:#5A7FA0;
+      --accent:#2C5F8A; --accent2:#3A7AB5; --accentLt:#5A96C8;
+      --danger:#C0392B;
+      --radius:18px; --radius-sm:10px; --radius-btn:11px;
+    `,
+    bodyBg: `linear-gradient(135deg,#EDF2F7 0%,#E8F0F8 100%)`,
+    bodyBefore: `radial-gradient(ellipse 55% 40% at 5% 5%,rgba(44,95,138,.08) 0%,transparent 70%),radial-gradient(ellipse 40% 35% at 95% 90%,rgba(58,122,181,.06) 0%,transparent 70%)`,
+    cardBg: `rgba(255,255,255,.80)`,
+    cardBorder: `1.5px solid #C8D9EC`,
+    cardShadow: `0 4px 18px rgba(44,95,138,.10)`,
+    cardHover: `translateY(-4px)`,
+    cardHoverShadow: `0 12px 32px rgba(44,95,138,.18)`,
+    cardRadius: `18px`,
+    btnBg: `linear-gradient(135deg,#2C5F8A,#3A7AB5)`,
+    btnColor: `#fff`,
+    btnRadius: `11px`,
+    inputBg: `#F0F5FA`,
+    inputBorder: `1.5px solid #C8D9EC`,
+    inputRadius: `10px`,
+    headingColor: `#1A3550`,
+    subColor: `#2C5F8A`,
+    accentBar: `linear-gradient(90deg,#2C5F8A,#3A7AB5,#5A96C8)`,
+    tagBg: `rgba(44,95,138,.10)`,
+    tagColor: `#2C5F8A`,
+  },
+
+  dream: {
+    name: '星空紫',
+    fonts: 'https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap',
+    fontFamily: '"Cormorant Garamond","Cinzel",serif',
+    tokens: `
+      --bg:#171320; --bg2:#241a35;
+      --surf:rgba(29,24,44,.85); --surf2:rgba(49,36,77,.6);
+      --border:rgba(216,191,138,.25);
+      --shadow:rgba(0,0,0,.4);
+      --shadowH:rgba(0,0,0,.6);
+      --text:#f4efff; --sub:#d8bf8a; --muted:#cfc1f7;
+      --accent:#d8bf8a; --accent2:#b89ef0; --accentLt:#cfc1f7;
+      --danger:#ef4444;
+      --radius:18px; --radius-sm:10px; --radius-btn:12px;
+    `,
+    bodyBg: `linear-gradient(180deg,#171320 0%,#241a35 50%,#31244d 100%)`,
+    bodyBefore: `radial-gradient(circle at top,rgba(180,150,255,.14),transparent 30%)`,
+    cardBg: `rgba(29,24,44,.72)`,
+    cardBorder: `1px solid rgba(255,255,255,.08)`,
+    cardShadow: `0 8px 24px rgba(0,0,0,.35)`,
+    cardHover: `translateY(-4px) scale(1.02)`,
+    cardHoverShadow: `0 16px 40px rgba(0,0,0,.5)`,
+    cardRadius: `18px`,
+    btnBg: `linear-gradient(135deg,rgba(216,191,138,.3),rgba(184,158,240,.3))`,
+    btnColor: `#d8bf8a`,
+    btnRadius: `12px`,
+    inputBg: `rgba(29,24,44,.6)`,
+    inputBorder: `1px solid rgba(216,191,138,.3)`,
+    inputRadius: `10px`,
+    headingColor: `#d8bf8a`,
+    subColor: `#cfc1f7`,
+    accentBar: `linear-gradient(90deg,#d8bf8a,#b89ef0)`,
+    tagBg: `rgba(216,191,138,.12)`,
+    tagColor: `#d8bf8a`,
+  },
+
+  cream: {
+    name: '奶油粉',
+    fonts: 'https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&family=Zen+Maru+Gothic:wght@500;700&display=swap',
+    fontFamily: '"Zen Maru Gothic","Quicksand",sans-serif',
+    tokens: `
+      --bg:#fff9f6; --bg2:#ffebe3;
+      --surf:#ffffff; --surf2:#fff5ef;
+      --border:rgba(142,122,112,.15);
+      --shadow:rgba(84,67,58,.06);
+      --shadowH:rgba(84,67,58,.12);
+      --text:#54433a; --sub:#8e7a70; --muted:#a89088;
+      --accent:#f6c86c; --accent2:#f79999; --accentLt:#fde8b8;
+      --danger:#f79999;
+      --radius:20px; --radius-sm:12px; --radius-btn:14px;
+    `,
+    bodyBg: `linear-gradient(180deg,#fff9f6 0%,#ffebe3 100%)`,
+    bodyBefore: `radial-gradient(ellipse 60% 40% at 50% 0%,rgba(246,200,108,.12) 0%,transparent 60%)`,
+    cardBg: `#ffffff`,
+    cardBorder: `1px solid rgba(142,122,112,.10)`,
+    cardShadow: `0 6px 20px rgba(84,67,58,.06)`,
+    cardHover: `translateY(-4px)`,
+    cardHoverShadow: `0 14px 32px rgba(84,67,58,.10)`,
+    cardRadius: `22px`,
+    btnBg: `#f6c86c`,
+    btnColor: `#54433a`,
+    btnRadius: `14px`,
+    inputBg: `#ffffff`,
+    inputBorder: `1.5px solid rgba(142,122,112,.15)`,
+    inputRadius: `14px`,
+    headingColor: `#54433a`,
+    subColor: `#8e7a70`,
+    accentBar: `linear-gradient(90deg,#f6c86c,#f79999)`,
+    tagBg: `#fff5e6`,
+    tagColor: `#b07910`,
+  }
+};
+
+/* ════════════════════════════════════
+   CONVERT via Claude API
+════════════════════════════════════ */
+async function doConvert() {
+  const rawHtml = document.getElementById('inputHtml').value.trim();
+  if (!rawHtml) {
+    setStatus('error', '⚠️ 請先貼入要轉換的 HTML');
+    return;
+  }
+  if (rawHtml.length > 80000) {
+    setStatus('error', '⚠️ HTML 太長，請縮短至 80,000 字元以內');
+    return;
+  }
+
+  originalHtml = rawHtml;
+  convertedHtml = '';
+
+  const btn = document.getElementById('convertBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> 轉換中…';
+  document.getElementById('dlBtn').classList.remove('show');
+  setStatus('loading', '⏳ AI 正在分析並套用風格，請稍候…');
+
+  const st = STYLES[selectedStyle];
+
+  const systemPrompt = `你是一個專業的前端工程師，專門做 HTML 風格轉換。
+你的任務是把使用者提供的 HTML，套用指定的視覺風格，並輸出完整的新 HTML。
+
+規則：
+1. 完整保留所有文字內容、功能邏輯、JavaScript
+2. 完整保留所有連結、網址、圖片
+3. 只改變視覺樣式（顏色、字型、背景、卡片、按鈕、陰影、圓角）
+4. 輸出必須是完整可執行的 HTML，從 <!DOCTYPE html> 開始到 </html> 結束
+5. 只輸出 HTML 程式碼，不要加任何說明文字或 markdown 標記`;
+
+  const userPrompt = `請把以下 HTML 套用「${st.name}」風格。
+
+風格規格：
+- Google Fonts：${st.fonts}
+- 字型：${st.fontFamily}
+- 背景：${st.bodyBg}
+- 卡片背景：${st.cardBg}
+- 卡片邊框：${st.cardBorder}
+- 卡片陰影：${st.cardShadow}
+- 卡片圓角：${st.cardRadius}
+- 卡片 hover：transform ${st.cardHover}，shadow ${st.cardHoverShadow}
+- 按鈕背景：${st.btnBg}
+- 按鈕文字色：${st.btnColor}
+- 按鈕圓角：${st.btnRadius}
+- 輸入框背景：${st.inputBg}
+- 輸入框邊框：${st.inputBorder}
+- 輸入框圓角：${st.inputRadius}
+- 主標題顏色：${st.headingColor}
+- 副文字顏色：${st.subColor}
+- 標籤背景：${st.tagBg}，文字：${st.tagColor}
+- CSS 變數（加入 :root）：${st.tokens}
+
+額外規格（加入 body::before 裝飾背景）：
+background: ${st.bodyBefore};
+
+原始 HTML：
+${rawHtml}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 8000,
+        messages: [
+          { role: 'user', content: userPrompt }
+        ],
+        system: systemPrompt
+      })
+    });
+
+    const data = await res.json();
+
+    if (data.error) throw new Error(data.error.message);
+
+    let result = data.content
+      .filter(b => b.type === 'text')
+      .map(b => b.text)
+      .join('');
+
+    // 清理可能的 markdown code block
+    result = result.replace(/^```html\s*/i, '').replace(/```\s*$/, '').trim();
+
+    if (!result.includes('<!DOCTYPE') && !result.includes('<html')) {
+      throw new Error('AI 回傳格式不正確，請重試');
+    }
+
+    convertedHtml = result;
+
+    btn.disabled = false;
+    btn.innerHTML = '✨ 重新轉換';
+    setStatus('done', `✅ 轉換完成！已套用「${st.name}」風格`);
+    document.getElementById('dlBtn').classList.add('show');
+
+    // 切到 after tab 顯示
+    currentTab = 'after';
+    document.getElementById('tab-after').classList.add('on');
+    document.getElementById('tab-before').classList.remove('on');
+    showPreview(convertedHtml);
+
+  } catch(e) {
+    btn.disabled = false;
+    btn.innerHTML = '✨ 開始風格轉換';
+    setStatus('error', '❌ 轉換失敗：' + e.message);
+    console.error(e);
+  }
+}
+
+/* ════════════════════════════════════
+   DOWNLOAD
+════════════════════════════════════ */
+function doDownload() {
+  if (!convertedHtml) return;
+  const blob = new Blob([convertedHtml], {type:'text/html;charset=utf-8'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const st   = STYLES[selectedStyle];
+  a.href = url;
+  a.download = `converted_${st.name}_${Date.now()}.html`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>
