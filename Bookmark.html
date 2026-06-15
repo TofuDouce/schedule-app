@@ -1,1077 +1,959 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
-    <title>Dream Archive</title>
-
-    <meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:wght@400;500;600&display=swap" rel="stylesheet">
-
-    <style>
-
-        *{
-            margin:0;
-            padding:0;
-            box-sizing:border-box;
-
-            transition:
-                font-size .2s ease,
-                transform .4s ease,
-                box-shadow .4s ease;
-        }
-
-        :root{
-
-            --bg1:#171320;
-            --bg2:#241a35;
-            --bg3:#31244d;
-
-            --gold:#d8bf8a;
-            --text:#f4efff;
-
-            --card:rgba(29,24,44,.72);
-
-            /* 手機 */
-            --base-font-size:17px;
-        }
-
-        /* 平板 */
-        @media (min-width:768px){
-
-            :root{
-                --base-font-size:18px;
-            }
-        }
-
-        /* 電腦 */
-        @media (min-width:1200px){
-
-            :root{
-                --base-font-size:20px;
-            }
-        }
-
-        body{
-
-            min-height:100vh;
-
-            overflow-x:hidden;
-
-            color:var(--text);
-
-            font-family:"Cormorant Garamond", serif;
-
-            background:
-                radial-gradient(
-                    circle at top,
-                    rgba(180,150,255,.14),
-                    transparent 30%
-                ),
-
-                linear-gradient(
-                    180deg,
-                    var(--bg1),
-                    var(--bg2),
-                    var(--bg3)
-                );
-
-            padding:20px;
-
-            position:relative;
-
-            font-size:var(--base-font-size);
-        }
-
-        .stars{
-            position:fixed;
-            inset:0;
-
-            overflow:hidden;
-
-            z-index:-3;
-        }
-
-        .star{
-
-            position:absolute;
-
-            width:2px;
-            height:2px;
-
-            background:white;
-
-            border-radius:50%;
-
-            opacity:.7;
-
-            animation:twinkle 4s infinite;
-        }
-
-        @keyframes twinkle{
-
-            0%,100%{
-                opacity:.15;
-                transform:scale(.7);
-            }
-
-            50%{
-                opacity:1;
-                transform:scale(1.4);
-            }
-        }
-
-        .frame{
-
-            position:fixed;
-            inset:10px;
-
-            border:1.5px solid rgba(216,191,138,.48);
-
-            border-radius:26px;
-
-            pointer-events:none;
-
-            z-index:999;
-        }
-
-        .frame::before{
-
-            content:"";
-
-            position:absolute;
-            inset:8px;
-
-            border:1px solid rgba(216,191,138,.18);
-
-            border-radius:20px;
-        }
-
-        .corner{
-
-            position:fixed;
-
-            width:90px;
-            height:90px;
-
-            pointer-events:none;
-
-            z-index:1000;
-        }
-
-        .corner::before{
-
-            content:"";
-
-            position:absolute;
-            inset:0;
-
-            border:1.5px solid rgba(216,191,138,.45);
-
-            border-radius:50%;
-        }
-
-        .corner::after{
-
-            content:"✦";
-
-            position:absolute;
-
-            color:rgba(216,191,138,.85);
-
-            font-size:22px;
-        }
-
-        .tl{
-            top:14px;
-            left:14px;
-        }
-
-        .tl::before{
-            clip-path:polygon(0 0,100% 0,0 100%);
-        }
-
-        .tl::after{
-            top:14px;
-            left:14px;
-        }
-
-        .tr{
-            top:14px;
-            right:14px;
-        }
-
-        .tr::before{
-            clip-path:polygon(0 0,100% 0,100% 100%);
-        }
-
-        .tr::after{
-            top:14px;
-            right:14px;
-        }
-
-        .bl{
-            bottom:14px;
-            left:14px;
-        }
-
-        .bl::before{
-            clip-path:polygon(0 0,0 100%,100% 100%);
-        }
-
-        .bl::after{
-            bottom:14px;
-            left:14px;
-        }
-
-        .br{
-            bottom:14px;
-            right:14px;
-        }
-
-        .br::before{
-            clip-path:polygon(100% 0,0 100%,100% 100%);
-        }
-
-        .br::after{
-            bottom:14px;
-            right:14px;
-        }
-
-        .container{
-
-            max-width:1320px;
-
-            margin:auto;
-
-            position:relative;
-
-            z-index:2;
-        }
-
-        .font-control{
-
-            display:flex;
-
-            justify-content:flex-end;
-
-            gap:10px;
-
-            margin-bottom:5px;
-
-            position:relative;
-
-            z-index:1010;
-        }
-
-        .font-btn{
-
-            background:rgba(255,255,255,.05);
-
-            border:1px solid rgba(216,191,138,.3);
-
-            color:var(--text);
-
-            padding:5px 12px;
-
-            border-radius:20px;
-
-            cursor:pointer;
-
-            font-family:"Cinzel", serif;
-
-            font-size:13px;
-
-            backdrop-filter:blur(5px);
-        }
-
-        .font-btn:hover{
-
-            background:rgba(216,191,138,.2);
-
-            color:var(--gold);
-
-            border-color:var(--gold);
-        }
-
-        .font-btn.active{
-
-            background:var(--gold);
-
-            color:var(--bg1);
-
-            font-weight:bold;
-
-            border-color:var(--gold);
-        }
-
-        .moon{
-
-            text-align:center;
-
-            margin-top:5px;
-
-            position:relative;
-        }
-
-        .moon::before{
-
-            content:"";
-
-            position:absolute;
-
-            left:50%;
-            top:-45px;
-
-            width:1px;
-            height:45px;
-
-            background:rgba(216,191,138,.35);
-        }
-
-        .moon-symbol{
-
-            font-size:36px;
-
-            color:var(--gold);
-
-            text-shadow:0 0 18px rgba(216,191,138,.25);
-
-            animation:floatMoon 4s ease-in-out infinite;
-        }
-
-        @keyframes floatMoon{
-
-            0%,100%{
-                transform:translateY(0px);
-            }
-
-            50%{
-                transform:translateY(5px);
-            }
-        }
-
-        .title{
-
-            text-align:center;
-
-            margin-top:10px;
-            margin-bottom:30px;
-        }
-
-        .main-title{
-
-            font-family:"Cinzel", serif;
-
-            font-weight:700;
-
-            letter-spacing:4px;
-
-            line-height:1.1;
-
-            font-size:clamp(42px,7vw,78px);
-
-            background:
-                linear-gradient(
-                    180deg,
-                    #ffffff 0%,
-                    #f1e8ff 40%,
-                    #d8bf8a 100%
-                );
-
-            -webkit-background-clip:text;
-            -webkit-text-fill-color:transparent;
-        }
-
-        .subtitle{
-
-            margin-top:12px;
-
-            color:#cfc1f7;
-
-            font-size:1.1em;
-
-            letter-spacing:1px;
-        }
-
-        .category-section{
-
-            margin-bottom:40px;
-
-            background:rgba(255,255,255,.02);
-
-            padding:24px;
-
-            border-radius:24px;
-
-            border:1px solid rgba(216,191,138,.08);
-        }
-
-        .category-title{
-
-            font-family:"Cinzel", serif;
-
-            font-size:calc(var(--base-font-size) * 1.3);
-
-            color:var(--gold);
-
-            letter-spacing:2px;
-
-            margin-bottom:18px;
-
-            display:flex;
-
-            align-items:center;
-
-            gap:10px;
-
-            border-bottom:
-                1px solid rgba(216,191,138,.2);
-
-            padding-bottom:10px;
-        }
-
-        .category-title span{
-
-            font-size:18px;
-
-            color:#bba9e8;
-        }
-
-        .grid{
-
-            display:grid;
-
-            grid-template-columns:
-                repeat(
-                    auto-fit,
-                    minmax(260px,1fr)
-                );
-
-            gap:18px;
-        }
-
-        .card{
-
-            background:rgba(29,24,44,.72);
-
-            border:
-                1px solid rgba(255,255,255,.06);
-
-            border-radius:18px;
-
-            padding:18px;
-
-            backdrop-filter:blur(16px);
-
-            text-decoration:none;
-
-            color:white;
-
-            position:relative;
-
-            overflow:hidden;
-
-            display:flex;
-
-            flex-direction:column;
-
-            justify-content:space-between;
-
-            min-height:160px;
-        }
-
-        .card:hover{
-
-            transform:
-                translateY(-4px)
-                scale(1.02);
-
-            box-shadow:
-                0 10px 25px rgba(0,0,0,.4);
-
-            border-color:
-                rgba(216,191,138,.4);
-        }
-
-        .card-header-row{
-
-            display:flex;
-
-            justify-content:space-between;
-
-            align-items:flex-start;
-
-            gap:8px;
-
-            margin-bottom:6px;
-        }
-
-        .card-symbol{
-
-            font-size:
-                calc(var(--base-font-size) * 1.1);
-
-            color:var(--gold);
-
-            flex-shrink:0;
-        }
-
-        .card-title{
-
-            font-family:"Cinzel", serif;
-
-            font-size:
-                calc(var(--base-font-size) * 1.18);
-
-            font-weight:600;
-
-            line-height:1.3;
-
-            word-break:break-word;
-        }
-
-        .card-file{
-
-            color:#bba9e8;
-
-            font-size:
-                calc(var(--base-font-size) * .82);
-
-            margin-bottom:10px;
-
-            opacity:.75;
-
-            display:inline-block;
-        }
-
-        .card-desc{
-
-            color:#d6c8f5;
-
-            line-height:1.6;
-
-            font-size:
-                calc(var(--base-font-size) * .95);
-
-            display:-webkit-box;
-
-            -webkit-line-clamp:2;
-
-            -webkit-box-orient:vertical;
-
-            overflow:hidden;
-
-            margin-bottom:12px;
-        }
-
-        .card-footer{
-
-            color:#b89ef0;
-
-            font-size:
-                calc(var(--base-font-size) * .78);
-
-            text-align:right;
-        }
-
-        .loading{
-
-            text-align:center;
-
-            color:#c9b8f1;
-
-            font-size:22px;
-
-            padding:40px 0;
-        }
-
-        @media(max-width:640px){
-
-            .grid{
-
-                grid-template-columns:
-                    repeat(
-                        auto-fit,
-                        minmax(190px,1fr)
-                    );
-            }
-
-            .card{
-                min-height:135px;
-            }
-        }
-
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>☁ 書籤網站產生器</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&family=Zen+Maru+Gothic:wght@500;700&family=Noto+Sans+TC:wght@400;500;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg1:#fff9f6;--bg2:#ffebe3;--card:#ffffff;
+  --text:#54433a;--sub:#8e7a70;
+  --border:rgba(142,122,112,0.15);
+  --accent:#f6c86c;--accent-hover:#efb94d;
+  --accent-soft:rgba(246,200,108,0.15);
+  --pink:#f79999;--lavender:#d4b8e0;
+  --radius:20px;--base-font-size:18px;
+  --font-main:"Zen Maru Gothic","Quicksand",sans-serif;
+}
+body.theme-blue{
+  --bg1:#f0f7ff;--bg2:#ddeeff;--card:#ffffff;
+  --text:#1a3a5c;--sub:#5580aa;
+  --border:rgba(85,128,170,0.18);
+  --accent:#5ba3d9;--accent-hover:#4a8fc5;
+  --accent-soft:rgba(91,163,217,0.13);
+  --pink:#7ec8e3;--lavender:#a8d8e8;
+}
+body.theme-tarot{
+  --bg1:#1a1028;--bg2:#2a1840;--card:#231535;
+  --text:#e8d5ff;--sub:#a07fbf;
+  --border:rgba(160,127,191,0.2);
+  --accent:#9b59d0;--accent-hover:#8040bb;
+  --accent-soft:rgba(155,89,208,0.18);
+  --pink:#c77dff;--lavender:#7b5ea7;
+  --font-main:"Nunito","Quicksand",sans-serif;
+}
+body{
+  min-height:100vh;
+  background:linear-gradient(160deg,var(--bg1) 0%,var(--bg2) 100%);
+  font-family:var(--font-main);font-size:var(--base-font-size);
+  color:var(--text);padding:16px;
+  transition:background 0.5s,color 0.3s;overflow-x:hidden;
+}
+.decor-border{position:fixed;inset:8px;border:2px dashed var(--border);border-radius:28px;pointer-events:none;z-index:0;}
+.container{max-width:960px;margin:auto;position:relative;z-index:2;}
+
+/* HERO */
+.hero{text-align:center;padding:8px 0 20px;}
+.hero-deco{font-size:1.8em;letter-spacing:4px;margin-bottom:4px;}
+.badge{display:inline-block;background:var(--accent-soft);color:var(--accent-hover);padding:5px 16px;border-radius:999px;font-size:0.7em;font-weight:700;margin-bottom:10px;}
+.title{font-size:clamp(24px,5vw,40px);line-height:1.4;font-weight:700;}
+.subtitle{color:var(--sub);margin-top:6px;font-size:0.78em;line-height:1.8;}
+.subtitle-deco{margin-top:4px;font-size:0.68em;color:var(--lavender,#d4b8e0);letter-spacing:2px;}
+
+/* TOOLBAR */
+.toolbar{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);box-shadow:0 4px 16px rgba(0,0,0,0.04);padding:14px 16px;margin-bottom:20px;display:flex;flex-direction:column;gap:12px;width:100%;}
+.toolbar-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+.toolbar-label{font-size:0.62em;font-weight:700;color:var(--sub);white-space:nowrap;margin-right:2px;background:var(--accent-soft);padding:3px 8px;border-radius:999px;}
+.theme-btn{border:none;padding:7px 13px;border-radius:999px;cursor:pointer;font-family:inherit;font-size:0.68em;font-weight:700;transition:0.2s;white-space:nowrap;}
+.theme-cream{background:#f6c86c;color:#5d4523;}
+.theme-cream.active,.theme-cream:hover{background:#efb94d;}
+.theme-blue-btn{background:#5ba3d9;color:#fff;}
+.theme-blue-btn.active,.theme-blue-btn:hover{background:#4a8fc5;}
+.theme-tarot-btn{background:#9b59d0;color:#fff;}
+.theme-tarot-btn.active,.theme-tarot-btn:hover{background:#8040bb;}
+.font-sel{padding:7px 10px;border-radius:999px;border:1.5px solid var(--border);background:var(--card);color:var(--text);font-family:inherit;font-size:0.68em;cursor:pointer;max-width:160px;}
+.ctrl-btn{border:1.5px solid var(--border);background:var(--card);color:var(--text);padding:7px 13px;border-radius:999px;cursor:pointer;font-family:inherit;font-size:0.68em;font-weight:700;transition:0.2s;white-space:nowrap;}
+.ctrl-btn:hover{border-color:var(--accent);background:var(--accent-soft);}
+.ctrl-btn.active{background:var(--accent);border-color:var(--accent);}
+
+/* MAIN LAYOUT */
+.main-layout{display:grid;grid-template-columns:1fr 280px;gap:16px;}
+@media(max-width:750px){.main-layout{grid-template-columns:1fr;}}
+
+/* PANEL */
+.panel{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);box-shadow:0 6px 20px rgba(0,0,0,0.04);padding:18px;width:100%;}
+.panel-title{font-size:0.88em;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.panel-badge{background:var(--accent-soft);padding:3px 9px;border-radius:8px;font-size:0.78em;color:var(--accent-hover);}
+.section-divider{text-align:center;color:var(--sub);font-size:0.6em;letter-spacing:3px;margin:14px 0;opacity:0.5;}
+
+/* FIELDS */
+.field-label{font-size:0.65em;font-weight:700;color:var(--sub);margin-bottom:4px;display:flex;align-items:center;gap:4px;}
+.field-input{width:100%;padding:9px 13px;border:1.5px solid var(--border);border-radius:11px;background:var(--bg1);color:var(--text);font-family:inherit;font-size:0.78em;transition:0.2s;margin-bottom:10px;}
+.field-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);}
+body.theme-tarot .field-input{background:#2a1840;}
+
+/* CATEGORIES */
+.cat-list{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px;}
+.cat-chip{display:inline-flex;align-items:center;gap:4px;background:var(--accent-soft);color:var(--text);padding:5px 11px;border-radius:999px;font-size:0.62em;font-weight:700;border:1.5px solid transparent;transition:0.2s;}
+.cat-chip:hover{border-color:var(--accent);}
+.del-cat{background:none;border:none;color:var(--sub);cursor:pointer;font-size:1em;padding:0 1px;}
+.del-cat:hover{color:var(--pink);}
+.cat-add-row{display:flex;gap:7px;flex-wrap:wrap;}
+.cat-add-input{flex:1;min-width:80px;padding:8px 11px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg1);color:var(--text);font-family:inherit;font-size:0.72em;}
+.cat-add-input:focus{outline:none;border-color:var(--accent);}
+body.theme-tarot .cat-add-input{background:#2a1840;}
+.icon-sel-btn{padding:7px 10px;border:1.5px solid var(--border);border-radius:10px;background:var(--card);color:var(--text);font-size:0.9em;cursor:pointer;}
+
+/* BOOKMARK CAROUSEL */
+.bm-counter{text-align:right;font-size:0.62em;color:var(--sub);margin-bottom:8px;font-weight:700;}
+.bm-carousel{display:flex;gap:12px;overflow-x:auto;overflow-y:visible;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding-bottom:8px;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
+.bm-carousel::-webkit-scrollbar{height:4px;}
+.bm-carousel::-webkit-scrollbar-thumb{background:var(--border);border-radius:999px;}
+.bm-card{flex:0 0 240px;scroll-snap-align:start;background:var(--bg1);border:1.5px solid var(--border);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:8px;position:relative;transition:0.2s;min-height:200px;}
+body.theme-tarot .bm-card{background:#2a1840;}
+.bm-card:hover{border-color:var(--accent);}
+.bm-card-header{display:flex;align-items:center;gap:8px;margin-bottom:2px;}
+.bm-favicon{width:20px;height:20px;border-radius:4px;object-fit:cover;flex-shrink:0;}
+.bm-favicon-placeholder{width:20px;height:20px;border-radius:4px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;font-size:0.7em;flex-shrink:0;}
+.bm-card-num{font-size:0.6em;font-weight:700;background:var(--accent);color:var(--text);width:20px;height:20px;border-radius:999px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-left:auto;}
+.bm-input{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);font-family:inherit;font-size:0.72em;transition:0.2s;}
+.bm-input:focus{outline:none;border-color:var(--accent);}
+body.theme-tarot .bm-input{background:#1a1028;}
+.bm-row{display:flex;gap:7px;}
+.bm-icon-sel{width:46px;padding:6px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);font-family:inherit;font-size:0.85em;cursor:pointer;text-align:center;flex-shrink:0;}
+body.theme-tarot .bm-icon-sel{background:#1a1028;}
+.bm-cat-sel{flex:1;padding:6px 8px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);font-family:inherit;font-size:0.68em;cursor:pointer;}
+body.theme-tarot .bm-cat-sel{background:#1a1028;}
+.bm-note-input{width:100%;padding:6px 9px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--sub);font-family:inherit;font-size:0.68em;}
+body.theme-tarot .bm-note-input{background:#1a1028;}
+.bm-actions{display:flex;gap:6px;margin-top:auto;}
+.fetch-btn{flex:1;padding:7px 8px;border:none;background:var(--accent-soft);color:var(--accent-hover);border-radius:8px;font-family:inherit;font-size:0.64em;font-weight:700;cursor:pointer;transition:0.2s;white-space:nowrap;}
+.fetch-btn:hover{background:var(--accent);}
+.del-bm{padding:7px 10px;border:none;background:none;color:var(--sub);border-radius:8px;font-size:0.9em;cursor:pointer;transition:0.2s;}
+.del-bm:hover{color:var(--pink);}
+.bm-nav{display:flex;justify-content:center;gap:8px;margin-top:6px;}
+.bm-nav-btn{border:1.5px solid var(--border);background:var(--card);color:var(--text);width:30px;height:30px;border-radius:999px;cursor:pointer;font-size:0.9em;display:flex;align-items:center;justify-content:center;transition:0.2s;}
+.bm-nav-btn:hover{background:var(--accent);border-color:var(--accent);}
+.bm-dots{display:flex;gap:5px;align-items:center;}
+.bm-dot{width:6px;height:6px;border-radius:999px;background:var(--border);transition:0.2s;cursor:pointer;}
+.bm-dot.active{background:var(--accent);width:16px;}
+.add-bm-btn{width:100%;padding:10px;border:2px dashed var(--border);border-radius:12px;background:none;color:var(--sub);font-family:inherit;font-size:0.76em;font-weight:700;cursor:pointer;transition:0.2s;margin-top:4px;}
+.add-bm-btn:hover{border-color:var(--accent);color:var(--accent-hover);background:var(--accent-soft);}
+
+/* SIDEBAR */
+.sidebar{display:flex;flex-direction:column;gap:14px;}
+.generate-btn{width:100%;padding:15px;border:none;background:linear-gradient(135deg,var(--accent) 0%,var(--pink) 100%);color:var(--text);border-radius:16px;font-family:inherit;font-size:0.88em;font-weight:700;cursor:pointer;transition:0.25s;box-shadow:0 6px 18px rgba(246,200,108,0.28);line-height:1.6;}
+.generate-btn:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(246,200,108,0.38);}
+body.theme-tarot .generate-btn{color:#fff;}
+
+/* ── THEME PREVIEW CARDS ── */
+.theme-previews{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+.theme-preview-card{border-radius:12px;padding:10px 14px;cursor:pointer;border:2px solid transparent;transition:0.2s;display:flex;align-items:center;gap:10px;font-size:0.72em;font-weight:700;}
+.theme-preview-card:hover{transform:translateY(-1px);}
+.theme-preview-card.selected{border-color:var(--accent);}
+.tp-cream{background:linear-gradient(135deg,#fff9f6,#ffebe3);color:#54433a;border-color:rgba(246,200,108,0.4);}
+.tp-cream.selected{border-color:#f6c86c;}
+.tp-blue{background:linear-gradient(135deg,#1a3550,#2C5F8A);color:#E2EDF8;}
+.tp-blue.selected{border-color:#5ba3d9;}
+.tp-tarot{background:linear-gradient(135deg,#1a1028,#2a1840);color:#e8d5ff;}
+.tp-tarot.selected{border-color:#9b59d0;}
+.tp-icon{font-size:1.4em;}
+.tp-info{flex:1;}
+.tp-name{font-size:0.95em;}
+.tp-desc{font-size:0.78em;opacity:0.7;font-weight:500;margin-top:2px;}
+
+.opt-label{font-size:0.65em;font-weight:700;color:var(--sub);margin-bottom:5px;}
+.opt-select{width:100%;padding:8px 11px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg1);color:var(--text);font-family:inherit;font-size:0.75em;cursor:pointer;margin-bottom:10px;}
+body.theme-tarot .opt-select{background:#2a1840;}
+.opt-check-row{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+.opt-check{display:flex;align-items:center;gap:8px;font-size:0.7em;cursor:pointer;}
+.opt-check input{accent-color:var(--accent);width:14px;height:14px;}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.stat-box{background:var(--accent-soft);border-radius:12px;padding:10px;text-align:center;}
+.stat-num{font-size:1.5em;font-weight:700;color:var(--accent-hover);}
+.stat-label{font-size:0.58em;color:var(--sub);margin-top:2px;}
+.tips-list{font-size:0.65em;color:var(--sub);line-height:2.1;display:flex;flex-direction:column;gap:2px;}
+.tips-list div{display:flex;align-items:flex-start;gap:6px;}
+
+/* OUTPUT */
+.output-area{margin-top:20px;}
+.output-tabs{display:flex;gap:0;border-radius:var(--radius) var(--radius) 0 0;overflow:hidden;flex:1;}
+.output-tab{flex:1;padding:11px;border:none;background:var(--bg2);color:var(--sub);font-family:inherit;font-size:0.75em;font-weight:700;cursor:pointer;transition:0.2s;border:1px solid var(--border);border-bottom:none;}
+.output-tab:first-child{border-radius:var(--radius) 0 0 0;}
+.output-tab:last-child{border-radius:0 var(--radius) 0 0;}
+.output-tab.active{background:var(--card);color:var(--text);}
+.output-box{background:var(--card);border:1px solid var(--border);border-radius:0 0 var(--radius) var(--radius);min-height:280px;overflow:hidden;position:relative;}
+#previewFrame{width:100%;height:520px;border:none;display:block;}
+.code-box{display:none;padding:14px;overflow:auto;max-height:520px;position:relative;}
+.code-box pre{font-family:"Courier New",monospace;font-size:0.65em;line-height:1.6;color:var(--text);white-space:pre-wrap;word-break:break-all;}
+body.theme-tarot .code-box pre{color:#c8b3e8;}
+.code-actions{position:absolute;top:10px;right:10px;display:flex;gap:6px;}
+.code-act-btn{padding:6px 13px;border:none;background:var(--accent);color:var(--text);border-radius:999px;font-family:inherit;font-size:0.65em;font-weight:700;cursor:pointer;transition:0.2s;}
+.code-act-btn:hover{background:var(--accent-hover);}
+.empty-output{display:flex;flex-direction:column;align-items:center;justify-content:center;height:280px;color:var(--sub);gap:14px;}
+.empty-icon{font-size:3em;}
+.empty-text{font-size:0.76em;text-align:center;line-height:1.8;}
+
+/* TOAST */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--text);color:var(--bg1);padding:10px 22px;border-radius:999px;font-size:0.75em;font-weight:700;transition:0.35s;opacity:0;z-index:999;pointer-events:none;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+body.theme-tarot .toast{background:#e8d5ff;color:#1a1028;}
+.footer{text-align:center;margin-top:36px;color:var(--sub);font-size:0.65em;line-height:2.2;}
+.footer b{color:var(--pink);}
+::-webkit-scrollbar{width:6px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:999px;}
+</style>
 </head>
-
 <body>
-
-<div class="stars" id="stars"></div>
-
-<div class="frame"></div>
-
-<div class="corner tl"></div>
-<div class="corner tr"></div>
-<div class="corner bl"></div>
-<div class="corner br"></div>
-
+<div class="decor-border"></div>
+<div class="toast" id="toast"></div>
 <div class="container">
 
-    <div class="font-control">
+<div class="hero">
+  <div class="hero-deco">☁ ✦ ☁</div>
+  <div class="badge">( ˘ ³˘)♥ 奶油雲朵書籤工坊</div>
+  <h1 class="title">✦ 書籤網站產生器 ✦</h1>
+  <p class="subtitle">輸入你的最愛網址，一鍵生成你的專屬收藏頁 🌸</p>
+  <p class="subtitle-deco">･ ｡ ☆∴｡　 ･ﾟ*｡★･ ∴｡　 ･ﾟ*｡☆</p>
+</div>
 
-        <button
-            class="font-btn"
-            onclick="changeFontSize('small', this)"
-        >
-            A -
-        </button>
+<div class="toolbar">
+  <div class="toolbar-row">
+    <span class="toolbar-label">🎨 介面主題</span>
+    <button class="theme-btn theme-cream active" id="btn-theme-cream" onclick="setTheme('cream')">☁ 奶油雲朵</button>
+    <button class="theme-btn theme-blue-btn" id="btn-theme-blue" onclick="setTheme('blue')">💉 醫療藍</button>
+    <button class="theme-btn theme-tarot-btn" id="btn-theme-tarot" onclick="setTheme('tarot')">🔮 紫色塔羅</button>
+  </div>
+  <div class="toolbar-row">
+    <span class="toolbar-label">🔤 字型</span>
+    <select class="font-sel" id="fontSel" onchange="setFont(this.value)">
+      <option value="zen">丸ゴシック (日系)</option>
+      <option value="noto">Noto Sans TC</option>
+      <option value="quicksand">Quicksand</option>
+      <option value="nunito">Nunito</option>
+    </select>
+    <span class="toolbar-label">大小</span>
+    <button class="ctrl-btn" onclick="changeFontSize(-2)">A－</button>
+    <button class="ctrl-btn active" id="fontSizeLabel" onclick="changeFontSize(0)">18px</button>
+    <button class="ctrl-btn" onclick="changeFontSize(2)">A＋</button>
+  </div>
+</div>
 
-        <button
-            class="font-btn active"
-            onclick="changeFontSize('medium', this)"
-        >
-            A
-        </button>
+<div class="main-layout">
+  <div style="display:flex;flex-direction:column;gap:14px;min-width:0;">
 
-        <button
-            class="font-btn"
-            onclick="changeFontSize('large', this)"
-        >
-            A +
-        </button>
-
+    <div class="panel">
+      <div class="panel-title">🌸 網站基本設定 <span class="panel-badge">必填</span></div>
+      <div class="field-label">📌 網站大標題</div>
+      <input class="field-input" id="siteTitle" placeholder="我的最愛收藏 ✦" value="我的最愛收藏 ✦">
+      <div class="field-label">💬 副標題 / 說明</div>
+      <input class="field-input" id="siteSubtitle" placeholder="混沌、靈感與奶油雲朵 ✦" value="混沌、靈感與奶油雲朵 ✦">
+      <div class="field-label">🏷 瀏覽器標籤標題</div>
+      <input class="field-input" id="sitePageTitle" placeholder="My Bookmark ☁" value="My Bookmark ☁" style="margin-bottom:0;">
     </div>
 
-    <div class="moon">
-        <div class="moon-symbol">☾</div>
+    <div class="panel">
+      <div class="panel-title">🗂 分類管理</div>
+      <div class="cat-list" id="catList"></div>
+      <div class="section-divider">✦ ─────── ✦</div>
+      <div class="cat-add-row">
+        <input class="cat-add-input" id="catInput" placeholder="新增分類名稱..." onkeydown="if(event.key==='Enter')addCategory()">
+        <select class="icon-sel-btn" id="catIconInput">
+          <option>☁</option><option>🌸</option><option>🧁</option>
+          <option>📖</option><option>✨</option><option>🎀</option>
+          <option>🌷</option><option>💉</option><option>🔮</option>
+          <option>🎮</option><option>💰</option><option>🍓</option>
+          <option>🌙</option><option>⭐</option><option>🎵</option>
+          <option>🏠</option><option>🎨</option><option>📰</option>
+          <option>🫧</option><option>🍞</option><option>🌈</option>
+        </select>
+        <button class="ctrl-btn" onclick="addCategory()">✦ 新增</button>
+      </div>
     </div>
 
-    <div class="title">
-
-        <h1 class="main-title">
-            Dream Archive
-        </h1>
-
-        <p class="subtitle">
-            連結星宿試算表，開啟魔法星雲 ✦
-        </p>
-
+    <div class="panel">
+      <div class="panel-title">🔖 書籤列表</div>
+      <div class="bm-counter" id="bmCounter">共 0 個書籤 ↔ 左右滑動瀏覽</div>
+      <div class="bm-carousel" id="bmCarousel"></div>
+      <div class="bm-nav">
+        <button class="bm-nav-btn" onclick="scrollCarousel(-1)">‹</button>
+        <div class="bm-dots" id="bmDots"></div>
+        <button class="bm-nav-btn" onclick="scrollCarousel(1)">›</button>
+      </div>
+      <button class="add-bm-btn" onclick="addBookmark()">＋ 新增書籤 ☁ (ˊ꒵ˋ)</button>
     </div>
 
-    <div id="archive-lobby">
+  </div>
 
-        <div class="loading">
-            正在喚醒星宿試算表...
+  <div class="sidebar">
+
+    <div class="panel">
+      <div class="panel-title">⚡ 生成設定</div>
+
+      <div class="opt-label">🎨 輸出網站風格</div>
+      <div class="theme-previews">
+        <div class="theme-preview-card tp-cream selected" id="tp-cream" onclick="selectOutputTheme('cream')">
+          <span class="tp-icon">☁</span>
+          <div class="tp-info">
+            <div class="tp-name">奶油雲朵</div>
+            <div class="tp-desc">溫柔日系・卡片可愛風</div>
+          </div>
+          <span id="tp-check-cream">✦</span>
         </div>
+        <div class="theme-preview-card tp-blue" id="tp-blue" onclick="selectOutputTheme('blue')">
+          <span class="tp-icon">💉</span>
+          <div class="tp-info">
+            <div class="tp-name">醫療藍 Portal</div>
+            <div class="tp-desc">玻璃卡片・頂欄・時鐘</div>
+          </div>
+          <span id="tp-check-blue" style="opacity:0;">✦</span>
+        </div>
+        <div class="theme-preview-card tp-tarot" id="tp-tarot" onclick="selectOutputTheme('tarot')">
+          <span class="tp-icon">🔮</span>
+          <div class="tp-info">
+            <div class="tp-name">紫色塔羅 Archive</div>
+            <div class="tp-desc">星空背景・金色邊框・神秘</div>
+          </div>
+          <span id="tp-check-tarot" style="opacity:0;">✦</span>
+        </div>
+      </div>
 
+      <div class="opt-label">🃏 卡片排版</div>
+      <select class="opt-select" id="layoutOpt">
+        <option value="grid">格狀排列 ✦ Grid</option>
+        <option value="list">清單排列 ✦ List</option>
+      </select>
+
+      <div class="opt-check-row">
+        <label class="opt-check"><input type="checkbox" id="optSearch" checked> 🔍 加入搜尋功能</label>
+        <label class="opt-check"><input type="checkbox" id="optFilter" checked> 🗂 加入分類過濾</label>
+        <label class="opt-check"><input type="checkbox" id="optFontCtrl" checked> 🔤 字型大小控制</label>
+        <label class="opt-check"><input type="checkbox" id="optFavicon" checked> 🖼 顯示網站圖示</label>
+        <label class="opt-check"><input type="checkbox" id="optDesc" checked> 📝 顯示備註說明</label>
+        <label class="opt-check"><input type="checkbox" id="optNewTab" checked> 🔗 新頁籤開啟</label>
+        <label class="opt-check"><input type="checkbox" id="optWatermark" checked> 💧 顯示 watermark</label>
+      </div>
+      <button class="generate-btn" onclick="generate()">
+        ✦ 產生我的書籤網站 ✦<br>
+        <span style="font-size:0.75em;opacity:0.85;">( ˘ ³˘)♥ 點我生成！</span>
+      </button>
     </div>
+
+    <div class="panel">
+      <div class="panel-title">📊 統計資訊</div>
+      <div class="stats-grid">
+        <div class="stat-box"><div class="stat-num" id="statBm">0</div><div class="stat-label">🔖 書籤數</div></div>
+        <div class="stat-box"><div class="stat-num" id="statCat">0</div><div class="stat-label">🗂 分類數</div></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">💡 使用提示</div>
+      <div class="tips-list">
+        <div><span>☁</span><span>輸入網址後按「抓取」可自動填入標題</span></div>
+        <div><span>🖼</span><span>自動顯示網站小圖示（favicon）</span></div>
+        <div><span>🌸</span><span>書籤可左右滑動，不佔版面</span></div>
+        <div><span>💉</span><span>醫療藍：固定頂欄 ＋ 即時時鐘</span></div>
+        <div><span>🔮</span><span>塔羅版：星空動畫 ＋ 金色邊框</span></div>
+        <div><span>💾</span><span>可下載完整 HTML 檔案</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="output-area">
+  <div class="output-tabs">
+    <button class="output-tab active" onclick="switchTab('preview',this)">👀 預覽效果</button>
+    <button class="output-tab" onclick="switchTab('code',this)">📋 原始碼</button>
+  </div>
+  <div class="output-box">
+    <iframe id="previewFrame" style="display:none;"></iframe>
+    <div class="code-box" id="codeBox">
+      <div class="code-actions">
+        <button class="code-act-btn" onclick="downloadHTML()">💾 下載</button>
+        <button class="code-act-btn" onclick="copyCode()">📋 複製</button>
+      </div>
+      <pre id="codeContent"></pre>
+    </div>
+    <div id="emptyOutput" class="empty-output">
+      <div class="empty-icon">( ˘ ³˘)♥</div>
+      <div class="empty-text">
+        點「✦ 產生我的書籤網站 ✦」<br>就能在這裡預覽效果唷！<br>
+        <span style="font-size:0.85em;opacity:0.6;">･ ｡ ☆∴｡ ･ﾟ*｡★</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  ✦ ─────── ☁ 書籤網站產生器 ☁ ─────── ✦<br>
+  Designed with ♥ by <b>ChuChu</b> © 2026<br>
+  <span style="font-size:0.85em;opacity:0.5;">･ ｡ ☆∴｡　 ･ﾟ*｡★</span>
+</div>
 
 </div>
 
 <script>
+/* ─── STATE ─── */
+let categories=[
+  {id:'c1',name:'生活工具',icon:'☁'},
+  {id:'c2',name:'生成宇宙',icon:'🌸'},
+  {id:'c3',name:'摸魚遊樂園',icon:'🎮'},
+  {id:'c4',name:'理財',icon:'💰'},
+  {id:'c5',name:'有趣',icon:'✨'},
+];
+let bookmarks=[
+  {id:'b1',url:'https://claude.ai',title:'Claude AI',note:'Anthropic的AI助理 🤖',cat:'c2',icon:'✨'},
+];
+let generatedHTML='';
+let currentFontSize=18;
+let selectedOutputTheme='cream';
 
-/* ===== 星空 ===== */
-
-const stars =
-    document.getElementById("stars");
-
-for(let i = 0; i < 140; i++){
-
-    const star =
-        document.createElement("div");
-
-    star.className = "star";
-
-    star.style.left =
-        Math.random() * 100 + "%";
-
-    star.style.top =
-        Math.random() * 100 + "%";
-
-    star.style.animationDelay =
-        Math.random() * 4 + "s";
-
-    stars.appendChild(star);
-}
-
-/* ===== 字體大小 ===== */
-
-function changeFontSize(size, btnElement){
-
-    const root =
-        document.documentElement;
-
-    document
-        .querySelectorAll('.font-btn')
-        .forEach(btn =>
-            btn.classList.remove('active')
-        );
-
-    btnElement.classList.add('active');
-
-    if(size === 'small'){
-
-        root.style.setProperty(
-            '--base-font-size',
-            '15px'
-        );
-    }
-
-    else if(size === 'medium'){
-
-        root.style.setProperty(
-            '--base-font-size',
-            '18px'
-        );
-    }
-
-    else if(size === 'large'){
-
-        root.style.setProperty(
-            '--base-font-size',
-            '22px'
-        );
-    }
-}
-
-/* ===== Google 試算表 ID ===== */
-
-const sheetId =
-    "1ArEA8jn79n4mLu4kaH7VqAPNMTQwFa8ttLRHDk7hALg";
-
-/* ===== 分類 ===== */
-
-const categories = {
-
-    wealth:{
-        title:"🪙 財富煉金術 ✦ Wealth Alchemy",
-        symbols:["❂","🪙"],
-        cards:[]
-    },
-
-    inspiration:{
-        title:"📜 靈感編織界 ✦ Inspiration Weaver",
-        symbols:["✧","📜"],
-        cards:[]
-    },
-
-    mirage:{
-        title:"🎭 幻影擬態坊 ✦ Mirage Workshop",
-        symbols:["☾","🎭"],
-        cards:[]
-    },
-
-    chaos:{
-        title:"🌀 混沌試煉場 ✦ Chaos Trial",
-        symbols:["✶","🌀"],
-        cards:[]
-    },
-
-    unknown:{
-        title:"✨ 未分界星軌 ✦ Uncharted Orbit",
-        symbols:["✦","☽"],
-        cards:[]
-    }
+/* ─── THEME / FONT ─── */
+const fontFamilies={
+  zen:'"Zen Maru Gothic","Quicksand",sans-serif',
+  noto:'"Noto Sans TC",sans-serif',
+  quicksand:'"Quicksand",sans-serif',
+  nunito:'"Nunito",sans-serif',
 };
-
-/* ===== 載入試算表 ===== */
-
-async function loadProjectsFromSheet(){
-
-    const lobby =
-        document.getElementById(
-            "archive-lobby"
-        );
-
-    const url =
-        `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json`;
-
-    try{
-
-        const response =
-            await fetch(url);
-
-        if(!response.ok){
-
-            throw new Error(
-                "試算表連線失敗"
-            );
-        }
-
-        const text =
-            await response.text();
-
-        const jsonString =
-            text.substring(
-                text.indexOf('{'),
-                text.lastIndexOf('}') + 1
-            );
-
-        const data =
-            JSON.parse(jsonString);
-
-        const rows =
-            data.table.rows;
-
-        Object.keys(categories)
-            .forEach(key =>
-                categories[key].cards = []
-            );
-
-        rows.forEach((row, index)=>{
-
-            /* ===== 防止空白列炸掉 ===== */
-
-            if(!row.c) return;
-
-            const webUrl =
-                row.c?.[0]?.v || "";
-
-            let title =
-                row.c?.[1]?.v || "";
-
-            let desc =
-                row.c?.[2]?.v || "傳送門";
-
-            let tag =
-                row.c?.[3]?.v
-                    ?.toString()
-                    .trim() || "";
-
-            if(!webUrl) return;
-
-            if(!title){
-
-                try{
-
-                    const urlObj =
-                        new URL(webUrl);
-
-                    title =
-                        urlObj.pathname
-                            .split('/')
-                            .pop()
-                            .replace('.html','')
-                        || urlObj.hostname;
-
-                }catch(e){
-
-                    title = "未命名宇宙";
-                }
-            }
-
-            let targetCategory =
-                "unknown";
-
-            if(
-                tag.includes("財富") ||
-                tag.includes("計") ||
-                tag.includes("股") ||
-                tag.includes("錢")
-            ){
-
-                targetCategory =
-                    "wealth";
-            }
-
-            else if(
-                tag.includes("靈感") ||
-                tag.includes("小說") ||
-                tag.includes("文")
-            ){
-
-                targetCategory =
-                    "inspiration";
-            }
-
-            else if(
-                tag.includes("幻影") ||
-                tag.includes("產生") ||
-                tag.includes("名片") ||
-                tag.includes("圖片") ||
-                tag.includes("製造") ||
-                tag.includes("ID")
-            ){
-
-                targetCategory =
-                    "mirage";
-            }
-
-            else if(
-                tag.includes("混沌") ||
-                tag.includes("失敗") ||
-                tag.includes("工事") ||
-                tag.includes("暫停")
-            ){
-
-                targetCategory =
-                    "chaos";
-            }
-
-            const catSymbols =
-                categories[targetCategory]
-                    .symbols;
-
-            const currentSymbol =
-                catSymbols[
-                    index %
-                    catSymbols.length
-                ];
-
-            /* ===== 只顯示檔名 ===== */
-
-            let cleanDisplayUrl = "";
-
-            try{
-
-                const urlObj =
-                    new URL(webUrl);
-
-                cleanDisplayUrl =
-                    urlObj.pathname
-                        .split('/')
-                        .pop();
-
-                if(!cleanDisplayUrl){
-
-                    cleanDisplayUrl =
-                        urlObj.hostname;
-                }
-
-            }catch{
-
-                cleanDisplayUrl =
-                    webUrl;
-            }
-
-            categories[targetCategory]
-                .cards.push(`
-
-                <a
-                    class="card"
-                    href="${webUrl}"
-                    target="_blank"
-                >
-
-                    <div>
-
-                        <div class="card-header-row">
-
-                            <div class="card-title">
-                                ${title}
-                            </div>
-
-                            <div class="card-symbol">
-                                ${currentSymbol}
-                            </div>
-
-                        </div>
-
-                        <div class="card-file">
-                            ${cleanDisplayUrl}
-                        </div>
-
-                        <div class="card-desc">
-                            ${desc}
-                        </div>
-
-                    </div>
-
-                    <div class="card-footer">
-                        PORTAL →
-                    </div>
-
-                </a>
-
-            `);
-        });
-
-        let lobbyHTML = "";
-
-        let hasAnyCards = false;
-
-        Object.keys(categories)
-            .forEach(key=>{
-
-            const cat =
-                categories[key];
-
-            if(cat.cards.length > 0){
-
-                hasAnyCards = true;
-
-                lobbyHTML += `
-
-                    <div class="category-section">
-
-                        <h2 class="category-title">
-
-                            ${cat.title}
-
-                            <span>
-                                (${cat.cards.length})
-                            </span>
-
-                        </h2>
-
-                        <div class="grid">
-
-                            ${cat.cards.join("")}
-
-                        </div>
-
-                    </div>
-
-                `;
-            }
-        });
-
-        if(!hasAnyCards){
-
-            lobby.innerHTML = `
-
-                <div class="loading">
-
-                    試算表中目前沒有任何魔法連線 🔮
-
-                </div>
-
-            `;
-        }
-
-        else{
-
-            lobby.innerHTML =
-                lobbyHTML;
-        }
-
-    }catch(err){
-
-        console.error(err);
-
-        lobby.innerHTML = `
-
-            <div class="loading">
-
-                無法動態連結至星宿試算表 😭
-
-            </div>
-
-        `;
-    }
+function setTheme(t){
+  document.body.className=t==='cream'?'':`theme-${t}`;
+  document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(`btn-theme-${t}`).classList.add('active');
+}
+function setFont(f){ document.body.style.fontFamily=fontFamilies[f]; }
+function changeFontSize(d){
+  if(d===0)currentFontSize=18;
+  else currentFontSize=Math.min(28,Math.max(12,currentFontSize+d));
+  document.documentElement.style.setProperty('--base-font-size',currentFontSize+'px');
+  document.getElementById('fontSizeLabel').textContent=currentFontSize+'px';
+}
+function selectOutputTheme(t){
+  selectedOutputTheme=t;
+  ['cream','blue','tarot'].forEach(x=>{
+    document.getElementById('tp-'+x).classList.toggle('selected',x===t);
+    document.getElementById('tp-check-'+x).style.opacity=x===t?'1':'0';
+  });
 }
 
-/* ===== 啟動 ===== */
+/* ─── CATEGORIES ─── */
+function renderCats(){
+  const list=document.getElementById('catList');
+  list.innerHTML='';
+  categories.forEach(c=>{
+    const chip=document.createElement('div');
+    chip.className='cat-chip';
+    chip.innerHTML=`<span>${c.icon} ${c.name}</span><button class="del-cat" onclick="deleteCat('${c.id}')">×</button>`;
+    list.appendChild(chip);
+  });
+  updateStats();updateCatSelects();
+}
+function addCategory(){
+  const nm=document.getElementById('catInput').value.trim();
+  const ic=document.getElementById('catIconInput').value;
+  if(!nm)return showToast('請輸入分類名稱 🌸');
+  categories.push({id:'c'+Date.now(),name:nm,icon:ic});
+  document.getElementById('catInput').value='';
+  renderCats();showToast(`已新增分類「${ic} ${nm}」✨`);
+}
+function deleteCat(id){categories=categories.filter(c=>c.id!==id);renderCats();}
+function updateCatSelects(){
+  document.querySelectorAll('.bm-cat-sel').forEach(sel=>{
+    const cur=sel.dataset.val||'';
+    sel.innerHTML='<option value="">— 未分類 —</option>'+
+      categories.map(c=>`<option value="${c.id}"${c.id===cur?' selected':''}>${c.icon} ${c.name}</option>`).join('');
+  });
+}
 
-loadProjectsFromSheet();
+/* ─── BOOKMARKS ─── */
+function renderBmList(){
+  const carousel=document.getElementById('bmCarousel');
+  const dots=document.getElementById('bmDots');
+  carousel.innerHTML='';dots.innerHTML='';
+  bookmarks.forEach((bm,i)=>{
+    const card=document.createElement('div');
+    card.className='bm-card';card.id='bmc-'+bm.id;
+    const faviconUrl=bm.url?`https://www.google.com/s2/favicons?domain=${encodeURIComponent(bm.url)}&sz=32`:'';
+    card.innerHTML=`
+      <div class="bm-card-header">
+        ${bm.url?`<img class="bm-favicon" src="${faviconUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="bm-favicon-placeholder" style="display:none">${bm.icon||'✨'}</div>`:`<div class="bm-favicon-placeholder">${bm.icon||'✨'}</div>`}
+        <span style="font-size:0.65em;font-weight:700;color:var(--sub);flex:1;">書籤 #${i+1}</span>
+        <span class="bm-card-num">${i+1}</span>
+      </div>
+      <input class="bm-input" placeholder="🔗 輸入網址..." value="${escHtml(bm.url)}"
+        oninput="updateBm('${bm.id}','url',this.value);updateFavicon('${bm.id}',this.value)">
+      <input class="bm-input" placeholder="標題（可留空自動抓）" value="${escHtml(bm.title)}"
+        id="bmt-${bm.id}" oninput="updateBm('${bm.id}','title',this.value)">
+      <div class="bm-row">
+        <select class="bm-icon-sel" onchange="updateBm('${bm.id}','icon',this.value)">
+          ${['✨','☁','🌸','🧁','📖','🎀','🌷','🫧','🍞','🎮','💰','🔮','🌙','🎵','🏠','🎨','📰','🍓','💉','⭐','🌈','🫶'].map(e=>`<option${e===bm.icon?' selected':''}>${e}</option>`).join('')}
+        </select>
+        <select class="bm-cat-sel" data-val="${bm.cat||''}" onchange="updateBm('${bm.id}','cat',this.value);this.dataset.val=this.value">
+          <option value="">— 未分類 —</option>
+          ${categories.map(c=>`<option value="${c.id}"${c.id===bm.cat?' selected':''}>${c.icon} ${c.name}</option>`).join('')}
+        </select>
+      </div>
+      <input class="bm-note-input" placeholder="📝 備註（選填）..." value="${escHtml(bm.note||'')}"
+        oninput="updateBm('${bm.id}','note',this.value)">
+      <div class="bm-actions">
+        <button class="fetch-btn" onclick="fetchTitle('${bm.id}')">🔍 抓取標題</button>
+        <button class="del-bm" onclick="deleteBm('${bm.id}')">🗑</button>
+      </div>`;
+    carousel.appendChild(card);
+    const dot=document.createElement('div');
+    dot.className='bm-dot'+(i===0?' active':'');
+    dot.onclick=()=>scrollToCard(i);
+    dots.appendChild(dot);
+  });
+  document.getElementById('bmCounter').textContent=`共 ${bookmarks.length} 個書籤 ↔ 左右滑動瀏覽`;
+  updateStats();setupScrollSync();
+}
+function setupScrollSync(){
+  const c=document.getElementById('bmCarousel');
+  if(!c)return;
+  c.addEventListener('scroll',()=>{
+    const w=c.querySelector('.bm-card')?.offsetWidth||240;
+    const i=Math.round(c.scrollLeft/(w+12));
+    document.querySelectorAll('.bm-dot').forEach((d,idx)=>d.classList.toggle('active',idx===i));
+  },{passive:true});
+}
+function scrollToCard(i){
+  const c=document.getElementById('bmCarousel');
+  const card=c.querySelectorAll('.bm-card')[i];
+  if(card)card.scrollIntoView({behavior:'smooth',block:'nearest',inline:'start'});
+}
+function scrollCarousel(dir){
+  const c=document.getElementById('bmCarousel');
+  const w=(c.querySelector('.bm-card')?.offsetWidth||240)+12;
+  c.scrollBy({left:dir*w,behavior:'smooth'});
+}
+function updateFavicon(id,url){
+  const card=document.getElementById('bmc-'+id);
+  if(!card)return;
+  const img=card.querySelector('.bm-favicon');
+  const ph=card.querySelector('.bm-favicon-placeholder');
+  if(img&&url){img.src=`https://www.google.com/s2/favicons?domain=${encodeURIComponent(url)}&sz=32`;img.style.display='';if(ph)ph.style.display='none';}
+}
+function addBookmark(){
+  bookmarks.push({id:'b'+Date.now(),url:'',title:'',note:'',cat:'',icon:'✨'});
+  renderBmList();
+  setTimeout(()=>{scrollToCard(bookmarks.length-1);showToast('✨ 已新增書籤！向右滑看看～');},100);
+}
+function deleteBm(id){bookmarks=bookmarks.filter(b=>b.id!==id);renderBmList();}
+function updateBm(id,field,val){const bm=bookmarks.find(b=>b.id===id);if(bm)bm[field]=val;updateStats();}
+async function fetchTitle(id){
+  const bm=bookmarks.find(b=>b.id===id);
+  if(!bm||!bm.url)return showToast('請先輸入網址 🌸');
+  showToast('☁ 正在抓取標題...');
+  try{
+    const proxy=`https://api.allorigins.win/get?url=${encodeURIComponent(bm.url)}`;
+    const resp=await fetch(proxy);const data=await resp.json();
+    const match=data.contents.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+    if(match&&match[1]){
+      const t=match[1].replace(/\s+/g,' ').trim();bm.title=t;
+      const inp=document.getElementById('bmt-'+id);if(inp)inp.value=t;
+      showToast('✨ 標題抓取成功！');
+    }else{showToast('找不到標題，請手動填入 🌷');}
+  }catch(e){showToast('抓取失敗，請手動填入 🌷');}
+}
+function updateStats(){
+  document.getElementById('statBm').textContent=bookmarks.length;
+  document.getElementById('statCat').textContent=categories.length;
+}
+function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
+/* ════════════════════════════════════════
+   GENERATE — 3 complete themes
+════════════════════════════════════════ */
+function generate(){
+  const title=document.getElementById('siteTitle').value||'我的最愛';
+  const subtitle=document.getElementById('siteSubtitle').value||'';
+  const pageTitle=document.getElementById('sitePageTitle').value||title;
+  const layout=document.getElementById('layoutOpt').value;
+  const optSearch=document.getElementById('optSearch').checked;
+  const optFilter=document.getElementById('optFilter').checked;
+  const optFontCtrl=document.getElementById('optFontCtrl').checked;
+  const optFavicon=document.getElementById('optFavicon').checked;
+  const optDesc=document.getElementById('optDesc').checked;
+  const optNewTab=document.getElementById('optNewTab').checked;
+  const optWatermark=document.getElementById('optWatermark').checked;
+
+  const bmsJSON=JSON.stringify(bookmarks.map(b=>({url:b.url,title:b.title||b.url,note:b.note,cat:b.cat,icon:b.icon})));
+  const catsJSON=JSON.stringify(categories.map(c=>({id:c.id,name:c.name,icon:c.icon})));
+
+  if(selectedOutputTheme==='blue'){
+    generatedHTML=generateBlue(title,subtitle,pageTitle,layout,optSearch,optFilter,optFontCtrl,optFavicon,optDesc,optNewTab,optWatermark,bmsJSON,catsJSON);
+  } else if(selectedOutputTheme==='tarot'){
+    generatedHTML=generateTarot(title,subtitle,pageTitle,layout,optSearch,optFilter,optFontCtrl,optFavicon,optDesc,optNewTab,optWatermark,bmsJSON,catsJSON);
+  } else {
+    generatedHTML=generateCream(title,subtitle,pageTitle,layout,optSearch,optFilter,optFontCtrl,optFavicon,optDesc,optNewTab,optWatermark,bmsJSON,catsJSON);
+  }
+
+  document.getElementById('emptyOutput').style.display='none';
+  const frame=document.getElementById('previewFrame');
+  const codeBox=document.getElementById('codeBox');
+  frame.srcdoc=generatedHTML;frame.style.display='block';codeBox.style.display='none';
+  document.querySelectorAll('.output-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.output-tab')[0].classList.add('active');
+  document.getElementById('codeContent').textContent=generatedHTML;
+  showToast('✨ 書籤網站已生成！快看看預覽～');
+  setTimeout(()=>document.querySelector('.output-area').scrollIntoView({behavior:'smooth',block:'start'}),200);
+}
+
+/* ── CREAM theme generator ── */
+function generateCream(title,subtitle,pageTitle,layout,optSearch,optFilter,optFontCtrl,optFavicon,optDesc,optNewTab,optWatermark,bmsJSON,catsJSON){
+  const gridCss=layout==='grid'?'display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;':'display:flex;flex-direction:column;gap:11px;';
+  const cardExtra=layout==='list'?'display:flex;align-items:center;gap:14px;padding:14px 18px;':'';
+  return `<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>${escHtml(pageTitle)}</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--bg1:#fff9f6;--bg2:#ffebe3;--card:#fff;--text:#54433a;--sub:#8e7a70;--accent:#f6c86c;--ah:#efb94d;--pink:#f79999;--border:rgba(142,122,112,0.12);--fs:18px;}
+body{min-height:100vh;background:linear-gradient(160deg,var(--bg1),var(--bg2));font-family:"Zen Maru Gothic","Quicksand",sans-serif;font-size:var(--fs);color:var(--text);padding:20px;overflow-x:hidden;}
+.decor-border{position:fixed;inset:8px;border:2px dashed var(--border);border-radius:24px;pointer-events:none;}
+.container{max-width:1100px;margin:auto;position:relative;z-index:2;}
+${optFontCtrl?`.fc{display:flex;justify-content:flex-end;gap:7px;margin-bottom:16px;}.fb{border:1.5px solid var(--border);background:var(--card);color:var(--text);padding:6px 12px;border-radius:999px;cursor:pointer;font-family:inherit;font-size:0.68em;font-weight:700;transition:0.2s;}.fb:hover,.fb.on{background:var(--accent);border-color:var(--accent);}` : ''}
+.hero{text-align:center;margin-bottom:26px;}
+.hero-deco{font-size:1.4em;letter-spacing:4px;margin-bottom:4px;}
+.badge{display:inline-block;background:rgba(246,200,108,0.15);color:var(--ah);padding:5px 15px;border-radius:999px;font-size:0.68em;font-weight:700;margin-bottom:10px;}
+.site-title{font-size:clamp(26px,5vw,44px);line-height:1.4;font-weight:700;}
+.site-sub{color:var(--sub);margin-top:7px;font-size:0.78em;line-height:1.8;}
+.site-deco{font-size:0.6em;color:rgba(142,122,112,0.3);margin-top:4px;letter-spacing:2px;}
+${optSearch?`.sw{max-width:660px;margin:0 auto 20px;}.si{width:100%;padding:12px 17px;border:1.5px solid var(--border);border-radius:15px;background:var(--card);font-family:inherit;font-size:0.8em;color:var(--text);}.si:focus{outline:none;border-color:var(--accent);}` : ''}
+${optFilter?`.fb-bar{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:20px;}.fc-btn{border:none;background:#fff6ea;color:#b07910;padding:8px 14px;border-radius:999px;cursor:pointer;font-size:0.63em;font-weight:700;font-family:inherit;transition:0.2s;}.fc-btn:hover{background:#ffe8be;}.fc-btn.on{background:var(--accent);color:var(--text);}` : ''}
+.grid{${gridCss}}
+.card{background:var(--card);border-radius:18px;padding:16px;border:1px solid var(--border);box-shadow:0 5px 16px rgba(84,67,58,0.05);transition:0.25s;${cardExtra}position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--pink));transform:scaleX(0);transform-origin:left;transition:0.25s;}
+.card:hover{transform:translateY(-4px);box-shadow:0 12px 28px rgba(84,67,58,0.1);}
+.card:hover::before{transform:scaleX(1);}
+.card-top{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.card-favicon{width:18px;height:18px;border-radius:4px;object-fit:cover;flex-shrink:0;}
+.card-icon{font-size:${layout==='grid'?'28px':'22px'};${layout==='list'?'flex-shrink:0;':'margin-bottom:10px;'}}
+.card-body{${layout==='list'?'flex:1;':''}}
+.card-title{font-size:0.95em;font-weight:700;margin-bottom:5px;word-break:break-word;}
+${optDesc?`.card-desc{color:var(--sub);font-size:0.7em;line-height:1.6;margin-bottom:7px;}` : ''}
+.open-btn{display:inline-block;border:none;background:var(--accent);color:var(--text);padding:8px 16px;border-radius:11px;font-family:inherit;font-size:0.65em;font-weight:700;cursor:pointer;transition:0.2s;text-decoration:none;${layout==='list'?'margin-left:auto;flex-shrink:0;white-space:nowrap;':'margin-top:8px;'}}
+.open-btn:hover{background:var(--ah);}
+.footer{text-align:center;margin-top:46px;color:var(--sub);font-size:0.65em;line-height:2.2;}
+${optWatermark?`.wm{position:fixed;right:18px;bottom:18px;color:rgba(142,122,112,0.35);font-size:11px;pointer-events:none;}` : ''}
+.empty{text-align:center;color:var(--sub);padding:60px;font-size:0.85em;}
+</style></head><body>
+<div class="decor-border"></div>
+${optWatermark?'<div class="wm">☁ Made by ChuChu</div>':''}
+<div class="container">
+${optFontCtrl?`<div class="fc"><button class="fb" onclick="chFS(-2)">A－</button><button class="fb on" id="fsl" onclick="chFS(0)">18px</button><button class="fb" onclick="chFS(2)">A＋</button></div>`:''}
+<div class="hero">
+  <div class="hero-deco">☁ ✦ ☁</div>
+  <div class="badge">( ˘ ³˘)♥ My Bookmark</div>
+  <h1 class="site-title">${escHtml(title)}</h1>
+  <p class="site-sub">${escHtml(subtitle)}</p>
+  <p class="site-deco">･ ｡ ☆∴｡ ･ﾟ*｡★</p>
+</div>
+${optSearch?`<div class="sw"><input class="si" id="si" placeholder="🔍 搜尋書籤..." oninput="render()"></div>`:''}
+${optFilter?`<div class="fb-bar">${generateFilterBar(catsJSON)}</div>`:''}
+<div class="grid" id="grid"></div>
+<div class="footer">✦ ─── ${escHtml(title)} ─── ✦<br>Designed with ♥ by <b style="color:var(--pink)">ChuChu</b> © 2026<br><span style="opacity:0.4">･ ｡ ☆∴｡ ･ﾟ*｡★</span></div>
+</div>
+${generateScript(bmsJSON,catsJSON,layout,optFavicon,optDesc,optNewTab,optFontCtrl,optFilter)}
+</body></html>`;
+}
+
+/* ── BLUE (Medical Portal) theme generator ── */
+function generateBlue(title,subtitle,pageTitle,layout,optSearch,optFilter,optFontCtrl,optFavicon,optDesc,optNewTab,optWatermark,bmsJSON,catsJSON){
+  const gridCss=layout==='grid'?'display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;':'display:flex;flex-direction:column;gap:11px;';
+  const cardExtra=layout==='list'?'display:flex;align-items:center;gap:14px;padding:18px 22px;':'';
+  return `<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>${escHtml(pageTitle)}</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&family=Inter:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{--A:#2C5F8A;--A2:#3A7AB5;--Alt:#5A96C8;--bg:#EDF2F7;--surf:#fff;--surf2:#F0F5FA;--border:#C8D9EC;--shadow:rgba(44,95,138,.10);--shadowH:rgba(44,95,138,.20);--text:#1A3550;--sub:#2C5F8A;--muted:#5A7FA0;--hdr:rgba(237,242,247,.95);--fs:18px;}
+body{min-height:100vh;background:var(--bg);color:var(--text);font-family:"Noto Sans TC","Inter",sans-serif;font-size:var(--fs);overflow-x:hidden;position:relative;}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 55% 40% at 5% 5%,color-mix(in srgb,var(--A) 8%,transparent) 0%,transparent 70%),radial-gradient(ellipse 40% 35% at 95% 90%,color-mix(in srgb,var(--A2) 6%,transparent) 0%,transparent 70%);}
+/* HEADER */
+.hdr{position:fixed;top:0;left:0;right:0;z-index:900;height:68px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;background:var(--hdr);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);}
+.hdr::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--A),var(--A2),var(--Alt));}
+.logo{display:flex;align-items:center;gap:12px;}
+.logo-icon{width:40px;height:40px;border-radius:11px;background:linear-gradient(145deg,var(--A),var(--A2));display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 14px var(--shadow);}
+.logo-name{font-size:clamp(16px,2vw,20px);font-weight:900;color:var(--text);}
+.logo-sub{font-size:10px;font-weight:700;letter-spacing:2px;color:var(--A);margin-top:1px;}
+.hdr-center{flex:1;display:flex;justify-content:center;padding:0 20px;}
+${optSearch?`.sw{position:relative;width:100%;max-width:380px;}.si-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--muted);pointer-events:none;}.si{width:100%;padding:9px 14px 9px 36px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;font-weight:600;background:var(--surf);color:var(--text);transition:.2s;}.si:focus{outline:none;border-color:var(--A);box-shadow:0 0 0 3px color-mix(in srgb,var(--A) 12%,transparent);}` : ''}
+.hdr-right{display:flex;align-items:center;gap:16px;}
+#clock{font-family:"Inter",monospace;font-size:clamp(18px,2vw,24px);font-weight:900;color:var(--text);font-variant-numeric:tabular-nums;letter-spacing:1.5px;}
+#date{font-size:11px;font-weight:700;color:var(--muted);margin-top:2px;}
+${optFontCtrl?`.fc{display:flex;gap:6px;}.fb{border:1.5px solid var(--border);background:var(--surf);color:var(--text);padding:5px 11px;border-radius:999px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:700;transition:.15s;}.fb:hover,.fb.on{background:var(--A);color:#fff;border-color:var(--A);}` : ''}
+/* MAIN */
+.main{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:84px 24px 80px;}
+/* SECTION */
+.sec-label{display:flex;align-items:center;gap:12px;margin:32px 0 14px;}
+.sec-label:first-of-type{margin-top:16px;}
+.sec-pill{display:flex;align-items:center;gap:7px;background:linear-gradient(135deg,var(--A),var(--A2));color:#fff;font-size:12px;font-weight:800;padding:6px 16px;border-radius:999px;letter-spacing:1.5px;box-shadow:0 3px 12px var(--shadow);flex-shrink:0;}
+.sec-line{flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent);}
+/* FILTER */
+${optFilter?`.fb-bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}.fc-btn{border:none;background:#E8F0F8;color:var(--sub);padding:8px 14px;border-radius:999px;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit;transition:.15s;}.fc-btn:hover{background:#D0E4F4;}.fc-btn.on{background:var(--A);color:#fff;}` : ''}
+/* GRID */
+.grid{${gridCss}}
+/* CARD */
+.card{background:rgba(255,255,255,.72);backdrop-filter:blur(16px);border-radius:16px;border:1.5px solid var(--border);box-shadow:0 3px 16px var(--shadow);transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;overflow:hidden;position:relative;${cardExtra}}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--A),var(--Alt));transform:scaleX(0);transform-origin:left;transition:transform .25s ease;}
+.card:hover{transform:translateY(-4px);box-shadow:0 10px 30px var(--shadowH);border-color:var(--A2);}
+.card:hover::before{transform:scaleX(1);}
+.card-link{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:${layout==='grid'?'26px 16px 22px':'0'};text-decoration:none;color:inherit;text-align:center;height:100%;gap:8px;${layout==='list'?'flex-direction:row;align-items:center;gap:16px;padding:16px 20px;':'flex-direction:column;'}}
+.icon-box{width:${layout==='grid'?'58px':'46px'};height:${layout==='grid'?'58px':'46px'};border-radius:14px;flex-shrink:0;background:var(--surf2);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:${layout==='grid'?'30px':'24px'};transition:transform .2s,background .2s;}
+.card:hover .icon-box{transform:scale(1.1);background:color-mix(in srgb,var(--A) 10%,var(--surf2));}
+.card-favicon{width:16px;height:16px;border-radius:3px;object-fit:cover;flex-shrink:0;}
+.card-body{${layout==='list'?'flex:1;text-align:left;':''}}
+.card-title-row{display:flex;align-items:center;gap:6px;${layout==='list'?'':'justify-content:center;'}}
+.card-title{font-size:0.9em;font-weight:900;color:var(--text);line-height:1.3;}
+${optDesc?`.card-desc{font-size:0.68em;font-weight:600;color:var(--muted);line-height:1.4;margin-top:4px;}` : ''}
+.open-btn{display:inline-block;margin-top:10px;border:none;background:linear-gradient(135deg,var(--A),var(--A2));color:#fff;padding:8px 16px;border-radius:10px;font-family:inherit;font-size:0.62em;font-weight:800;cursor:pointer;transition:.2s;text-decoration:none;${layout==='list'?'margin-top:0;margin-left:auto;flex-shrink:0;white-space:nowrap;':''}}
+.open-btn:hover{opacity:.85;transform:translateY(-1px);}
+.footer{text-align:center;margin-top:46px;color:var(--muted);font-size:0.6em;line-height:2.2;}
+${optWatermark?`.wm{position:fixed;right:18px;bottom:18px;color:rgba(44,95,138,0.3);font-size:11px;pointer-events:none;}` : ''}
+.empty{grid-column:1/-1;text-align:center;padding:40px;color:var(--muted);font-size:0.85em;font-weight:600;}
+@media(max-width:580px){.main{padding:76px 12px 60px;}.hdr{padding:0 14px;height:62px;}${optSearch?'.hdr-center{display:none;}':''}}
+</style></head>
+<body>
+${optWatermark?'<div class="wm">💉 Made by ChuChu</div>':''}
+<header class="hdr">
+  <div class="logo">
+    <div class="logo-icon">🔖</div>
+    <div><div class="logo-name">${escHtml(title)}</div><div class="logo-sub">BOOKMARK PORTAL</div></div>
+  </div>
+  ${optSearch?`<div class="hdr-center"><div class="sw"><span class="si-icon">🔍</span><input class="si" id="si" placeholder="搜尋書籤…" oninput="render()"></div></div>`:''}
+  <div class="hdr-right">
+    ${optFontCtrl?`<div class="fc"><button class="fb" onclick="chFS(-2)">A－</button><button class="fb on" id="fsl" onclick="chFS(0)">18px</button><button class="fb" onclick="chFS(2)">A＋</button></div>`:''}
+    <div><div id="clock">00:00</div><div id="date">─</div></div>
+  </div>
+</header>
+<main class="main">
+  ${subtitle?`<p style="color:var(--muted);font-size:0.75em;font-weight:700;margin-bottom:16px;padding:12px 18px;background:rgba(44,95,138,0.06);border-radius:12px;border-left:4px solid var(--A);">${escHtml(subtitle)}</p>`:''}
+  ${optFilter?`<div class="fb-bar">${generateFilterBar(catsJSON,'all')}</div>`:''}
+  <div class="sec-label"><div class="sec-pill">🔖 我的書籤</div><div class="sec-line"></div></div>
+  <div class="grid" id="grid"></div>
+  <div class="footer">─── ${escHtml(title)} ───<br>Designed with ♥ by <b style="color:var(--A)">ChuChu</b> © 2026</div>
+</main>
+<script>
+const WD=['日','一','二','三','四','五','六'];
+function tick(){
+  const n=new Date();
+  document.getElementById('clock').textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')+':'+String(n.getSeconds()).padStart(2,'0');
+  const y=n.getFullYear(),mo=String(n.getMonth()+1).padStart(2,'0'),d=String(n.getDate()).padStart(2,'0');
+  document.getElementById('date').textContent=y+'/'+mo+'/'+d+'（週'+WD[n.getDay()]+'）';
+}
+tick();setInterval(tick,1000);
+<\/script>
+${generateScript(bmsJSON,catsJSON,layout,optFavicon,optDesc,optNewTab,optFontCtrl,optFilter,'blue')}
+</body></html>`;
+}
+
+/* ── TAROT (Dream Archive) theme generator ── */
+function generateTarot(title,subtitle,pageTitle,layout,optSearch,optFilter,optFontCtrl,optFavicon,optDesc,optNewTab,optWatermark,bmsJSON,catsJSON){
+  const gridCss=layout==='grid'?'display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px;':'display:flex;flex-direction:column;gap:12px;';
+  return `<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>${escHtml(pageTitle)}</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:wght@400;500;600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--bg1:#171320;--bg2:#241a35;--bg3:#31244d;--gold:#d8bf8a;--text:#f4efff;--card:rgba(29,24,44,.72);--border:rgba(216,191,138,.2);--accent:#9b59d0;--sub:#a07fbf;--fs:18px;}
+body{min-height:100vh;overflow-x:hidden;color:var(--text);font-family:"Cormorant Garamond",serif;font-size:var(--fs);background:radial-gradient(circle at top,rgba(180,150,255,.14),transparent 30%),linear-gradient(180deg,var(--bg1),var(--bg2),var(--bg3));padding:20px;position:relative;}
+.stars{position:fixed;inset:0;overflow:hidden;z-index:-3;pointer-events:none;}
+.star{position:absolute;width:2px;height:2px;background:white;border-radius:50%;opacity:.7;animation:twinkle 4s infinite;}
+@keyframes twinkle{0%,100%{opacity:.15;transform:scale(.7);}50%{opacity:1;transform:scale(1.4);}}
+.frame{position:fixed;inset:10px;border:1.5px solid rgba(216,191,138,.45);border-radius:26px;pointer-events:none;z-index:999;}
+.frame::before{content:'';position:absolute;inset:8px;border:1px solid rgba(216,191,138,.15);border-radius:20px;}
+.corner{position:fixed;width:80px;height:80px;pointer-events:none;z-index:1000;}
+.corner::after{content:'✦';position:absolute;color:rgba(216,191,138,.8);font-size:18px;}
+.tl{top:14px;left:14px;}.tl::after{top:12px;left:12px;}
+.tr{top:14px;right:14px;}.tr::after{top:12px;right:12px;}
+.bl{bottom:14px;left:14px;}.bl::after{bottom:12px;left:12px;}
+.br{bottom:14px;right:14px;}.br::after{bottom:12px;right:12px;}
+.container{max-width:1200px;margin:auto;position:relative;z-index:2;}
+${optFontCtrl?`.fc{display:flex;justify-content:flex-end;gap:8px;margin-bottom:16px;position:relative;z-index:10;}.fb{background:rgba(255,255,255,.05);border:1px solid rgba(216,191,138,.3);color:var(--text);padding:5px 12px;border-radius:20px;cursor:pointer;font-family:"Cinzel",serif;font-size:13px;backdrop-filter:blur(5px);}.fb:hover,.fb.on{background:rgba(216,191,138,.2);color:var(--gold);border-color:var(--gold);}` : ''}
+.moon-wrap{text-align:center;margin-top:6px;}
+.moon-sym{font-size:34px;color:var(--gold);text-shadow:0 0 18px rgba(216,191,138,.25);animation:floatM 4s ease-in-out infinite;display:inline-block;}
+@keyframes floatM{0%,100%{transform:translateY(0);}50%{transform:translateY(5px);}}
+.hero{text-align:center;margin:10px 0 28px;}
+.site-title{font-family:"Cinzel",serif;font-weight:700;letter-spacing:4px;font-size:clamp(28px,6vw,62px);background:linear-gradient(180deg,#fff 0%,#f1e8ff 40%,var(--gold) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.site-sub{margin-top:10px;color:#cfc1f7;font-size:0.85em;letter-spacing:1px;}
+.site-deco{margin-top:6px;font-size:0.6em;opacity:0.4;letter-spacing:3px;}
+${optSearch?`.sw{max-width:600px;margin:0 auto 22px;}.si{width:100%;padding:12px 18px;border:1px solid rgba(216,191,138,.3);border-radius:14px;background:rgba(29,24,44,.8);color:var(--text);font-family:"Cormorant Garamond",serif;font-size:0.82em;backdrop-filter:blur(8px);}.si:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(216,191,138,.15);}` : ''}
+${optFilter?`.fb-bar{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:20px;}.fc-btn{border:1px solid rgba(216,191,138,.25);background:rgba(29,24,44,.6);color:#cfc1f7;padding:7px 16px;border-radius:999px;cursor:pointer;font-size:0.6em;font-weight:700;font-family:"Cinzel",serif;letter-spacing:1px;transition:.2s;}.fc-btn:hover{border-color:var(--gold);color:var(--gold);}.fc-btn.on{background:rgba(216,191,138,.15);border-color:var(--gold);color:var(--gold);}` : ''}
+.cat-section{margin-bottom:36px;background:rgba(255,255,255,.02);padding:20px;border-radius:20px;border:1px solid rgba(216,191,138,.07);}
+.cat-title{font-family:"Cinzel",serif;font-size:0.9em;color:var(--gold);letter-spacing:2px;margin-bottom:14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(216,191,138,.15);padding-bottom:8px;}
+.cat-count{font-size:0.7em;color:#bba9e8;}
+.grid{${gridCss}}
+.card{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:18px;backdrop-filter:blur(16px);text-decoration:none;color:var(--text);position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;min-height:${layout==='grid'?'150px':'auto'};${layout==='list'?'flex-direction:row;align-items:center;gap:14px;min-height:auto;':''}transition:.3s;}
+.card:hover{transform:translateY(-4px) scale(1.01);box-shadow:0 10px 30px rgba(0,0,0,.4);border-color:rgba(216,191,138,.35);}
+.card-icon{font-size:${layout==='grid'?'26px':'22px'};color:var(--gold);flex-shrink:0;${layout==='grid'?'margin-bottom:10px;':''}}
+.card-body{${layout==='list'?'flex:1;':''}}
+.card-top{display:flex;align-items:center;gap:7px;margin-bottom:5px;}
+.card-favicon{width:16px;height:16px;border-radius:3px;object-fit:cover;flex-shrink:0;opacity:0.8;}
+.card-title{font-family:"Cinzel",serif;font-size:0.88em;font-weight:600;line-height:1.3;}
+${optDesc?`.card-desc{color:#d6c8f5;font-size:0.72em;line-height:1.6;margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}` : ''}
+.open-btn{display:inline-block;font-family:"Cinzel",serif;font-size:0.58em;letter-spacing:2px;color:var(--gold);border:1px solid rgba(216,191,138,.3);padding:6px 14px;border-radius:8px;background:rgba(216,191,138,.06);text-decoration:none;transition:.2s;margin-top:10px;${layout==='list'?'margin-top:0;margin-left:auto;flex-shrink:0;white-space:nowrap;':''}}
+.open-btn:hover{background:rgba(216,191,138,.15);border-color:var(--gold);}
+.footer{text-align:center;margin-top:48px;color:rgba(216,191,138,.5);font-size:0.62em;line-height:2.4;font-family:"Cinzel",serif;letter-spacing:2px;}
+${optWatermark?`.wm{position:fixed;right:20px;bottom:20px;color:rgba(216,191,138,.3);font-size:11px;pointer-events:none;font-family:"Cinzel",serif;}` : ''}
+.empty{text-align:center;color:#a07fbf;padding:60px;font-size:0.85em;font-family:"Cinzel",serif;}
+</style></head>
+<body>
+<div class="stars" id="stars"></div>
+<div class="frame"></div>
+<div class="corner tl"></div><div class="corner tr"></div>
+<div class="corner bl"></div><div class="corner br"></div>
+${optWatermark?'<div class="wm">✦ Made by ChuChu</div>':''}
+<div class="container">
+${optFontCtrl?`<div class="fc"><button class="fb" onclick="chFS(-2)">A－</button><button class="fb on" id="fsl" onclick="chFS(0)">18px</button><button class="fb" onclick="chFS(2)">A＋</button></div>`:''}
+<div class="moon-wrap"><div class="moon-sym">☾</div></div>
+<div class="hero">
+  <h1 class="site-title">${escHtml(title)}</h1>
+  <p class="site-sub">${escHtml(subtitle)||'連結星宿・開啟魔法星雲 ✦'}</p>
+  <p class="site-deco">･ ｡ ☆∴｡　 ･ﾟ*｡★</p>
+</div>
+${optSearch?`<div class="sw"><input class="si" id="si" placeholder="✦ 搜尋書籤..." oninput="render()"></div>`:''}
+${optFilter?`<div class="fb-bar">${generateFilterBar(catsJSON,'all','tarot')}</div>`:''}
+<div id="grid"></div>
+<div class="footer">✦ ─── ${escHtml(title)} ─── ✦<br>Designed with ♥ by <span style="color:var(--gold)">ChuChu</span> © 2026<br>･ ｡ ☆∴｡</div>
+</div>
+<script>
+(function(){const s=document.getElementById('stars');for(let i=0;i<120;i++){const d=document.createElement('div');d.className='star';d.style.cssText='left:'+Math.random()*100+'%;top:'+Math.random()*100+'%;animation-delay:'+Math.random()*4+'s;';s.appendChild(d);}})();
+<\/script>
+${generateScript(bmsJSON,catsJSON,layout,optFavicon,optDesc,optNewTab,optFontCtrl,optFilter,'tarot')}
+</body></html>`;
+}
+
+/* ── Shared helpers ── */
+function generateFilterBar(catsJSON, allLabel='✦ 全部', themeHint=''){
+  const cats=JSON.parse(catsJSON);
+  return `<button class="fc-btn on" data-c="all" onclick="setC('all',this)">${allLabel||'全部'}</button>`+
+    cats.map(c=>`<button class="fc-btn" data-c="${c.id}" onclick="setC('${c.id}',this)">${c.icon} ${c.name}</button>`).join('');
+}
+
+function generateScript(bmsJSON,catsJSON,layout,optFavicon,optDesc,optNewTab,optFontCtrl,optFilter,themeHint=''){
+  const isGrid=layout==='grid';
+  const isTarot=themeHint==='tarot';
+  const isBlue=themeHint==='blue';
+
+  // For tarot: render by category sections
+  const cardHTML=isTarot
+    ? `\`<div class="card" \${b.url?'onclick="void(0)"':''}>
+        <div class="card-icon">\${b.icon||'✦'}</div>
+        <div class="card-body">
+          <div class="card-top">
+            \${${optFavicon}&&b.url?'<img class="card-favicon" src="https://www.google.com/s2/favicons?domain='+encodeURIComponent(b.url)+'&sz=32" onerror="this.style.display=\\'none\\'">':'' }
+            <div class="card-title">\${b.title||b.url}</div>
+          </div>
+          ${optDesc?'<div class="card-desc">\${b.note||\'\'}</div>':''}
+          <a class="open-btn" href="\${b.url}" ${optNewTab?'target="_blank" rel="noopener"':''}>PORTAL →</a>
+        </div>
+      </div>\``
+    : isBlue
+    ? `\`<div class="card">
+        <a class="card-link" href="\${b.url}" ${optNewTab?'target="_blank" rel="noopener"':''}>
+          <div class="icon-box">\${b.icon||'🔗'}</div>
+          <div class="card-body">
+            <div class="card-title-row">
+              \${${optFavicon}&&b.url?'<img class="card-favicon" src="https://www.google.com/s2/favicons?domain='+encodeURIComponent(b.url)+'&sz=32" onerror="this.style.display=\\'none\\'">':'' }
+              <div class="card-title">\${b.title||b.url}</div>
+            </div>
+            ${optDesc?'<div class="card-desc">\${b.note||\'\'}</div>':''}
+          </div>
+          <div class="open-btn">開啟 →</div>
+        </a>
+      </div>\``
+    : `\`<div class="card">
+        ${isGrid?'<div class="card-icon">\${b.icon||\'✨\'}</div>':''}
+        ${!isGrid?'<div class="card-icon">\${b.icon||\'✨\'}</div>':''}
+        <div class="card-body">
+          <div class="card-top">
+            \${${optFavicon}&&b.url?'<img class="card-favicon" src="https://www.google.com/s2/favicons?domain='+encodeURIComponent(b.url)+'&sz=32" onerror="this.style.display=\\'none\\'">':'' }
+            <div class="card-title">\${b.title||b.url}</div>
+          </div>
+          ${optDesc?'<div class="card-desc">\${b.note||\'\'}</div>':''}
+          <a class="open-btn" href="\${b.url}" ${optNewTab?'target="_blank" rel="noopener"':''}>✦ OPEN ✦</a>
+        </div>
+      </div>\``;
+
+  return `<script>
+const BMS=${bmsJSON};
+const CATS=${catsJSON};
+let cur='all';
+function render(){
+  const kw=(document.getElementById('si')||{value:''}).value.toLowerCase();
+  const f=BMS.filter(b=>{
+    const mc=cur==='all'||b.cat===cur;
+    const mk=!kw||(b.title||'').toLowerCase().includes(kw)||(b.url||'').toLowerCase().includes(kw)||(b.note||'').toLowerCase().includes(kw);
+    return mc&&mk;
+  });
+  const g=document.getElementById('grid');
+  if(!f.length){g.innerHTML='<div class="empty">${isTarot?'✦ 沒有找到書籤 ☾':'☁ 沒有找到書籤 (˘ω˘)'}</div>';return;}
+  ${isTarot?`
+  // tarot: group by category
+  const grouped={};
+  CATS.forEach(c=>{grouped[c.id]=[];});
+  grouped['__none']=[];
+  f.forEach(b=>{if(b.cat&&grouped[b.cat])grouped[b.cat].push(b);else grouped['__none'].push(b);});
+  let html='';
+  CATS.forEach(c=>{
+    if(!grouped[c.id]||!grouped[c.id].length)return;
+    html+=\`<div class="cat-section"><div class="cat-title">\${c.icon} \${c.name}<span class="cat-count">(\${grouped[c.id].length})</span></div><div class="grid">\`+grouped[c.id].map(b=>${cardHTML}).join('')+'</div></div>';
+  });
+  if(grouped['__none']&&grouped['__none'].length){
+    html+='<div class="cat-section"><div class="cat-title">✦ 未分類</div><div class="grid">'+grouped['__none'].map(b=>${cardHTML}).join('')+'</div></div>';
+  }
+  g.innerHTML=html;
+  `:`g.innerHTML=f.map(b=>${cardHTML}).join('');`}
+}
+${optFilter?`function setC(id,el){cur=id;document.querySelectorAll('.fc-btn').forEach(b=>b.classList.remove('on'));el.classList.add('on');render();}` : ''}
+${optFontCtrl?`let fs=18;function chFS(d){if(d===0)fs=18;else fs=Math.min(28,Math.max(12,fs+d));document.documentElement.style.setProperty('--fs',fs+'px');const l=document.getElementById('fsl');if(l)l.textContent=fs+'px';}` : ''}
+render();
+<\/script>`;
+}
+
+/* ─── TABS ─── */
+function switchTab(tab,el){
+  document.querySelectorAll('.output-tab').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  const frame=document.getElementById('previewFrame');
+  const codeBox=document.getElementById('codeBox');
+  if(!generatedHTML)return;
+  if(tab==='preview'){frame.style.display='block';codeBox.style.display='none';}
+  else{frame.style.display='none';codeBox.style.display='block';}
+}
+
+/* ─── COPY / DOWNLOAD ─── */
+function copyCode(){
+  if(!generatedHTML)return showToast('請先產生網站 🌸');
+  navigator.clipboard.writeText(generatedHTML).then(()=>showToast('✨ 原始碼已複製！'));
+}
+function downloadHTML(){
+  if(!generatedHTML)return showToast('請先產生網站 🌸');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([generatedHTML],{type:'text/html'}));
+  a.download=(document.getElementById('sitePageTitle').value||'bookmark').replace(/\s+/g,'-')+'.html';
+  a.click();showToast('💾 下載中～');
+}
+
+/* ─── TOAST ─── */
+let toastTimer;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+/* ─── INIT ─── */
+renderCats();
+renderBmList();
 </script>
-
 </body>
 </html>
