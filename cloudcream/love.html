@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>孤山遠征：索林虐戀模擬器</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Noto+Serif+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold:        #C9962A;
+    --gold-light:  #E8BE5A;
+    --gold-dark:   #8A6115;
+    --ember:       #8B2500;
+    --stone:       #1A1410;
+    --parchment:   #F2E6C8;
+    --parchment-d: #D9C89A;
+    --ash:         #8C7D6A;
+    --ink:         #2A1F10;
+    --mist:        #3D3020;
+    --rune:        #C9962A;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--stone);
+    color: var(--parchment);
+    font-family: 'Noto Serif TC', 'EB Garamond', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Background texture ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 10%, rgba(201,150,42,0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 90%, rgba(139,37,0,0.08) 0%, transparent 50%),
+      url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23C9962A' fill-opacity='0.025'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0;
+  }
+
+  /* ── Rune border decoration ── */
+  .rune-border {
+    border: 1px solid rgba(201,150,42,0.3);
+    position: relative;
+  }
+  .rune-border::before, .rune-border::after {
+    content: '᚛ ᚔ ᚋ ᚐ ᚌ ᚔ ᚁ ᚔ ᚂ ᚁ ᚐ ᚌ ᚔ ᚋ ᚔ ᚛';
+    display: block;
+    font-size: 9px;
+    color: var(--gold-dark);
+    letter-spacing: 4px;
+    text-align: center;
+    padding: 4px 0;
+    opacity: 0.6;
+  }
+
+  /* ═══════════════ HERO ═══════════════ */
+  #hero {
+    position: relative; z-index: 1;
+    text-align: center;
+    padding: 70px 20px 50px;
+    border-bottom: 1px solid rgba(201,150,42,0.2);
+  }
+
+  .hero-eyebrow {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 6px;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    opacity: 0.8;
+  }
+
+  #hero h1 {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(32px, 6vw, 68px);
+    font-weight: 800;
+    line-height: 1.05;
+    background: linear-gradient(160deg, var(--gold-light) 0%, var(--gold) 40%, var(--gold-dark) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+    text-shadow: none;
+  }
+
+  #hero .subtitle {
+    font-family: 'EB Garamond', serif;
+    font-style: italic;
+    font-size: clamp(15px, 2vw, 19px);
+    color: var(--parchment-d);
+    opacity: 0.75;
+    margin-bottom: 32px;
+    letter-spacing: 0.5px;
+  }
+
+  .hero-divider {
+    display: flex; align-items: center; gap: 16px;
+    max-width: 400px; margin: 0 auto 32px;
+  }
+  .hero-divider::before, .hero-divider::after {
+    content: ''; flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold-dark), transparent);
+  }
+  .hero-divider span {
+    color: var(--gold);
+    font-size: 18px;
+  }
+
+  .hero-desc {
+    max-width: 560px; margin: 0 auto;
+    font-size: 15px; line-height: 1.8;
+    color: var(--ash);
+  }
+
+  /* ═══════════════ LAYOUT ═══════════════ */
+  #app {
+    position: relative; z-index: 1;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+
+  /* ── Phase indicator ── */
+  #phase-bar {
+    display: flex; gap: 0;
+    margin: 36px 0 28px;
+    border: 1px solid rgba(201,150,42,0.25);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .phase-step {
+    flex: 1; text-align: center;
+    padding: 10px 8px;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--ash);
+    background: rgba(255,255,255,0.02);
+    border-right: 1px solid rgba(201,150,42,0.15);
+    transition: all 0.3s;
+    cursor: default;
+  }
+  .phase-step:last-child { border-right: none; }
+  .phase-step.active {
+    background: rgba(201,150,42,0.12);
+    color: var(--gold-light);
+  }
+  .phase-step.done {
+    color: var(--gold-dark);
+    background: rgba(201,150,42,0.06);
+  }
+
+  /* ═══════════════ SETUP PANEL ═══════════════ */
+  #setup-panel {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  /* ── Card base ── */
+  .card {
+    background: rgba(26,20,16,0.85);
+    border: 1px solid rgba(201,150,42,0.2);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 16px 20px 14px;
+    border-bottom: 1px solid rgba(201,150,42,0.15);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .card-header .icon { font-size: 16px; }
+  .card-header h2 {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    letter-spacing: 2px;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+  .card-body { padding: 20px; }
+
+  /* ── Form fields ── */
+  .field-group { margin-bottom: 18px; }
+  .field-group:last-child { margin-bottom: 0; }
+
+  label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--gold-dark);
+    text-transform: uppercase;
+    margin-bottom: 7px;
+    font-family: 'Cinzel', serif;
+  }
+
+  input[type="text"], select, textarea {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(201,150,42,0.2);
+    border-radius: 3px;
+    color: var(--parchment);
+    font-family: 'Noto Serif TC', serif;
+    font-size: 14px;
+    padding: 9px 12px;
+    outline: none;
+    transition: border-color 0.25s, background 0.25s;
+  }
+  input[type="text"]:focus, select:focus, textarea:focus {
+    border-color: rgba(201,150,42,0.55);
+    background: rgba(255,255,255,0.07);
+  }
+  select option { background: #1A1410; color: var(--parchment); }
+  textarea { resize: vertical; min-height: 70px; line-height: 1.6; }
+
+  /* ── Chip selects ── */
+  .chip-group {
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .chip {
+    padding: 5px 12px;
+    border: 1px solid rgba(201,150,42,0.25);
+    border-radius: 20px;
+    font-size: 12px;
+    color: var(--ash);
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+    background: transparent;
+    font-family: 'Noto Serif TC', serif;
+  }
+  .chip:hover { border-color: rgba(201,150,42,0.5); color: var(--parchment-d); }
+  .chip.selected {
+    background: rgba(201,150,42,0.18);
+    border-color: var(--gold);
+    color: var(--gold-light);
+  }
+  .chip.random-chip {
+    border-style: dashed;
+    color: var(--gold-dark);
+  }
+  .chip.random-chip.selected {
+    background: rgba(139,37,0,0.2);
+    border-color: var(--ember);
+    color: #E8A080;
+  }
+
+  /* ── Right column ── */
+  #right-col { display: flex; flex-direction: column; gap: 24px; }
+
+  /* ── Traits multi-select ── */
+  .traits-grid {
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+
+  /* ── Skills ── */
+  .skills-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+  }
+  .skill-chip {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 10px;
+    border: 1px solid rgba(201,150,42,0.2);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: transparent;
+    font-family: 'Noto Serif TC', serif;
+  }
+  .skill-chip:hover { border-color: rgba(201,150,42,0.45); }
+  .skill-chip.selected {
+    background: rgba(201,150,42,0.12);
+    border-color: rgba(201,150,42,0.5);
+  }
+  .skill-icon { font-size: 14px; }
+  .skill-name { font-size: 12px; color: var(--parchment-d); }
+  .skill-chip.selected .skill-name { color: var(--gold-light); }
+
+  /* ── Romance select ── */
+  .romance-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  }
+  .romance-card {
+    border: 1px solid rgba(201,150,42,0.2);
+    border-radius: 5px;
+    padding: 12px 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s;
+    background: transparent;
+  }
+  .romance-card:hover { border-color: rgba(201,150,42,0.45); background: rgba(201,150,42,0.06); }
+  .romance-card.selected {
+    border-color: var(--gold);
+    background: rgba(201,150,42,0.14);
+  }
+  .romance-card .r-name {
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    color: var(--gold-light);
+    margin-bottom: 3px;
+  }
+  .romance-card .r-desc {
+    font-size: 10px;
+    color: var(--ash);
+    line-height: 1.4;
+  }
+  .romance-card.selected .r-desc { color: var(--parchment-d); }
+
+  /* ── Hidden field add ── */
+  .add-field-row {
+    display: flex; gap: 8px; margin-top: 12px;
+  }
+  .add-field-row input { flex: 1; }
+  .btn-sm {
+    padding: 8px 14px;
+    background: transparent;
+    border: 1px solid rgba(201,150,42,0.35);
+    border-radius: 3px;
+    color: var(--gold);
+    font-size: 12px;
+    cursor: pointer;
+    font-family: 'Cinzel', serif;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn-sm:hover { background: rgba(201,150,42,0.12); border-color: var(--gold); }
+
+  .extra-fields { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+  .extra-field-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 10px;
+    background: rgba(201,150,42,0.06);
+    border: 1px solid rgba(201,150,42,0.18);
+    border-radius: 3px;
+    font-size: 13px;
+    color: var(--parchment-d);
+  }
+  .extra-field-item .del-btn {
+    margin-left: auto;
+    background: none; border: none;
+    color: var(--ash); cursor: pointer; font-size: 14px;
+    opacity: 0.6; transition: opacity 0.2s;
+  }
+  .extra-field-item .del-btn:hover { opacity: 1; color: #cc5533; }
+
+  /* ═══════════════ GENERATE BUTTON ═══════════════ */
+  #generate-section {
+    margin-top: 28px;
+    text-align: center;
+  }
+  #preview-box {
+    max-width: 700px; margin: 0 auto 20px;
+    background: rgba(201,150,42,0.05);
+    border: 1px solid rgba(201,150,42,0.18);
+    border-radius: 5px;
+    padding: 16px 20px;
+    text-align: left;
+    font-size: 13px;
+    color: var(--ash);
+    line-height: 1.7;
+    display: none;
+  }
+  #preview-box.show { display: block; }
+  #preview-box strong { color: var(--gold-dark); font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 1px; }
+
+  .btn-generate {
+    padding: 16px 48px;
+    background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold) 50%, var(--gold-dark) 100%);
+    border: none;
+    border-radius: 4px;
+    color: var(--stone);
+    font-family: 'Cinzel', serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-generate::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%);
+    transform: translateX(-100%);
+    transition: transform 0.4s;
+  }
+  .btn-generate:hover::before { transform: translateX(100%); }
+  .btn-generate:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(201,150,42,0.3); }
+  .btn-generate:active { transform: translateY(0); }
+  .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  /* ═══════════════ GAME PANEL ═══════════════ */
+  #game-panel { display: none; }
+  #game-panel.active { display: block; }
+
+  .game-layout {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+
+  /* ── Character sidebar ── */
+  #char-sidebar {
+    position: sticky;
+    top: 20px;
+  }
+  .char-portrait {
+    width: 100%;
+    aspect-ratio: 3/4;
+    background: rgba(201,150,42,0.06);
+    border: 1px solid rgba(201,150,42,0.2);
+    border-radius: 5px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    font-size: 48px;
+    margin-bottom: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+  .char-portrait::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(to bottom, transparent 60%, rgba(26,20,16,0.8));
+  }
+  .char-name-display {
+    font-family: 'Cinzel', serif;
+    font-size: 15px;
+    color: var(--gold-light);
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  .char-title-display {
+    font-size: 11px;
+    color: var(--ash);
+    text-align: center;
+    margin-bottom: 14px;
+  }
+
+  /* Relationship bars */
+  .rel-section { margin-top: 10px; }
+  .rel-section h3 {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--gold-dark);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .rel-item { margin-bottom: 10px; }
+  .rel-label {
+    display: flex; justify-content: space-between;
+    font-size: 12px;
+    color: var(--parchment-d);
+    margin-bottom: 4px;
+  }
+  .rel-label span:last-child { color: var(--gold-dark); font-size: 11px; }
+  .rel-bar {
+    height: 4px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .rel-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: linear-gradient(to right, var(--gold-dark), var(--gold));
+    transition: width 0.8s ease;
+  }
+
+  /* Stage indicator */
+  .stage-badge {
+    margin-top: 14px;
+    padding: 8px 12px;
+    background: rgba(139,37,0,0.15);
+    border: 1px solid rgba(139,37,0,0.3);
+    border-radius: 3px;
+    font-size: 11px;
+    color: #E8A080;
+    text-align: center;
+    line-height: 1.4;
+  }
+
+  /* ── Story area ── */
+  #story-area { }
+
+  #story-log {
+    background: rgba(20,15,10,0.7);
+    border: 1px solid rgba(201,150,42,0.18);
+    border-radius: 5px;
+    padding: 28px 32px;
+    min-height: 420px;
+    max-height: 580px;
+    overflow-y: auto;
+    margin-bottom: 16px;
+    font-family: 'EB Garamond', serif;
+    font-size: 17px;
+    line-height: 1.85;
+    color: var(--parchment);
+    scroll-behavior: smooth;
+  }
+  #story-log::-webkit-scrollbar { width: 4px; }
+  #story-log::-webkit-scrollbar-track { background: transparent; }
+  #story-log::-webkit-scrollbar-thumb { background: rgba(201,150,42,0.3); border-radius: 2px; }
+
+  .story-block {
+    margin-bottom: 20px;
+    animation: fadeIn 0.5s ease;
+  }
+  .story-block.new {
+    border-left: 2px solid var(--gold-dark);
+    padding-left: 16px;
+    margin-left: -18px;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  .story-loading {
+    display: flex; align-items: center; gap: 12px;
+    color: var(--ash);
+    font-style: italic;
+    font-size: 15px;
+    padding: 16px 0;
+  }
+  .dots { display: flex; gap: 4px; }
+  .dots span {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--gold-dark);
+    animation: pulse 1.4s infinite;
+  }
+  .dots span:nth-child(2) { animation-delay: 0.2s; }
+  .dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes pulse { 0%,80%,100% { opacity: 0.3; transform: scale(0.8); } 40% { opacity: 1; transform: scale(1); } }
+
+  /* ── Action panel ── */
+  #action-panel {
+    background: rgba(26,20,16,0.8);
+    border: 1px solid rgba(201,150,42,0.2);
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  .action-header {
+    padding: 10px 16px;
+    border-bottom: 1px solid rgba(201,150,42,0.15);
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--gold-dark);
+    text-transform: uppercase;
+  }
+  .action-choices { padding: 12px; display: flex; flex-direction: column; gap: 7px; }
+  .action-btn {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 14px;
+    background: transparent;
+    border: 1px solid rgba(201,150,42,0.18);
+    border-radius: 4px;
+    color: var(--parchment-d);
+    font-family: 'Noto Serif TC', serif;
+    font-size: 13.5px;
+    line-height: 1.5;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s;
+  }
+  .action-btn:hover {
+    background: rgba(201,150,42,0.1);
+    border-color: rgba(201,150,42,0.45);
+    color: var(--parchment);
+  }
+  .action-num {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    color: var(--gold-dark);
+    padding-top: 1px;
+    flex-shrink: 0;
+  }
+
+  .free-action-row {
+    padding: 12px;
+    border-top: 1px solid rgba(201,150,42,0.12);
+    display: flex; gap: 8px;
+  }
+  .free-action-row input {
+    flex: 1;
+    font-size: 14px;
+  }
+  .btn-send {
+    padding: 9px 18px;
+    background: rgba(201,150,42,0.15);
+    border: 1px solid rgba(201,150,42,0.4);
+    border-radius: 3px;
+    color: var(--gold-light);
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-send:hover { background: rgba(201,150,42,0.25); }
+
+  /* ── Reset bar ── */
+  #reset-bar {
+    display: flex; justify-content: center; gap: 12px;
+    margin-top: 24px;
+  }
+  .btn-outline {
+    padding: 8px 20px;
+    background: transparent;
+    border: 1px solid rgba(201,150,42,0.25);
+    border-radius: 3px;
+    color: var(--ash);
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-outline:hover { color: var(--gold-light); border-color: rgba(201,150,42,0.5); }
+
+  /* ═══════════════ RESPONSIVE ═══════════════ */
+  @media (max-width: 860px) {
+    #setup-panel { grid-template-columns: 1fr; }
+    .game-layout { grid-template-columns: 1fr; }
+    #char-sidebar { position: static; }
+    .romance-grid { grid-template-columns: repeat(2, 1fr); }
+    .skills-grid { grid-template-columns: 1fr; }
+    #story-log { padding: 18px 16px; font-size: 15px; }
+  }
+
+  /* ── Scrollbar for story ── */
+  .story-section-label {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--gold-dark);
+    text-transform: uppercase;
+    margin: 16px 0 8px;
+    opacity: 0.7;
+  }
+
+  /* ── Ember particles ── */
+  .ember {
+    position: fixed;
+    width: 3px; height: 3px;
+    border-radius: 50%;
+    background: var(--gold);
+    pointer-events: none;
+    opacity: 0;
+    animation: float-up linear infinite;
+  }
+  @keyframes float-up {
+    0%   { transform: translateY(0) translateX(0); opacity: 0; }
+    10%  { opacity: 0.6; }
+    90%  { opacity: 0.2; }
+    100% { transform: translateY(-120px) translateX(20px); opacity: 0; }
+  }
+
+  /* ── Section collapse/expand ── */
+  .section-toggle {
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer;
+    padding: 16px 20px 14px;
+    border-bottom: 1px solid rgba(201,150,42,0.15);
+    user-select: none;
+  }
+  .section-toggle h2 {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    letter-spacing: 2px;
+    color: var(--gold);
+    text-transform: uppercase;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .toggle-arrow {
+    color: var(--gold-dark);
+    font-size: 14px;
+    transition: transform 0.3s;
+  }
+  .collapsed .toggle-arrow { transform: rotate(-90deg); }
+  .collapsible-body {
+    overflow: hidden;
+    max-height: 2000px;
+    transition: max-height 0.4s ease;
+    padding: 20px;
+  }
+  .collapsible-body.hidden { max-height: 0; padding: 0 20px; }
+</style>
+</head>
+<body>
+
+<!-- Ember particles -->
+<div id="embers"></div>
+
+<!-- ══ HERO ══ -->
+<header id="hero">
+  <p class="hero-eyebrow">第三紀元 · 孤山遠征</p>
+  <h1>索林虐戀模擬器</h1>
+  <p class="subtitle">命運之旅，從你的選擇開始</p>
+  <div class="hero-divider"><span>⟡</span></div>
+  <p class="hero-desc">踏上中土世界最壯闊的遠征。與索林·橡木盾並肩，在榮耀、犧牲與愛之間，走出屬於你的史詩篇章。</p>
+</header>
+
+<div id="app">
+
+  <!-- Phase bar -->
+  <div id="phase-bar">
+    <div class="phase-step active" id="phase-1">⚔ 角色設定</div>
+    <div class="phase-step" id="phase-2">🏔 踏上旅途</div>
+    <div class="phase-step" id="phase-3">🐉 孤山試煉</div>
+    <div class="phase-step" id="phase-4">👑 王者之路</div>
+  </div>
+
+  <!-- ══ SETUP PANEL ══ -->
+  <div id="setup-panel">
+
+    <!-- Left: Core info -->
+    <div>
+      <div class="card">
+        <div class="section-toggle" onclick="toggleSection(this)">
+          <h2><span>⚜</span> 基本資料</h2>
+          <span class="toggle-arrow">▾</span>
+        </div>
+        <div class="collapsible-body">
+
+          <div class="field-group">
+            <label>姓名</label>
+            <input type="text" id="char-name" placeholder="留空則隨機生成">
+          </div>
+
+          <div class="field-group">
+            <label>種族</label>
+            <div class="chip-group" id="race-chips">
+              <div class="chip" data-val="人類">人類</div>
+              <div class="chip" data-val="哈比人">哈比人</div>
+              <div class="chip" data-val="精靈">精靈</div>
+              <div class="chip" data-val="矮人">矮人</div>
+              <div class="chip" data-val="混血">混血</div>
+              <div class="chip random-chip" data-val="隨機">🎲 隨機</div>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label>出生地</label>
+            <div class="chip-group" id="origin-chips">
+              <div class="chip" data-val="夏爾">夏爾</div>
+              <div class="chip" data-val="長湖鎮">長湖鎮</div>
+              <div class="chip" data-val="幽暗密林">幽暗密林</div>
+              <div class="chip" data-val="伊瑞德魯因山脈">伊瑞德魯因</div>
+              <div class="chip" data-val="瑞文戴爾">瑞文戴爾</div>
+              <div class="chip random-chip" data-val="隨機">🎲 隨機</div>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label>家庭背景</label>
+            <div class="chip-group" id="family-chips">
+              <div class="chip" data-val="平民">平民</div>
+              <div class="chip" data-val="商人家族">商人家族</div>
+              <div class="chip" data-val="貴族血統">貴族血統</div>
+              <div class="chip" data-val="流亡家族">流亡家族</div>
+              <div class="chip" data-val="矮人王族旁支">王族旁支</div>
+              <div class="chip random-chip" data-val="隨機">🎲 隨機</div>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label>家庭氛圍</label>
+            <div class="chip-group" id="home-chips">
+              <div class="chip" data-val="熱鬧">熱鬧</div>
+              <div class="chip" data-val="冷淡">冷淡</div>
+              <div class="chip" data-val="開放">開放</div>
+              <div class="chip" data-val="家教嚴格">家教嚴格</div>
+              <div class="chip" data-val="緊密">緊密</div>
+              <div class="chip random-chip" data-val="隨機">🎲 隨機</div>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label>外貌描述（選填）</label>
+            <input type="text" id="char-appearance" placeholder="例如：深棕色長髮，琥珀色眼睛">
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Romance -->
+      <div class="card" style="margin-top:16px;">
+        <div class="section-toggle" onclick="toggleSection(this)">
+          <h2><span>🥀</span> 感情線</h2>
+          <span class="toggle-arrow">▾</span>
+        </div>
+        <div class="collapsible-body">
+          <div class="romance-grid" id="romance-cards">
+            <div class="romance-card selected" data-val="索林">
+              <div class="r-name">索林</div>
+              <div class="r-desc">橡木盾·孤山之王<br>虐戀慢熱型</div>
+            </div>
+            <div class="romance-card" data-val="奇力">
+              <div class="r-name">奇力</div>
+              <div class="r-desc">菲力之弟<br>熱情活潑型</div>
+            </div>
+            <div class="romance-card" data-val="菲力">
+              <div class="r-name">菲力</div>
+              <div class="r-desc">索林之侄<br>穩重守護型</div>
+            </div>
+            <div class="romance-card" data-val="勒苟拉斯">
+              <div class="r-name">勒苟拉斯</div>
+              <div class="r-desc">精靈王子<br>驕傲冷靜型</div>
+            </div>
+            <div class="romance-card" data-val="原創角色">
+              <div class="r-name">原創角色</div>
+              <div class="r-desc">系統生成<br>神秘未知型</div>
+            </div>
+            <div class="romance-card" data-val="自由發展">
+              <div class="r-name">自由發展</div>
+              <div class="r-desc">無固定對象<br>隨劇情決定</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hidden subplots -->
+      <div class="card" style="margin-top:16px;">
+        <div class="section-toggle" onclick="toggleSection(this)">
+          <h2><span>🔮</span> 隱藏支線</h2>
+          <span class="toggle-arrow">▾</span>
+        </div>
+        <div class="collapsible-body">
+          <div class="chip-group" id="subplot-chips">
+            <div class="chip" data-val="直接開啟">直接開啟</div>
+            <div class="chip" data-val="逐步開啟">逐步開啟</div>
+            <div class="chip random-chip" data-val="隨機">🎲 隨機</div>
+          </div>
+          <p style="font-size:11px;color:var(--ash);margin-top:10px;line-height:1.6;">
+            隱藏支線可能包含：失落矮人寶藏、龍族傳說、精靈古老秘密、遠古戒指遺跡、索倫勢力伏筆、玩家自身血統之謎。
+          </p>
+        </div>
+      </div>
+
+      <!-- With NPCs -->
+      <div class="card" style="margin-top:16px;">
+        <div class="section-toggle" onclick="toggleSection(this)">
+          <h2><span>🤝</span> 與NPC關係</h2>
+          <span class="toggle-arrow">▾</span>
+        </div>
+        <div class="collapsible-body">
+          <div class="chip-group" id="npc-rel-chips">
+            <div class="chip" data-val="遠征開始後認識">初次相識</div>
+            <div class="chip" data-val="舊識">舊識</div>
+            <div class="chip" data-val="家族舊交">家族舊交</div>
+            <div class="chip" data-val="競爭關係">競爭關係</div>
+            <div class="chip" data-val="朋友">已是朋友</div>
+            <div class="chip random-chip" data-val="隨機">🎲 隨機</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right column -->
+    <div id="right-col">
+
+      <!-- Traits -->
+      <div class="card">
+        <div class="section-toggle" onclick="toggleSection(this)">
+          <h2><span>✦</span> 性格特質</h2>
+          <span class="toggle-arrow">▾</span>
+        </div>
+        <div class="collapsible-body">
+          <p style="font-size:11px;color:var(--ash);margin-bottom:12px;">可複選多個特質</p>
+          <div class="traits-grid chip-group" id="trait-chips">
+            <div class="chip" data-val="勇敢">勇敢</div>
+            <div class="chip" data-val="善良">善良</div>
+            <div class="chip" data-val="溫柔">溫柔</div>
+            <div class="chip" data-val="敏銳">敏銳</div>
+            <div class="chip" data-val="固執">固執</div>
+            <div class="chip" data-val="忠誠">忠誠</div>
+            <div class="chip" data-val="神秘">神秘</div>
+            <div class="chip" data-val="謹慎">謹慎</div>
+            <div class="chip" data-val="沉默">沉默</div>
+            <div class="chip" data-val="活潑">活潑</div>
+            <div class="chip" data-val="高傲">高傲</div>
+            <div class="chip" data-val="野心勃勃">野心勃勃</div>
+            <div class="chip random-chip" data-val="隨機">🎲 隨機</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Skills -->
+      <div class="card">
+        <div class="section-toggle" onclick="toggleSection(this)">
+          <h2><span>⚔</span> 專長與興趣</h2>
+          <span class="toggle-arrow">▾</span>
+        </div>
+        <div class="collapsible-body">
+          <p style="font-size:11px;color:var(--ash);margin-bottom:12px;">可複選</p>
+          <div class="skills-grid" id="skill-chips">
+            <div class="skill-chip" data-val="劍術"><span class="skill-icon">⚔</span><span class="skill-name">劍術</span></div>
+            <div class="skill-chip" data-val="弓箭"><span class="skill-icon">🏹</span><span class="skill-name">弓箭</span></div>
+            <div class="skill-chip" data-val="匕首技巧"><span class="skill-icon">🗡</span><span class="skill-name">匕首技巧</span></div>
+            <div class="skill-chip" data-val="醫療草藥"><span class="skill-icon">🌿</span><span class="skill-name">醫療草藥</span></div>
+            <div class="skill-chip" data-val="古代語言"><span class="skill-icon">📜</span><span class="skill-name">古代語言</span></div>
+            <div class="skill-chip" data-val="歌謠傳說"><span class="skill-icon">🎵</span><span class="skill-name">歌謠傳說</span></div>
+            <div class="skill-chip" data-val="潛行"><span class="skill-icon">🌑</span><span class="skill-name">潛行</span></div>
+            <div class="skill-chip" data-val="談判交涉"><span class="skill-icon">🤝</span><span class="skill-name">談判交涉</span></div>
+            <div class="skill-chip" data-val="追蹤狩獵"><span class="skill-icon">🦌</span><span class="skill-name">追蹤狩獵</span></div>
+            <div class="skill-chip" data-val="地圖繪製"><span class="skill-icon">🗺</span><span class="skill-name">地圖繪製</span></div>
+            <div class="skill-chip" data-val="鍛造學"><span class="skill-icon">🔨</span><span class="skill-name">鍛造學</span></div>
+            <div class="skill-chip" data-val="珠寶學"><span class="skill-icon">💎</span><span class="skill-name">珠寶學</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Extra custom fields -->
+      <div class="card">
+        <div class="section-toggle" onclick="toggleSection(this)">
+          <h2><span>✒</span> 自訂設定</h2>
+          <span class="toggle-arrow">▾</span>
+        </div>
+        <div class="collapsible-body">
+          <p style="font-size:11px;color:var(--ash);margin-bottom:12px;">新增任何你想要的個人設定，例如 MBTI、習慣、秘密、特殊天賦……</p>
+          <div id="extra-fields-list" class="extra-fields"></div>
+          <div class="add-field-row">
+            <input type="text" id="extra-input" placeholder="例如：MBTI: INFJ，有一隻黑貓">
+            <button class="btn-sm" onclick="addExtraField()">＋ 新增</button>
+          </div>
+          <div class="field-group" style="margin-top:16px;">
+            <label>額外備注</label>
+            <textarea id="extra-notes" placeholder="任何其他想告訴主持人的設定……"></textarea>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Generate -->
+  <div id="generate-section">
+    <div id="preview-box"></div>
+    <button class="btn-generate" onclick="startGame()">
+      ⟡ 踏上旅途 ⟡
+    </button>
+  </div>
+
+  <!-- ══ GAME PANEL ══ -->
+  <div id="game-panel">
+    <div class="game-layout">
+
+      <!-- Sidebar -->
+      <div id="char-sidebar">
+        <div class="char-portrait" id="char-portrait-emoji">🧝</div>
+        <div class="char-name-display" id="sidebar-name">旅人</div>
+        <div class="char-title-display" id="sidebar-title">孤山遠征隊成員</div>
+
+        <div class="rel-section">
+          <h3>關係度</h3>
+          <div class="rel-item">
+            <div class="rel-label"><span>索林</span><span id="rel-thorin-label">冷漠</span></div>
+            <div class="rel-bar"><div class="rel-fill" id="rel-thorin" style="width:5%"></div></div>
+          </div>
+          <div class="rel-item">
+            <div class="rel-label"><span>比爾博</span><span id="rel-bilbo-label">陌生</span></div>
+            <div class="rel-bar"><div class="rel-fill" id="rel-bilbo" style="width:10%"></div></div>
+          </div>
+          <div class="rel-item">
+            <div class="rel-label"><span>奇力</span><span id="rel-kili-label">陌生</span></div>
+            <div class="rel-bar"><div class="rel-fill" id="rel-kili" style="width:8%"></div></div>
+          </div>
+          <div class="rel-item">
+            <div class="rel-label"><span>菲力</span><span id="rel-fili-label">陌生</span></div>
+            <div class="rel-bar"><div class="rel-fill" id="rel-fili" style="width:8%"></div></div>
+          </div>
+          <div class="rel-item">
+            <div class="rel-label"><span>巴林</span><span id="rel-balin-label">陌生</span></div>
+            <div class="rel-bar"><div class="rel-fill" id="rel-balin" style="width:10%"></div></div>
+          </div>
+        </div>
+
+        <div class="stage-badge" id="stage-badge">
+          第一階段<br>不信任期
+        </div>
+      </div>
+
+      <!-- Story -->
+      <div id="story-area">
+        <div id="story-log"></div>
+        <div id="action-panel">
+          <div class="action-header">可選行動</div>
+          <div class="action-choices" id="action-choices"></div>
+          <div class="free-action-row">
+            <input type="text" id="free-action-input" placeholder="自由行動：輸入任何你想做的事…">
+            <button class="btn-send" onclick="sendFreeAction()">送出</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div id="reset-bar">
+      <button class="btn-outline" onclick="resetGame()">↩ 重新設定角色</button>
+      <button class="btn-outline" onclick="restartScene()">⟳ 重啟當前場景</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ══ State ══
+const state = {
+  char: {},
+  conversationHistory: [],
+  relationships: { thorin: 5, bilbo: 10, kili: 8, fili: 8, balin: 10 },
+  currentStage: 1,
+  extraFields: [],
+  lastChoices: []
+};
+
+// ══ Chip interaction ══
+function setupChips(containerId, multiSelect = false) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.querySelectorAll('.chip, .romance-card, .skill-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      if (!multiSelect) {
+        container.querySelectorAll('.chip, .romance-card, .skill-chip').forEach(c => c.classList.remove('selected'));
+        chip.classList.add('selected');
+      } else {
+        chip.classList.toggle('selected');
+      }
+    });
+  });
+}
+
+setupChips('race-chips', false);
+setupChips('origin-chips', false);
+setupChips('family-chips', false);
+setupChips('home-chips', false);
+setupChips('subplot-chips', false);
+setupChips('npc-rel-chips', false);
+setupChips('trait-chips', true);
+setupChips('skill-chips', true);
+
+// Romance cards
+document.querySelectorAll('.romance-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.romance-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+  });
+});
+
+// ── Section toggle ──
+function toggleSection(toggle) {
+  const body = toggle.nextElementSibling;
+  const card = toggle.closest('.card') || toggle.parentElement;
+  body.classList.toggle('hidden');
+  toggle.classList.toggle('collapsed');
+}
+
+// ── Extra fields ──
+function addExtraField() {
+  const input = document.getElementById('extra-input');
+  const val = input.value.trim();
+  if (!val) return;
+  state.extraFields.push(val);
+  renderExtraFields();
+  input.value = '';
+}
+function removeExtraField(i) {
+  state.extraFields.splice(i, 1);
+  renderExtraFields();
+}
+function renderExtraFields() {
+  const list = document.getElementById('extra-fields-list');
+  list.innerHTML = state.extraFields.map((f, i) => `
+    <div class="extra-field-item">
+      <span>${f}</span>
+      <button class="del-btn" onclick="removeExtraField(${i})">✕</button>
+    </div>
+  `).join('');
+}
+
+document.getElementById('extra-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addExtraField();
+});
+
+// ── Collect settings ──
+function getSelected(containerId) {
+  const el = document.getElementById(containerId);
+  const found = el ? el.querySelector('.selected') : null;
+  return found ? found.dataset.val : '隨機';
+}
+function getMultiSelected(containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return [];
+  return [...el.querySelectorAll('.selected')].map(c => c.dataset.val);
+}
+
+// ── Build system prompt ──
+function buildSystemPrompt(char) {
+  return `你是沉浸式互動文字遊戲主持人，引導玩家在《哈比人》與《魔戒》的中土世界展開孤山遠征。
+
+【玩家角色設定】
+姓名：${char.name || '（隨機生成）'}
+種族：${char.race}
+出生地：${char.origin}
+家庭背景：${char.family}
+家庭氛圍：${char.homeAtmo}
+外貌：${char.appearance || '（未指定，請自行描述）'}
+性格特質：${char.traits.join('、') || '隨機'}
+專長：${char.skills.join('、') || '隨機'}
+感情線傾向：${char.romance}
+隱藏支線：${char.subplot}
+與NPC關係：${char.npcRel}
+額外設定：${[...char.extraFields, char.extraNotes].filter(Boolean).join('；') || '無'}
+
+【核心規則】
+- 主要感情線以${char.romance}為核心，感情發展必須慢熱，嚴禁快速告白。
+- 索林驕傲、固執、極重榮譽與王族責任，不會輕易對玩家展現溫柔。
+- 感情線分七個階段推進：不信任→信任建立→感情萌芽→阿肯寶石事件→決裂→戰場重逢→存活結局。
+- 所有NPC依照托爾金原著個性塑造。
+- 輸出格式：先輸出【劇情】段落（小說敘事風格，至少300字），再列出五個可選行動（最後一個永遠是「自由行動」）。
+- 使用繁體中文，避免中國用語。
+- NPC姓名以繁體中文顯示：索林（Thorin）、比爾博（Bilbo）、甘道夫（Gandalf）、奇力（Kíli）、菲力（Fíli）、巴林（Balin）、德瓦林（Dwalin）。
+- 避免破折號，避免AI感，文風貼近翻譯小說。
+- 在每次回覆結尾，以JSON格式更新關係度（0-100）：{"relationships":{"thorin":數字,"bilbo":數字,"kili":數字,"fili":數字,"balin":數字},"stage":數字（1-7）}
+
+故事從夏爾、甘道夫拜訪的那一天開始。`;
+}
+
+// ── Start game ──
+async function startGame() {
+  const char = {
+    name: document.getElementById('char-name').value.trim(),
+    race: getSelected('race-chips'),
+    origin: getSelected('origin-chips'),
+    family: getSelected('family-chips'),
+    homeAtmo: getSelected('home-chips'),
+    appearance: document.getElementById('char-appearance').value.trim(),
+    traits: getMultiSelected('trait-chips'),
+    skills: getMultiSelected('skill-chips'),
+    romance: document.querySelector('.romance-card.selected')?.dataset.val || '索林',
+    subplot: getSelected('subplot-chips'),
+    npcRel: getSelected('npc-rel-chips'),
+    extraFields: [...state.extraFields],
+    extraNotes: document.getElementById('extra-notes').value.trim()
+  };
+  state.char = char;
+
+  // Show preview
+  const preview = document.getElementById('preview-box');
+  preview.innerHTML = `
+    <strong>角色確認</strong><br>
+    ${char.name || '（隨機姓名）'} ・ ${char.race} ・ ${char.origin}<br>
+    性格：${char.traits.join('、') || '隨機'}<br>
+    專長：${char.skills.join('、') || '隨機'}<br>
+    感情線：<strong style="color:var(--gold)">${char.romance}</strong>
+  `;
+  preview.classList.add('show');
+
+  // Switch panels
+  document.getElementById('setup-panel').style.display = 'none';
+  document.getElementById('generate-section').style.display = 'none';
+  document.getElementById('phase-bar').style.display = 'none';
+  document.getElementById('game-panel').classList.add('active');
+
+  // Update sidebar
+  document.getElementById('sidebar-name').textContent = char.name || '神秘旅人';
+  document.getElementById('sidebar-title').textContent = char.race + '・' + char.origin;
+
+  const portraitMap = { '人類':'🧑', '哈比人':'🧙', '精靈':'🧝', '矮人':'⛏' };
+  document.getElementById('char-portrait-emoji').textContent = portraitMap[char.race] || '🌟';
+
+  // Init conversation
+  state.conversationHistory = [];
+  const systemPrompt = buildSystemPrompt(char);
+
+  await callClaude(
+    '請開始遊戲。描述甘道夫拜訪的那一天，以及玩家收到索林信件的場景。',
+    systemPrompt
+  );
+}
+
+// ── Call Claude API ──
+async function callClaude(userMessage, systemPrompt) {
+  const log = document.getElementById('story-log');
+  const actionsEl = document.getElementById('action-choices');
+
+  // Show loading
+  const loadingEl = document.createElement('div');
+  loadingEl.className = 'story-loading';
+  loadingEl.innerHTML = `<div class="dots"><span></span><span></span><span></span></div><span>甘道夫正在籌謀…</span>`;
+  log.appendChild(loadingEl);
+  log.scrollTop = log.scrollHeight;
+  actionsEl.innerHTML = '';
+
+  state.conversationHistory.push({ role: 'user', content: userMessage });
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1500,
+        system: systemPrompt || buildSystemPrompt(state.char),
+        messages: state.conversationHistory
+      })
+    });
+
+    const data = await resp.json();
+    const fullText = data.content?.map(b => b.text || '').join('') || '';
+
+    // Extract JSON state update
+    const jsonMatch = fullText.match(/\{[\s\S]*?"relationships"[\s\S]*?\}/);
+    let storyText = fullText;
+    if (jsonMatch) {
+      try {
+        const update = JSON.parse(jsonMatch[0]);
+        if (update.relationships) {
+          Object.assign(state.relationships, update.relationships);
+          updateRelationshipBars();
+        }
+        if (update.stage) updateStage(update.stage);
+      } catch(e) {}
+      storyText = fullText.replace(jsonMatch[0], '').trim();
+    }
+
+    // Parse story + choices
+    const choicesMatch = storyText.match(/可選行動[\s\S]*$/);
+    let narrative = storyText;
+    let choices = [];
+
+    if (choicesMatch) {
+      narrative = storyText.replace(choicesMatch[0], '').trim();
+      const lines = choicesMatch[0].split('\n').filter(l => /^\d+[\.\、]/.test(l.trim()));
+      choices = lines.map(l => l.replace(/^\d+[\.\、]\s*/, '').trim()).filter(Boolean);
+    }
+
+    // Clean 【劇情】 tag
+    narrative = narrative.replace(/【劇情】/g, '').trim();
+
+    loadingEl.remove();
+
+    // Render story
+    const block = document.createElement('div');
+    block.className = 'story-block new';
+    block.innerHTML = narrative.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>');
+    if (!block.innerHTML.startsWith('<p>')) block.innerHTML = '<p>' + block.innerHTML + '</p>';
+    log.appendChild(block);
+    log.scrollTop = log.scrollHeight;
+
+    // Render choices
+    if (choices.length > 0) {
+      state.lastChoices = choices;
+      actionsEl.innerHTML = choices.map((c, i) =>
+        `<button class="action-btn" onclick="chooseAction(${i})">
+          <span class="action-num">${i + 1}</span>
+          <span>${c}</span>
+        </button>`
+      ).join('');
+    }
+
+    state.conversationHistory.push({ role: 'assistant', content: fullText });
+
+  } catch (err) {
+    loadingEl.remove();
+    const errBlock = document.createElement('div');
+    errBlock.className = 'story-block';
+    errBlock.innerHTML = `<p style="color:#cc5533;">遠方傳來異響，故事暫時中斷了……（${err.message}）</p>`;
+    log.appendChild(errBlock);
+  }
+}
+
+// ── Choose preset action ──
+function chooseAction(i) {
+  const choice = state.lastChoices[i];
+  if (!choice) return;
+  appendPlayerAction(choice);
+  callClaude(choice);
+}
+
+// ── Free action ──
+function sendFreeAction() {
+  const input = document.getElementById('free-action-input');
+  const val = input.value.trim();
+  if (!val) return;
+  input.value = '';
+  appendPlayerAction(val);
+  callClaude(val);
+}
+
+document.getElementById('free-action-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') sendFreeAction();
+});
+
+function appendPlayerAction(text) {
+  const log = document.getElementById('story-log');
+  const el = document.createElement('div');
+  el.style.cssText = 'margin:12px 0;padding:8px 14px;background:rgba(201,150,42,0.08);border-left:2px solid var(--gold-dark);font-style:italic;color:var(--parchment-d);font-size:14px;border-radius:0 3px 3px 0;';
+  el.textContent = '▶ ' + text;
+  log.appendChild(el);
+  log.scrollTop = log.scrollHeight;
+}
+
+// ── Relationship bars ──
+const relLabels = {
+  thorin:  [5,'冷漠', 20,'警戒', 40,'接受', 60,'信任', 80,'親密', 100,'摯愛'],
+  bilbo:   [0,'陌生', 30,'初識', 60,'朋友', 90,'摯友'],
+  kili:    [0,'陌生', 30,'初識', 60,'好友', 90,'情誼'],
+  fili:    [0,'陌生', 30,'初識', 60,'好友', 90,'情誼'],
+  balin:   [0,'陌生', 30,'初識', 60,'信賴', 90,'摯友']
+};
+
+function getRelLabel(key, val) {
+  const tiers = relLabels[key];
+  let label = tiers[1];
+  for (let i = 0; i < tiers.length; i += 2) {
+    if (val >= tiers[i]) label = tiers[i + 1];
+  }
+  return label;
+}
+
+function updateRelationshipBars() {
+  const map = { thorin:'索林', bilbo:'比爾博', kili:'奇力', fili:'菲力', balin:'巴林' };
+  for (const [key] of Object.entries(map)) {
+    const val = Math.max(0, Math.min(100, state.relationships[key] || 0));
+    const fill = document.getElementById(`rel-${key}`);
+    const label = document.getElementById(`rel-${key}-label`);
+    if (fill) fill.style.width = val + '%';
+    if (label) label.textContent = getRelLabel(key, val);
+  }
+}
+
+const stageNames = ['', '不信任期', '信任建立', '感情萌芽', '阿肯寶石事件', '決裂', '戰場重逢', '存活結局'];
+function updateStage(n) {
+  state.currentStage = n;
+  const badge = document.getElementById('stage-badge');
+  if (badge) badge.innerHTML = `第${n}階段<br>${stageNames[n] || ''}`;
+}
+
+// ── Reset ──
+function resetGame() {
+  state.conversationHistory = [];
+  state.relationships = { thorin: 5, bilbo: 10, kili: 8, fili: 8, balin: 10 };
+  state.currentStage = 1;
+  document.getElementById('game-panel').classList.remove('active');
+  document.getElementById('setup-panel').style.display = '';
+  document.getElementById('generate-section').style.display = '';
+  document.getElementById('phase-bar').style.display = '';
+  document.getElementById('story-log').innerHTML = '';
+  document.getElementById('action-choices').innerHTML = '';
+  document.getElementById('preview-box').classList.remove('show');
+  updateRelationshipBars();
+  updateStage(1);
+}
+
+function restartScene() {
+  const last = state.conversationHistory.length;
+  if (last >= 2) {
+    state.conversationHistory.splice(last - 2, 2);
+  }
+  callClaude('請重新描述這個場景，以不同的方式展開劇情。');
+}
+
+// ── Embers ──
+function spawnEmbers() {
+  const container = document.getElementById('embers');
+  for (let i = 0; i < 8; i++) {
+    const ember = document.createElement('div');
+    ember.className = 'ember';
+    ember.style.cssText = `
+      left: ${Math.random() * 100}vw;
+      bottom: ${Math.random() * 20}vh;
+      animation-duration: ${4 + Math.random() * 6}s;
+      animation-delay: ${Math.random() * 8}s;
+      opacity: 0;
+    `;
+    container.appendChild(ember);
+  }
+}
+spawnEmbers();
+
+// Init
+updateRelationshipBars();
+</script>
+</body>
+</html>
