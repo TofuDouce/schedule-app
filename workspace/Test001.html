@@ -1063,12 +1063,21 @@ async function loadTasks() {
       const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
                       .map(c => c.replace(/^"|"$/g,'').trim());
       if (!cols[0]) return null;
+      // Google Sheet 有時把日期欄匯出成數字（序列號），需轉換
+      const parseCsvDate = (v) => {
+        if (!v) return '';
+        if (/^\d+$/.test(v)) {
+          const d = new Date((+v - 25569) * 86400000);
+          return d.getFullYear() + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + String(d.getDate()).padStart(2,'0');
+        }
+        return v;
+      };
       return {
         name:     cols[0] || '',
         icon:     cols[1] || '📋',
-        freq:     cols[2] || '',   // 頻率說明（純文字，例如「每週一」）
-        dueDate:  cols[3] || '',   // 下次到期日 yyyy/MM/dd 或 民國格式
-        lastDone: cols[4] || '',   // 最近完成日期
+        freq:     cols[2] || '',
+        dueDate:  parseCsvDate(cols[3]),
+        lastDone: parseCsvDate(cols[4]),
         note:     cols[5] || '',
       };
     }).filter(Boolean);
@@ -1084,12 +1093,12 @@ async function loadTasks() {
 function parseDate(str) {
   if (!str) return null;
   str = str.trim();
-  // 支援 yyyy/MM/dd 或 yyyy-MM-dd
-  const m = str.match(/(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})/);
-  if (m) return new Date(+m[1], +m[2]-1, +m[3]);
-  // 支援民國 115/06/01
-  const roc = str.match(/(\d{2,3})[\/-](\d{1,2})[\/-](\d{1,2})/);
-  if (roc) return new Date(+roc[1]+1911, +roc[2]-1, +roc[3]);
+  // 西元 yyyy/MM/dd 或 yyyy-MM-dd
+  const m4 = str.match(/(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})/);
+  if (m4) return new Date(+m4[1], +m4[2]-1, +m4[3]);
+  // 民國 115/06/01（3位數以下年份）
+  const roc = str.match(/^(\d{2,3})[\/-](\d{1,2})[\/-](\d{1,2})/);
+  if (roc && +roc[1] < 200) return new Date(+roc[1]+1911, +roc[2]-1, +roc[3]);
   return null;
 }
 
@@ -1182,7 +1191,15 @@ async function silentCheckTasks() {
       const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
                       .map(c => c.replace(/^"|"$/g,'').trim());
       if (!cols[0]) return null;
-      return { name:cols[0], icon:cols[1]||'📋', freq:cols[2]||'', dueDate:cols[3]||'', lastDone:cols[4]||'', note:cols[5]||'' };
+      const pcd = (v) => {
+        if (!v) return '';
+        if (/^\d+$/.test(v)) {
+          const d = new Date((+v - 25569) * 86400000);
+          return d.getFullYear() + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + String(d.getDate()).padStart(2,'0');
+        }
+        return v;
+      };
+      return { name:cols[0], icon:cols[1]||'📋', freq:cols[2]||'', dueDate:pcd(cols[3]), lastDone:pcd(cols[4]), note:cols[5]||'' };
     }).filter(Boolean);
     const overdueCount = cachedTasks.filter(t => calcStatus(t).cls === 'overdue').length;
     updateOverdueBadge(overdueCount);
