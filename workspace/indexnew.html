@@ -4,631 +4,743 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>中正診所 Portal</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@700;900&family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
     <style>
-        /* ─── Token System ─────────────────────────────────────── */
+        /* ══════════════════════════════════════════
+           DESIGN TOKENS
+        ══════════════════════════════════════════ */
         :root {
-            --dynamic-title-size: 15px;
-            --dynamic-desc-size: 12px;
-            --grid-cols: 5;
+            /* font sizes — desktop-first, big enough for older eyes */
+            --fs-card-title: clamp(18px, 1.6vw, 22px);
+            --fs-card-desc:  clamp(14px, 1.2vw, 17px);
+            --grid-cols: 4;
 
-            /* Brand palette */
-            --navy:   #0B1F3A;
-            --teal:   #00A896;
-            --teal2:  #00C9B1;
-            --amber:  #F5A623;
-            --slate:  #F4F7FB;
-            --white:  #FFFFFF;
-            --muted:  #64748B;
-            --border: #E2E8F0;
-            --danger: #EF4444;
+            /* palette */
+            --c-bg:       #EFF6FF;
+            --c-surface:  #FFFFFF;
+            --c-surface2: #F0F7FF;
+            --c-border:   #BFDBFE;
+            --c-shadow:   rgba(30,64,175,.10);
+            --c-shadow-h: rgba(30,64,175,.20);
+            --c-text:     #1E3A5F;
+            --c-sub:      #3B6FA0;
+            --c-muted:    #5A7FA8;
+            --c-danger:   #DC2626;
+            --c-header:   rgba(239,246,255,.95);
 
-            /* Theme-aware tokens */
-            --bg:           var(--slate);
-            --surface:      var(--white);
-            --surface2:     #EEF2F8;
-            --text-primary: var(--navy);
-            --text-sec:     var(--muted);
-            --header-bg:    rgba(255,255,255,0.92);
-            --card-shadow:  0 2px 12px rgba(11,31,58,0.07);
-            --card-shadow-h:0 8px 28px rgba(11,31,58,0.13);
-            --accent:       var(--teal);
-            --accent2:      var(--teal2);
+            /* accent — overridden by data-color */
+            --accent:     #1D6EE2;
+            --accent-mid: #2E84FF;
+            --accent-lt:  #93C5FD;
         }
 
-        :root[data-color="blue"]   { --accent:#0284c7; --accent2:#38bdf8; }
-        :root[data-color="teal"]   { --accent:#00A896; --accent2:#00C9B1; }
-        :root[data-color="green"]  { --accent:#059669; --accent2:#34d399; }
-        :root[data-color="purple"] { --accent:#7c3aed; --accent2:#a78bfa; }
+        /* colour themes */
+        :root[data-color="blue"]   { --accent:#1D6EE2; --accent-mid:#2E84FF; --accent-lt:#93C5FD; --c-bg:#EFF6FF; --c-surface2:#EBF4FF; --c-border:#BFDBFE; --c-shadow:rgba(30,64,175,.10); }
+        :root[data-color="teal"]   { --accent:#0D7C6F; --accent-mid:#0FA890; --accent-lt:#6EE7D8; --c-bg:#F0FDFB; --c-surface2:#E6FAF7; --c-border:#99F0E4; --c-shadow:rgba(13,124,111,.10); }
+        :root[data-color="green"]  { --accent:#166534; --accent-mid:#16A34A; --accent-lt:#86EFAC; --c-bg:#F0FDF4; --c-surface2:#E8FDF0; --c-border:#A7F3C0; --c-shadow:rgba(22,101,52,.10); }
+        :root[data-color="purple"] { --accent:#5B21B6; --accent-mid:#7C3AED; --accent-lt:#C4B5FD; --c-bg:#F5F3FF; --c-surface2:#EDE9FE; --c-border:#C4B5FD; --c-shadow:rgba(91,33,182,.10); }
 
+        /* dark mode */
         :root[data-theme="dark"] {
-            --bg:           #0B1628;
-            --surface:      #162032;
-            --surface2:     #1E2D44;
-            --text-primary: #F1F5F9;
-            --text-sec:     #94A3B8;
-            --header-bg:    rgba(11,28,50,0.96);
-            --border:       #243452;
-            --card-shadow:  0 2px 12px rgba(0,0,0,0.3);
-            --card-shadow-h:0 8px 28px rgba(0,0,0,0.5);
+            --c-bg:      #0D1B2E;
+            --c-surface: #162539;
+            --c-surface2:#1C2F47;
+            --c-border:  #2A4266;
+            --c-shadow:  rgba(0,0,0,.35);
+            --c-shadow-h:rgba(0,0,0,.55);
+            --c-text:    #E8F0FB;
+            --c-sub:     #93BAE8;
+            --c-muted:   #6B9AC4;
+            --c-header:  rgba(13,27,46,.96);
         }
 
-        /* ─── Reset & Base ─────────────────────────────────────── */
-        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+        /* ══════════════════════════════════════════
+           RESET
+        ══════════════════════════════════════════ */
+        *, *::before, *::after {
+            margin:0; padding:0; box-sizing:border-box;
+            -webkit-tap-highlight-color:transparent;
+        }
 
         body {
-            min-height: 100vh;
-            background: var(--bg);
-            color: var(--text-primary);
+            min-height:100vh;
+            background: var(--c-bg);
+            color: var(--c-text);
             font-family: "Noto Sans TC", "Inter", sans-serif;
-            transition: background .35s, color .35s;
-            overflow-x: hidden;
+            transition: background .3s, color .3s;
+            overflow-x:hidden;
         }
 
-        /* ─── Header ────────────────────────────────────────────── */
-        .header {
-            position: fixed; top:0; left:0; right:0; z-index:1000;
-            height: 68px;
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 32px;
-            background: var(--header-bg);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border);
-            box-shadow: 0 1px 0 rgba(0,0,0,.04);
-        }
-        .header::after {
+        /* ══════════════════════════════════════════
+           BACKGROUND DECORATION
+        ══════════════════════════════════════════ */
+        body::before {
             content:'';
-            position:absolute; bottom:-3px; left:0; right:0; height:3px;
-            background: linear-gradient(90deg, var(--accent), var(--accent2));
-            border-radius:0 0 3px 3px;
+            position:fixed; inset:0; z-index:0; pointer-events:none;
+            background:
+                radial-gradient(ellipse 60% 40% at 15% 10%, color-mix(in srgb,var(--accent) 12%,transparent) 0%, transparent 70%),
+                radial-gradient(ellipse 50% 35% at 85% 85%, color-mix(in srgb,var(--accent-mid) 8%,transparent) 0%, transparent 70%);
         }
 
-        .logo-group { display:flex; align-items:center; gap:14px; }
-        .logo-mark {
-            width:40px; height:40px; border-radius:10px;
-            background: linear-gradient(135deg, var(--accent), var(--accent2));
+        /* ══════════════════════════════════════════
+           HEADER
+        ══════════════════════════════════════════ */
+        .header {
+            position:fixed; top:0; left:0; right:0; z-index:1000;
+            height: 76px;
+            display:flex; align-items:center; justify-content:space-between;
+            padding: 0 40px;
+            background: var(--c-header);
+            backdrop-filter: blur(24px);
+            border-bottom: 2px solid var(--c-border);
+        }
+
+        .logo-wrap { display:flex; align-items:center; gap:16px; }
+
+        .logo-icon {
+            width:48px; height:48px; border-radius:14px; flex-shrink:0;
+            background: linear-gradient(145deg, var(--accent), var(--accent-mid));
             display:flex; align-items:center; justify-content:center;
-            font-size:20px; flex-shrink:0;
-            box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 40%, transparent);
+            font-size:24px;
+            box-shadow: 0 4px 16px color-mix(in srgb,var(--accent) 35%,transparent);
         }
-        .logo-text { line-height:1; }
+
+        .logo-text-wrap { line-height:1.2; }
         .logo-name {
-            font-size: 20px; font-weight:900;
-            color: var(--text-primary);
-            letter-spacing: .5px;
+            font-size: clamp(20px,2.2vw,28px);
+            font-weight:900; color:var(--c-text); letter-spacing:.5px;
         }
-        .logo-sub { font-size:10px; font-weight:600; color:var(--accent); letter-spacing:3px; margin-top:3px; }
+        .logo-badge {
+            display:inline-block; margin-top:3px;
+            font-size:10px; font-weight:700; letter-spacing:3px;
+            color:var(--accent); text-transform:uppercase;
+        }
 
-        .header-right { display:flex; align-items:center; gap:24px; }
-        .clock-block { text-align:right; }
+        /* clock */
+        .clock-wrap { text-align:right; }
         #clock {
-            font-family: "Inter", monospace;
-            font-size: clamp(20px,3.5vw,28px);
-            font-weight:700;
-            color: var(--text-primary);
-            font-variant-numeric: tabular-nums;
-            letter-spacing: 1px;
+            font-family:"Inter",monospace;
+            font-size: clamp(22px,2.5vw,32px);
+            font-weight:900; color:var(--c-text);
+            font-variant-numeric:tabular-nums; letter-spacing:2px;
         }
-        #date { font-size:11px; font-weight:600; color:var(--text-sec); margin-top:2px; letter-spacing:.5px; }
+        #date {
+            font-size: clamp(13px,1vw,15px);
+            font-weight:700; color:var(--c-sub); margin-top:2px;
+        }
 
-        /* ─── Main ──────────────────────────────────────────────── */
+        /* ══════════════════════════════════════════
+           MAIN CONTENT
+        ══════════════════════════════════════════ */
         .main {
-            max-width: 1440px; margin:0 auto;
-            padding: 92px 28px 100px;
+            position:relative; z-index:1;
+            max-width: 1500px; margin:0 auto;
+            padding: 104px 36px 120px;
         }
 
+        /* ── Section Label ── */
         .section-label {
-            display:flex; align-items:center; gap:10px;
-            margin: 36px 0 16px;
+            display:flex; align-items:center; gap:14px;
+            margin: 48px 0 20px;
         }
-        .section-label-bar {
-            width:4px; height:20px; border-radius:2px;
-            background: linear-gradient(to bottom, var(--accent), var(--accent2));
-            flex-shrink:0;
+        .section-label:first-child { margin-top:16px; }
+        .section-line {
+            flex:1; height:1px;
+            background: linear-gradient(90deg, var(--c-border), transparent);
         }
-        .section-label-text {
-            font-size:13px; font-weight:700;
-            color:var(--text-sec);
-            letter-spacing:2px;
-            text-transform:uppercase;
+        .section-pill {
+            display:flex; align-items:center; gap:8px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-mid));
+            color:#fff; font-size:14px; font-weight:800;
+            padding:6px 18px; border-radius:999px;
+            letter-spacing:1.5px;
+            box-shadow: 0 4px 14px color-mix(in srgb,var(--accent) 30%,transparent);
         }
 
-        /* ─── Grid & Cards ──────────────────────────────────────── */
+        /* ── Card Grid ── */
         .grid {
-            display: grid;
-            grid-template-columns: repeat(var(--grid-cols, 5), 1fr);
-            gap: 14px;
+            display:grid;
+            grid-template-columns: repeat(var(--grid-cols, 4), 1fr);
+            gap:18px;
         }
 
+        /* ── Cards ── */
         .card {
-            background: var(--surface);
-            border-radius: 14px;
-            border: 1px solid var(--border);
-            box-shadow: var(--card-shadow);
+            background: var(--c-surface);
+            border-radius:20px;
+            border: 2px solid var(--c-border);
+            box-shadow: 0 4px 18px var(--c-shadow);
             transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
-            position: relative;
-            overflow: hidden;
+            overflow:hidden;
+            position:relative;
         }
+
+        /* top accent stripe */
         .card::before {
             content:'';
-            position:absolute; left:0; top:0; bottom:0; width:3px;
-            background: linear-gradient(to bottom, var(--accent), var(--accent2));
-            transform: scaleY(0);
-            transform-origin: bottom;
-            transition: transform .22s ease;
-            border-radius:0 2px 2px 0;
+            position:absolute; top:0; left:0; right:0; height:4px;
+            background: linear-gradient(90deg, var(--accent), var(--accent-mid));
+            opacity:0; transition:opacity .2s;
         }
-        .card:hover { transform:translateY(-3px); box-shadow:var(--card-shadow-h); border-color:color-mix(in srgb,var(--accent) 35%,var(--border)); }
-        .card:hover::before { transform:scaleY(1); }
+        .card:hover {
+            transform:translateY(-5px);
+            box-shadow: 0 12px 36px var(--c-shadow-h);
+            border-color: var(--accent-mid);
+        }
+        .card:hover::before { opacity:1; }
 
-        /* 🟡 Highlight card */
+        /* Highlight card */
         .card.highlight-card {
-            background: #FFFBEB;
-            border-color: #FCD34D;
+            background: #FFFBEA;
+            border-color: #F59E0B;
+            box-shadow: 0 4px 18px rgba(245,158,11,.15);
         }
-        :root[data-theme="dark"] .card.highlight-card { background:#2A2210; border-color:#92700A; }
+        :root[data-theme="dark"] .card.highlight-card {
+            background:#271F00; border-color:#B45309;
+        }
+        .card.highlight-card::before { background:linear-gradient(90deg,#F59E0B,#FBBF24); }
         .card.highlight-card .card-title { color:#92400E; }
-        .card.highlight-card .card-desc  { color:#B45309; font-weight:700; }
+        .card.highlight-card .card-desc  { color:#B45309; }
         :root[data-theme="dark"] .card.highlight-card .card-title { color:#FCD34D; }
         :root[data-theme="dark"] .card.highlight-card .card-desc  { color:#F59E0B; }
 
+        /* card interior */
         .card-link {
             display:flex; flex-direction:column; align-items:center; justify-content:center;
-            padding: 22px 16px 20px;
-            text-decoration:none; color:inherit; text-align:center; height:100%;
-            gap:8px;
+            padding:34px 20px 30px;
+            text-decoration:none; color:inherit; text-align:center; height:100%; gap:12px;
         }
-        .icon-box {
-            font-size: 36px;
-            line-height:1;
-            display:block;
-            transition: transform .2s ease;
+
+        .icon-wrap {
+            width:70px; height:70px; border-radius:18px; flex-shrink:0;
+            background: var(--c-surface2);
+            border: 2px solid var(--c-border);
+            display:flex; align-items:center; justify-content:center;
+            font-size:36px; line-height:1;
+            transition: transform .2s ease, background .2s;
         }
-        .card:hover .icon-box { transform:scale(1.1); }
+        .card:hover .icon-wrap {
+            transform:scale(1.08);
+            background: color-mix(in srgb,var(--accent) 10%,var(--c-surface2));
+        }
+
         .card-title {
-            font-size: var(--dynamic-title-size);
-            font-weight:800;
-            color: var(--text-primary);
+            font-size: var(--fs-card-title);
+            font-weight:900; color:var(--c-text);
             line-height:1.3;
         }
         .card-desc {
-            font-size: var(--dynamic-desc-size);
-            font-weight:500;
-            color: var(--text-sec);
+            font-size: var(--fs-card-desc);
+            font-weight:600; color:var(--c-sub);
             line-height:1.4;
         }
 
-        /* ─── Floating Controls ─────────────────────────────────── */
+        /* ══════════════════════════════════════════
+           FLOATING CONTROLS
+        ══════════════════════════════════════════ */
         .controls {
-            position:fixed; bottom:28px; right:28px;
-            display:flex; flex-direction:column; gap:10px; z-index:1000;
+            position:fixed; bottom:30px; right:30px;
+            display:flex; flex-direction:column; gap:12px; z-index:1000;
         }
         .ctrl-btn {
-            width:48px; height:48px; border-radius:12px;
-            border:1px solid var(--border);
-            background:var(--surface);
-            font-size:20px; cursor:pointer;
+            width:54px; height:54px; border-radius:14px;
+            border:2px solid var(--c-border);
+            background:var(--c-surface);
+            font-size:22px; cursor:pointer;
             display:flex; align-items:center; justify-content:center;
-            box-shadow:0 4px 14px rgba(0,0,0,.1);
-            transition: transform .15s, box-shadow .15s;
-            color:var(--text-primary);
+            box-shadow:0 4px 16px var(--c-shadow);
+            transition:transform .15s, box-shadow .15s;
+            color:var(--c-text);
         }
-        .ctrl-btn:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(0,0,0,.15); }
+        .ctrl-btn:hover { transform:translateY(-2px); box-shadow:0 8px 24px var(--c-shadow-h); }
 
-        /* ─── Admin Panel ───────────────────────────────────────── */
+        /* ══════════════════════════════════════════
+           ADMIN PANEL
+        ══════════════════════════════════════════ */
         .admin-panel {
-            position:fixed; top:0; right:-100%; width:420px; height:100vh;
-            background:var(--surface);
-            border-left:1px solid var(--border);
-            padding:0;
+            position:fixed; top:0; right:-100%; width:440px; height:100vh;
+            background:var(--c-surface);
+            border-left:2px solid var(--c-border);
             overflow-y:auto;
             transition:right .35s cubic-bezier(.4,0,.2,1);
             z-index:2000;
-            box-shadow: none;
         }
-        .admin-panel.show { right:0; box-shadow:-20px 0 60px rgba(0,0,0,.12); }
+        .admin-panel.show { right:0; box-shadow:-24px 0 60px rgba(0,0,0,.14); }
 
         .admin-header {
             position:sticky; top:0; z-index:10;
             display:flex; align-items:center; justify-content:space-between;
-            padding:20px 24px 18px;
-            background:var(--surface);
-            border-bottom:1px solid var(--border);
+            padding:22px 26px 18px;
+            background:var(--c-surface);
+            border-bottom:2px solid var(--c-border);
         }
-        .admin-header h2 { font-size:18px; font-weight:800; color:var(--text-primary); }
+        .admin-header h2 {
+            font-size:20px; font-weight:900; color:var(--c-text);
+        }
         .close-btn {
-            width:34px; height:34px; border-radius:8px;
-            border:1px solid var(--border); background:transparent;
+            width:38px; height:38px; border-radius:10px;
+            border:2px solid var(--c-border); background:transparent;
             cursor:pointer; font-size:18px;
             display:flex; align-items:center; justify-content:center;
-            color:var(--text-sec); transition:.15s;
+            color:var(--c-muted); transition:.15s;
         }
-        .close-btn:hover { background:var(--surface2); color:var(--danger); }
+        .close-btn:hover { background:var(--c-surface2); color:var(--c-danger); border-color:var(--c-danger); }
 
-        .admin-body { padding:20px 24px 40px; }
+        .admin-body { padding:22px 26px 50px; display:flex; flex-direction:column; gap:18px; }
 
-        .admin-section {
-            background:var(--surface2);
-            border-radius:12px;
-            padding:18px;
-            margin-bottom:20px;
+        .admin-card {
+            background:var(--c-surface2);
+            border:2px solid var(--c-border);
+            border-radius:16px; padding:20px;
         }
-        .admin-section-title {
-            font-size:12px; font-weight:700; color:var(--accent);
-            letter-spacing:2px; text-transform:uppercase; margin-bottom:14px;
+        .admin-card-title {
+            font-size:12px; font-weight:800; color:var(--accent);
+            letter-spacing:2.5px; text-transform:uppercase; margin-bottom:16px;
         }
 
         .admin-label {
-            font-size:13px; font-weight:700; color:var(--text-sec);
-            display:block; margin:12px 0 8px;
+            font-size:14px; font-weight:700; color:var(--c-sub);
+            display:block; margin:14px 0 8px;
         }
         .admin-label:first-of-type { margin-top:0; }
 
-        .color-picker { display:flex; gap:10px; }
-        .color-dot {
-            width:30px; height:30px; border-radius:50%; cursor:pointer;
-            border:3px solid var(--surface);
-            box-shadow:0 2px 6px rgba(0,0,0,.15);
+        /* color dots */
+        .color-row { display:flex; gap:12px; flex-wrap:wrap; }
+        .cdot {
+            width:36px; height:36px; border-radius:50%;
+            cursor:pointer; border:3px solid var(--c-surface);
+            box-shadow:0 2px 8px rgba(0,0,0,.18);
             transition:transform .15s;
         }
-        .color-dot.active { transform:scale(1.2); outline:3px solid var(--accent); outline-offset:2px; }
+        .cdot.active { transform:scale(1.25); outline:3px solid var(--c-text); outline-offset:2px; }
 
-        .slider-row { display:flex; align-items:center; gap:10px; }
-        .slider-row input[type=range] { flex:1; height:6px; accent-color:var(--accent); }
-        .slider-val {
-            font-size:12px; font-weight:700; min-width:36px; text-align:right;
-            color:var(--accent);
+        /* sliders */
+        .slider-row { display:flex; align-items:center; gap:12px; }
+        .slider-row input[type=range] { flex:1; height:8px; accent-color:var(--accent); cursor:pointer; }
+        .sval {
+            font-size:13px; font-weight:800; min-width:38px; text-align:right;
+            color:var(--accent); background:color-mix(in srgb,var(--accent) 12%,transparent);
+            padding:2px 7px; border-radius:6px;
         }
 
-        .input {
-            width:100%; padding:10px 14px;
-            border:1px solid var(--border);
-            border-radius:10px;
-            font-size:14px; font-family:inherit;
-            background:var(--surface);
-            color:var(--text-primary);
-            margin-bottom:10px;
-            transition:border-color .15s;
+        /* inputs */
+        .ainput {
+            width:100%; padding:11px 14px;
+            border:2px solid var(--c-border); border-radius:11px;
+            font-size:15px; font-family:inherit;
+            background:var(--c-surface); color:var(--c-text);
+            margin-bottom:10px; transition:.15s;
         }
-        .input:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 15%,transparent); }
+        .ainput:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 12%,transparent); }
 
-        .emoji-picker { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:12px; }
-        .emoji-opt {
-            font-size:22px; text-align:center; padding:8px 4px;
-            border:2px solid var(--border); border-radius:10px;
-            background:var(--surface); cursor:pointer; transition:.15s;
+        /* emoji picker */
+        .epicker { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:14px; }
+        .eopt {
+            font-size:24px; text-align:center; padding:9px 4px;
+            border:2px solid var(--c-border); border-radius:12px;
+            background:var(--c-surface); cursor:pointer; transition:.15s;
+            line-height:1;
         }
-        .emoji-opt.selected { border-color:var(--accent); background:color-mix(in srgb,var(--accent) 10%,var(--surface)); }
+        .eopt.sel { border-color:var(--accent); background:color-mix(in srgb,var(--accent) 10%,var(--c-surface)); }
 
-        .btn-primary {
+        /* buttons */
+        .btn-add {
+            width:100%; padding:14px;
+            font-size:15px; font-weight:800; font-family:inherit;
+            border:none; border-radius:12px; cursor:pointer;
+            background:linear-gradient(135deg,var(--accent),var(--accent-mid));
+            color:#fff;
+            box-shadow:0 4px 16px color-mix(in srgb,var(--accent) 28%,transparent);
+            transition:opacity .15s,transform .15s;
+        }
+        .btn-add:hover { opacity:.9; transform:translateY(-1px); }
+
+        .btn-sync {
             width:100%; padding:12px;
             font-size:14px; font-weight:700; font-family:inherit;
-            border:none; border-radius:10px; cursor:pointer;
-            background:linear-gradient(135deg,var(--accent),var(--accent2));
-            color:#fff;
-            box-shadow:0 4px 14px color-mix(in srgb,var(--accent) 30%,transparent);
-            transition:opacity .15s, transform .15s;
+            border:2px solid var(--c-border); border-radius:12px; cursor:pointer;
+            background:transparent; color:var(--c-sub); transition:.15s;
         }
-        .btn-primary:hover { opacity:.9; transform:translateY(-1px); }
+        .btn-sync:hover { background:var(--c-surface2); color:var(--c-text); border-color:var(--c-sub); }
 
-        .btn-ghost {
-            width:100%; padding:10px;
-            font-size:13px; font-weight:700; font-family:inherit;
-            border:1px solid var(--border); border-radius:10px; cursor:pointer;
-            background:transparent; color:var(--text-sec);
-            transition:.15s; margin-top:8px;
-        }
-        .btn-ghost:hover { background:var(--surface2); color:var(--text-primary); }
-
-        .manage-item {
+        /* manage items */
+        .mitem {
             display:flex; justify-content:space-between; align-items:center;
-            padding:10px 12px; border-radius:10px;
-            border:1px solid var(--border); margin-bottom:8px;
-            background:var(--surface);
-            font-size:13px; font-weight:600;
+            padding:11px 14px; border-radius:12px;
+            border:2px solid var(--c-border); margin-bottom:8px;
+            background:var(--c-surface); font-size:15px; font-weight:600; gap:8px;
         }
-        .mini-del-btn {
-            background:transparent; color:var(--danger);
-            border:1px solid var(--danger); padding:4px 10px;
-            border-radius:7px; cursor:pointer; font-size:12px; font-weight:700;
-            transition:.15s;
+        .mitem span { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .del-btn {
+            background:transparent; color:var(--c-danger);
+            border:2px solid var(--c-danger); padding:5px 12px;
+            border-radius:8px; cursor:pointer; font-size:13px; font-weight:800;
+            white-space:nowrap; transition:.15s; flex-shrink:0;
         }
-        .mini-del-btn:hover { background:var(--danger); color:#fff; }
+        .del-btn:hover { background:var(--c-danger); color:#fff; }
 
-        /* ─── RWD ───────────────────────────────────────────────── */
-        @media (max-width:1100px) { :root { --grid-cols:4; } }
-        @media (max-width:800px)  { .grid { grid-template-columns:repeat(3,1fr); } }
-        @media (max-width:540px)  {
-            .grid { grid-template-columns:repeat(2,1fr); }
-            .header { padding:0 16px; }
-            .main  { padding:88px 14px 100px; }
+        /* ══════════════════════════════════════════
+           RWD — tablet / mobile
+        ══════════════════════════════════════════ */
+        @media (max-width:1200px) { :root { --grid-cols:3; } }
+        @media (max-width:860px)  { .grid { grid-template-columns:repeat(3,1fr)!important; } }
+        @media (max-width:600px) {
+            .grid { grid-template-columns:repeat(2,1fr)!important; }
+            :root { --fs-card-title:17px; --fs-card-desc:13px; }
+            .main { padding:90px 14px 110px; }
+            .header { padding:0 16px; height:70px; }
             .admin-panel { width:100%; }
+            .card-link { padding:26px 14px 22px; }
+            .icon-wrap { width:56px; height:56px; font-size:28px; }
         }
-        @media (max-width:340px) {
-            .grid { grid-template-columns:1fr; }
+        @media (max-width:380px) {
+            .grid { grid-template-columns:1fr!important; }
+        }
+
+        /* ══════════════════════════════════════════
+           EMPTY STATE
+        ══════════════════════════════════════════ */
+        .empty-hint {
+            grid-column:1/-1;
+            text-align:center; padding:48px 20px;
+            color:var(--c-muted); font-size:16px; font-weight:600;
         }
     </style>
 </head>
-<body id="bodyRoot">
+<body>
 
-<!-- ── Header ── -->
+<!-- ═══ HEADER ═══ -->
 <header class="header">
-    <div class="logo-group">
-        <div class="logo-mark">🏥</div>
-        <div class="logo-text">
+    <div class="logo-wrap">
+        <div class="logo-icon">🏥</div>
+        <div class="logo-text-wrap">
             <div class="logo-name">中正診所</div>
-            <div class="logo-sub">Portal System</div>
+            <div class="logo-badge">Portal System</div>
         </div>
     </div>
-    <div class="header-right">
-        <div class="clock-block">
-            <div id="clock">00:00:00</div>
-            <div id="date"></div>
-        </div>
+    <div class="clock-wrap">
+        <div id="clock">00:00:00</div>
+        <div id="date">─</div>
     </div>
 </header>
 
-<!-- ── Main ── -->
-<main class="main" id="mainContainer">
-    <div class="section-label">
-        <div class="section-label-bar"></div>
-        <div class="section-label-text">主要入口</div>
-    </div>
-    <div id="primaryGrid" class="grid"></div>
+<!-- ═══ MAIN ═══ -->
+<main class="main">
 
     <div class="section-label">
-        <div class="section-label-bar"></div>
-        <div class="section-label-text">次要工具</div>
+        <div class="section-pill">🏠 主要入口</div>
+        <div class="section-line"></div>
     </div>
-    <div id="secondaryGrid" class="grid"></div>
+    <div id="primaryGrid" class="grid">
+        <div class="empty-hint">資料載入中…</div>
+    </div>
+
+    <div class="section-label">
+        <div class="section-pill">🔧 次要工具</div>
+        <div class="section-line"></div>
+    </div>
+    <div id="secondaryGrid" class="grid">
+        <div class="empty-hint">資料載入中…</div>
+    </div>
+
 </main>
 
-<!-- ── Floating Controls ── -->
+<!-- ═══ FLOAT CONTROLS ═══ -->
 <div class="controls">
-    <button class="ctrl-btn" onclick="toggleTheme()" id="themeBtn" title="切換主題">🌙</button>
-    <button class="ctrl-btn" onclick="toggleAdminMode()" title="介面管理">⚙️</button>
+    <button class="ctrl-btn" id="themeBtn" onclick="toggleTheme()" title="切換深淺色">🌙</button>
+    <button class="ctrl-btn" onclick="toggleAdmin()" title="介面管理">⚙️</button>
 </div>
 
-<!-- ── Admin Panel ── -->
+<!-- ═══ ADMIN PANEL ═══ -->
 <div class="admin-panel" id="adminPanel">
     <div class="admin-header">
-        <h2>介面管理</h2>
+        <h2>⚙️ 介面管理</h2>
         <button class="close-btn" onclick="closeAdmin()">✕</button>
     </div>
     <div class="admin-body">
 
         <!-- 顯示設定 -->
-        <div class="admin-section">
-            <div class="admin-section-title">🎨 顯示設定</div>
+        <div class="admin-card">
+            <div class="admin-card-title">🎨 顯示設定</div>
 
             <label class="admin-label">主題顏色</label>
-            <div class="color-picker">
-                <div class="color-dot" style="background:#0284c7" onclick="setColor('blue')"   id="dot-blue"></div>
-                <div class="color-dot" style="background:#00A896" onclick="setColor('teal')"   id="dot-teal"></div>
-                <div class="color-dot" style="background:#059669" onclick="setColor('green')"  id="dot-green"></div>
-                <div class="color-dot" style="background:#7c3aed" onclick="setColor('purple')" id="dot-purple"></div>
+            <div class="color-row">
+                <div class="cdot" id="dot-blue"   style="background:#1D6EE2" onclick="setColor('blue')"></div>
+                <div class="cdot" id="dot-teal"   style="background:#0D7C6F" onclick="setColor('teal')"></div>
+                <div class="cdot" id="dot-green"  style="background:#166534" onclick="setColor('green')"></div>
+                <div class="cdot" id="dot-purple" style="background:#5B21B6" onclick="setColor('purple')"></div>
             </div>
 
             <label class="admin-label">標題大小</label>
             <div class="slider-row">
-                <input type="range" id="titleSlider" min="11" max="22" value="15" oninput="applyUIStyle()">
-                <span class="slider-val" id="ts-val">15px</span>
+                <input type="range" id="titleSlider" min="15" max="30" value="22" oninput="applyStyle()">
+                <span class="sval" id="tsVal">22px</span>
             </div>
 
             <label class="admin-label">說明大小</label>
             <div class="slider-row">
-                <input type="range" id="descSlider" min="10" max="18" value="12" oninput="applyUIStyle()">
-                <span class="slider-val" id="ds-val">12px</span>
+                <input type="range" id="descSlider" min="13" max="22" value="17" oninput="applyStyle()">
+                <span class="sval" id="dsVal">17px</span>
             </div>
 
-            <label class="admin-label">每列卡片數</label>
-            <select id="gridColSelect" class="input" onchange="applyUIStyle()">
+            <label class="admin-label">每列卡片數（電腦版）</label>
+            <select id="gridColSel" class="ainput" onchange="applyStyle()">
                 <option value="6">6 張</option>
-                <option value="5" selected>5 張</option>
-                <option value="4">4 張</option>
+                <option value="5">5 張</option>
+                <option value="4" selected>4 張</option>
                 <option value="3">3 張</option>
             </select>
         </div>
 
         <!-- 新增書籤 -->
-        <div class="admin-section">
-            <div class="admin-section-title">🔗 新增書籤</div>
+        <div class="admin-card">
+            <div class="admin-card-title">🔗 新增書籤</div>
 
             <label class="admin-label">放置區域</label>
-            <select id="linkCategory" class="input">
+            <select id="linkCat" class="ainput">
                 <option value="primary">主要入口區</option>
                 <option value="secondary" selected>次要工具區</option>
             </select>
 
             <label class="admin-label">選擇圖示</label>
-            <div class="emoji-picker" id="emojiPicker"></div>
+            <div class="epicker" id="emojiPicker"></div>
 
-            <input id="linkTitle" class="input" placeholder="名稱（含「重要」自動標色）">
-            <input id="linkUrl"   class="input" placeholder="網址 https://…">
-            <input id="linkDesc"  class="input" placeholder="簡短說明">
-            <button class="btn-primary" onclick="saveLink()">儲存並新增</button>
+            <input id="lTitle" class="ainput" placeholder="名稱（含「重要」自動標黃色）">
+            <input id="lUrl"   class="ainput" placeholder="網址 https://…">
+            <input id="lDesc"  class="ainput" placeholder="簡短說明（選填）">
+            <button class="btn-add" onclick="saveLink()">＋ 儲存並新增</button>
         </div>
 
-        <!-- 書籤管理 -->
-        <div id="customLinksList"></div>
+        <!-- 已存書籤 -->
+        <div id="manageList"></div>
 
-        <button class="btn-ghost" onclick="location.reload()">🔄 重新同步資料</button>
+        <button class="btn-sync" onclick="location.reload()">🔄 重新同步雲端資料</button>
+
     </div>
 </div>
 
 <script>
-    const SHEET_URL = `https://docs.google.com/spreadsheets/d/1uYBA_CncbEAydmzNC1SRnsKJdswNgQh3zg1x6TKo0UU/export?format=csv&gid=0`;
-    const emojis = ["🩺","💉","🏥","💊","📦","💻","🔍","📋","🧪","📅","📝","⭐","👤","⚙️","🔗","🏠"];
-    let selectedIcon = "🔗";
-    let userLinks = JSON.parse(localStorage.getItem('cz_user_links_v4')) || { primary:[], secondary:[] };
+/* ════════════════════════════════════
+   CONFIG & STATE
+════════════════════════════════════ */
+const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1uYBA_CncbEAydmzNC1SRnsKJdswNgQh3zg1x6TKo0UU/export?format=csv&gid=0';
+const EMOJIS    = ['🩺','💉','🏥','💊','📦','💻','🔍','📋','🧪','📅','📝','⭐','👤','⚙️','🔗','🏠'];
+const LS_KEY    = 'cz_user_links_v4';
+const CFG_KEY   = 'cz_ui_config';
+const THEME_KEY = 'cz_portal_theme';
+const COLOR_KEY = 'cz_theme_color';
 
-    /* ── Color ── */
-    function setColor(color) {
-        document.documentElement.setAttribute('data-color', color);
-        document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
-        const dot = document.getElementById('dot-' + color);
-        if (dot) dot.classList.add('active');
-        localStorage.setItem('cz_theme_color', color);
-    }
+let selectedIcon = '🔗';
+let userLinks = JSON.parse(localStorage.getItem(LS_KEY)) || { primary:[], secondary:[] };
 
-    /* ── Theme ── */
-    function toggleTheme() {
-        const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-        document.documentElement.setAttribute('data-theme', next);
-        document.getElementById('themeBtn').innerText = next === 'light' ? '🌙' : '☀️';
-        localStorage.setItem('cz_portal_theme', next);
-    }
+/* ════════════════════════════════════
+   THEME / COLOR
+════════════════════════════════════ */
+function setColor(c) {
+    document.documentElement.setAttribute('data-color', c);
+    document.querySelectorAll('.cdot').forEach(d => d.classList.remove('active'));
+    const dot = document.getElementById('dot-' + c);
+    if (dot) dot.classList.add('active');
+    localStorage.setItem(COLOR_KEY, c);
+}
 
-    /* ── Admin Panel ── */
-    function toggleAdminMode() { document.getElementById("adminPanel").classList.toggle("show"); }
-    function closeAdmin()      { document.getElementById("adminPanel").classList.remove("show"); }
+function toggleTheme() {
+    const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', next);
+    document.getElementById('themeBtn').textContent = next === 'light' ? '🌙' : '☀️';
+    localStorage.setItem(THEME_KEY, next);
+}
 
-    /* ── UI Style ── */
-    function applyUIStyle() {
-        const ts  = document.getElementById('titleSlider').value;
-        const ds  = document.getElementById('descSlider').value;
-        const col = document.getElementById('gridColSelect').value;
-        document.getElementById('ts-val').innerText = ts + 'px';
-        document.getElementById('ds-val').innerText = ds + 'px';
-        document.documentElement.style.setProperty('--dynamic-title-size', ts + 'px');
-        document.documentElement.style.setProperty('--dynamic-desc-size',  ds + 'px');
-        document.documentElement.style.setProperty('--grid-cols', col);
-        localStorage.setItem('cz_ui_config', JSON.stringify({ ts, ds, col }));
-    }
+/* ════════════════════════════════════
+   ADMIN PANEL
+════════════════════════════════════ */
+function toggleAdmin() { document.getElementById('adminPanel').classList.toggle('show'); }
+function closeAdmin()  { document.getElementById('adminPanel').classList.remove('show'); }
 
-    /* ── Cloud Data ── */
-    async function fetchCloudData() {
-        try {
-            const res  = await fetch(SHEET_URL + "&cb=" + Date.now());
-            const text = await res.text();
-            const lines = text.split(/\r?\n/).slice(1);
-            const pg = document.getElementById("primaryGrid");
-            const sg = document.getElementById("secondaryGrid");
-            pg.innerHTML = ""; sg.innerHTML = "";
+/* ════════════════════════════════════
+   UI STYLE
+════════════════════════════════════ */
+function applyStyle() {
+    const ts  = document.getElementById('titleSlider').value;
+    const ds  = document.getElementById('descSlider').value;
+    const col = document.getElementById('gridColSel').value;
+    document.getElementById('tsVal').textContent = ts + 'px';
+    document.getElementById('dsVal').textContent = ds + 'px';
+    const root = document.documentElement;
+    root.style.setProperty('--fs-card-title', ts + 'px');
+    root.style.setProperty('--fs-card-desc',  ds + 'px');
+    root.style.setProperty('--grid-cols', col);
+    localStorage.setItem(CFG_KEY, JSON.stringify({ ts, ds, col }));
+}
 
-            lines.forEach(line => {
-                const cols = line
-                    .split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
-                    .map(c => c.replace(/^"|"$/g, '').trim());
-                if (cols.length >= 3) {
-                    const [cat, title, url, desc, icon] = cols;
-                    const html = createCard({ title, url, desc, icon, isHighlight: title.includes("重要") });
-                    if (cat.toLowerCase().includes('primary')) pg.innerHTML += html;
-                    else sg.innerHTML += html;
-                }
-            });
+/* ════════════════════════════════════
+   CARD HTML
+════════════════════════════════════ */
+function createCard(l) {
+    return `
+    <div class="card${l.isHighlight ? ' highlight-card' : ''}">
+        <a class="card-link" href="${l.url}" target="_blank" rel="noopener">
+            <div class="icon-wrap">${l.icon || '🔗'}</div>
+            <div class="card-title">${l.title}</div>
+            ${l.desc ? `<div class="card-desc">${l.desc}</div>` : ''}
+        </a>
+    </div>`;
+}
 
-            userLinks.primary.forEach(l => {
-                l.isHighlight = l.title.includes("重要");
-                document.getElementById("primaryGrid").innerHTML += createCard(l);
-            });
-            userLinks.secondary.forEach(l => {
-                l.isHighlight = l.title.includes("重要");
-                document.getElementById("secondaryGrid").innerHTML += createCard(l);
-            });
+/* ════════════════════════════════════
+   CLOUD DATA
+════════════════════════════════════ */
+async function fetchCloud() {
+    const pg = document.getElementById('primaryGrid');
+    const sg = document.getElementById('secondaryGrid');
 
-            updateManageList();
-        } catch(e) { console.error("Cloud sync error", e); }
-    }
+    try {
+        const res  = await fetch(SHEET_URL + '&cb=' + Date.now());
+        const text = await res.text();
+        const rows = text.split(/\r?\n/).slice(1);
 
-    /* ── Card HTML ── */
-    function createCard(l) {
-        return `
-        <div class="card ${l.isHighlight ? 'highlight-card' : ''}">
-            <a class="card-link" href="${l.url}" target="_blank" rel="noopener">
-                <span class="icon-box">${l.icon || '🔗'}</span>
-                <div class="card-title">${l.title}</div>
-                ${l.desc ? `<div class="card-desc">${l.desc}</div>` : ''}
-            </a>
-        </div>`;
-    }
+        pg.innerHTML = '';
+        sg.innerHTML = '';
 
-    /* ── Bookmark CRUD ── */
-    function saveLink() {
-        const title = document.getElementById('linkTitle').value.trim();
-        const url   = document.getElementById('linkUrl').value.trim();
-        const desc  = document.getElementById('linkDesc').value.trim();
-        const cat   = document.getElementById('linkCategory').value;
-        if (!title || !url) return alert("請填寫名稱與網址");
-        userLinks[cat].push({ id: Date.now(), title, url, desc, icon: selectedIcon });
-        localStorage.setItem('cz_user_links_v4', JSON.stringify(userLinks));
-        location.reload();
-    }
-
-    function deleteLink(id) {
-        if (!confirm("確定刪除？")) return;
-        userLinks.primary   = userLinks.primary.filter(x => x.id != id);
-        userLinks.secondary = userLinks.secondary.filter(x => x.id != id);
-        localStorage.setItem('cz_user_links_v4', JSON.stringify(userLinks));
-        location.reload();
-    }
-
-    function updateManageList() {
-        const all = [...userLinks.primary, ...userLinks.secondary];
-        if (!all.length) return;
-        const div = document.getElementById("customLinksList");
-        div.innerHTML = `<div class="admin-section">
-            <div class="admin-section-title">📋 已儲存書籤</div>
-            ${all.map(l => `
-                <div class="manage-item">
-                    <span>${l.icon} ${l.title}</span>
-                    <button class="mini-del-btn" onclick="deleteLink(${l.id})">刪除</button>
-                </div>`).join('')}
-        </div>`;
-    }
-
-    /* ── Emoji Picker ── */
-    (function initEmojiPicker() {
-        const picker = document.getElementById('emojiPicker');
-        emojis.forEach(e => {
-            const div = document.createElement('div');
-            div.className = 'emoji-opt' + (e === selectedIcon ? ' selected' : '');
-            div.innerText = e;
-            div.onclick = () => {
-                document.querySelectorAll('.emoji-opt').forEach(d => d.classList.remove('selected'));
-                div.classList.add('selected');
-                selectedIcon = e;
-            };
-            picker.appendChild(div);
+        rows.forEach(row => {
+            const cols = row
+                .split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
+                .map(c => c.replace(/^"|"$/g, '').trim());
+            if (cols.length < 3) return;
+            const [cat, title, url, desc, icon] = cols;
+            if (!title || !url) return;
+            const card = createCard({ title, url, desc, icon, isHighlight: title.includes('重要') });
+            if (cat.toLowerCase().includes('primary')) pg.innerHTML += card;
+            else sg.innerHTML += card;
         });
-    })();
 
-    /* ── Clock ── */
-    function updateClock() {
-        const now = new Date();
-        document.getElementById("clock").innerText = now.toLocaleTimeString("zh-TW", { hour12:false });
-        const y = now.getFullYear();
-        const m = String(now.getMonth()+1).padStart(2,'0');
-        const d = String(now.getDate()).padStart(2,'0');
-        const weekdays = ['日','一','二','三','四','五','六'];
-        document.getElementById("date").innerText =
-            `民國 ${y-1911} 年  ${y}/${m}/${d}（${weekdays[now.getDay()]}）`;
+    } catch(e) {
+        console.warn('Cloud sync failed:', e);
+        pg.innerHTML = '<div class="empty-hint">⚠️ 雲端連線失敗，顯示本機書籤</div>';
+        sg.innerHTML = '';
     }
 
-    /* ── Init ── */
-    window.onload = () => {
-        // Restore UI config
-        const cfg = JSON.parse(localStorage.getItem('cz_ui_config'));
-        if (cfg) {
-            document.getElementById('titleSlider').value    = cfg.ts;
-            document.getElementById('descSlider').value     = cfg.ds;
-            document.getElementById('gridColSelect').value  = cfg.col;
-            applyUIStyle();
-        }
-        // Restore color
-        setColor(localStorage.getItem('cz_theme_color') || 'blue');
-        // Restore theme
-        const savedTheme = localStorage.getItem('cz_portal_theme');
-        if (savedTheme) {
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            document.getElementById('themeBtn').innerText = savedTheme === 'light' ? '🌙' : '☀️';
-        }
-        // Clock
-        setInterval(updateClock, 1000);
-        updateClock();
-        // Data
-        fetchCloudData();
-    };
+    // append local links
+    userLinks.primary.forEach(l => {
+        l.isHighlight = l.title.includes('重要');
+        document.getElementById('primaryGrid').innerHTML += createCard(l);
+    });
+    userLinks.secondary.forEach(l => {
+        l.isHighlight = l.title.includes('重要');
+        document.getElementById('secondaryGrid').innerHTML += createCard(l);
+    });
+
+    // clean up empties
+    ['primaryGrid','secondaryGrid'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el.querySelector('.card')) el.innerHTML = '<div class="empty-hint">尚無書籤</div>';
+    });
+
+    renderManageList();
+}
+
+/* ════════════════════════════════════
+   BOOKMARK CRUD
+════════════════════════════════════ */
+function saveLink() {
+    const title = document.getElementById('lTitle').value.trim();
+    const url   = document.getElementById('lUrl').value.trim();
+    const desc  = document.getElementById('lDesc').value.trim();
+    const cat   = document.getElementById('linkCat').value;
+    if (!title || !url) { alert('請填寫名稱與網址'); return; }
+    userLinks[cat].push({ id:Date.now(), title, url, desc, icon:selectedIcon });
+    localStorage.setItem(LS_KEY, JSON.stringify(userLinks));
+    location.reload();
+}
+
+function deleteLink(id) {
+    if (!confirm('確定要刪除這個書籤嗎？')) return;
+    ['primary','secondary'].forEach(k => {
+        userLinks[k] = userLinks[k].filter(x => x.id != id);
+    });
+    localStorage.setItem(LS_KEY, JSON.stringify(userLinks));
+    location.reload();
+}
+
+function renderManageList() {
+    const all = [...userLinks.primary, ...userLinks.secondary];
+    const div = document.getElementById('manageList');
+    if (!all.length) { div.innerHTML = ''; return; }
+    div.innerHTML = `
+        <div class="admin-card">
+            <div class="admin-card-title">📋 已儲存書籤（${all.length} 筆）</div>
+            ${all.map(l => `
+            <div class="mitem">
+                <span>${l.icon} ${l.title}</span>
+                <button class="del-btn" onclick="deleteLink(${l.id})">刪除</button>
+            </div>`).join('')}
+        </div>`;
+}
+
+/* ════════════════════════════════════
+   EMOJI PICKER
+════════════════════════════════════ */
+(function() {
+    const wrap = document.getElementById('emojiPicker');
+    EMOJIS.forEach(e => {
+        const el = document.createElement('div');
+        el.className = 'eopt' + (e === selectedIcon ? ' sel' : '');
+        el.textContent = e;
+        el.onclick = () => {
+            document.querySelectorAll('.eopt').forEach(d => d.classList.remove('sel'));
+            el.classList.add('sel');
+            selectedIcon = e;
+        };
+        wrap.appendChild(el);
+    });
+})();
+
+/* ════════════════════════════════════
+   CLOCK
+════════════════════════════════════ */
+const WEEKDAY = ['日','一','二','三','四','五','六'];
+function tick() {
+    const now = new Date();
+    const hms = now.toLocaleTimeString('zh-TW', { hour12:false });
+    const y   = now.getFullYear();
+    const m   = String(now.getMonth()+1).padStart(2,'0');
+    const d   = String(now.getDate()).padStart(2,'0');
+    document.getElementById('clock').textContent = hms;
+    document.getElementById('date').textContent  =
+        `民國 ${y-1911} 年 ${y}/${m}/${d}（週${WEEKDAY[now.getDay()]}）`;
+}
+
+/* ════════════════════════════════════
+   INIT
+════════════════════════════════════ */
+window.addEventListener('DOMContentLoaded', () => {
+
+    // restore config
+    const cfg = JSON.parse(localStorage.getItem(CFG_KEY));
+    if (cfg) {
+        document.getElementById('titleSlider').value = cfg.ts;
+        document.getElementById('descSlider').value  = cfg.ds;
+        document.getElementById('gridColSel').value  = cfg.col;
+        applyStyle();
+    }
+
+    // restore color
+    setColor(localStorage.getItem(COLOR_KEY) || 'blue');
+
+    // restore theme
+    const theme = localStorage.getItem(THEME_KEY);
+    if (theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        document.getElementById('themeBtn').textContent = theme === 'light' ? '🌙' : '☀️';
+    }
+
+    // clock
+    tick();
+    setInterval(tick, 1000);
+
+    // data
+    fetchCloud();
+});
 </script>
 </body>
 </html>
