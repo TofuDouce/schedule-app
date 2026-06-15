@@ -36,7 +36,7 @@
   --hdr:     rgba(237,242,247,.95);
 }
 
-/* colour presets — all desaturated / muted */
+/* colour presets */
 :root[data-color="slate"]  { --A:#2C5F8A; --A2:#3A7AB5; --Alt:#5A96C8; --bg:#EDF2F7; --surf2:#F0F5FA; --border:#C8D9EC; --shadow:rgba(44,95,138,.10); --shadowH:rgba(44,95,138,.20); --text:#1A3550; --sub:#2C5F8A; --muted:#5A7FA0; --hdr:rgba(237,242,247,.95); }
 :root[data-color="sage"]   { --A:#3A6B52; --A2:#4E8F6E; --Alt:#76B594; --bg:#EEF4F0; --surf2:#E8F2EC; --border:#B8D8C4; --shadow:rgba(58,107,82,.10); --shadowH:rgba(58,107,82,.20); --text:#1B3828; --sub:#3A6B52; --muted:#5C8A6E; --hdr:rgba(238,244,240,.95); }
 :root[data-color="stone"]  { --A:#6B5744; --A2:#8C7260; --Alt:#A8927E; --bg:#F3EFEB; --surf2:#EDE8E2; --border:#D4C4B4; --shadow:rgba(107,87,68,.10); --shadowH:rgba(107,87,68,.20); --text:#352518; --sub:#6B5744; --muted:#8C7260; --hdr:rgba(243,239,235,.95); }
@@ -135,8 +135,6 @@ body::after {
 #clock { font-family:"Inter",monospace; font-size:clamp(20px,2vw,28px); font-weight:900; color:var(--text); font-variant-numeric:tabular-nums; letter-spacing:1.5px; }
 #date  { font-size:12px; font-weight:700; color:var(--muted); margin-top:2px; }
 
-/* weather */
-#weatherWidget { display:flex; align-items:center; gap:6px; font-size:14px; font-weight:700; color:var(--sub); padding:6px 12px; background:var(--surf2); border:1px solid var(--border); border-radius:10px; white-space:nowrap; }
 
 /* ═══════════════════════════════════════════════════
    MAIN
@@ -400,12 +398,109 @@ body::after {
   .panel{ width:100%; }
   .card-link{ padding:24px 14px 20px; }
   .icon-box{ width:54px;height:54px;font-size:28px; }
-  #weatherWidget{ display:none; }
 }
 @media(max-width:360px){ .grid{ grid-template-columns:1fr!important; } }
 
-/* saturation filter */
-body.desaturate { filter:saturate(.55); }
+
+/* ═══ TASK PANEL ═══ */
+#taskBadge {
+  position:fixed; top:16px; left:50%; transform:translateX(-50%);
+  z-index:1100; display:none;
+  background:#C0392B; color:#fff;
+  font-size:15px; font-weight:800;
+  padding:10px 24px; border-radius:999px;
+  box-shadow:0 4px 20px rgba(192,57,43,.4);
+  cursor:pointer; letter-spacing:.5px;
+  animation:badgePop .4s cubic-bezier(.34,1.56,.64,1);
+  align-items:center; gap:8px;
+}
+#taskBadge.show { display:flex; }
+@keyframes badgePop {
+  from { opacity:0; transform:translateX(-50%) scale(.7); }
+  to   { opacity:1; transform:translateX(-50%) scale(1); }
+}
+
+#taskPanel {
+  position:fixed; bottom:96px; right:92px; z-index:800;
+  width:380px; max-height:78vh;
+  background:var(--surf); border:2px solid var(--border);
+  border-radius:20px; box-shadow:0 12px 40px var(--shadowH);
+  display:none; flex-direction:column; overflow:hidden;
+}
+#taskPanel.show { display:flex; }
+
+.tp-hdr {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 18px 14px; border-bottom:2px solid var(--border);
+  background:var(--surf); flex-shrink:0;
+}
+.tp-hdr h3 { font-size:16px; font-weight:900; color:var(--text); }
+.tp-hdr-right { display:flex; align-items:center; gap:8px; }
+.tp-refresh {
+  width:30px; height:30px; border-radius:8px;
+  border:1.5px solid var(--border); background:transparent;
+  cursor:pointer; font-size:15px;
+  display:flex; align-items:center; justify-content:center;
+  color:var(--muted); transition:.15s;
+}
+.tp-refresh:hover { background:var(--surf2); color:var(--A); }
+.tp-close {
+  width:30px; height:30px; border-radius:8px;
+  border:1.5px solid var(--border); background:transparent;
+  cursor:pointer; font-size:15px;
+  display:flex; align-items:center; justify-content:center;
+  color:var(--muted); transition:.15s;
+}
+.tp-close:hover { background:var(--surf2); color:var(--danger); border-color:var(--danger); }
+
+.tp-body { overflow-y:auto; padding:12px 14px 16px; flex:1; }
+
+.task-item {
+  display:flex; align-items:flex-start; gap:11px;
+  padding:12px 13px; border-radius:13px;
+  border:1.5px solid var(--border);
+  margin-bottom:9px; background:var(--surf2);
+  transition:.15s;
+}
+.task-item.overdue  { border-color:#C0392B; background:#FFF5F5; }
+.task-item.due-soon { border-color:#F59E0B; background:#FFFBEA; }
+:root[data-theme="dark"] .task-item.overdue  { background:#2A0A0A; }
+:root[data-theme="dark"] .task-item.due-soon { background:#271F00; }
+
+.task-icon { font-size:26px; line-height:1; margin-top:2px; flex-shrink:0; }
+
+.task-info { flex:1; min-width:0; }
+.task-name { font-size:15px; font-weight:800; color:var(--text); line-height:1.3; margin-bottom:3px; }
+.task-meta { font-size:12px; font-weight:600; color:var(--muted); line-height:1.6; }
+
+.task-badge {
+  display:inline-block; font-size:12px; font-weight:800;
+  padding:2px 10px; border-radius:999px; margin-top:5px;
+}
+.task-badge.ok      { background:#DCFCE7; color:#166534; }
+.task-badge.soon    { background:#FEF9C3; color:#92400E; }
+.task-badge.overdue { background:#FEE2E2; color:#C0392B; }
+:root[data-theme="dark"] .task-badge.ok      { background:#052E16; color:#4ADE80; }
+:root[data-theme="dark"] .task-badge.soon    { background:#271F00; color:#FCD34D; }
+:root[data-theme="dark"] .task-badge.overdue { background:#2A0A0A; color:#F87171; }
+
+.task-edit-link {
+  font-size:11px; font-weight:700; color:var(--A);
+  text-decoration:none; opacity:.7; transition:.15s;
+  display:block; margin-top:5px;
+}
+.task-edit-link:hover { opacity:1; text-decoration:underline; }
+
+.tp-footer {
+  padding:10px 14px; border-top:1px solid var(--border);
+  font-size:11px; font-weight:600; color:var(--muted);
+  text-align:center; flex-shrink:0;
+}
+.tp-footer a { color:var(--A); text-decoration:none; font-weight:700; }
+.tp-footer a:hover { text-decoration:underline; }
+
+.tp-loading { text-align:center; padding:32px 20px; color:var(--muted); font-size:14px; font-weight:600; }
+
 </style>
 </head>
 <body>
@@ -427,7 +522,8 @@ body.desaturate { filter:saturate(.55); }
     </div>
   </div>
 
-  <div class="hdr-right"><div>
+  <div class="hdr-right">
+    <div>
       <div id="clock">00:00:00</div>
       <div id="date">─</div>
     </div>
@@ -468,6 +564,32 @@ body.desaturate { filter:saturate(.55); }
 
 </main>
 
+
+<!-- ═══ TASK BADGE ═══ -->
+<div id="taskBadge" onclick="openTaskPanel()">
+  🔴 <span id="taskBadgeText">有任務逾期！</span>
+</div>
+
+<!-- ═══ TASK PANEL ═══ -->
+<div id="taskPanel">
+  <div class="tp-hdr">
+    <h3>📋 定期任務</h3>
+    <div class="tp-hdr-right">
+      <button class="tp-refresh" onclick="loadTasks()" title="重新整理">🔄</button>
+      <button class="tp-close"   onclick="closeTaskPanel()">✕</button>
+    </div>
+  </div>
+  <div class="tp-body" id="taskBody">
+    <div class="tp-loading">載入中…</div>
+  </div>
+  <div class="tp-footer">
+    完成任務後請至
+    <a href="https://docs.google.com/spreadsheets/d/1uYBA_CncbEAydmzNC1SRnsKJdswNgQh3zg1x6TKo0UU/edit#gid=646869954"
+       target="_blank" rel="noopener">Google Sheet</a>
+    更新完成日期
+  </div>
+</div>
+
 <!-- ═══ MEMO ═══ -->
 <div id="memoPanel">
   <h4>📝 快速備忘</h4>
@@ -478,6 +600,7 @@ body.desaturate { filter:saturate(.55); }
 <!-- ═══ FLOAT CONTROLS ═══ -->
 <div class="controls">
   <button class="ctrl" id="themeBtn" onclick="toggleTheme()" title="深淺色">🌙</button>
+  <button class="ctrl" id="taskCtrl" onclick="openTaskPanel()" title="定期任務">📋</button>
   <button class="ctrl" onclick="toggleMemo()" title="備忘貼">📝</button>
   <button class="ctrl" onclick="openPanel()" title="介面設定">⚙️</button>
 </div>
@@ -500,12 +623,6 @@ body.desaturate { filter:saturate(.55); }
         <div class="cdot" id="dot-sage"   style="background:#3A6B52" onclick="setColor('sage')"   title="鼠尾草綠"></div>
         <div class="cdot" id="dot-stone"  style="background:#6B5744" onclick="setColor('stone')"  title="石褐"></div>
         <div class="cdot" id="dot-indigo" style="background:#3D4E8C" onclick="setColor('indigo')" title="靛紫"></div>
-      </div>
-
-      <label class="plabel">降低飽和度</label>
-      <div class="tog-group">
-        <button class="tog" id="sat-off" onclick="setSat(false)">正常</button>
-        <button class="tog" id="sat-on"  onclick="setSat(true)">柔和低飽和</button>
       </div>
 
       <label class="plabel">卡片風格</label>
@@ -587,7 +704,6 @@ const SHEET = 'https://docs.google.com/spreadsheets/d/1uYBA_CncbEAydmzNC1SRnsKJd
 const EMOJIS = ['🩺','💉','🏥','💊','📦','💻','🔍','📋','🧪','📅','📝','⭐','👤','⚙️','🔗','🏠'];
 const LS     = { links:'cz_links_v5', cfg:'cz_cfg_v5', theme:'cz_theme', color:'cz_color', memo:'cz_memo', recent:'cz_recent' };
 
-
 let selIcon  = '🔗';
 let links    = JSON.parse(localStorage.getItem(LS.links))  || { primary:[], secondary:[] };
 let recent   = JSON.parse(localStorage.getItem(LS.recent)) || [];
@@ -610,12 +726,6 @@ function toggleTheme() {
   localStorage.setItem(LS.theme, next);
 }
 
-function setSat(on) {
-  document.body.classList.toggle('desaturate', on);
-  document.getElementById('sat-on').classList.toggle('on', on);
-  document.getElementById('sat-off').classList.toggle('on', !on);
-  saveCfg();
-}
 
 function setCard(s) {
   document.documentElement.setAttribute('data-card', s);
@@ -662,7 +772,6 @@ function saveCfg() {
     card: document.documentElement.getAttribute('data-card'),
     font: document.documentElement.getAttribute('data-font'),
     tex:  document.documentElement.getAttribute('data-texture'),
-    sat:  document.body.classList.contains('desaturate'),
   }));
 }
 
@@ -675,13 +784,12 @@ function restoreCfg() {
   setCard(c.card || 'glass');
   setFont(c.font || 'sans');
   setTexture(c.tex || 'none');
-  setSat(!!c.sat);
   const g = parseInt(c.grid) || 4;
   setGrid(g);
 }
 
 function initToggles() {
-  setCard('glass'); setFont('sans'); setTexture('none'); setSat(false); setGrid(4);
+  setCard('glass'); setFont('sans'); setTexture('none'); setGrid(4);
 }
 
 /* ═══════════════════════════════════════════════
@@ -869,17 +977,6 @@ function renderManage() {
   });
 })();
 
-/* ═══════════════════════════════════════════════
-   WEATHER
-═══════════════════════════════════════════════ */
-async function fetchWeather() {
-  try {
-    const r = await fetch(WEATHER_API);
-    const t = await r.text();
-    document.getElementById('weatherWidget').textContent = t.trim();
-  } catch(e) {
-    document.getElementById('weatherWidget').textContent = '─';
-  }
 }
 
 /* ═══════════════════════════════════════════════
@@ -923,46 +1020,166 @@ window.addEventListener('DOMContentLoaded', () => {
   // clock
   tick(); setInterval(tick, 1000);
 
-  // weather
-  // weather removed
-
   // recent
   renderRecent();
+
+  // tasks (silent check)
+  silentCheckTasks();
 
   // data
   fetchCloud();
 });
 
-const BG_KEY='clinic_bg_image';
+/* ═══════════════════════════════════════════════
+   TASK SYSTEM — 讀取 Google Sheet 任務分頁
+   Sheet 欄位（第2列起）：
+   A=任務名稱  B=圖示  C=頻率說明  D=到期日(yyyy/MM/dd)  E=最近完成日期  F=備註
+═══════════════════════════════════════════════ */
 
-function uploadBg(event){
- const file=event.target.files[0];
- if(!file) return;
- const reader=new FileReader();
- reader.onload=e=>{
-   localStorage.setItem(BG_KEY,e.target.result);
-   applyBg();
- };
- reader.readAsDataURL(file);
+const TASK_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1uYBA_CncbEAydmzNC1SRnsKJdswNgQh3zg1x6TKo0UU/export?format=csv&gid=646869954';
+const TASK_EDIT_URL  = 'https://docs.google.com/spreadsheets/d/1uYBA_CncbEAydmzNC1SRnsKJdswNgQh3zg1x6TKo0UU/edit#gid=646869954';
+
+let cachedTasks = [];
+
+function openTaskPanel() {
+  document.getElementById('taskPanel').classList.add('show');
+  if (!cachedTasks.length) loadTasks();
+}
+function closeTaskPanel() {
+  document.getElementById('taskPanel').classList.remove('show');
 }
 
-function applyBg(){
- const bg=localStorage.getItem(BG_KEY);
- if(!bg) return;
- let layer=document.getElementById('bgLayer');
- if(!layer){
-   layer=document.createElement('div');
-   layer.id='bgLayer';
-   layer.style.cssText='position:fixed;inset:0;background-size:cover;background-position:center;opacity:.18;z-index:-1;pointer-events:none';
-   document.body.prepend(layer);
- }
- layer.style.backgroundImage=`url(${bg})`;
+async function loadTasks() {
+  document.getElementById('taskBody').innerHTML = '<div class="tp-loading">⏳ 載入中…</div>';
+  try {
+    const r    = await fetch(TASK_SHEET_URL + '&cb=' + Date.now());
+    const text = await r.text();
+    const rows = text.split(/\r?\n/).slice(1); // 跳過標題列
+
+    cachedTasks = rows.map(row => {
+      const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
+                      .map(c => c.replace(/^"|"$/g,'').trim());
+      if (!cols[0]) return null;
+      return {
+        name:     cols[0] || '',
+        icon:     cols[1] || '📋',
+        freq:     cols[2] || '',   // 頻率說明（純文字，例如「每週一」）
+        dueDate:  cols[3] || '',   // 下次到期日 yyyy/MM/dd 或 民國格式
+        lastDone: cols[4] || '',   // 最近完成日期
+        note:     cols[5] || '',
+      };
+    }).filter(Boolean);
+
+    renderTasks();
+  } catch(e) {
+    document.getElementById('taskBody').innerHTML =
+      '<div class="tp-loading">⚠️ 無法讀取任務資料<br><small>請確認 Sheet 已公開分享</small></div>';
+  }
 }
 
-function removeBg(){
- localStorage.removeItem(BG_KEY);
- const layer=document.getElementById('bgLayer');
- if(layer) layer.style.backgroundImage='';
+function parseDate(str) {
+  if (!str) return null;
+  str = str.trim();
+  // 支援 yyyy/MM/dd 或 yyyy-MM-dd
+  const m = str.match(/(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})/);
+  if (m) return new Date(+m[1], +m[2]-1, +m[3]);
+  // 支援民國 115/06/01
+  const roc = str.match(/(\d{2,3})[\/-](\d{1,2})[\/-](\d{1,2})/);
+  if (roc) return new Date(+roc[1]+1911, +roc[2]-1, +roc[3]);
+  return null;
+}
+
+function calcStatus(task) {
+  const today   = new Date(); today.setHours(0,0,0,0);
+  const dueDate = parseDate(task.dueDate);
+  if (!dueDate) return { label:'─', cls:'ok', daysLeft:999 };
+
+  const daysLeft = Math.ceil((dueDate - today) / 86400000);
+  if (daysLeft < 0)   return { label:`逾期 ${Math.abs(daysLeft)} 天`, cls:'overdue', daysLeft };
+  if (daysLeft === 0) return { label:'今天到期！',                     cls:'soon',    daysLeft };
+  if (daysLeft <= 3)  return { label:`還剩 ${daysLeft} 天`,            cls:'soon',    daysLeft };
+  return                     { label:`還剩 ${daysLeft} 天`,            cls:'ok',      daysLeft };
+}
+
+function renderTasks() {
+  const body = document.getElementById('taskBody');
+  if (!cachedTasks.length) {
+    body.innerHTML = '<div class="tp-loading">Sheet 裡沒有任務資料</div>';
+    return;
+  }
+
+  // 排序：逾期 > 快到期 > 正常
+  const sorted = [...cachedTasks].sort((a,b) => {
+    return calcStatus(a).daysLeft - calcStatus(b).daysLeft;
+  });
+
+  let overdueCount = 0;
+  let out = '';
+
+  sorted.forEach(t => {
+    const st     = calcStatus(t);
+    if (st.cls === 'overdue') overdueCount++;
+
+    const itemCls = st.cls === 'overdue' ? 'task-item overdue'
+                  : st.cls === 'soon'    ? 'task-item due-soon'
+                  : 'task-item';
+
+    out += `
+    <div class="${itemCls}">
+      <div class="task-icon">${t.icon}</div>
+      <div class="task-info">
+        <div class="task-name">${t.name}</div>
+        <div class="task-meta">
+          ${t.freq ? `🔁 ${t.freq}` : ''}
+          ${t.dueDate  ? `　📅 到期：${t.dueDate}`  : ''}
+          ${t.lastDone ? `　✓ 完成：${t.lastDone}` : ''}
+          ${t.note     ? `<br>💬 ${t.note}` : ''}
+        </div>
+        <span class="task-badge ${st.cls}">${st.label}</span>
+        <a class="task-edit-link" href="${TASK_EDIT_URL}" target="_blank" rel="noopener">
+          → 至 Sheet 更新完成日期
+        </a>
+      </div>
+    </div>`;
+  });
+
+  body.innerHTML = out;
+  updateOverdueBadge(overdueCount);
+}
+
+function updateOverdueBadge(count) {
+  const badge = document.getElementById('taskBadge');
+  const ctrl  = document.getElementById('taskCtrl');
+  if (count > 0) {
+    badge.classList.add('show');
+    document.getElementById('taskBadgeText').textContent =
+      `有 ${count} 個任務逾期！點此查看`;
+    ctrl.style.background   = '#FEE2E2';
+    ctrl.style.borderColor  = '#C0392B';
+    ctrl.textContent        = '🔴';
+  } else {
+    badge.classList.remove('show');
+    ctrl.style.background  = '';
+    ctrl.style.borderColor = '';
+    ctrl.textContent       = '📋';
+  }
+}
+
+// 頁面載入時靜默檢查逾期
+async function silentCheckTasks() {
+  try {
+    const r    = await fetch(TASK_SHEET_URL + '&cb=' + Date.now());
+    const text = await r.text();
+    const rows = text.split(/\r?\n/).slice(1);
+    cachedTasks = rows.map(row => {
+      const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
+                      .map(c => c.replace(/^"|"$/g,'').trim());
+      if (!cols[0]) return null;
+      return { name:cols[0], icon:cols[1]||'📋', freq:cols[2]||'', dueDate:cols[3]||'', lastDone:cols[4]||'', note:cols[5]||'' };
+    }).filter(Boolean);
+    const overdueCount = cachedTasks.filter(t => calcStatus(t).cls === 'overdue').length;
+    updateOverdueBadge(overdueCount);
+  } catch(e) { /* 靜默失敗 */ }
 }
 
 </script>
