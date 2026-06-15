@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>霍格華茲模擬器 · 咒文產生器</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Noto+Serif+TC:wght@300;400;500;600&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1410;
+    --parchment: #f5ede0;
+    --parchment-dark: #e8d9c2;
+    --gold: #b8900a;
+    --gold-light: #d4a829;
+    --crimson: #6b1a1a;
+    --forest: #1e3d2a;
+    --slate: #2c2c3a;
+    --mist: #8a8098;
+    --wax-red: #8b2020;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background-color: #0d0b08;
+    background-image:
+      radial-gradient(ellipse at 20% 0%, #1a1206 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 100%, #0e1a10 0%, transparent 60%);
+    color: var(--parchment);
+    font-family: 'Noto Serif TC', serif;
+    min-height: 100vh;
+    padding: 0 0 80px;
+  }
+
+  /* ── Header ── */
+  .site-header {
+    text-align: center;
+    padding: 60px 20px 40px;
+    position: relative;
+  }
+  .site-header::before {
+    content: '';
+    display: block;
+    width: 1px;
+    height: 60px;
+    background: linear-gradient(to bottom, transparent, var(--gold));
+    margin: 0 auto 32px;
+  }
+  .crest {
+    font-size: 36px;
+    letter-spacing: 8px;
+    color: var(--gold);
+    margin-bottom: 16px;
+  }
+  .site-title {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(22px, 5vw, 42px);
+    font-weight: 600;
+    color: var(--gold-light);
+    letter-spacing: 4px;
+    text-shadow: 0 0 40px rgba(184,144,10,0.4);
+    margin-bottom: 10px;
+  }
+  .site-subtitle {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    color: var(--mist);
+    font-size: 16px;
+    letter-spacing: 2px;
+  }
+  .divider-gold {
+    width: 200px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold), transparent);
+    margin: 28px auto;
+  }
+
+  /* ── Layout ── */
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* ── Section card ── */
+  .section-card {
+    background: rgba(245,237,224,0.04);
+    border: 1px solid rgba(184,144,10,0.18);
+    border-radius: 4px;
+    padding: 32px 36px;
+    margin-bottom: 20px;
+    position: relative;
+  }
+  .section-card::before {
+    content: attr(data-rune);
+    position: absolute;
+    top: -10px;
+    left: 24px;
+    background: #0d0b08;
+    padding: 0 10px;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+
+  .section-title {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(184,144,10,0.2);
+  }
+
+  /* ── Form fields ── */
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .field-row.single { grid-template-columns: 1fr; }
+  .field-row.triple { grid-template-columns: 1fr 1fr 1fr; }
+
+  .field-group { display: flex; flex-direction: column; gap: 7px; }
+  .field-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--gold);
+    text-transform: uppercase;
+    font-family: 'Cinzel', serif;
+  }
+
+  input[type="text"], input[type="number"], select, textarea {
+    background: rgba(245,237,224,0.06);
+    border: 1px solid rgba(184,144,10,0.25);
+    border-radius: 3px;
+    color: var(--parchment);
+    font-family: 'Noto Serif TC', serif;
+    font-size: 14px;
+    padding: 10px 14px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus {
+    border-color: var(--gold);
+    background: rgba(245,237,224,0.09);
+  }
+  input::placeholder { color: var(--mist); opacity: 0.6; }
+  select option { background: #1c1810; color: var(--parchment); }
+  textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
+
+  /* ── Chip selects ── */
+  .chip-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .chip-group.single-select .chip.active ~ .chip { }
+
+  .chip {
+    background: rgba(245,237,224,0.05);
+    border: 1px solid rgba(184,144,10,0.22);
+    border-radius: 2px;
+    color: var(--mist);
+    cursor: pointer;
+    font-size: 12px;
+    font-family: 'Noto Serif TC', serif;
+    letter-spacing: 1px;
+    padding: 6px 13px;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .chip:hover { border-color: var(--gold-light); color: var(--parchment); }
+  .chip.active {
+    background: rgba(184,144,10,0.18);
+    border-color: var(--gold);
+    color: var(--gold-light);
+  }
+  .chip.random-chip.active {
+    background: rgba(107,26,26,0.2);
+    border-color: var(--crimson);
+    color: #e8a0a0;
+  }
+
+  /* House chips */
+  .chip.gryffindor.active { background: rgba(116,0,1,0.25); border-color: #ae0001; color: #ffd700; }
+  .chip.slytherin.active  { background: rgba(26,71,42,0.3);  border-color: #1a472a; color: #aabf69; }
+  .chip.hufflepuff.active { background: rgba(100,80,0,0.3);  border-color: #d3a029; color: #f0c040; }
+  .chip.ravenclaw.active  { background: rgba(0,35,80,0.3);   border-color: #0e1a6e; color: #8cb7f5; }
+
+  /* ── Output format toggle ── */
+  .format-toggle {
+    display: flex;
+    gap: 0;
+    border: 1px solid rgba(184,144,10,0.3);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .format-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-right: 1px solid rgba(184,144,10,0.2);
+    color: var(--mist);
+    cursor: pointer;
+    font-family: 'Noto Serif TC', serif;
+    font-size: 13px;
+    padding: 11px 8px;
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .format-btn:last-child { border-right: none; }
+  .format-btn:hover { background: rgba(184,144,10,0.08); color: var(--parchment); }
+  .format-btn.active { background: rgba(184,144,10,0.18); color: var(--gold-light); }
+
+  /* ── Generate button ── */
+  .generate-btn {
+    display: block;
+    width: 100%;
+    background: linear-gradient(135deg, rgba(184,144,10,0.15) 0%, rgba(184,144,10,0.08) 100%);
+    border: 1px solid var(--gold);
+    border-radius: 3px;
+    color: var(--gold-light);
+    cursor: pointer;
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    letter-spacing: 4px;
+    padding: 18px;
+    text-transform: uppercase;
+    transition: all 0.25s;
+    margin-top: 8px;
+  }
+  .generate-btn:hover {
+    background: linear-gradient(135deg, rgba(184,144,10,0.28) 0%, rgba(184,144,10,0.15) 100%);
+    box-shadow: 0 0 30px rgba(184,144,10,0.2);
+    letter-spacing: 5px;
+  }
+  .generate-btn:active { transform: scale(0.99); }
+
+  /* ── Output area ── */
+  .output-wrapper {
+    margin-top: 32px;
+    display: none;
+  }
+  .output-wrapper.visible { display: block; }
+
+  .output-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .output-label {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+  .copy-btn {
+    background: rgba(184,144,10,0.1);
+    border: 1px solid rgba(184,144,10,0.3);
+    border-radius: 2px;
+    color: var(--gold);
+    cursor: pointer;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    padding: 7px 16px;
+    transition: all 0.15s;
+  }
+  .copy-btn:hover { background: rgba(184,144,10,0.2); }
+  .copy-btn.copied { color: #7fc89a; border-color: #7fc89a; }
+
+  #output-text {
+    background: rgba(245,237,224,0.04);
+    border: 1px solid rgba(184,144,10,0.18);
+    border-radius: 3px;
+    color: var(--parchment);
+    font-family: 'Noto Serif TC', serif;
+    font-size: 13.5px;
+    line-height: 1.9;
+    min-height: 300px;
+    padding: 28px 30px;
+    width: 100%;
+    resize: vertical;
+    outline: none;
+  }
+  #output-text:focus { border-color: rgba(184,144,10,0.4); }
+
+  /* hint text */
+  .hint { color: var(--mist); font-size: 12px; line-height: 1.7; margin-top: 6px; font-style: italic; }
+
+  /* ── Responsive ── */
+  @media (max-width: 600px) {
+    .field-row { grid-template-columns: 1fr; }
+    .field-row.triple { grid-template-columns: 1fr 1fr; }
+    .section-card { padding: 24px 20px; }
+  }
+
+  /* ── Sparkle loader ── */
+  .loading-bar {
+    display: none;
+    height: 2px;
+    background: linear-gradient(to right, transparent, var(--gold), transparent);
+    animation: shimmer 1.2s infinite;
+    margin-bottom: 12px;
+  }
+  .loading-bar.visible { display: block; }
+  @keyframes shimmer {
+    0% { opacity: 0.3; transform: scaleX(0.3); }
+    50% { opacity: 1; transform: scaleX(1); }
+    100% { opacity: 0.3; transform: scaleX(0.3); }
+  }
+
+  .star-divider { text-align: center; color: var(--gold); opacity: 0.4; letter-spacing: 10px; margin: 8px 0 16px; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="crest">⚯͛</div>
+  <h1 class="site-title">HOGWARTS SIMULATOR</h1>
+  <p class="site-subtitle">咒文產生器 · Prompt Generator</p>
+  <div class="divider-gold"></div>
+</header>
+
+<div class="container">
+
+  <!-- ① 基本身份 -->
+  <div class="section-card" data-rune="I · 基本身份">
+    <div class="section-title">基本身份設定</div>
+
+    <div class="field-row">
+      <div class="field-group">
+        <label class="field-label">姓名</label>
+        <input type="text" id="name" placeholder="留空則隨機產生">
+      </div>
+      <div class="field-group">
+        <label class="field-label">生日</label>
+        <input type="text" id="birthday" placeholder="e.g. 9月19日 / 隨機">
+      </div>
+    </div>
+
+    <div class="field-row" style="margin-bottom:16px">
+      <div class="field-group">
+        <label class="field-label">性別</label>
+        <div class="chip-group single-select" id="gender-group">
+          <span class="chip" data-val="女">女</span>
+          <span class="chip" data-val="男">男</span>
+          <span class="chip" data-val="非二元">非二元</span>
+          <span class="chip random-chip" data-val="隨機">隨機</span>
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">年齡（入學年份起算）</label>
+        <div class="chip-group single-select" id="age-group">
+          <span class="chip" data-val="11">11歲入學</span>
+          <span class="chip" data-val="與哈利同屆">與 Harry 同屆</span>
+          <span class="chip" data-val="比哈利大一屆">大一屆</span>
+          <span class="chip" data-val="比哈利小一屆">小一屆</span>
+          <span class="chip random-chip" data-val="隨機">隨機</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="field-row single">
+      <div class="field-group">
+        <label class="field-label">性取向（影響感情線發展）</label>
+        <div class="chip-group" id="sexuality-group">
+          <span class="chip" data-val="異性戀">異性戀</span>
+          <span class="chip" data-val="同性戀">同性戀</span>
+          <span class="chip" data-val="雙性戀">雙性戀</span>
+          <span class="chip" data-val="泛性戀">泛性戀</span>
+          <span class="chip" data-val="不設定">不設定</span>
+          <span class="chip random-chip" data-val="隨機">隨機</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ② 學院與魔杖 -->
+  <div class="section-card" data-rune="II · 學院與魔杖">
+    <div class="section-title">學院與魔杖</div>
+
+    <div class="field-group" style="margin-bottom:16px">
+      <label class="field-label">學院</label>
+      <div class="chip-group single-select" id="house-group">
+        <span class="chip gryffindor" data-val="葛來分多">⚡ 葛來分多</span>
+        <span class="chip slytherin" data-val="史萊哲林">🐍 史萊哲林</span>
+        <span class="chip hufflepuff" data-val="赫夫帕夫">🌻 赫夫帕夫</span>
+        <span class="chip ravenclaw" data-val="雷文克勞">🦅 雷文克勞</span>
+        <span class="chip" data-val="於分類帽儀式決定">分類帽決定</span>
+        <span class="chip random-chip" data-val="隨機">隨機</span>
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div class="field-group">
+        <label class="field-label">魔杖木材</label>
+        <input type="text" id="wand-wood" placeholder="e.g. 冬青木、紫杉木 / 隨機">
+      </div>
+      <div class="field-group">
+        <label class="field-label">魔杖芯</label>
+        <input type="text" id="wand-core" placeholder="e.g. 鳳凰羽毛、龍心弦 / 隨機">
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div class="field-group">
+        <label class="field-label">魔杖長度</label>
+        <input type="text" id="wand-length" placeholder="e.g. 11英寸 / 隨機">
+      </div>
+      <div class="field-group">
+        <label class="field-label">魔杖彈性</label>
+        <input type="text" id="wand-flex" placeholder="e.g. 有彈性、硬挺 / 隨機">
+      </div>
+    </div>
+    <p class="hint">若魔杖各欄留空，系統將根據你的學院與性格隨機配對。可輸入「隨機」讓模擬器提供各木材說明後選擇。</p>
+  </div>
+
+  <!-- ③ 出身與家庭 -->
+  <div class="section-card" data-rune="III · 出身與家庭">
+    <div class="section-title">出身與家庭</div>
+
+    <div class="field-row">
+      <div class="field-group">
+        <label class="field-label">血統出身</label>
+        <div class="chip-group single-select" id="blood-group">
+          <span class="chip" data-val="純血">純血</span>
+          <span class="chip" data-val="混血">混血</span>
+          <span class="chip" data-val="麻瓜出身">麻瓜出身</span>
+          <span class="chip random-chip" data-val="隨機">隨機</span>
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">家庭氛圍</label>
+        <div class="chip-group single-select" id="family-atm-group">
+          <span class="chip" data-val="熱鬧">熱鬧</span>
+          <span class="chip" data-val="冷淡">冷淡</span>
+          <span class="chip" data-val="開放">開放</span>
+          <span class="chip" data-val="家教嚴格（注重血統與禮儀的純血貴族）">嚴格貴族</span>
+          <span class="chip" data-val="緊密溫暖">緊密溫暖</span>
+          <span class="chip random-chip" data-val="隨機">隨機</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div class="field-group">
+        <label class="field-label">兄弟姐妹</label>
+        <div class="chip-group single-select" id="siblings-group">
+          <span class="chip" data-val="獨生子女">獨生</span>
+          <span class="chip" data-val="有一個哥哥">有哥哥</span>
+          <span class="chip" data-val="有一個姐姐">有姐姐</span>
+          <span class="chip" data-val="有弟弟">有弟弟</span>
+          <span class="chip" data-val="有妹妹">有妹妹</span>
+          <span class="chip" data-val="多個兄弟姐妹">多個手足</span>
+          <span class="chip random-chip" data-val="隨機">隨機</span>
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">寵物</label>
+        <div class="chip-group" id="pet-group">
+          <span class="chip" data-val="貓頭鷹">🦉 貓頭鷹</span>
+          <span class="chip" data-val="貓">🐱 貓</span>
+          <span class="chip" data-val="蟾蜍">🐸 蟾蜍</span>
+          <span class="chip" data-val="無寵物">無</span>
+          <span class="chip random-chip" data-val="隨機">隨機</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="field-row single">
+      <div class="field-group">
+        <label class="field-label">其他家庭設定（選填）</label>
+        <input type="text" id="family-extra" placeholder="e.g. 父親是鬼靈精古玩店老闆、母親是麻瓜醫生…">
+      </div>
+    </div>
+  </div>
+
+  <!-- ④ 性格與外貌 -->
+  <div class="section-card" data-rune="IV · 性格與外貌">
+    <div class="section-title">性格傾向與外貌</div>
+
+    <div class="field-group" style="margin-bottom:16px">
+      <label class="field-label">性格傾向（可多選）</label>
+      <div class="chip-group" id="personality-group">
+        <span class="chip" data-val="勇敢">勇敢</span>
+        <span class="chip" data-val="聰明">聰明</span>
+        <span class="chip" data-val="善良">善良</span>
+        <span class="chip" data-val="仗義">仗義</span>
+        <span class="chip" data-val="野心勃勃">野心勃勃</span>
+        <span class="chip" data-val="神秘">神秘</span>
+        <span class="chip" data-val="溫柔">溫柔</span>
+        <span class="chip" data-val="細心">細心</span>
+        <span class="chip" data-val="沉默">沉默</span>
+        <span class="chip" data-val="活潑">活潑</span>
+        <span class="chip" data-val="高傲">高傲</span>
+        <span class="chip" data-val="謹慎">謹慎</span>
+        <span class="chip" data-val="敏銳">敏銳</span>
+        <span class="chip" data-val="熱心">熱心</span>
+        <span class="chip random-chip" data-val="隨機">隨機</span>
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div class="field-group">
+        <label class="field-label">MBTI（選填）</label>
+        <input type="text" id="mbti" placeholder="e.g. INFJ">
+      </div>
+      <div class="field-group">
+        <label class="field-label">外貌描述（選填）</label>
+        <input type="text" id="appearance" placeholder="e.g. 深色捲髮、灰綠色眼睛">
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑤ 才能與課程 -->
+  <div class="section-card" data-rune="V · 才能與課程">
+    <div class="section-title">天賦與課程興趣（可多選）</div>
+    <div class="chip-group" id="talent-group">
+      <span class="chip" data-val="黑魔法防禦術">黑魔法防禦術</span>
+      <span class="chip" data-val="變形學">變形學</span>
+      <span class="chip" data-val="魔藥學">魔藥學</span>
+      <span class="chip" data-val="魔法史">魔法史</span>
+      <span class="chip" data-val="天文學">天文學</span>
+      <span class="chip" data-val="符咒學">符咒學</span>
+      <span class="chip" data-val="藥草學">藥草學</span>
+      <span class="chip" data-val="飛行學">飛行學</span>
+      <span class="chip" data-val="魁地奇">魁地奇</span>
+      <span class="chip" data-val="奇獸飼育學">奇獸飼育學</span>
+      <span class="chip" data-val="麻瓜研究">麻瓜研究</span>
+      <span class="chip" data-val="占卜學">占卜學</span>
+      <span class="chip" data-val="古代神秘文字研究">古代文字</span>
+      <span class="chip random-chip" data-val="隨機">隨機</span>
+    </div>
+  </div>
+
+  <!-- ⑥ 攻略對象 -->
+  <div class="section-card" data-rune="VI · 感情線">
+    <div class="section-title">攻略對象 / 感情線 NPC</div>
+
+    <div class="field-group" style="margin-bottom:16px">
+      <label class="field-label">主要攻略對象（可多選或留空）</label>
+      <div class="chip-group" id="romance-group">
+        <span class="chip" data-val="Tom Riddle（1938–1945 年代）">🖤 Tom Riddle</span>
+        <span class="chip" data-val="Draco Malfoy">🐍 Draco</span>
+        <span class="chip" data-val="Harry Potter">⚡ Harry</span>
+        <span class="chip" data-val="Ron Weasley">🌻 Ron</span>
+        <span class="chip" data-val="Hermione Granger">📚 Hermione</span>
+        <span class="chip" data-val="Cedric Diggory">🏆 Cedric</span>
+        <span class="chip" data-val="Fred Weasley">🎆 Fred</span>
+        <span class="chip" data-val="George Weasley">🎆 George</span>
+        <span class="chip" data-val="Neville Longbottom">🌿 Neville</span>
+        <span class="chip" data-val="Luna Lovegood">🌙 Luna</span>
+        <span class="chip" data-val="Ginny Weasley">🔥 Ginny</span>
+        <span class="chip" data-val="Oliver Wood">🏉 Oliver</span>
+        <span class="chip" data-val="Blaise Zabini">✨ Blaise</span>
+        <span class="chip" data-val="Pansy Parkinson">🌸 Pansy</span>
+        <span class="chip" data-val="自訂NPC">自訂 NPC</span>
+        <span class="chip" data-val="不設定感情線">不設定</span>
+      </div>
+    </div>
+
+    <div class="field-group" style="margin-bottom:16px">
+      <label class="field-label">Tom Riddle 時代設定（若選擇 Tom）</label>
+      <div class="chip-group single-select" id="tomera-group">
+        <span class="chip" data-val="與 Tom 同屆就讀霍格華茲（1938–1945）">同屆（1938–45）</span>
+        <span class="chip" data-val="比 Tom 高一屆">高一屆</span>
+        <span class="chip" data-val="比 Tom 低一屆">低一屆</span>
+        <span class="chip" data-val="現代穿越至 Tom 年代">現代穿越</span>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">感情線風格</label>
+      <div class="chip-group single-select" id="romance-style-group">
+        <span class="chip" data-val="緩慢醞釀的曖昧">緩慢曖昧</span>
+        <span class="chip" data-val="鬥嘴冤家最終相愛">歡喜冤家</span>
+        <span class="chip" data-val="禁忌戀情">禁忌之戀</span>
+        <span class="chip" data-val="青梅竹馬舊識">青梅竹馬</span>
+        <span class="chip" data-val="單戀暗戀">暗戀</span>
+        <span class="chip" data-val="三角戀">三角戀</span>
+        <span class="chip" data-val="不設定">不設定</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑦ 與原著 NPC 關係 -->
+  <div class="section-card" data-rune="VII · NPC 關係">
+    <div class="section-title">與原著 NPC 初始關係</div>
+
+    <div class="field-group" style="margin-bottom:16px">
+      <label class="field-label">關係類型（可多選）</label>
+      <div class="chip-group" id="npc-rel-group">
+        <span class="chip" data-val="入學後認識">入學後認識</span>
+        <span class="chip" data-val="入學前已是朋友">舊友</span>
+        <span class="chip" data-val="競爭對手">競爭對手</span>
+        <span class="chip" data-val="家族舊識">家族舊識</span>
+        <span class="chip" data-val="同屆同學">同屆同學</span>
+        <span class="chip random-chip" data-val="隨機">隨機</span>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">特定 NPC 關係備註（選填）</label>
+      <input type="text" id="npc-note" placeholder="e.g. 與 Draco 是家族舊識、和 Hermione 在書店偶然認識">
+    </div>
+  </div>
+
+  <!-- ⑧ 支線與劇情 -->
+  <div class="section-card" data-rune="VIII · 支線與劇情">
+    <div class="section-title">隱藏支線 · 劇情偏好</div>
+
+    <div class="field-row">
+      <div class="field-group">
+        <label class="field-label">隱藏支線開啟方式</label>
+        <div class="chip-group single-select" id="subplot-group">
+          <span class="chip" data-val="直接開啟（第一章即埋下支線線索）">直接開啟</span>
+          <span class="chip" data-val="逐步開啟（隨劇情進展自然揭露）">逐步開啟</span>
+          <span class="chip random-chip" data-val="隨機">隨機</span>
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">劇情基調（可多選）</label>
+        <div class="chip-group" id="tone-group">
+          <span class="chip" data-val="冒險懸疑">冒險懸疑</span>
+          <span class="chip" data-val="輕鬆幽默">輕鬆幽默</span>
+          <span class="chip" data-val="浪漫感情">浪漫感情</span>
+          <span class="chip" data-val="黑暗陰謀">黑暗陰謀</span>
+          <span class="chip" data-val="成長蛻變">成長蛻變</span>
+          <span class="chip" data-val="友誼深情">友誼深情</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="field-row single" style="margin-top:16px">
+      <div class="field-group">
+        <label class="field-label">特別劇情需求（選填）</label>
+        <textarea id="plot-extra" placeholder="e.g. 希望有魁地奇比賽的場面、想探索禁忌森林、希望有與老鄧的單獨對話…"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑨ 輸出格式 -->
+  <div class="section-card" data-rune="IX · 輸出格式">
+    <div class="section-title">輸出格式偏好</div>
+
+    <div class="field-group" style="margin-bottom:16px">
+      <label class="field-label">模擬器輸出格式</label>
+      <div class="format-toggle" id="output-format-group">
+        <button class="format-btn active" data-val="回合制（劇情推進＋5個可選行動）">🎲 回合制<br><small style="font-size:10px;opacity:.7">劇情＋五選項</small></button>
+        <button class="format-btn" data-val="長篇小說（沉浸式敘事，減少選項中斷）">📖 長篇小說<br><small style="font-size:10px;opacity:.7">沉浸連續敘事</small></button>
+        <button class="format-btn" data-val="混合模式（日常以小說推進，關鍵節點提供選擇）">⚖️ 混合模式<br><small style="font-size:10px;opacity:.7">節點選擇</small></button>
+        <button class="format-btn" data-val="對話優先（強調角色互動與對白）">💬 對話優先<br><small style="font-size:10px;opacity:.7">角色對白為主</small></button>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">輸出語言</label>
+      <div class="chip-group single-select" id="lang-group">
+        <span class="chip active" data-val="繁體中文（皇家出版社翻譯規範）">繁體中文</span>
+        <span class="chip" data-val="英文">English</span>
+        <span class="chip" data-val="中英混合">中英混合</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 其他備注 -->
+  <div class="section-card" data-rune="X · 額外設定">
+    <div class="section-title">其他補充（選填）</div>
+    <textarea id="extra-notes" placeholder="任何額外設定、特殊要求、禁止觸發的劇情⋯ 皆可填於此處"></textarea>
+  </div>
+
+  <!-- Generate -->
+  <button class="generate-btn" onclick="generatePrompt()">✦ 產生模擬器咒文 ✦</button>
+
+  <!-- Output -->
+  <div class="output-wrapper" id="output-wrapper">
+    <div class="loading-bar" id="loading-bar"></div>
+    <div class="output-header">
+      <span class="output-label">✦ 產生的咒文（可直接貼入 AI）</span>
+      <button class="copy-btn" id="copy-btn" onclick="copyOutput()">複製全文</button>
+    </div>
+    <textarea id="output-text" readonly></textarea>
+    <p class="hint" style="margin-top:10px">✦ 以上文字可直接複製貼入 ChatGPT、Claude 或其他 AI，作為系統提示或第一條訊息使用。</p>
+  </div>
+
+</div>
+
+<script>
+// ── Chip selection logic ──
+document.querySelectorAll('.chip-group').forEach(group => {
+  const isMulti = !group.classList.contains('single-select');
+  group.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      if (isMulti) {
+        chip.classList.toggle('active');
+      } else {
+        group.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+      }
+    });
+  });
+});
+
+// Format toggle
+document.querySelectorAll('.format-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.format-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+
+// ── Helpers ──
+function getChips(id) {
+  return [...document.querySelectorAll(`#${id} .chip.active`)].map(c => c.dataset.val);
+}
+function getSingle(id) {
+  const c = document.querySelector(`#${id} .chip.active`);
+  return c ? c.dataset.val : '';
+}
+function getFormatVal() {
+  const btn = document.querySelector('.format-btn.active');
+  return btn ? btn.dataset.val : '回合制（劇情推進＋5個可選行動）';
+}
+function val(id) { return document.getElementById(id)?.value.trim() || ''; }
+
+// ── Main generator ──
+function generatePrompt() {
+  const name        = val('name') || '隨機';
+  const birthday    = val('birthday') || '隨機';
+  const gender      = getSingle('gender-group') || '隨機';
+  const ageNote     = getSingle('age-group') || '11歲入學';
+  const sexuality   = getSingle('sexuality-group') || '不設定';
+  const house       = getSingle('house-group') || '隨機';
+  const wandWood    = val('wand-wood') || '隨機';
+  const wandCore    = val('wand-core') || '隨機';
+  const wandLen     = val('wand-length') || '隨機';
+  const wandFlex    = val('wand-flex') || '隨機';
+  const blood       = getSingle('blood-group') || '隨機';
+  const familyAtm   = getSingle('family-atm-group') || '隨機';
+  const siblings    = getSingle('siblings-group') || '隨機';
+  const pets        = getChips('pet-group');
+  const familyExtra = val('family-extra');
+  const personality = getChips('personality-group');
+  const mbti        = val('mbti');
+  const appearance  = val('appearance');
+  const talents     = getChips('talent-group');
+  const romances    = getChips('romance-group');
+  const tomEra      = getSingle('tomera-group');
+  const romanceStyle= getSingle('romance-style-group') || '不設定';
+  const npcRel      = getChips('npc-rel-group');
+  const npcNote     = val('npc-note');
+  const subplot     = getSingle('subplot-group') || '逐步開啟（隨劇情進展自然揭露）';
+  const tones       = getChips('tone-group');
+  const plotExtra   = val('plot-extra');
+  const outputFmt   = getFormatVal();
+  const lang        = getSingle('lang-group') || '繁體中文（皇家出版社翻譯規範）';
+  const extraNotes  = val('extra-notes');
+
+  // Build Tom-specific note
+  let tomNote = '';
+  if (romances.some(r => r.includes('Tom'))) {
+    tomNote = `\n► Tom Riddle 時代設定：${tomEra || '與 Tom 同屆就讀（1938–1945）'}。請嚴格遵守此時代背景，包含校長 Dippet、教授 Slughorn、學校規則及當時魔法界社會狀況。Tom 此時尚未成為佛地魔，但野心、魅力與黑暗面皆應完整呈現，不應過度美化或醜化，應忠實呈現他作為操控者、表演者、尋求者的多層性格。`;
+  }
+
+  const prompt = `# 霍格華茲模擬器
+【由咒文產生器自動生成】
+
+你將作為沉浸式文字遊戲主持人，帶領玩家進入霍格華茲魔法與巫術學院，體驗家庭、入學、上課、交友、冒險與隱藏主線。整體故事背景設定參考 J.K. Rowling 的哈利波特小說宇宙。
+
+---
+
+## 玩家角色設定
+
+**姓名：** ${name}
+**生日：** ${birthday}
+**性別：** ${gender}
+**年齡 / 入學時間：** ${ageNote}
+**性取向：** ${sexuality}
+
+**學院：** ${house}
+**魔杖：** 木材 ${wandWood}｜芯 ${wandCore}｜長度 ${wandLen}｜彈性 ${wandFlex}
+
+**血統出身：** ${blood}
+**家庭氛圍：** ${familyAtm}
+**家庭成員：** ${siblings}｜寵物：${pets.length ? pets.join('、') : '無或隨機'}${familyExtra ? '\n**家庭補充：** ' + familyExtra : ''}
+
+**性格傾向：** ${personality.length ? personality.join('、') : '隨機'}${mbti ? '（MBTI：' + mbti + '）' : ''}
+**外貌：** ${appearance || '隨機'}
+
+**天賦與興趣：** ${talents.length ? talents.join('、') : '隨機'}
+
+---
+
+## 感情線設定
+
+**攻略對象：** ${romances.length ? romances.join('、') : '不設定'}
+**感情線風格：** ${romanceStyle}${tomNote}
+
+感情線自由度高：玩家可選擇暗戀、單戀、多角關係；結果不一定圓滿。感情發展應根據玩家行為與 NPC 個性自然推進，不應在短時間內強制讓 NPC 喜歡玩家。
+
+---
+
+## NPC 設定
+
+**與原著 NPC 初始關係：** ${npcRel.length ? npcRel.join('、') : '入學後認識'}
+${npcNote ? '**特定 NPC 備註：** ' + npcNote : ''}
+
+請完全依照原著小說中各角色的個性、家庭背景、學院、寵物、台詞風格來刻劃 NPC。NPC 不應只圍繞玩家存在或無條件喜歡玩家，他們有自己的故事線、秘密與情感。角色關係的變化應透過劇情事件自然呈現，禁止以「那天過後兩人感情變好了」這樣的直接說明代替細膩敘事。
+
+唯二例外：哈利陣營角色死亡可調整（如 Cedric、Sirius 存活）、愛情感情戲可改寫（如 Harry 與 Ginny 不發展）。若死亡結果改變，請充分考慮對整個角色群情緒、行為與後續劇情的連鎖影響。
+
+---
+
+## 隱藏支線 · 劇情設定
+
+**隱藏支線：** ${subplot}
+**劇情基調：** ${tones.length ? tones.join('、') : '不設定'}
+${plotExtra ? '**特別劇情需求：** ' + plotExtra : ''}
+
+隱藏支線應圍繞霍格華茲的古老秘密展開，貼近魔法世界觀（異常畫像、神秘動物、禁林怪聲、古老空間重啟等），不應丟出與魔法無關的平庸支線。主線劇情大方向依循原著（佛地魔有分靈體、最終死亡），但應充分展現玩家角色對已知大方向造成的影響。
+
+---
+
+## 輸出格式規範
+
+**格式：** ${outputFmt}
+**語言：** ${lang}
+
+${outputFmt.includes('回合制') ? `每段劇情結尾提供可選行動：
+1. 行動選項一
+2. 行動選項二
+3. 行動選項三
+4. 行動選項四
+5. 自由行動：玩家可輸入任何想做的事` : ''}
+${outputFmt.includes('長篇小說') ? '以沉浸式小說敘事推進，減少行動選項中斷，讓玩家如閱讀小說般體驗霍格華茲。關鍵節點可提供簡短選擇，但不應每段都中斷。' : ''}
+${outputFmt.includes('混合') ? '日常校園以流暢小說敘事推進；遇到重大抉擇（如支線關鍵、感情轉捩）時提供 3–5 個選項。' : ''}
+${outputFmt.includes('對話') ? '以角色對話、互動為主要推進方式，旁白服務對話而非主導敘事。強調台詞個性化，每個角色說話風格應各異。' : ''}
+
+---
+
+## 寫作規範（務必遵守）
+
+1. 劇情輸出偏向小說敘事，節奏流暢，長短錯落，讓玩家像在閱讀哈利波特系列。
+2. 一次輸出應有一定長度與劇情推進；不應在某個日常情境停留過久。
+3. 語句自然流暢，多將形容詞、副詞、感受織入句子結構，避免平鋪直敘。
+4. 禁止用「把」替代原有動詞（❌「他把書拿起來」→ ✅「他拿起書」）。
+5. 完全禁止以下句型：「不是⋯而是那種⋯」、「他沒說，但你知道⋯」、「像是⋯像是⋯」、「不是⋯也不是⋯」。
+6. 禁止使用破折號（——）。
+7. 多用白描手法展現霍格華茲的神奇氛圍與場景細節，讓玩家有畫面感。
+8. 角色個性透過行為、互動、旁人反應側寫，禁止直接說明（「他是個勇敢的人」是錯誤的）。
+9. 關係變化透過劇情細節呈現，禁止以「那天後感情變好了」直接說明。
+10. 強烈避免 AI 感用詞：禁止「這種、某種、那種、若有所思、說不清楚的、一個人扛」等詞彙。
+11. 角色稱呼應有所變化（暱稱、綽號、關係稱呼等隨關係發展改變）。
+12. 使用繁體中文時，專有名詞一律參照皇家出版社哈利波特中文翻譯（如「斜角巷」、「妖精」、「馬份」等）。
+
+---
+
+## 開局說明
+
+本遊戲為長期文字 RPG，跨越霍格華茲七年學習生涯。劇情不應一開始就進入巨大危機，應從各種魔法小事件逐步鋪墊：課堂意外、神奇動物出沒、神秘紙條、畫像異常、魁地奇選拔、家人來信等。時間推進分為清晨、上午課程、午餐、下午課程、黃昏自由活動、夜晚、深夜特殊事件，無需每次完整寫完一天。
+
+學院分（加分與扣分）應真實影響 NPC 態度、教授關注、學院排名與後續事件，不應只是裝飾。
+
+---
+
+## 開局指令
+
+請根據以上設定，從以下情節正式開始：
+
+今天是玩家 11 歲暑假中的某一天。起床時，看見一隻貓頭鷹停在窗邊，爪子上綁著一封厚重的羊皮信。信封以墨綠色火漆封印，打開後字跡像被月光喚醒般浮現：
+
+「親愛的 ${name === '隨機' ? '（玩家姓名）' : name}：
+
+我們很榮幸能在此通知你，你已獲准進入霍格華茲魔法與巫術學院就讀⋯」
+
+請從這裡開始劇情，引導玩家進入入學前的準備與期待，並在適當時機安排分類帽儀式。
+${extraNotes ? '\n---\n\n## 額外備注\n\n' + extraNotes : ''}`;
+
+  // Show output
+  document.getElementById('loading-bar').classList.add('visible');
+  setTimeout(() => {
+    document.getElementById('loading-bar').classList.remove('visible');
+    document.getElementById('output-text').value = prompt;
+    const wrapper = document.getElementById('output-wrapper');
+    wrapper.classList.add('visible');
+    wrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 600);
+}
+
+function copyOutput() {
+  const ta = document.getElementById('output-text');
+  ta.select();
+  document.execCommand('copy');
+  const btn = document.getElementById('copy-btn');
+  btn.textContent = '✓ 已複製';
+  btn.classList.add('copied');
+  setTimeout(() => {
+    btn.textContent = '複製全文';
+    btn.classList.remove('copied');
+  }, 2000);
+}
+</script>
+</body>
+</html>
