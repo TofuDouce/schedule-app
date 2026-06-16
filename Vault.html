@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vault — 我的收藏庫</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;600&family=Noto+Sans+TC:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink:        #2C2016;
+    --ink-soft:   #6B5744;
+    --ink-muted:  #A08878;
+    --parchment:  #F7F1E8;
+    --parchment2: #EDE5D8;
+    --parchment3: #E2D8C8;
+    --amber:      #C8843A;
+    --amber-soft: #E8A85A;
+    --amber-pale: #F5DEB8;
+    --rose:       #C4736A;
+    --rose-pale:  #F2E0DC;
+    --sage:       #7A9B7A;
+    --sage-pale:  #DFF0DF;
+    --shadow:     rgba(44,32,22,0.10);
+    --shadow-md:  rgba(44,32,22,0.18);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans TC', sans-serif;
+    background: var(--parchment);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--ink);
+    padding: 18px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px var(--shadow-md);
+  }
+  .logo {
+    font-family: 'Noto Serif TC', serif;
+    font-weight: 600;
+    font-size: 1.25rem;
+    color: var(--amber-soft);
+    letter-spacing: 0.08em;
+  }
+  .logo span { color: var(--parchment2); font-weight: 300; font-size: 0.85rem; margin-left: 10px; letter-spacing: 0.04em; }
+
+  .header-actions { display: flex; gap: 8px; }
+  .btn-header {
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 0.78rem;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--ink-soft);
+    background: transparent;
+    color: var(--parchment2);
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.03em;
+  }
+  .btn-header:hover { background: var(--ink-soft); border-color: var(--amber-soft); color: var(--amber-soft); }
+
+  /* ── Tabs ── */
+  .tabs {
+    display: flex;
+    background: var(--parchment2);
+    border-bottom: 1px solid var(--parchment3);
+    padding: 0 24px;
+    gap: 4px;
+  }
+  .tab {
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 500;
+    padding: 14px 22px;
+    border: none;
+    background: transparent;
+    color: var(--ink-muted);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+    letter-spacing: 0.03em;
+  }
+  .tab:hover { color: var(--ink-soft); }
+  .tab.active { color: var(--amber); border-bottom-color: var(--amber); }
+
+  /* ── Main layout ── */
+  .main { display: flex; flex: 1; min-height: 0; }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: 280px;
+    min-width: 220px;
+    background: var(--parchment2);
+    border-right: 1px solid var(--parchment3);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .sidebar-top {
+    padding: 16px;
+    border-bottom: 1px solid var(--parchment3);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .search-input {
+    flex: 1;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 0.82rem;
+    padding: 7px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--parchment3);
+    background: var(--parchment);
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-input:focus { border-color: var(--amber-soft); }
+  .search-input::placeholder { color: var(--ink-muted); }
+
+  .btn-new {
+    font-size: 1.3rem;
+    width: 34px; height: 34px;
+    border-radius: 8px;
+    border: none;
+    background: var(--amber);
+    color: #fff;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s, transform 0.1s;
+    flex-shrink: 0;
+  }
+  .btn-new:hover { background: var(--amber-soft); transform: scale(1.05); }
+
+  .item-list { flex: 1; overflow-y: auto; padding: 8px; }
+  .item-list::-webkit-scrollbar { width: 4px; }
+  .item-list::-webkit-scrollbar-thumb { background: var(--parchment3); border-radius: 4px; }
+
+  .item-card {
+    padding: 12px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-bottom: 4px;
+    border: 1px solid transparent;
+    transition: all 0.15s;
+    position: relative;
+  }
+  .item-card:hover { background: var(--parchment); border-color: var(--parchment3); }
+  .item-card.active { background: var(--parchment); border-color: var(--amber-pale); box-shadow: 0 1px 6px var(--shadow); }
+  .item-card .card-title {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .item-card .card-meta {
+    font-size: 0.72rem;
+    color: var(--ink-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .badge {
+    font-size: 0.66rem;
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+  }
+  .badge-code { background: var(--amber-pale); color: var(--amber); }
+  .badge-text { background: var(--rose-pale); color: var(--rose); }
+
+  .empty-list {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--ink-muted);
+    font-size: 0.85rem;
+    line-height: 1.8;
+  }
+  .empty-list .icon { font-size: 2rem; margin-bottom: 10px; opacity: 0.5; }
+
+  /* ── Content area ── */
+  .content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--parchment);
+  }
+
+  /* ── Welcome screen ── */
+  .welcome {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: var(--ink-muted);
+    text-align: center;
+    padding: 40px;
+  }
+  .welcome .big-icon { font-size: 3rem; opacity: 0.35; }
+  .welcome h2 { font-family: 'Noto Serif TC', serif; font-weight: 400; font-size: 1.1rem; color: var(--ink-soft); }
+  .welcome p { font-size: 0.83rem; line-height: 1.9; }
+
+  /* ── Detail toolbar ── */
+  .detail-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--parchment3);
+    background: var(--parchment2);
+    flex-wrap: wrap;
+  }
+  .detail-title-input {
+    flex: 1;
+    font-family: 'Noto Serif TC', serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    border: none;
+    background: transparent;
+    color: var(--ink);
+    outline: none;
+    min-width: 120px;
+  }
+  .detail-title-input::placeholder { color: var(--ink-muted); }
+
+  .btn-action {
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 0.76rem;
+    padding: 6px 13px;
+    border-radius: 7px;
+    border: 1px solid var(--parchment3);
+    background: var(--parchment);
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .btn-action:hover { background: var(--parchment3); color: var(--ink); }
+  .btn-action.primary { background: var(--amber); border-color: var(--amber); color: #fff; }
+  .btn-action.primary:hover { background: var(--amber-soft); border-color: var(--amber-soft); }
+  .btn-action.danger { color: var(--rose); border-color: var(--rose-pale); }
+  .btn-action.danger:hover { background: var(--rose-pale); }
+
+  /* ── Editor ── */
+  .editor-wrap { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .code-editor {
+    flex: 1;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    line-height: 1.75;
+    padding: 20px 24px;
+    border: none;
+    background: #1E1810;
+    color: #E8D8B8;
+    resize: none;
+    outline: none;
+    tab-size: 2;
+    white-space: pre;
+    overflow: auto;
+  }
+  .text-editor {
+    flex: 1;
+    font-family: 'Noto Serif TC', serif;
+    font-size: 0.95rem;
+    line-height: 2.1;
+    padding: 28px 36px;
+    border: none;
+    background: var(--parchment);
+    color: var(--ink);
+    resize: none;
+    outline: none;
+  }
+
+  /* ── Preview ── */
+  .preview-wrap { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .preview-bar {
+    padding: 8px 20px;
+    font-size: 0.75rem;
+    color: var(--ink-muted);
+    background: var(--parchment3);
+    border-bottom: 1px solid var(--parchment3);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .preview-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--amber-soft); display: inline-block; }
+  .preview-iframe {
+    flex: 1;
+    border: none;
+    background: #fff;
+  }
+
+  /* ── Split view ── */
+  .split-view { flex: 1; display: flex; overflow: hidden; }
+  .split-left { flex: 1; display: flex; flex-direction: column; border-right: 1px solid var(--parchment3); overflow: hidden; }
+  .split-right { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .split-label {
+    font-size: 0.72rem;
+    padding: 5px 14px;
+    background: var(--parchment3);
+    color: var(--ink-muted);
+    letter-spacing: 0.05em;
+    font-weight: 500;
+  }
+
+  /* ── View toggle ── */
+  .view-toggle {
+    display: flex;
+    gap: 4px;
+    background: var(--parchment3);
+    border-radius: 8px;
+    padding: 3px;
+  }
+  .view-btn {
+    font-size: 0.73rem;
+    padding: 4px 10px;
+    border-radius: 5px;
+    border: none;
+    background: transparent;
+    color: var(--ink-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .view-btn.active { background: var(--parchment); color: var(--ink); box-shadow: 0 1px 3px var(--shadow); }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(44,32,22,0.45);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 200;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .modal-overlay.show { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--parchment);
+    border-radius: 16px;
+    padding: 28px 30px;
+    width: min(90vw, 420px);
+    box-shadow: 0 8px 40px var(--shadow-md);
+    transform: translateY(10px);
+    transition: transform 0.2s;
+  }
+  .modal-overlay.show .modal { transform: translateY(0); }
+  .modal h3 { font-family: 'Noto Serif TC', serif; font-size: 1.1rem; margin-bottom: 18px; color: var(--ink); }
+  .modal-label { font-size: 0.8rem; color: var(--ink-soft); margin-bottom: 6px; margin-top: 14px; }
+  .modal-input, .modal-select {
+    width: 100%;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 0.88rem;
+    padding: 9px 13px;
+    border-radius: 8px;
+    border: 1px solid var(--parchment3);
+    background: var(--parchment2);
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .modal-input:focus, .modal-select:focus { border-color: var(--amber-soft); }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 22px; }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed;
+    bottom: 28px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--ink);
+    color: var(--amber-soft);
+    font-size: 0.82rem;
+    padding: 9px 20px;
+    border-radius: 20px;
+    z-index: 300;
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+    white-space: nowrap;
+    box-shadow: 0 4px 16px var(--shadow-md);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ── Divider ── */
+  .divider { width: 1px; background: var(--parchment3); margin: 0 4px; align-self: stretch; }
+
+  /* ── Responsive ── */
+  @media (max-width: 640px) {
+    .sidebar { width: 240px; }
+    .text-editor { padding: 20px; }
+    .code-editor { font-size: 0.75rem; }
+    .detail-toolbar { gap: 5px; }
+  }
+  @media (max-width: 480px) {
+    .main { flex-direction: column; }
+    .sidebar { width: 100%; max-height: 220px; border-right: none; border-bottom: 1px solid var(--parchment3); }
+    .split-view { flex-direction: column; }
+    .split-left, .split-right { flex: none; height: 50%; }
+    .split-left { border-right: none; border-bottom: 1px solid var(--parchment3); }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <div class="logo">Vault <span>我的收藏庫</span></div>
+  <div class="header-actions">
+    <button class="btn-header" onclick="exportData()">匯出備份</button>
+    <button class="btn-header" onclick="document.getElementById('importFile').click()">匯入還原</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+  </div>
+</header>
+
+<!-- Tabs -->
+<div class="tabs">
+  <button class="tab active" id="tab-code" onclick="switchTab('code')">💻 程式碼專案</button>
+  <button class="tab" id="tab-text" onclick="switchTab('text')">📝 文字文章</button>
+</div>
+
+<!-- Main -->
+<div class="main">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-top">
+      <input class="search-input" id="searchInput" placeholder="搜尋…" oninput="renderList()">
+      <button class="btn-new" title="新增" onclick="openNewModal()">＋</button>
+    </div>
+    <div class="item-list" id="itemList"></div>
+  </div>
+
+  <!-- Content -->
+  <div class="content" id="contentArea">
+    <div class="welcome">
+      <div class="big-icon">✦</div>
+      <h2>選擇一個項目，或新增一個</h2>
+      <p>程式碼專案可以即時預覽效果<br>文字文章可以在這裡安靜閱讀與編輯</p>
+    </div>
+  </div>
+</div>
+
+<!-- New/Rename Modal -->
+<div class="modal-overlay" id="newModal">
+  <div class="modal">
+    <h3 id="modalTitle">新增項目</h3>
+    <div class="modal-label">名稱</div>
+    <input class="modal-input" id="modalName" placeholder="輸入名稱…" maxlength="60">
+    <div id="modalTypeRow">
+      <div class="modal-label">類型</div>
+      <select class="modal-select" id="modalType">
+        <option value="code">💻 程式碼專案（HTML）</option>
+        <option value="text">📝 文字文章</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-action" onclick="closeModal()">取消</button>
+      <button class="btn-action primary" id="modalConfirm" onclick="confirmModal()">建立</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── State ──
+let db = JSON.parse(localStorage.getItem('vault_db') || '{"items":[]}');
+let currentTab = 'code';
+let currentId = null;
+let modalMode = 'new'; // 'new' | 'rename'
+let currentView = 'split'; // 'editor' | 'preview' | 'split'
+let autoSaveTimer = null;
+
+function save() {
+  localStorage.setItem('vault_db', JSON.stringify(db));
+}
+
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2);
+}
+
+function getItems(tab, q = '') {
+  return db.items
+    .filter(i => i.type === tab)
+    .filter(i => !q || i.name.toLowerCase().includes(q.toLowerCase()) || i.content.toLowerCase().includes(q.toLowerCase()))
+    .sort((a, b) => b.updatedAt - a.updatedAt);
+}
+
+// ── Tab ──
+function switchTab(tab) {
+  currentTab = tab;
+  currentId = null;
+  document.getElementById('tab-code').classList.toggle('active', tab === 'code');
+  document.getElementById('tab-text').classList.toggle('active', tab === 'text');
+  document.getElementById('modalType').value = tab;
+  renderList();
+  showWelcome();
+}
+
+// ── Sidebar list ──
+function renderList() {
+  const q = document.getElementById('searchInput').value;
+  const items = getItems(currentTab, q);
+  const el = document.getElementById('itemList');
+  if (!items.length) {
+    el.innerHTML = `<div class="empty-list"><div class="icon">${currentTab === 'code' ? '💻' : '📝'}</div>還沒有${currentTab === 'code' ? '程式碼專案' : '文字文章'}<br>點右上角 ＋ 新增一個</div>`;
+    return;
+  }
+  el.innerHTML = items.map(item => `
+    <div class="item-card ${item.id === currentId ? 'active' : ''}" onclick="selectItem('${item.id}')">
+      <div class="card-title">${escHtml(item.name)}</div>
+      <div class="card-meta">
+        <span class="badge ${item.type === 'code' ? 'badge-code' : 'badge-text'}">${item.type === 'code' ? 'HTML' : '文章'}</span>
+        ${formatDate(item.updatedAt)}
+      </div>
+    </div>
+  `).join('');
+}
+
+function formatDate(ts) {
+  const d = new Date(ts);
+  return `${d.getMonth()+1}/${d.getDate()} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Select item ──
+function selectItem(id) {
+  currentId = id;
+  renderList();
+  const item = db.items.find(i => i.id === id);
+  if (!item) return;
+  if (item.type === 'code') renderCodeDetail(item);
+  else renderTextDetail(item);
+}
+
+// ── Code detail ──
+function renderCodeDetail(item) {
+  currentView = 'split';
+  document.getElementById('contentArea').innerHTML = `
+    <div class="detail-toolbar">
+      <input class="detail-title-input" id="detailTitle" value="${escHtml(item.name)}" placeholder="專案名稱" oninput="scheduleSave()">
+      <div class="view-toggle">
+        <button class="view-btn ${currentView==='editor'?'active':''}" onclick="setView('editor')">編輯</button>
+        <button class="view-btn ${currentView==='split'?'active':''}" onclick="setView('split')">分割</button>
+        <button class="view-btn ${currentView==='preview'?'active':''}" onclick="setView('preview')">預覽</button>
+      </div>
+      <div class="divider"></div>
+      <button class="btn-action primary" onclick="manualSave()">儲存</button>
+      <button class="btn-action" onclick="copyContent()">複製</button>
+      <button class="btn-action" onclick="downloadFile()">下載 .html</button>
+      <button class="btn-action danger" onclick="deleteItem()">刪除</button>
+    </div>
+    <div class="editor-wrap" id="editorWrap">
+      ${buildCodeViewHtml(item.content)}
+    </div>
+  `;
+  setView(currentView);
+}
+
+function buildCodeViewHtml(content) {
+  const safe = content.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return `
+    <div class="split-view" id="splitView">
+      <div class="split-left">
+        <div class="split-label">CODE</div>
+        <textarea class="code-editor" id="codeEditor" spellcheck="false" oninput="scheduleSave(); refreshPreview()">${safe}</textarea>
+      </div>
+      <div class="split-right">
+        <div class="split-label">PREVIEW</div>
+        <iframe class="preview-iframe" id="previewFrame" sandbox="allow-scripts allow-same-origin"></iframe>
+      </div>
+    </div>
+  `;
+}
+
+function setView(v) {
+  currentView = v;
+  const sv = document.getElementById('splitView');
+  const left = sv ? sv.querySelector('.split-left') : null;
+  const right = sv ? sv.querySelector('.split-right') : null;
+  const btns = document.querySelectorAll('.view-btn');
+  btns.forEach((b,i) => b.classList.toggle('active', ['editor','split','preview'][i] === v));
+  if (!sv) return;
+  if (v === 'editor') { left.style.flex='1'; right.style.display='none'; }
+  else if (v === 'preview') { left.style.display='none'; right.style.flex='1'; }
+  else { left.style.flex='1'; left.style.display=''; right.style.display=''; right.style.flex='1'; }
+  refreshPreview();
+}
+
+function refreshPreview() {
+  const frame = document.getElementById('previewFrame');
+  const editor = document.getElementById('codeEditor');
+  if (!frame || !editor) return;
+  const blob = new Blob([editor.value], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  frame.onload = () => URL.revokeObjectURL(url);
+  frame.src = url;
+}
+
+// ── Text detail ──
+function renderTextDetail(item) {
+  document.getElementById('contentArea').innerHTML = `
+    <div class="detail-toolbar">
+      <input class="detail-title-input" id="detailTitle" value="${escHtml(item.name)}" placeholder="文章標題" oninput="scheduleSave()">
+      <div class="divider"></div>
+      <button class="btn-action primary" onclick="manualSave()">儲存</button>
+      <button class="btn-action" onclick="copyContent()">複製</button>
+      <button class="btn-action" onclick="downloadFile()">下載 .txt</button>
+      <button class="btn-action danger" onclick="deleteItem()">刪除</button>
+    </div>
+    <textarea class="text-editor" id="textEditor" placeholder="在這裡輸入文章內容…" oninput="scheduleSave()">${escHtml(item.content)}</textarea>
+  `;
+}
+
+// ── Save logic ──
+function scheduleSave() {
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(() => manualSave(true), 1500);
+}
+
+function manualSave(silent = false) {
+  if (!currentId) return;
+  const item = db.items.find(i => i.id === currentId);
+  if (!item) return;
+  const titleEl = document.getElementById('detailTitle');
+  const editorEl = document.getElementById('codeEditor') || document.getElementById('textEditor');
+  if (titleEl) item.name = titleEl.value.trim() || '未命名';
+  if (editorEl) item.content = editorEl.value;
+  item.updatedAt = Date.now();
+  save();
+  renderList();
+  if (!silent) showToast('已儲存 ✓');
+}
+
+function copyContent() {
+  const editorEl = document.getElementById('codeEditor') || document.getElementById('textEditor');
+  if (!editorEl) return;
+  navigator.clipboard.writeText(editorEl.value).then(() => showToast('已複製到剪貼板 ✓'));
+}
+
+function downloadFile() {
+  manualSave(true);
+  const item = db.items.find(i => i.id === currentId);
+  if (!item) return;
+  const ext = item.type === 'code' ? 'html' : 'txt';
+  const blob = new Blob([item.content], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${item.name}.${ext}`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast(`已下載 ${item.name}.${ext}`);
+}
+
+function deleteItem() {
+  if (!currentId) return;
+  const item = db.items.find(i => i.id === currentId);
+  if (!item) return;
+  if (!confirm(`確定刪除「${item.name}」？此操作無法復原。`)) return;
+  db.items = db.items.filter(i => i.id !== currentId);
+  currentId = null;
+  save();
+  renderList();
+  showWelcome();
+  showToast('已刪除');
+}
+
+function showWelcome() {
+  document.getElementById('contentArea').innerHTML = `
+    <div class="welcome">
+      <div class="big-icon">✦</div>
+      <h2>選擇一個項目，或新增一個</h2>
+      <p>程式碼專案可以即時預覽效果<br>文字文章可以在這裡安靜閱讀與編輯</p>
+    </div>
+  `;
+}
+
+// ── Modal ──
+function openNewModal() {
+  modalMode = 'new';
+  document.getElementById('modalTitle').textContent = '新增項目';
+  document.getElementById('modalName').value = '';
+  document.getElementById('modalType').value = currentTab;
+  document.getElementById('modalTypeRow').style.display = '';
+  document.getElementById('modalConfirm').textContent = '建立';
+  document.getElementById('newModal').classList.add('show');
+  setTimeout(() => document.getElementById('modalName').focus(), 100);
+}
+
+function closeModal() {
+  document.getElementById('newModal').classList.remove('show');
+}
+
+function confirmModal() {
+  const name = document.getElementById('modalName').value.trim();
+  if (!name) { document.getElementById('modalName').focus(); return; }
+  if (modalMode === 'new') {
+    const type = document.getElementById('modalType').value;
+    const item = { id: uid(), name, type, content: '', createdAt: Date.now(), updatedAt: Date.now() };
+    db.items.push(item);
+    save();
+    if (type !== currentTab) switchTab(type);
+    else renderList();
+    closeModal();
+    selectItem(item.id);
+    showToast('已建立 ✓');
+  }
+}
+
+document.getElementById('newModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('newModal')) closeModal();
+});
+document.getElementById('modalName').addEventListener('keydown', e => {
+  if (e.key === 'Enter') confirmModal();
+  if (e.key === 'Escape') closeModal();
+});
+
+// ── Export / Import ──
+function exportData() {
+  if (!db.items.length) { showToast('還沒有任何資料'); return; }
+  const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `vault_backup_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast(`已匯出 ${db.items.length} 個項目`);
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (!imported.items || !Array.isArray(imported.items)) throw new Error();
+      const count = imported.items.length;
+      if (!confirm(`匯入 ${count} 個項目？\n這會與現有資料合併（不會刪除現有項目）。`)) return;
+      // merge by id
+      const existingIds = new Set(db.items.map(i => i.id));
+      let added = 0;
+      imported.items.forEach(item => {
+        if (!existingIds.has(item.id)) { db.items.push(item); added++; }
+      });
+      save();
+      renderList();
+      showToast(`已匯入 ${added} 個新項目`);
+    } catch {
+      showToast('匯入失敗：檔案格式不正確');
+    }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+// ── Toast ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ── Init ──
+renderList();
+</script>
+</body>
+</html>
