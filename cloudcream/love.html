@@ -3,427 +3,453 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>孤山遠征・指令產生器 v3</title>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;800&family=Noto+Serif+TC:wght@300;400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Zen+Maru+Gothic:wght@400;500;700&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+<title>孤山遠征・指令產生器 v5</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;800&family=Noto+Serif+TC:wght@300;400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Zen+Maru+Gothic:wght@400;500;700&family=Ma+Shan+Zheng&family=Kaisei+Decol:wght@400;500;700&family=Shippori+Mincho:wght@400;500;700&family=BIZ+UDMincho&family=M+PLUS+Rounded+1c:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.7.0/style.css">
 <style>
-/* ════════════════════════════════════
-   THEME TOKENS
-════════════════════════════════════ */
+/* ══════════════════════════════════════════
+   BASE RESET
+══════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:var(--fs,18px);scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--txt);font-family:var(--font-body,'Noto Serif TC',serif);min-height:100vh;line-height:1.78;transition:background .4s,color .4s;}
+
+/* ══════════════════════════════════════════
+   THEME: 深色質感 (default)
+══════════════════════════════════════════ */
 :root {
-  /* dark (default) */
-  --bg:        #16120E;
-  --bg2:       #1E1812;
-  --bg3:       #252018;
-  --surface:   rgba(30,24,18,0.92);
-  --txt:       #EFE0BC;
-  --txt2:      #C8B07A;
-  --txt3:      #A09080;
-  --txt4:      #7A6E60;
-  --acc:       #C9962A;
-  --acc-lt:    #E8BE5A;
-  --acc-dk:    #7A5510;
-  --ember:     #8B2500;
-  --brd:       rgba(201,150,42,0.22);
-  --brd-hov:   rgba(201,150,42,0.55);
-  --chip-on:   rgba(201,150,42,0.18);
-  --out-bg:    rgba(10,8,5,0.82);
-  --scrollbar: rgba(201,150,42,0.28);
-
-  --fs: 17px;
-  --font-body: 'Noto Serif TC', serif;
+  --bg:#16120E; --bg2:#1E1812; --bg3:#252018;
+  --page-grad: linear-gradient(160deg,#1C1610 0%,#16120E 40%,#120E0A 100%);
+  --hdr-bg: rgba(18,14,10,0.96);
+  --txt:#EFE0BC; --txt2:#C8B07A; --txt3:#A09080; --txt4:#7A6E60;
+  --acc:#C9962A; --acc-lt:#E8BE5A; --acc-dk:#7A5510;
+  --brd:rgba(201,150,42,0.20); --brd-hov:rgba(201,150,42,0.55);
+  --chip-bg:rgba(201,150,42,0.00); --chip-on:rgba(201,150,42,0.22);
+  --chip-on-brd:var(--acc); --chip-on-txt:var(--acc-lt);
+  --out-bg:rgba(10,8,5,0.88); --scr:rgba(201,150,42,0.28);
+  --section-bg:rgba(28,22,16,0.85);
+  --font-body:'Noto Serif TC',serif; --fs:18px;
+  --cute-mode:0;
 }
 
-/* ── Parchment theme ── */
-body.theme-parch {
-  --bg:       #F5EDD8;
-  --bg2:      #EDE0C4;
-  --bg3:      #E4D4B0;
-  --surface:  rgba(245,237,216,0.96);
-  --txt:      #2C1F0E;
-  --txt2:     #5C3D18;
-  --txt3:     #8B6030;
-  --txt4:     #A07840;
-  --acc:      #8B4A10;
-  --acc-lt:   #B06020;
-  --acc-dk:   #5C2A05;
-  --ember:    #8B2500;
-  --brd:      rgba(139,74,16,0.28);
-  --brd-hov:  rgba(139,74,16,0.60);
-  --chip-on:  rgba(139,74,16,0.14);
-  --out-bg:   rgba(237,224,196,0.95);
-  --scrollbar:rgba(139,74,16,0.3);
+/* ── DARK THEMES ── */
+body.t-star{
+  --bg:#080614; --bg2:#0E0A20; --bg3:#14102C;
+  --page-grad:linear-gradient(160deg,#0C0820 0%,#080614 50%,#040210 100%);
+  --hdr-bg:rgba(8,6,20,0.97);
+  --txt:#D8D0F5; --txt2:#A898DC; --txt3:#7868A0; --txt4:#504870;
+  --acc:#8060C8; --acc-lt:#B090F0; --acc-dk:#4A3080;
+  --brd:rgba(128,96,200,0.25); --brd-hov:rgba(176,144,240,0.58);
+  --chip-on:rgba(128,96,200,0.25); --chip-on-brd:var(--acc-lt); --chip-on-txt:var(--acc-lt);
+  --out-bg:rgba(4,2,14,0.92); --scr:rgba(128,96,200,0.35);
+  --section-bg:rgba(14,10,32,0.88);
+}
+body.t-lava{
+  --bg:#0C0704; --bg2:#180C06; --bg3:#20100A;
+  --page-grad:linear-gradient(160deg,#1A0C06 0%,#0C0704 50%,#080402 100%);
+  --hdr-bg:rgba(10,6,3,0.97);
+  --txt:#F0DCC0; --txt2:#D49040; --txt3:#9C6020; --txt4:#703A10;
+  --acc:#E05C18; --acc-lt:#F08840; --acc-dk:#9C3A08;
+  --brd:rgba(224,92,24,0.25); --brd-hov:rgba(240,136,64,0.58);
+  --chip-on:rgba(224,92,24,0.22); --chip-on-brd:var(--acc-lt); --chip-on-txt:var(--acc-lt);
+  --out-bg:rgba(6,4,2,0.92); --scr:rgba(224,92,24,0.38);
+  --section-bg:rgba(20,10,6,0.88);
+}
+body.t-forest{
+  --bg:#040A06; --bg2:#081208; --bg3:#0E1C0E;
+  --page-grad:linear-gradient(160deg,#0A1608 0%,#040A06 50%,#020804 100%);
+  --hdr-bg:rgba(4,10,6,0.97);
+  --txt:#C8E8CC; --txt2:#80C088; --txt3:#4A8850; --txt4:#2A6030;
+  --acc:#288A46; --acc-lt:#48C068; --acc-dk:#125A24;
+  --brd:rgba(40,138,70,0.25); --brd-hov:rgba(72,192,104,0.58);
+  --chip-on:rgba(40,138,70,0.22); --chip-on-brd:var(--acc-lt); --chip-on-txt:var(--acc-lt);
+  --out-bg:rgba(2,6,4,0.92); --scr:rgba(40,138,70,0.35);
+  --section-bg:rgba(8,18,10,0.88);
+}
+body.t-rose{
+  --bg:#120810; --bg2:#1C0E18; --bg3:#261422;
+  --page-grad:linear-gradient(160deg,#1E0C1A 0%,#120810 50%,#0E060C 100%);
+  --hdr-bg:rgba(14,8,12,0.97);
+  --txt:#F0D8E4; --txt2:#CC8898; --txt3:#9A5868; --txt4:#783048;
+  --acc:#C04468; --acc-lt:#E07890; --acc-dk:#881C3C;
+  --brd:rgba(192,68,104,0.25); --brd-hov:rgba(224,120,144,0.58);
+  --chip-on:rgba(192,68,104,0.22); --chip-on-brd:var(--acc-lt); --chip-on-txt:var(--acc-lt);
+  --out-bg:rgba(8,4,8,0.92); --scr:rgba(192,68,104,0.35);
+  --section-bg:rgba(22,10,18,0.88);
+}
+body.t-copper{
+  --bg:#141006; --bg2:#1E180A; --bg3:#282010;
+  --page-grad:linear-gradient(160deg,#201808 0%,#141006 50%,#100C04 100%);
+  --hdr-bg:rgba(16,12,4,0.97);
+  --txt:#E8D898; --txt2:#C0A058; --txt3:#8A7030; --txt4:#5C4818;
+  --acc:#A87C2C; --acc-lt:#CCА050; --acc-dk:#704E0C;
+  --brd:rgba(168,124,44,0.25); --brd-hov:rgba(204,160,80,0.58);
+  --chip-on:rgba(168,124,44,0.22); --chip-on-brd:var(--acc-lt); --chip-on-txt:var(--acc-lt);
+  --out-bg:rgba(8,6,2,0.92); --scr:rgba(168,124,44,0.35);
+  --section-bg:rgba(20,16,6,0.88);
+}
+body.t-violet{
+  --bg:#08040E; --bg2:#0E081A; --bg3:#160C26;
+  --page-grad:linear-gradient(160deg,#120A20 0%,#08040E 50%,#060208 100%);
+  --hdr-bg:rgba(8,4,14,0.97);
+  --txt:#E8D8F8; --txt2:#B888E0; --txt3:#885AB0; --txt4:#603880;
+  --acc:#8C3CC8; --acc-lt:#B870E8; --acc-dk:#561490;
+  --brd:rgba(140,60,200,0.25); --brd-hov:rgba(184,112,232,0.58);
+  --chip-on:rgba(140,60,200,0.22); --chip-on-brd:var(--acc-lt); --chip-on-txt:var(--acc-lt);
+  --out-bg:rgba(4,2,10,0.92); --scr:rgba(140,60,200,0.35);
+  --section-bg:rgba(14,8,24,0.88);
 }
 
-/* ── White/ebook theme ── */
-body.theme-white {
-  --bg:       #F8F8F6;
-  --bg2:      #EFEFED;
-  --bg3:      #E5E5E3;
-  --surface:  rgba(248,248,246,0.98);
-  --txt:      #1A1A1A;
-  --txt2:     #3A3A3A;
-  --txt3:     #666666;
-  --txt4:     #999999;
-  --acc:      #2E5DA0;
-  --acc-lt:   #4A7CC4;
-  --acc-dk:   #1A3F78;
-  --ember:    #8B2500;
-  --brd:      rgba(46,93,160,0.20);
-  --brd-hov:  rgba(46,93,160,0.50);
-  --chip-on:  rgba(46,93,160,0.12);
-  --out-bg:   rgba(248,248,246,0.98);
-  --scrollbar:rgba(46,93,160,0.25);
+/* ── LIGHT THEMES ── */
+body.t-parch{
+  --bg:#F2E6C8; --bg2:#EAD8B4; --bg3:#E0CAA0;
+  --page-grad:linear-gradient(160deg,#F8F0DC 0%,#F2E6C8 50%,#EAD8B4 100%);
+  --hdr-bg:rgba(248,240,220,0.97);
+  --txt:#2C1A08; --txt2:#5A3210; --txt3:#8A5820; --txt4:#B08040;
+  --acc:#8A4808; --acc-lt:#B06820; --acc-dk:#5A2800;
+  --brd:rgba(138,72,8,0.22); --brd-hov:rgba(138,72,8,0.55);
+  --chip-bg:rgba(138,72,8,0.00); --chip-on:rgba(138,72,8,0.16);
+  --chip-on-brd:#8A4808; --chip-on-txt:#5A2800;
+  --out-bg:rgba(250,244,228,0.97); --scr:rgba(138,72,8,0.3);
+  --section-bg:rgba(246,238,218,0.94);
+}
+body.t-white{
+  --bg:#F8F8F6; --bg2:#F0F0EE; --bg3:#E5E5E2;
+  --page-grad:linear-gradient(160deg,#FFFFFF 0%,#F8F8F6 60%,#F0F0EE 100%);
+  --hdr-bg:rgba(255,255,255,0.98);
+  --txt:#181818; --txt2:#383838; --txt3:#606060; --txt4:#909090;
+  --acc:#2858A0; --acc-lt:#4880C8; --acc-dk:#183870;
+  --brd:rgba(40,88,160,0.18); --brd-hov:rgba(40,88,160,0.50);
+  --chip-on:rgba(40,88,160,0.12); --chip-on-brd:#2858A0; --chip-on-txt:#183870;
+  --out-bg:rgba(255,255,255,0.99); --scr:rgba(40,88,160,0.25);
+  --section-bg:rgba(248,248,248,0.98);
+}
+body.t-frost{
+  --bg:#E8F4FC; --bg2:#DAEcF8; --bg3:#C8E0F0;
+  --page-grad:linear-gradient(160deg,#F4FAFF 0%,#E8F4FC 55%,#DAEcF8 100%);
+  --hdr-bg:rgba(244,250,255,0.98);
+  --txt:#0A2038; --txt2:#183A5A; --txt3:#305878; --txt4:#5880A0;
+  --acc:#1858A0; --acc-lt:#3880C8; --acc-dk:#0A3068;
+  --brd:rgba(24,88,160,0.20); --brd-hov:rgba(56,128,200,0.52);
+  --chip-on:rgba(24,88,160,0.14); --chip-on-brd:#1858A0; --chip-on-txt:#0A3068;
+  --out-bg:rgba(244,250,255,0.99); --scr:rgba(24,88,160,0.28);
+  --section-bg:rgba(240,248,255,0.96);
+}
+body.t-cream{
+  --bg:#FFF8E8; --bg2:#FFF0D0; --bg3:#FFE8B8;
+  --page-grad:linear-gradient(160deg,#FFFDF5 0%,#FFF8E8 55%,#FFF0D0 100%);
+  --hdr-bg:rgba(255,253,245,0.98);
+  --txt:#3A2010; --txt2:#6A4020; --txt3:#9A6840; --txt4:#CA9870;
+  --acc:#E8840A; --acc-lt:#F0A030; --acc-dk:#A85C00;
+  --brd:rgba(232,132,10,0.22); --brd-hov:rgba(232,132,10,0.55);
+  --chip-on:rgba(232,132,10,0.16); --chip-on-brd:#E8840A; --chip-on-txt:#A85C00;
+  --out-bg:rgba(255,253,245,0.99); --scr:rgba(232,132,10,0.3);
+  --section-bg:rgba(255,252,240,0.96);
+  --cute-mode:1;
+}
+body.t-matcha{
+  --bg:#F2F0E6; --bg2:#E8E4D4; --bg3:#DCD8C4;
+  --page-grad:linear-gradient(160deg,#F8F6EE 0%,#F2F0E6 55%,#E8E4D4 100%);
+  --hdr-bg:rgba(248,246,238,0.98);
+  --txt:#1E2810; --txt2:#3A4820; --txt3:#5A6840; --txt4:#8A9870;
+  --acc:#5A7828; --acc-lt:#7A9840; --acc-dk:#385010;
+  --brd:rgba(90,120,40,0.22); --brd-hov:rgba(90,120,40,0.55);
+  --chip-on:rgba(90,120,40,0.16); --chip-on-brd:#5A7828; --chip-on-txt:#385010;
+  --out-bg:rgba(248,246,238,0.99); --scr:rgba(90,120,40,0.3);
+  --section-bg:rgba(245,243,234,0.96);
+}
+body.t-rosemilk{
+  --bg:#FDF0F0; --bg2:#F8E4E4; --bg3:#F0D4D4;
+  --page-grad:linear-gradient(160deg,#FFF8F8 0%,#FDF0F0 55%,#F8E4E4 100%);
+  --hdr-bg:rgba(255,248,248,0.98);
+  --txt:#3A1820; --txt2:#6A3040; --txt3:#9A5868; --txt4:#CA8898;
+  --acc:#C84868; --acc-lt:#E07088; --acc-dk:#902038;
+  --brd:rgba(200,72,104,0.20); --brd-hov:rgba(200,72,104,0.52);
+  --chip-on:rgba(200,72,104,0.14); --chip-on-brd:#C84868; --chip-on-txt:#902038;
+  --out-bg:rgba(255,248,248,0.99); --scr:rgba(200,72,104,0.28);
+  --section-bg:rgba(255,245,245,0.96);
+}
+body.t-sky{
+  --bg:#F0F8FF; --bg2:#E4F0FC; --bg3:#D4E8F8;
+  --page-grad:linear-gradient(160deg,#F8FCFF 0%,#F0F8FF 55%,#E4F0FC 100%);
+  --hdr-bg:rgba(248,252,255,0.98);
+  --txt:#102030; --txt2:#204060; --txt3:#406080; --txt4:#7090B0;
+  --acc:#2878C0; --acc-lt:#50A0E0; --acc-dk:#105090;
+  --brd:rgba(40,120,192,0.20); --brd-hov:rgba(80,160,224,0.52);
+  --chip-on:rgba(40,120,192,0.14); --chip-on-brd:#2878C0; --chip-on-txt:#105090;
+  --out-bg:rgba(248,252,255,0.99); --scr:rgba(40,120,192,0.28);
+  --section-bg:rgba(245,250,255,0.96);
 }
 
-*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
-html { font-size: var(--fs); scroll-behavior: smooth; }
-
-body {
-  background: var(--bg);
-  color: var(--txt);
-  font-family: var(--font-body);
-  min-height: 100vh;
-  line-height: 1.75;
-  transition: background .35s, color .35s;
+/* ══════════════════════════════════════════
+   BACKGROUND TEXTURE per theme
+══════════════════════════════════════════ */
+body::before{
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+  background: var(--page-grad);
+  transition: background .4s;
 }
-
-body::before {
-  content:'';
-  position:fixed; inset:0; pointer-events:none; z-index:0;
+body::after{
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+  opacity:.6;
   background:
-    radial-gradient(ellipse 55% 35% at 12% 0%, rgba(201,150,42,.05) 0%, transparent 65%),
-    radial-gradient(ellipse 45% 45% at 88% 100%, rgba(139,37,0,.06) 0%, transparent 65%);
-  transition: opacity .35s;
+    radial-gradient(ellipse 60% 40% at 15% 5%, rgba(201,150,42,.07) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 45% at 88% 95%, rgba(139,37,0,.08) 0%, transparent 60%);
+  transition: opacity .4s;
 }
-body.theme-parch::before { opacity: .5; }
-body.theme-white::before { opacity: 0; }
+body.t-parch::after{ background: radial-gradient(ellipse 70% 50% at 20% 10%, rgba(255,220,150,.3) 0%, transparent 55%), radial-gradient(ellipse 60% 40% at 80% 90%, rgba(180,120,40,.2) 0%, transparent 60%); opacity:.8; }
+body.t-white::after, body.t-sky::after{ opacity:0; }
+body.t-frost::after{ background: radial-gradient(ellipse 70% 50% at 20% 10%, rgba(160,210,255,.3) 0%, transparent 55%); opacity:.7; }
+body.t-cream::after{ background: radial-gradient(ellipse 65% 45% at 15% 10%, rgba(255,220,140,.4) 0%, transparent 55%), radial-gradient(ellipse 55% 40% at 85% 90%, rgba(255,180,100,.2) 0%, transparent 55%); opacity:.7; }
+body.t-matcha::after{ background: radial-gradient(ellipse 65% 45% at 15% 10%, rgba(160,200,100,.25) 0%, transparent 55%), radial-gradient(ellipse 50% 40% at 85% 90%, rgba(100,150,60,.15) 0%, transparent 55%); opacity:.8; }
+body.t-rosemilk::after{ background: radial-gradient(ellipse 65% 45% at 15% 10%, rgba(255,180,190,.35) 0%, transparent 55%), radial-gradient(ellipse 55% 40% at 85% 90%, rgba(220,140,160,.2) 0%, transparent 55%); opacity:.8; }
+body.t-star::after{ background: radial-gradient(ellipse 60% 50% at 20% 15%, rgba(100,70,200,.18) 0%, transparent 55%), radial-gradient(ellipse 50% 45% at 85% 88%, rgba(60,30,150,.15) 0%, transparent 55%); opacity:1; }
+body.t-lava::after{ background: radial-gradient(ellipse 60% 45% at 15% 10%, rgba(220,80,20,.14) 0%, transparent 55%), radial-gradient(ellipse 50% 40% at 88% 90%, rgba(180,50,10,.1) 0%, transparent 55%); opacity:1; }
+body.t-forest::after{ background: radial-gradient(ellipse 60% 45% at 15% 10%, rgba(40,130,60,.14) 0%, transparent 55%), radial-gradient(ellipse 50% 40% at 88% 90%, rgba(20,90,30,.1) 0%, transparent 55%); opacity:1; }
+body.t-rose::after{ background: radial-gradient(ellipse 60% 45% at 15% 10%, rgba(180,50,80,.15) 0%, transparent 55%), radial-gradient(ellipse 50% 40% at 88% 90%, rgba(140,30,60,.1) 0%, transparent 55%); opacity:1; }
+body.t-copper::after{ background: radial-gradient(ellipse 60% 45% at 15% 10%, rgba(160,100,20,.14) 0%, transparent 55%), radial-gradient(ellipse 50% 40% at 88% 90%, rgba(120,70,10,.1) 0%, transparent 55%); opacity:1; }
+body.t-violet::after{ background: radial-gradient(ellipse 60% 45% at 15% 10%, rgba(120,40,180,.16) 0%, transparent 55%), radial-gradient(ellipse 50% 40% at 88% 90%, rgba(80,20,140,.12) 0%, transparent 55%); opacity:1; }
 
-/* ════════════════════════════════════
-   TOP TOOLBAR
-════════════════════════════════════ */
-#toolbar {
-  position: fixed; top:0; left:0; right:0; z-index:200;
-  background: var(--bg2);
-  border-bottom: 1px solid var(--brd);
-  display: flex; align-items: center; flex-wrap: wrap;
-  gap: 8px; padding: 7px 18px;
-  transition: background .35s, border-color .35s;
-}
-.tb-group {
-  display: flex; align-items: center; gap: 6px;
-}
-.tb-label {
-  font-family: 'Cinzel', serif;
-  font-size: .68rem; letter-spacing: 2px;
-  color: var(--txt4); text-transform: uppercase;
-  white-space: nowrap;
-}
-.tb-btn {
-  background: transparent;
-  border: 1px solid var(--brd);
-  border-radius: 3px;
-  color: var(--txt3);
-  font-size: .82rem; padding: 3px 10px;
-  cursor: pointer; transition: all .2s;
-  font-family: var(--font-body);
-}
-.tb-btn:hover { border-color: var(--brd-hov); color: var(--acc-lt); }
-#fs-val {
-  font-family: 'Cinzel', serif; font-size: .72rem;
-  color: var(--acc); min-width: 38px; text-align:center;
-}
-.tb-sep { width:1px; height:22px; background: var(--brd); margin: 0 4px; }
+/* star particles for star theme */
+body.t-star #star-canvas{ display:block; }
+#star-canvas{ display:none; position:fixed; inset:0; pointer-events:none; z-index:0; }
 
-/* Theme & Font selects */
-.tb-select {
-  background: var(--bg3);
-  border: 1px solid var(--brd);
-  border-radius: 3px;
-  color: var(--txt2);
-  font-family: var(--font-body);
-  font-size: .8rem;
-  padding: 4px 8px;
-  cursor: pointer; outline: none;
-  transition: border-color .2s;
+/* ══════════════════════════════════════════
+   TOOLBAR
+══════════════════════════════════════════ */
+#tb-wrap{
+  position:fixed; top:0; left:0; right:0; z-index:300;
+  transition:transform .35s cubic-bezier(.4,0,.2,1);
 }
-.tb-select:focus { border-color: var(--brd-hov); }
+#tb-wrap.hidden{ transform:translateY(-100%); }
+#toolbar{
+  background:var(--hdr-bg);
+  border-bottom:1px solid var(--brd);
+  display:flex; align-items:center; flex-wrap:wrap;
+  gap:8px; padding:7px 52px 7px 16px;
+  backdrop-filter:blur(12px);
+  transition:background .4s, border-color .4s;
+}
+.tb-group{ display:flex; align-items:center; gap:6px; }
+.tb-label{ font-family:'Cinzel',serif; font-size:.62rem; letter-spacing:2px; color:var(--txt4); text-transform:uppercase; white-space:nowrap; }
+.tb-btn{ background:transparent; border:1px solid var(--brd); border-radius:3px; color:var(--txt3); font-size:.82rem; padding:3px 10px; cursor:pointer; transition:all .2s; font-family:var(--font-body); }
+.tb-btn:hover{ border-color:var(--brd-hov); color:var(--acc-lt); }
+#fs-val{ font-family:'Cinzel',serif; font-size:.7rem; color:var(--acc); min-width:38px; text-align:center; }
+.tb-sep{ width:1px; height:22px; background:var(--brd); margin:0 4px; flex-shrink:0; }
+.tb-select{ background:var(--bg3); border:1px solid var(--brd); border-radius:3px; color:var(--txt2); font-family:var(--font-body); font-size:.78rem; padding:4px 8px; cursor:pointer; outline:none; transition:border-color .2s, background .4s; }
+.tb-select:focus{ border-color:var(--brd-hov); }
 
-/* ════════════════════════════════════
+#tb-toggle{
+  position:fixed; top:8px; right:12px; z-index:400;
+  width:34px; height:34px; border-radius:50%;
+  background:var(--bg2); border:1px solid var(--brd);
+  color:var(--acc); font-size:1rem; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:background .2s, border-color .2s;
+  backdrop-filter:blur(6px);
+}
+#tb-toggle:hover{ background:var(--bg3); border-color:var(--brd-hov); }
+
+/* ══════════════════════════════════════════
    HEADER
-════════════════════════════════════ */
-header {
-  position: relative; z-index:1;
-  text-align: center;
-  padding: 84px 24px 46px;
-  border-bottom: 1px solid var(--brd);
-  transition: border-color .35s;
+══════════════════════════════════════════ */
+header{
+  position:relative; z-index:1;
+  text-align:center; padding:82px 24px 46px;
+  border-bottom:1px solid var(--brd);
+  background:transparent;
+  transition:border-color .4s;
 }
-.eyebrow {
-  font-family: 'Cinzel', serif;
-  font-size: .68rem; letter-spacing:6px;
-  color: var(--acc-dk); text-transform:uppercase; margin-bottom:14px;
-}
-header h1 {
-  font-family: 'Cinzel', serif;
-  font-size: clamp(1.6rem, 5vw, 3.2rem);
-  font-weight: 800; line-height:1.08; margin-bottom:10px;
-  background: linear-gradient(145deg, var(--acc-lt) 0%, var(--acc) 45%, var(--acc-dk) 100%);
+.eyebrow{ font-family:'Cinzel',serif; font-size:.64rem; letter-spacing:6px; color:var(--txt4); text-transform:uppercase; margin-bottom:14px; }
+header h1{
+  font-family:'Cinzel',serif; font-size:clamp(1.8rem,5vw,3.4rem);
+  font-weight:800; line-height:1.08; margin-bottom:12px;
+  background:linear-gradient(145deg,var(--acc-lt) 0%,var(--acc) 45%,var(--acc-dk) 100%);
   -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
 }
-header p { font-size:.95rem; color: var(--txt3); font-style:italic; }
-.orn { color:var(--acc-dk); font-size:1.1rem; display:block; margin:14px 0 8px; }
+header p{ font-size:.95rem; color:var(--txt3); font-style:italic; }
+.orn{ color:var(--acc-dk); font-size:1.1rem; display:block; margin:14px 0 8px; }
 
-/* ════════════════════════════════════
-   APP LAYOUT
-════════════════════════════════════ */
-#app {
-  position:relative; z-index:1;
-  display:grid; grid-template-columns:1fr 520px;
-  max-width:1420px; margin:0 auto;
-}
-#form-col { padding:26px 26px 90px; border-right:1px solid var(--brd); transition:border-color .35s; }
-#output-col { position:sticky; top:0; height:100vh; display:flex; flex-direction:column; padding:22px 20px 18px; }
+/* ══════════════════════════════════════════
+   LAYOUT
+══════════════════════════════════════════ */
+#app{ position:relative; z-index:1; display:grid; grid-template-columns:1fr 520px; max-width:1440px; margin:0 auto; }
+#form-col{ padding:24px 24px 90px; border-right:1px solid var(--brd); transition:border-color .4s; }
+#output-col{ position:sticky; top:0; height:100vh; display:flex; flex-direction:column; padding:22px 20px 18px; background:transparent; }
 
-/* ════════════════════════════════════
+/* ══════════════════════════════════════════
    SECTION CARDS
-════════════════════════════════════ */
-.section {
-  background: var(--bg2);
-  border: 1px solid var(--brd);
-  border-radius:6px; margin-bottom:13px; overflow:hidden;
-  transition: background .35s, border-color .35s;
-}
-.sec-head {
-  display:flex; align-items:center; justify-content:space-between;
-  padding:12px 17px; cursor:pointer;
-  border-bottom:1px solid transparent;
-  transition:border-color .25s, background .2s;
-  user-select:none;
-}
-.sec-head:hover { background:rgba(201,150,42,.04); }
-.sec-head.open { border-bottom-color:var(--brd); }
-.sec-title {
-  font-family:'Cinzel',serif; font-size:.75rem; letter-spacing:2px;
-  color:var(--acc); text-transform:uppercase;
-  display:flex; align-items:center; gap:8px;
-}
-.sec-icon { font-size:.88rem; }
-.sec-arrow { color:var(--acc-dk); font-size:.68rem; transition:transform .3s; }
-.sec-head.open .sec-arrow { transform:rotate(180deg); }
-.sec-body { padding:17px; display:none; }
-.sec-body.open { display:block; }
+══════════════════════════════════════════ */
+.section{ background:var(--section-bg); border:1px solid var(--brd); border-radius:7px; margin-bottom:12px; overflow:hidden; backdrop-filter:blur(4px); transition:background .4s, border-color .4s; }
+.sec-head{ display:flex; align-items:center; justify-content:space-between; padding:12px 16px; cursor:pointer; border-bottom:1px solid transparent; transition:border-color .2s, background .2s; user-select:none; }
+.sec-head:hover{ background:rgba(128,128,128,.05); }
+.sec-head.open{ border-bottom-color:var(--brd); }
+.sec-title{ font-family:'Cinzel',serif; font-size:.74rem; letter-spacing:2px; color:var(--acc); text-transform:uppercase; display:flex; align-items:center; gap:8px; }
+.sec-icon{ font-size:.88rem; }
+.sec-arrow{ color:var(--acc-dk); font-size:.66rem; transition:transform .3s; }
+.sec-head.open .sec-arrow{ transform:rotate(180deg); }
+.sec-body{ padding:16px; display:none; }
+.sec-body.open{ display:block; }
 
-/* ════════════════════════════════════
+/* cute mode section titles */
+body.t-cream .sec-title::after{ content:' ✨'; }
+
+/* ══════════════════════════════════════════
    FORM ELEMENTS
-════════════════════════════════════ */
-.field { margin-bottom:15px; }
-.field:last-child { margin-bottom:0; }
-.field-label, label {
-  display:block; font-family:'Cinzel',serif;
-  font-size:.67rem; letter-spacing:2px;
-  color:var(--acc-dk); text-transform:uppercase; margin-bottom:7px;
-}
-.hint { font-size:.72rem; color:var(--txt4); margin-top:5px; line-height:1.5; }
+══════════════════════════════════════════ */
+.field{ margin-bottom:14px; }
+.field:last-child{ margin-bottom:0; }
+.field-label, label{ display:block; font-family:'Cinzel',serif; font-size:.65rem; letter-spacing:2px; color:var(--acc-dk); text-transform:uppercase; margin-bottom:7px; }
+.hint{ font-size:.7rem; color:var(--txt4); margin-top:5px; line-height:1.5; }
 
-input[type=text], select, textarea {
-  width:100%; background:rgba(0,0,0,.04);
-  border:1px solid var(--brd); border-radius:3px;
-  color:var(--txt); font-family:var(--font-body);
-  font-size:.88rem; padding:8px 12px; outline:none;
-  transition:border-color .2s, background .2s;
-  appearance:none;
+input[type=text], select, textarea{
+  width:100%; background:rgba(128,128,128,.06); border:1px solid var(--brd); border-radius:4px;
+  color:var(--txt); font-family:var(--font-body); font-size:.88rem; padding:8px 12px;
+  outline:none; transition:border-color .2s, background .2s; appearance:none;
 }
-body.theme-parch input[type=text],
-body.theme-parch select,
-body.theme-parch textarea { background:rgba(0,0,0,.03); }
-body.theme-white input[type=text],
-body.theme-white select,
-body.theme-white textarea { background:#fff; }
+input[type=text]:focus, select:focus, textarea:focus{ border-color:var(--brd-hov); background:rgba(128,128,128,.1); }
+select option{ background:var(--bg2); color:var(--txt); }
+textarea{ resize:vertical; min-height:66px; line-height:1.65; }
+.grid2{ display:grid; grid-template-columns:1fr 1fr; gap:11px; }
 
-input[type=text]:focus, select:focus, textarea:focus {
-  border-color:var(--brd-hov); background:rgba(0,0,0,.06);
-}
-select option { background:var(--bg2); color:var(--txt); }
-textarea { resize:vertical; min-height:68px; line-height:1.65; }
-.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:11px; }
+/* ══════════════════════════════════════════
+   CHIPS — selected state is very visible
+══════════════════════════════════════════ */
+.chip-wrap{ display:flex; flex-wrap:wrap; gap:7px; }
 
-/* ════════════════════════════════════
-   CHIPS
-════════════════════════════════════ */
-.chip-wrap { display:flex; flex-wrap:wrap; gap:7px; }
-.chip {
+.chip{
   padding:5px 14px; border:1px solid var(--brd); border-radius:20px;
-  font-size:.82rem; color:var(--txt3);
+  font-size:.82rem; color:var(--txt3); font-weight:400;
   cursor:pointer; user-select:none; transition:all .18s;
   background:transparent; font-family:var(--font-body);
 }
-.chip:hover { border-color:var(--brd-hov); color:var(--txt); }
-.chip.on { background:var(--chip-on); border-color:var(--acc); color:var(--acc-lt); }
-body.theme-parch .chip.on { color:var(--acc-dk); }
-body.theme-white .chip.on { color:var(--acc-dk); }
-.chip.rand { border-style:dashed; color:var(--acc-dk); }
-.chip.rand.on { background:rgba(139,37,0,.14); border-color:#A03010; color:#D06030; }
+.chip:hover{ border-color:var(--brd-hov); color:var(--txt); }
+
+/* ★ SELECTED — bold + thicker border + saturated bg + bright text */
+.chip.on{
+  background:var(--chip-on);
+  border:2px solid var(--chip-on-brd);
+  color:var(--chip-on-txt);
+  font-weight:700;
+  padding:4px 13px; /* compensate 1px border increase */
+}
+.chip.rand{ border-style:dashed; color:var(--acc-dk); }
+.chip.rand.on{ background:rgba(139,37,0,.15); border-color:#A03010; border-style:solid; color:#C04820; }
+
+/* cute mode chips */
+body.t-cream .chip.on::after{ content:' 🌟'; font-size:.7rem; }
 
 /* Skills */
-.sk-grid { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
-.sk {
-  display:flex; align-items:center; gap:8px;
-  border:1px solid var(--brd); border-radius:4px;
-  padding:8px 12px; cursor:pointer; transition:all .18s; background:transparent;
+.sk-grid{ display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+.sk{
+  display:flex; align-items:center; gap:8px; border:1px solid var(--brd); border-radius:5px;
+  padding:7px 11px; cursor:pointer; transition:all .18s; background:transparent; font-weight:400;
 }
-.sk:hover { border-color:var(--brd-hov); }
-.sk.on { background:var(--chip-on); border-color:var(--acc); }
-.sk-ico { font-size:.88rem; flex-shrink:0; }
-.sk-txt { font-size:.82rem; color:var(--txt3); font-family:var(--font-body); }
-.sk.on .sk-txt { color:var(--acc-lt); }
-body.theme-parch .sk.on .sk-txt,
-body.theme-white .sk.on .sk-txt { color:var(--acc-dk); }
+.sk:hover{ border-color:var(--brd-hov); }
+.sk.on{ background:var(--chip-on); border:2px solid var(--chip-on-brd); padding:6px 10px; }
+.sk-ico{ font-size:.86rem; flex-shrink:0; }
+.sk-txt{ font-size:.8rem; color:var(--txt3); font-family:var(--font-body); transition:color .18s; }
+.sk.on .sk-txt{ color:var(--chip-on-txt); font-weight:700; }
 
 /* Romance cards */
-.romance-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:9px; }
-.r-card {
-  border:1px solid var(--brd); border-radius:5px; padding:11px 8px;
-  text-align:center; cursor:pointer; transition:all .2s; background:transparent;
-}
-.r-card:hover { border-color:var(--brd-hov); background:var(--chip-on); }
-.r-card.on { border-color:var(--acc); background:var(--chip-on); }
-.r-name { font-family:'Cinzel',serif; font-size:.78rem; color:var(--acc-lt); margin-bottom:3px; }
-body.theme-parch .r-name, body.theme-white .r-name { color:var(--acc-dk); }
-.r-sub { font-size:.68rem; color:var(--txt4); line-height:1.4; }
-.r-card.on .r-sub { color:var(--txt3); }
+.romance-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.r-card{ border:1px solid var(--brd); border-radius:6px; padding:11px 7px; text-align:center; cursor:pointer; transition:all .2s; background:transparent; }
+.r-card:hover{ border-color:var(--brd-hov); background:rgba(128,128,128,.06); }
+.r-card.on{ border:2px solid var(--chip-on-brd); background:var(--chip-on); padding:10px 6px; }
+.r-name{ font-family:'Cinzel',serif; font-size:.76rem; color:var(--acc); margin-bottom:3px; transition:color .2s, font-weight .2s; }
+.r-card.on .r-name{ color:var(--chip-on-txt); font-weight:700; }
+.r-sub{ font-size:.65rem; color:var(--txt4); line-height:1.4; }
+.r-card.on .r-sub{ color:var(--txt3); }
 
-/* Character cards (dwarves, elves, etc.) */
-.char-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
-.char-grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
-.ch-card {
-  border:1px solid var(--brd); border-radius:5px;
-  padding:10px 7px; text-align:center; cursor:pointer;
-  transition:all .2s; background:transparent; position:relative;
-}
-.ch-card:hover { border-color:var(--brd-hov); background:var(--chip-on); }
-.ch-card.on { border-color:var(--acc); background:var(--chip-on); }
-.ch-name { font-family:var(--font-body); font-size:.82rem; color:var(--txt2); margin-bottom:2px; font-weight:500; }
-.ch-card.on .ch-name { color:var(--acc-lt); }
-body.theme-parch .ch-card.on .ch-name,
-body.theme-white .ch-card.on .ch-name { color:var(--acc-dk); }
-.ch-role { font-size:.64rem; color:var(--txt4); line-height:1.3; }
-.ch-card.on .ch-role { color:var(--txt3); }
+/* Character cards */
+.char-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+.char-grid-3{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.ch-card{ border:1px solid var(--brd); border-radius:6px; padding:9px 6px; text-align:center; cursor:pointer; transition:all .2s; background:transparent; }
+.ch-card:hover{ border-color:var(--brd-hov); background:rgba(128,128,128,.06); }
+.ch-card.on{ border:2px solid var(--chip-on-brd); background:var(--chip-on); padding:8px 5px; }
+.ch-name{ font-family:var(--font-body); font-size:.8rem; color:var(--txt2); margin-bottom:2px; font-weight:500; transition:color .2s, font-weight .2s; }
+.ch-card.on .ch-name{ color:var(--chip-on-txt); font-weight:700; }
+.ch-role{ font-size:.62rem; color:var(--txt4); line-height:1.3; }
+.ch-card.on .ch-role{ color:var(--txt3); }
 
 /* Toggle */
-.toggle-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:11px; }
-.toggle-row:last-child { margin-bottom:0; }
-.toggle-label { font-size:.86rem; color:var(--txt2); }
-.sw { position:relative; width:44px; height:24px; flex-shrink:0; }
-.sw input { opacity:0; width:0; height:0; }
-.sw-track {
-  position:absolute; inset:0;
-  background:rgba(128,128,128,.15); border:1px solid var(--brd);
-  border-radius:12px; cursor:pointer; transition:background .2s;
-}
-.sw-track::after {
-  content:''; position:absolute; top:4px; left:4px;
-  width:14px; height:14px; border-radius:50%;
-  background:var(--txt4); transition:transform .2s, background .2s;
-}
-.sw input:checked + .sw-track { background:rgba(201,150,42,.22); border-color:var(--acc); }
-.sw input:checked + .sw-track::after { transform:translateX(20px); background:var(--acc); }
+.toggle-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.toggle-row:last-child{ margin-bottom:0; }
+.toggle-label{ font-size:.84rem; color:var(--txt2); }
+.sw{ position:relative; width:44px; height:24px; flex-shrink:0; }
+.sw input{ opacity:0; width:0; height:0; }
+.sw-track{ position:absolute; inset:0; background:rgba(128,128,128,.15); border:1px solid var(--brd); border-radius:12px; cursor:pointer; transition:background .2s; }
+.sw-track::after{ content:''; position:absolute; top:4px; left:4px; width:14px; height:14px; border-radius:50%; background:var(--txt4); transition:transform .2s, background .2s; }
+.sw input:checked+.sw-track{ background:var(--chip-on); border-color:var(--acc); }
+.sw input:checked+.sw-track::after{ transform:translateX(20px); background:var(--acc); }
 
 /* Extra fields */
-.extra-list { display:flex; flex-direction:column; gap:6px; margin-bottom:10px; }
-.extra-item {
-  display:flex; align-items:center; gap:8px;
-  background:var(--chip-on); border:1px solid var(--brd);
-  border-radius:3px; padding:7px 12px;
-  font-size:.85rem; color:var(--txt3);
-}
-.extra-item .xbtn { margin-left:auto; background:none; border:none; color:var(--txt4); cursor:pointer; font-size:.88rem; opacity:.65; transition:opacity .2s; }
-.extra-item .xbtn:hover { opacity:1; color:#cc4422; }
-.add-row { display:flex; gap:8px; }
-.add-row input { flex:1; }
-.btn-add {
-  padding:8px 13px; background:transparent; border:1px solid var(--brd);
-  border-radius:3px; color:var(--acc); font-family:'Cinzel',serif;
-  font-size:.7rem; letter-spacing:1px; cursor:pointer; transition:all .2s; white-space:nowrap;
-}
-.btn-add:hover { background:var(--chip-on); border-color:var(--brd-hov); }
+.extra-list{ display:flex; flex-direction:column; gap:5px; margin-bottom:10px; }
+.extra-item{ display:flex; align-items:center; gap:8px; background:var(--chip-on); border:1px solid var(--brd); border-radius:3px; padding:6px 11px; font-size:.84rem; color:var(--txt3); }
+.extra-item .xbtn{ margin-left:auto; background:none; border:none; color:var(--txt4); cursor:pointer; font-size:.86rem; opacity:.6; transition:opacity .2s; }
+.extra-item .xbtn:hover{ opacity:1; color:#cc4422; }
+.add-row{ display:flex; gap:8px; }
+.add-row input{ flex:1; }
+.btn-add{ padding:7px 13px; background:transparent; border:1px solid var(--brd); border-radius:3px; color:var(--acc); font-family:'Cinzel',serif; font-size:.68rem; letter-spacing:1px; cursor:pointer; transition:all .2s; white-space:nowrap; }
+.btn-add:hover{ background:var(--chip-on); border-color:var(--brd-hov); }
+.sub-divider{ border:none; border-top:1px solid var(--brd); margin:13px 0; }
 
-/* Section sub-divider */
-.sub-divider { border:none; border-top:1px solid var(--brd); margin:14px 0; }
-
-/* ════════════════════════════════════
+/* ══════════════════════════════════════════
    OUTPUT PANEL
-════════════════════════════════════ */
-.out-head {
-  font-family:'Cinzel',serif; font-size:.7rem; letter-spacing:3px;
-  color:var(--acc-dk); text-transform:uppercase;
-  margin-bottom:11px; display:flex; align-items:center; justify-content:space-between;
+══════════════════════════════════════════ */
+.out-head{ font-family:'Cinzel',serif; font-size:.68rem; letter-spacing:3px; color:var(--txt4); text-transform:uppercase; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; }
+.char-count{ font-family:'Cinzel',serif; font-size:.65rem; color:var(--acc-dk); padding:3px 9px; border:1px solid var(--brd); border-radius:10px; }
+#output-box{
+  flex:1; background:var(--out-bg); border:1px solid var(--brd); border-radius:6px;
+  padding:16px; font-family:var(--font-body); font-size:.8rem; line-height:1.88;
+  color:var(--txt3); overflow-y:auto; white-space:pre-wrap; word-break:break-all;
+  transition:background .4s, border-color .4s, color .4s;
 }
-.char-count {
-  font-family:'Cinzel',serif; font-size:.67rem; color:var(--acc-dk);
-  padding:3px 9px; border:1px solid var(--brd); border-radius:10px;
-}
-#output-box {
-  flex:1; background:var(--out-bg); border:1px solid var(--brd); border-radius:5px;
-  padding:17px; font-family:var(--font-body); font-size:.8rem;
-  line-height:1.85; color:var(--txt3);
-  overflow-y:auto; white-space:pre-wrap; word-break:break-all;
-  transition:background .35s, border-color .35s, color .35s;
-}
-#output-box::-webkit-scrollbar { width:4px; }
-#output-box::-webkit-scrollbar-thumb { background:var(--scrollbar); border-radius:2px; }
-.placeholder { color:var(--txt4); font-style:italic; font-size:.85rem; }
-#gen-wrap { display:flex; gap:8px; margin-top:11px; }
-.btn-gen {
+#output-box::-webkit-scrollbar{ width:4px; }
+#output-box::-webkit-scrollbar-thumb{ background:var(--scr); border-radius:2px; }
+.placeholder{ color:var(--txt4); font-style:italic; font-size:.84rem; }
+#gen-wrap{ display:flex; gap:8px; margin-top:10px; }
+.btn-gen{
   flex:1; padding:13px;
-  background:linear-gradient(135deg, var(--acc-dk), var(--acc) 55%, var(--acc-dk));
-  border:none; border-radius:4px; color:#1A1208;
+  background:linear-gradient(135deg,var(--acc-dk),var(--acc) 55%,var(--acc-dk));
+  border:none; border-radius:5px; color:#fff;
   font-family:'Cinzel',serif; font-size:.82rem; font-weight:700;
   letter-spacing:3px; cursor:pointer; text-transform:uppercase;
-  transition:filter .2s, transform .15s;
+  transition:filter .2s, transform .15s; text-shadow:0 1px 3px rgba(0,0,0,.4);
 }
-body.theme-white .btn-gen { color:#fff; }
-.btn-gen:hover { filter:brightness(1.09); transform:translateY(-1px); }
-.btn-gen:active { transform:translateY(0); }
-.out-btn {
-  padding:9px 16px; border:1px solid var(--brd); border-radius:3px;
-  background:transparent; color:var(--txt3); font-family:'Cinzel',serif;
-  font-size:.68rem; letter-spacing:1.5px; cursor:pointer; transition:all .2s;
-}
-.out-btn:hover { border-color:var(--brd-hov); color:var(--acc-lt); }
-.out-btn.primary {
-  background:linear-gradient(135deg, var(--acc-dk), var(--acc));
-  border-color:transparent; color:#1A1208; font-weight:700;
-}
-body.theme-white .out-btn.primary { color:#fff; }
-.out-btn.primary:hover { filter:brightness(1.1); }
+.btn-gen:hover{ filter:brightness(1.1); transform:translateY(-1px); }
+.btn-gen:active{ transform:translateY(0); }
+.out-btn{ padding:9px 16px; border:1px solid var(--brd); border-radius:3px; background:transparent; color:var(--txt3); font-family:'Cinzel',serif; font-size:.66rem; letter-spacing:1.5px; cursor:pointer; transition:all .2s; }
+.out-btn:hover{ border-color:var(--brd-hov); color:var(--acc); }
+.out-btn.primary{ background:linear-gradient(135deg,var(--acc-dk),var(--acc)); border-color:transparent; color:#fff; font-weight:700; text-shadow:0 1px 2px rgba(0,0,0,.3); }
+.out-btn.primary:hover{ filter:brightness(1.1); }
 
 /* Toast */
-#toast {
-  position:fixed; bottom:26px; left:50%; transform:translateX(-50%);
-  background:rgba(201,150,42,.93); color:#1A1208; font-family:'Cinzel',serif;
-  font-size:.73rem; letter-spacing:2px; padding:10px 26px; border-radius:3px;
-  opacity:0; pointer-events:none; transition:opacity .3s; z-index:999;
-}
-#toast.show { opacity:1; }
+#toast{ position:fixed; bottom:26px; left:50%; transform:translateX(-50%); background:var(--acc); color:#fff; font-family:'Cinzel',serif; font-size:.72rem; letter-spacing:2px; padding:10px 26px; border-radius:3px; opacity:0; pointer-events:none; transition:opacity .3s; z-index:999; text-shadow:0 1px 2px rgba(0,0,0,.3); }
+#toast.show{ opacity:1; }
 
 /* Responsive */
-@media(max-width:940px){
-  #app { grid-template-columns:1fr; }
-  #output-col { position:static; height:auto; min-height:420px; border-top:1px solid var(--brd); }
-  #output-box { min-height:280px; }
-  .romance-grid { grid-template-columns:repeat(2,1fr); }
-  .char-grid { grid-template-columns:repeat(3,1fr); }
+@media(max-width:960px){
+  #app{ grid-template-columns:1fr; }
+  #output-col{ position:static; height:auto; min-height:400px; border-top:1px solid var(--brd); }
+  #output-box{ min-height:260px; }
+  .romance-grid{ grid-template-columns:repeat(2,1fr); }
+  .char-grid{ grid-template-columns:repeat(3,1fr); }
+  #toolbar{ padding-right:52px; }
 }
 </style>
 </head>
 <body>
 
-<!-- ══ TOOLBAR ══ -->
+<canvas id="star-canvas"></canvas>
+<button id="tb-toggle" onclick="toggleToolbar()" title="顯示／隱藏工具列">⚙</button>
+
+<div id="tb-wrap">
 <div id="toolbar">
   <div class="tb-group">
     <span class="tb-label">字體大小</span>
     <button class="tb-btn" onclick="changeFs(-1)">A－</button>
-    <span id="fs-val">17px</span>
+    <span id="fs-val">18px</span>
     <button class="tb-btn" onclick="changeFs(1)">A＋</button>
     <button class="tb-btn" onclick="resetFs()">重設</button>
   </div>
@@ -436,31 +462,51 @@ body.theme-white .out-btn.primary { color:#fff; }
       <option value="'Zen Maru Gothic','Noto Sans TC',sans-serif">Zen Maru Gothic</option>
       <option value="'EB Garamond','Noto Serif TC',serif">EB Garamond</option>
       <option value="'Ma Shan Zheng','Noto Serif TC',serif">馬善政書法體</option>
+      <option value="'LXGW WenKai','Noto Serif TC',serif">霞鶩文楷</option>
+      <option value="'Kaisei Decol','Noto Serif TC',serif">Kaisei Decol</option>
+      <option value="'Shippori Mincho','Noto Serif TC',serif">Shippori Mincho</option>
+      <option value="'BIZ UDMincho','Noto Serif TC',serif">BIZ UDMincho</option>
+      <option value="'M PLUS Rounded 1c','Noto Sans TC',sans-serif">Rounded M+</option>
     </select>
   </div>
   <div class="tb-sep"></div>
   <div class="tb-group">
     <span class="tb-label">介面風格</span>
     <select class="tb-select" id="theme-sel" onchange="changeTheme(this.value)">
-      <option value="dark">🌑 深色質感</option>
-      <option value="parch">📜 羊皮紙風格</option>
-      <option value="white">📖 淨白電子書</option>
+      <optgroup label="── 深色系 ──">
+        <option value="">🌑 深色質感</option>
+        <option value="t-star">✨ 星空幻想</option>
+        <option value="t-lava">🔥 熔岩鍛造</option>
+        <option value="t-forest">🌿 翡翠森林</option>
+        <option value="t-rose">🥀 玫瑰舊夢</option>
+        <option value="t-copper">🏺 古銅遺跡</option>
+        <option value="t-violet">🔮 暗夜紫羅蘭</option>
+      </optgroup>
+      <optgroup label="── 淺色系 ──">
+        <option value="t-parch">📜 羊皮紙風格</option>
+        <option value="t-white">📖 淨白電子書</option>
+        <option value="t-frost">❄ 霜雪冰原</option>
+        <option value="t-cream">🧁 奶油黃可愛版</option>
+        <option value="t-matcha">🍵 抹茶和風</option>
+        <option value="t-rosemilk">🧋 玫瑰奶茶</option>
+        <option value="t-sky">☁️ 雲朵天空</option>
+      </optgroup>
     </select>
   </div>
 </div>
+</div>
 
-<!-- ══ HEADER ══ -->
 <header>
   <p class="eyebrow">中土世界 · 第三紀元 · 孤山遠征</p>
   <h1>哈比人模擬器<br>指令產生器</h1>
   <span class="orn">⟡</span>
-  <p>填寫角色設定，自動產生完整遊戲模擬器文字指令，複製後貼到任何 AI 即可開始遠征</p>
+  <p>填寫角色設定，自動產生完整遊戲模擬器文字指令</p>
 </header>
 
 <div id="app">
 <div id="form-col">
 
-<!-- ══ 1. 基本資料 ══ -->
+<!-- 1. 基本資料 -->
 <div class="section">
   <div class="sec-head open" onclick="toggle(this)">
     <span class="sec-title"><span class="sec-icon">⚜</span>基本資料</span>
@@ -507,16 +553,12 @@ body.theme-white .out-btn.primary { color:#fff; }
         <div class="chip rand" data-v="隨機">🎲 隨機</div>
       </div>
     </div>
-    <div class="field"><label>外貌描述（選填）</label>
-      <input type="text" id="f-look" placeholder="例：深棕色長髮，琥珀色眼睛，左臉有一道細疤">
-    </div>
-    <div class="field"><label>特殊外貌標記（選填）</label>
-      <input type="text" id="f-mark" placeholder="例：右手有紋身、天生白髮、眼睛異色">
-    </div>
+    <div class="field"><label>外貌描述（選填）</label><input type="text" id="f-look" placeholder="例：深棕色長髮，琥珀色眼睛，左臉有一道細疤"></div>
+    <div class="field"><label>特殊外貌標記（選填）</label><input type="text" id="f-mark" placeholder="例：右手有紋身、天生白髮、眼睛異色"></div>
   </div>
 </div>
 
-<!-- ══ 2. 家庭背景 ══ -->
+<!-- 2. 家庭背景 -->
 <div class="section">
   <div class="sec-head" onclick="toggle(this)">
     <span class="sec-title"><span class="sec-icon">🏡</span>家庭背景</span>
@@ -571,7 +613,7 @@ body.theme-white .out-btn.primary { color:#fff; }
   </div>
 </div>
 
-<!-- ══ 3. 性格與專長 ══ -->
+<!-- 3. 性格與專長 -->
 <div class="section">
   <div class="sec-head" onclick="toggle(this)">
     <span class="sec-title"><span class="sec-icon">✦</span>性格與專長</span>
@@ -581,26 +623,16 @@ body.theme-white .out-btn.primary { color:#fff; }
     <div class="field">
       <div class="field-label">性格特質（可複選）</div>
       <div class="chip-wrap" id="c-traits">
-        <div class="chip" data-v="勇敢">勇敢</div>
-        <div class="chip" data-v="善良">善良</div>
-        <div class="chip" data-v="溫柔">溫柔</div>
-        <div class="chip" data-v="敏銳">敏銳</div>
-        <div class="chip" data-v="固執">固執</div>
-        <div class="chip" data-v="忠誠">忠誠</div>
-        <div class="chip" data-v="神秘">神秘</div>
-        <div class="chip" data-v="謹慎">謹慎</div>
-        <div class="chip" data-v="沉默寡言">沉默寡言</div>
-        <div class="chip" data-v="活潑開朗">活潑開朗</div>
-        <div class="chip" data-v="高傲">高傲</div>
-        <div class="chip" data-v="野心勃勃">野心勃勃</div>
-        <div class="chip" data-v="溫和理性">溫和理性</div>
-        <div class="chip" data-v="衝動易怒">衝動易怒</div>
-        <div class="chip" data-v="冷酷">冷酷</div>
-        <div class="chip" data-v="幽默風趣">幽默風趣</div>
-        <div class="chip" data-v="溫文儒雅">溫文儒雅</div>
-        <div class="chip" data-v="倔強不服輸">倔強不服輸</div>
-        <div class="chip" data-v="善於觀察">善於觀察</div>
-        <div class="chip" data-v="悲天憫人">悲天憫人</div>
+        <div class="chip" data-v="勇敢">勇敢</div><div class="chip" data-v="善良">善良</div>
+        <div class="chip" data-v="溫柔">溫柔</div><div class="chip" data-v="敏銳">敏銳</div>
+        <div class="chip" data-v="固執">固執</div><div class="chip" data-v="忠誠">忠誠</div>
+        <div class="chip" data-v="神秘">神秘</div><div class="chip" data-v="謹慎">謹慎</div>
+        <div class="chip" data-v="沉默寡言">沉默寡言</div><div class="chip" data-v="活潑開朗">活潑開朗</div>
+        <div class="chip" data-v="高傲">高傲</div><div class="chip" data-v="野心勃勃">野心勃勃</div>
+        <div class="chip" data-v="溫和理性">溫和理性</div><div class="chip" data-v="衝動易怒">衝動易怒</div>
+        <div class="chip" data-v="冷酷">冷酷</div><div class="chip" data-v="幽默風趣">幽默風趣</div>
+        <div class="chip" data-v="溫文儒雅">溫文儒雅</div><div class="chip" data-v="倔強不服輸">倔強不服輸</div>
+        <div class="chip" data-v="善於觀察">善於觀察</div><div class="chip" data-v="悲天憫人">悲天憫人</div>
         <div class="chip rand" data-v="隨機">🎲 隨機</div>
       </div>
     </div>
@@ -626,18 +658,14 @@ body.theme-white .out-btn.primary { color:#fff; }
       </div>
     </div>
     <div class="grid2">
-      <div class="field"><label>MBTI / 個性補充（選填）</label>
-        <input type="text" id="f-mbti" placeholder="例：INTJ，思維縝密"></div>
-      <div class="field"><label>弱點 / 恐懼（選填）</label>
-        <input type="text" id="f-fear" placeholder="例：害怕封閉空間"></div>
+      <div class="field"><label>MBTI / 個性補充（選填）</label><input type="text" id="f-mbti" placeholder="例：INTJ，思維縝密"></div>
+      <div class="field"><label>弱點 / 恐懼（選填）</label><input type="text" id="f-fear" placeholder="例：害怕封閉空間"></div>
     </div>
-    <div class="field"><label>特殊天賦（選填）</label>
-      <input type="text" id="f-talent" placeholder="例：能感知索倫的力量、天生對古矮人語有語感、夢境預知能力">
-    </div>
+    <div class="field"><label>特殊天賦（選填）</label><input type="text" id="f-talent" placeholder="例：能感知索倫的力量、天生對古矮人語有語感"></div>
   </div>
 </div>
 
-<!-- ══ 4. 感情線設定 ══ -->
+<!-- 4. 感情線 -->
 <div class="section">
   <div class="sec-head" onclick="toggle(this)">
     <span class="sec-title"><span class="sec-icon">🥀</span>感情線設定</span>
@@ -647,42 +675,15 @@ body.theme-white .out-btn.primary { color:#fff; }
     <div class="field">
       <div class="field-label">攻略對象</div>
       <div class="romance-grid" id="c-romance">
-        <div class="r-card on" data-v="索林・橡木盾">
-          <div class="r-name">索林・橡木盾</div>
-          <div class="r-sub">孤山之王｜傲慢固執</div>
-        </div>
-        <div class="r-card" data-v="奇力">
-          <div class="r-name">奇力</div>
-          <div class="r-sub">索林幼侄｜熱情衝動</div>
-        </div>
-        <div class="r-card" data-v="菲力">
-          <div class="r-name">菲力</div>
-          <div class="r-sub">索林長侄｜穩重守護</div>
-        </div>
-        <div class="r-card" data-v="巴林">
-          <div class="r-name">巴林</div>
-          <div class="r-sub">睿智長老｜溫柔成熟</div>
-        </div>
-        <div class="r-card" data-v="勒苟拉斯">
-          <div class="r-name">勒苟拉斯</div>
-          <div class="r-sub">精靈王子｜驕傲冷靜</div>
-        </div>
-        <div class="r-card" data-v="瑟蘭督伊">
-          <div class="r-name">瑟蘭督伊</div>
-          <div class="r-sub">幽暗密林王｜高傲神秘</div>
-        </div>
-        <div class="r-card" data-v="比爾博・巴金斯">
-          <div class="r-name">比爾博・巴金斯</div>
-          <div class="r-sub">哈比人盜賊｜溫暖治癒</div>
-        </div>
-        <div class="r-card" data-v="原創角色">
-          <div class="r-name">原創角色</div>
-          <div class="r-sub">AI 生成｜神秘未知</div>
-        </div>
-        <div class="r-card" data-v="自由發展">
-          <div class="r-name">自由發展</div>
-          <div class="r-sub">無固定對象｜隨劇情</div>
-        </div>
+        <div class="r-card on" data-v="索林・橡木盾"><div class="r-name">索林・橡木盾</div><div class="r-sub">孤山之王｜傲慢固執</div></div>
+        <div class="r-card" data-v="奇力"><div class="r-name">奇力</div><div class="r-sub">索林幼侄｜熱情衝動</div></div>
+        <div class="r-card" data-v="菲力"><div class="r-name">菲力</div><div class="r-sub">索林長侄｜穩重守護</div></div>
+        <div class="r-card" data-v="巴林"><div class="r-name">巴林</div><div class="r-sub">睿智長老｜溫柔成熟</div></div>
+        <div class="r-card" data-v="勒苟拉斯"><div class="r-name">勒苟拉斯</div><div class="r-sub">精靈王子｜驕傲冷靜</div></div>
+        <div class="r-card" data-v="瑟蘭督伊"><div class="r-name">瑟蘭督伊</div><div class="r-sub">幽暗密林王｜高傲神秘</div></div>
+        <div class="r-card" data-v="比爾博・巴金斯"><div class="r-name">比爾博・巴金斯</div><div class="r-sub">哈比人盜賊｜溫暖治癒</div></div>
+        <div class="r-card" data-v="原創角色"><div class="r-name">原創角色</div><div class="r-sub">AI 生成｜神秘未知</div></div>
+        <div class="r-card" data-v="自由發展"><div class="r-name">自由發展</div><div class="r-sub">無固定對象｜隨劇情</div></div>
       </div>
     </div>
     <div class="field">
@@ -704,6 +705,14 @@ body.theme-white .out-btn.primary { color:#fff; }
         <div class="chip" data-v="從對立走向相愛">🔄 從對立到相愛</div>
         <div class="chip" data-v="生死相依患難見真情">🛡 生死相依</div>
         <div class="chip" data-v="失憶後重逢再相愛">🌊 失憶重逢</div>
+        <div class="chip" data-v="競爭激發愛意互相不服輸">🏆 競爭激發愛意</div>
+        <div class="chip" data-v="患難與共在極限困境中依賴彼此">⛰ 患難與共</div>
+        <div class="chip" data-v="守護型單戀默默守護不表明">🌟 守護型單戀</div>
+        <div class="chip" data-v="誤會牽起緣分解開後感情更深">🎋 誤會牽起緣分</div>
+        <div class="chip" data-v="心靈相通無需多言就能理解彼此">🔮 心靈相通</div>
+        <div class="chip" data-v="隱藏身份相戀其中一方有隱瞞的秘密">🎭 隱藏身份相戀</div>
+        <div class="chip" data-v="時光磨出的情感長期相處中不知不覺">⏳ 時光磨出的情感</div>
+        <div class="chip" data-v="從憎恨到心動最初彼此厭惡">🖤 從憎恨到心動</div>
         <div class="chip rand" data-v="隨機">🎲 隨機</div>
       </div>
     </div>
@@ -711,8 +720,8 @@ body.theme-white .out-btn.primary { color:#fff; }
       <div class="field-label">感情節奏</div>
       <div class="chip-wrap" id="c-rpace">
         <div class="chip" data-v="極度慢熱（全程情感剋制）">極度慢熱</div>
-        <div class="chip on" data-v="慢熱為主（階段性情感推進）">慢熱為主</div>
-        <div class="chip" data-v="中等節奏（適度展開感情）">中等節奏</div>
+        <div class="chip on" data-v="慢熱為主（階段性推進）">慢熱為主</div>
+        <div class="chip" data-v="中等節奏（適度展開）">中等節奏</div>
         <div class="chip" data-v="玩家自行掌控節奏">玩家自控</div>
       </div>
     </div>
@@ -729,128 +738,82 @@ body.theme-white .out-btn.primary { color:#fff; }
   </div>
 </div>
 
-<!-- ══ 5. 矮人戲份 ══ -->
+<!-- 5. 矮人戲份 -->
 <div class="section">
   <div class="sec-head" onclick="toggle(this)">
     <span class="sec-title"><span class="sec-icon">⛏</span>矮人遠征隊・戲份分配</span>
     <span class="sec-arrow">▼</span>
   </div>
   <div class="sec-body">
-    <p class="hint" style="margin-bottom:13px;">勾選希望擁有較多戲份、對話或個人弧線的矮人（可複選）</p>
+    <p class="hint" style="margin-bottom:12px;">勾選希望擁有較多戲份、對話或個人弧線的矮人（可複選）</p>
     <div class="char-grid" id="c-dwarves">
-      <div class="ch-card on" data-v="索林・橡木盾（孤山之王，傲慢固執，責任感極強）">
-        <div class="ch-name">索林</div><div class="ch-role">孤山之王</div>
-      </div>
-      <div class="ch-card on" data-v="菲力（索林長侄，穩重可靠，有領袖氣質）">
-        <div class="ch-name">菲力</div><div class="ch-role">索林長侄</div>
-      </div>
-      <div class="ch-card on" data-v="奇力（索林幼侄，熱情衝動，對新事物充滿好奇）">
-        <div class="ch-name">奇力</div><div class="ch-role">索林幼侄</div>
-      </div>
-      <div class="ch-card on" data-v="巴林（遠征隊老者，睿智溫和，最具遠見）">
-        <div class="ch-name">巴林</div><div class="ch-role">睿智長老</div>
-      </div>
-      <div class="ch-card" data-v="德瓦林（巴林之弟，忠誠直接，寡言行動派）">
-        <div class="ch-name">德瓦林</div><div class="ch-role">巴林之弟</div>
-      </div>
-      <div class="ch-card" data-v="畢佛（老實厚道，行事謹慎）">
-        <div class="ch-name">畢佛</div><div class="ch-role">老實厚道</div>
-      </div>
-      <div class="ch-card" data-v="波佛（畢佛之弟，隨和平靜）">
-        <div class="ch-name">波佛</div><div class="ch-role">畢佛之弟</div>
-      </div>
-      <div class="ch-card" data-v="龐伯（家族最年長，見多識廣）">
-        <div class="ch-name">龐伯</div><div class="ch-role">家族最長者</div>
-      </div>
-      <div class="ch-card" data-v="朵力（力氣驚人，性格急躁）">
-        <div class="ch-name">朵力</div><div class="ch-role">力大性急</div>
-      </div>
-      <div class="ch-card" data-v="諾力（朵力之弟，個性謹慎）">
-        <div class="ch-name">諾力</div><div class="ch-role">朵力之弟</div>
-      </div>
-      <div class="ch-card" data-v="歐力（諾力之弟，隊中最年輕的矮人）">
-        <div class="ch-name">歐力</div><div class="ch-role">最年輕矮人</div>
-      </div>
-      <div class="ch-card" data-v="歐音（外型儒雅，擅長樂器，個性溫和）">
-        <div class="ch-name">歐音</div><div class="ch-role">儒雅擅樂器</div>
-      </div>
-      <div class="ch-card" data-v="葛羅音（歐音之弟，個性溫和內斂）">
-        <div class="ch-name">葛羅音</div><div class="ch-role">歐音之弟</div>
-      </div>
+      <div class="ch-card on" data-v="索林・橡木盾（孤山之王，傲慢固執，責任感極強）"><div class="ch-name">索林</div><div class="ch-role">孤山之王</div></div>
+      <div class="ch-card on" data-v="菲力（索林長侄，穩重可靠，有領袖氣質）"><div class="ch-name">菲力</div><div class="ch-role">索林長侄</div></div>
+      <div class="ch-card on" data-v="奇力（索林幼侄，熱情衝動，好奇心旺盛）"><div class="ch-name">奇力</div><div class="ch-role">索林幼侄</div></div>
+      <div class="ch-card on" data-v="巴林（遠征隊長者，睿智溫和，最具遠見）"><div class="ch-name">巴林</div><div class="ch-role">睿智長老</div></div>
+      <div class="ch-card" data-v="德瓦林（巴林之弟，忠誠直接，寡言行動派）"><div class="ch-name">德瓦林</div><div class="ch-role">巴林之弟</div></div>
+      <div class="ch-card" data-v="畢佛（老實厚道，行事謹慎）"><div class="ch-name">畢佛</div><div class="ch-role">老實厚道</div></div>
+      <div class="ch-card" data-v="波佛（畢佛之弟，隨和平靜）"><div class="ch-name">波佛</div><div class="ch-role">畢佛之弟</div></div>
+      <div class="ch-card" data-v="龐伯（家族最年長，見多識廣）"><div class="ch-name">龐伯</div><div class="ch-role">家族最長者</div></div>
+      <div class="ch-card" data-v="朵力（力氣驚人，性格急躁）"><div class="ch-name">朵力</div><div class="ch-role">力大性急</div></div>
+      <div class="ch-card" data-v="諾力（朵力之弟，個性謹慎）"><div class="ch-name">諾力</div><div class="ch-role">朵力之弟</div></div>
+      <div class="ch-card" data-v="歐力（諾力之弟，隊中最年輕的矮人）"><div class="ch-name">歐力</div><div class="ch-role">最年輕矮人</div></div>
+      <div class="ch-card" data-v="歐音（外型儒雅，擅長樂器）"><div class="ch-name">歐音</div><div class="ch-role">儒雅擅樂器</div></div>
+      <div class="ch-card" data-v="葛羅音（歐音之弟，溫和內斂）"><div class="ch-name">葛羅音</div><div class="ch-role">歐音之弟</div></div>
     </div>
   </div>
 </div>
 
-<!-- ══ 6. 精靈陣營・戲份 ══ -->
+<!-- 6. 精靈陣營 -->
 <div class="section">
   <div class="sec-head" onclick="toggle(this)">
     <span class="sec-title"><span class="sec-icon">🌿</span>精靈陣營・戲份分配</span>
     <span class="sec-arrow">▼</span>
   </div>
   <div class="sec-body">
-    <p class="hint" style="margin-bottom:13px;">勾選希望擁有較多戲份的精靈角色（可複選）</p>
+    <p class="hint" style="margin-bottom:12px;">可複選</p>
     <div class="char-grid-3" id="c-elves">
-      <div class="ch-card" data-v="甘道夫（灰袍巫師，深知中土局勢，行動目的常超出表面）">
-        <div class="ch-name">甘道夫</div><div class="ch-role">灰袍巫師</div>
-      </div>
-      <div class="ch-card" data-v="勒苟拉斯（幽暗密林精靈王子，驕傲冷靜，有自己的原則）">
-        <div class="ch-name">勒苟拉斯</div><div class="ch-role">精靈王子</div>
-      </div>
-      <div class="ch-card" data-v="瑟蘭督伊（幽暗密林之王，高傲神秘，行事以精靈族利益為先）">
-        <div class="ch-name">瑟蘭督伊</div><div class="ch-role">幽暗密林王</div>
-      </div>
-      <div class="ch-card" data-v="愛隆（瑞文戴爾之主，半精靈，智慧深遠）">
-        <div class="ch-name">愛隆</div><div class="ch-role">瑞文戴爾之主</div>
-      </div>
-      <div class="ch-card" data-v="塔烏瑞爾（幽暗密林精靈護衛隊長，電影角色，勇敢直率）">
-        <div class="ch-name">塔烏瑞爾</div><div class="ch-role">精靈護衛隊長</div>
-      </div>
+      <div class="ch-card" data-v="甘道夫（灰袍巫師，深知中土局勢，行動目的常超出表面）"><div class="ch-name">甘道夫</div><div class="ch-role">灰袍巫師</div></div>
+      <div class="ch-card" data-v="勒苟拉斯（幽暗密林精靈王子，驕傲冷靜，有自己的原則）"><div class="ch-name">勒苟拉斯</div><div class="ch-role">精靈王子</div></div>
+      <div class="ch-card" data-v="瑟蘭督伊（幽暗密林之王，高傲神秘，行事以精靈族利益為先）"><div class="ch-name">瑟蘭督伊</div><div class="ch-role">幽暗密林王</div></div>
+      <div class="ch-card" data-v="愛隆（瑞文戴爾之主，半精靈，智慧深遠，態度中立）"><div class="ch-name">愛隆</div><div class="ch-role">瑞文戴爾之主</div></div>
+      <div class="ch-card" data-v="塔烏瑞爾（幽暗密林精靈護衛隊長，勇敢直率，電影角色）"><div class="ch-name">塔烏瑞爾</div><div class="ch-role">精靈護衛隊長</div></div>
     </div>
   </div>
 </div>
 
-<!-- ══ 7. 人類與哈比人陣營・戲份 ══ -->
+<!-- 7. 人類與哈比人 -->
 <div class="section">
   <div class="sec-head" onclick="toggle(this)">
     <span class="sec-title"><span class="sec-icon">🏹</span>人類 &amp; 哈比人・戲份分配</span>
     <span class="sec-arrow">▼</span>
   </div>
   <div class="sec-body">
-    <p class="hint" style="margin-bottom:13px;">可複選</p>
+    <p class="hint" style="margin-bottom:12px;">可複選</p>
     <div class="char-grid-3" id="c-humans">
-      <div class="ch-card on" data-v="比爾博・巴金斯（哈比人盜賊，聰明善良，重視家與和平）">
-        <div class="ch-name">比爾博・巴金斯</div><div class="ch-role">哈比人盜賊</div>
-      </div>
-      <div class="ch-card" data-v="巴德（長湖鎮弓手，沉穩正直，隱藏著高貴血統）">
-        <div class="ch-name">巴德</div><div class="ch-role">長湖鎮弓手</div>
-      </div>
+      <div class="ch-card on" data-v="比爾博・巴金斯（哈比人盜賊，聰明善良，重視家與和平）"><div class="ch-name">比爾博・巴金斯</div><div class="ch-role">哈比人盜賊</div></div>
+      <div class="ch-card" data-v="巴德（長湖鎮弓手，沉穩正直，隱藏高貴血統）"><div class="ch-name">巴德</div><div class="ch-role">長湖鎮弓手</div></div>
     </div>
   </div>
 </div>
 
-<!-- ══ 8. 反派陣營・戲份 ══ -->
+<!-- 8. 反派陣營 -->
 <div class="section">
   <div class="sec-head" onclick="toggle(this)">
     <span class="sec-title"><span class="sec-icon">💀</span>反派陣營・戲份分配</span>
     <span class="sec-arrow">▼</span>
   </div>
   <div class="sec-body">
-    <p class="hint" style="margin-bottom:13px;">勾選後該反派將在劇情中扮演更重要的威脅角色（可複選）</p>
+    <p class="hint" style="margin-bottom:12px;">勾選後該反派將扮演更重要的威脅角色（可複選）</p>
     <div class="char-grid-3" id="c-villains">
-      <div class="ch-card" data-v="史矛革（惡龍，佔據孤山，狡猾嗜血，有說話魅惑能力）">
-        <div class="ch-name">史矛革</div><div class="ch-role">佔山惡龍</div>
-      </div>
-      <div class="ch-card" data-v="阿索格（獸人首領，索林世仇，殘酷無情，電影版主要反派）">
-        <div class="ch-name">阿索格</div><div class="ch-role">獸人首領</div>
-      </div>
-      <div class="ch-card" data-v="波格（阿索格之子，電影版，殘暴冷酷）">
-        <div class="ch-name">波格</div><div class="ch-role">阿索格之子</div>
-      </div>
+      <div class="ch-card" data-v="史矛革（惡龍，佔據孤山，狡猾嗜血，有說話魅惑能力）"><div class="ch-name">史矛革</div><div class="ch-role">佔山惡龍</div></div>
+      <div class="ch-card" data-v="阿索格（獸人首領，索林世仇，殘酷無情）"><div class="ch-name">阿索格</div><div class="ch-role">獸人首領</div></div>
+      <div class="ch-card" data-v="波格（阿索格之子，殘暴冷酷，電影角色）"><div class="ch-name">波格</div><div class="ch-role">阿索格之子</div></div>
     </div>
   </div>
 </div>
 
-<!-- ══ 9. 劇情設定 ══ -->
+<!-- 9. 劇情設定 -->
 <div class="section">
   <div class="sec-head" onclick="toggle(this)">
     <span class="sec-title"><span class="sec-icon">📖</span>劇情設定</span>
@@ -868,16 +831,16 @@ body.theme-white .out-btn.primary { color:#fff; }
         <div class="chip" data-v="OPEN_VOLUNTEER">自願追隨遠征隊</div>
         <div class="chip rand" data-v="OPEN_RANDOM">🎲 隨機</div>
       </div>
-      <p class="hint">不同選擇將產生不同的開頭場景與初始NPC態度</p>
+      <p class="hint">不同選擇將產生完全不同的開頭場景與NPC初始態度</p>
     </div>
     <div class="field">
       <div class="field-label">與NPC的初始關係</div>
       <div class="chip-wrap" id="c-npcrel">
         <div class="chip on" data-v="遠征開始後才認識，彼此陌生">初次相識</div>
-        <div class="chip" data-v="有數面之緣的舊識，保有一定距離">舊識</div>
-        <div class="chip" data-v="家族世代舊交，有一定的信任基礎">家族舊交</div>
+        <div class="chip" data-v="有數面之緣的舊識">舊識</div>
+        <div class="chip" data-v="家族世代舊交，有一定信任基礎">家族舊交</div>
         <div class="chip" data-v="曾有競爭或對立，關係需要修復">競爭對立</div>
-        <div class="chip" data-v="已是可信任的朋友，初期互動友善">已是朋友</div>
+        <div class="chip" data-v="已是可信任的朋友">已是朋友</div>
         <div class="chip" data-v="暗中觀察對方多時，有隱藏動機">暗中觀察</div>
         <div class="chip rand" data-v="隨機">🎲 隨機</div>
       </div>
@@ -885,8 +848,8 @@ body.theme-white .out-btn.primary { color:#fff; }
     <div class="field">
       <div class="field-label">隱藏支線開啟方式</div>
       <div class="chip-wrap" id="c-subplot">
-        <div class="chip on" data-v="逐步開啟（隨劇情自然揭露，不提前透露）">逐步開啟</div>
-        <div class="chip" data-v="直接開啟（遊戲初期即揭示核心秘密）">直接開啟</div>
+        <div class="chip on" data-v="逐步開啟（隨劇情自然揭露）">逐步開啟</div>
+        <div class="chip" data-v="直接開啟（初期即揭示核心秘密）">直接開啟</div>
         <div class="chip rand" data-v="隨機">🎲 隨機</div>
       </div>
     </div>
@@ -908,9 +871,9 @@ body.theme-white .out-btn.primary { color:#fff; }
       <div class="field-label">劇情強度</div>
       <div class="chip-wrap" id="c-intensity">
         <div class="chip" data-v="輕鬆冒險（友好互動為主，低風險）">☀ 輕鬆冒險</div>
-        <div class="chip on" data-v="原著氛圍（史詩感與溫情並存，中等張力）">📖 原著氛圍</div>
+        <div class="chip on" data-v="原著氛圍（史詩感與溫情並存）">📖 原著氛圍</div>
         <div class="chip" data-v="史詩虐戀（衝突與情感張力極大）">🔥 史詩虐戀</div>
-        <div class="chip" data-v="黑暗沉重（高風險高代價，情感壓抑）">🌑 黑暗沉重</div>
+        <div class="chip" data-v="黑暗沉重（高風險高代價）">🌑 黑暗沉重</div>
       </div>
     </div>
     <div class="field">
@@ -924,7 +887,7 @@ body.theme-white .out-btn.primary { color:#fff; }
   </div>
 </div>
 
-<!-- ══ 10. 輸出格式 ══ -->
+<!-- 10. 輸出格式 -->
 <div class="section">
   <div class="sec-head" onclick="toggle(this)">
     <span class="sec-title"><span class="sec-icon">📝</span>輸出格式</span>
@@ -940,7 +903,7 @@ body.theme-white .out-btn.primary { color:#fff; }
         <div class="chip" data-v="WRITE_LETTER">書信體</div>
         <div class="chip" data-v="WRITE_MIXED">混合模式</div>
       </div>
-      <p class="hint">回合制每回合一段劇情＋行動選擇；長篇小說模式每章至少2500字連貫敘事</p>
+      <p class="hint">長篇小說模式每章至少2500字；回合制每回合一段劇情＋行動選擇</p>
     </div>
     <div class="field">
       <div class="field-label">每次輸出字數</div>
@@ -948,19 +911,24 @@ body.theme-white .out-btn.primary { color:#fff; }
         <div class="chip" data-v="短篇（約200至300字）">短篇 200字</div>
         <div class="chip on" data-v="標準（約400至600字）">標準 400字</div>
         <div class="chip" data-v="長篇（約800至1000字）">長篇 800字</div>
-        <div class="chip" data-v="章節（至少2500字，長篇小說模式專用）">章節 2500字</div>
+        <div class="chip" data-v="章節（至少2500字）">章節 2500字</div>
       </div>
     </div>
     <div class="field">
       <div class="field-label">敘事視角</div>
       <div class="chip-wrap" id="c-pov">
-        <div class="chip on" data-v="第二人稱（以「你」貫穿全文）">第二人稱「你」</div>
+        <div class="chip on" data-v="第二人稱（以「你」貫穿全文）">「你」</div>
+        <div class="chip" data-v="第二人稱（以「妳」貫穿全文）">「妳」</div>
+        <div class="chip" data-v="第二人稱（以「您」貫穿，帶距離感）">「您」</div>
         <div class="chip" data-v="第三人稱（以角色名貫穿）">第三人稱</div>
-        <div class="chip" data-v="第一人稱（以「我」敘述）">第一人稱「我」</div>
+        <div class="chip" data-v="第一人稱（以「我」敘述）">「我」</div>
+        <div class="chip" data-v="雙視角交替（玩家視角與索林視角輪流）">雙視角交替</div>
+        <div class="chip" data-v="索林視角穿插（主線為第二人稱，關鍵場景加入索林內心獨白）">索林視角穿插</div>
+        <div class="chip" data-v="多角色輪流視角（每章可從不同角色視角敘述同一事件）">多角色輪流</div>
       </div>
     </div>
     <div class="field">
-      <div class="field-label">章節標題格式（長篇模式）</div>
+      <div class="field-label">章節標題格式</div>
       <div class="chip-wrap" id="c-chapformat">
         <div class="chip on" data-v="【第X章・章節標題】">【第X章・標題】</div>
         <div class="chip" data-v="第X章｜章節標題">第X章｜標題</div>
@@ -971,53 +939,51 @@ body.theme-white .out-btn.primary { color:#fff; }
   </div>
 </div>
 
-<!-- ══ 11. 存活與規則 ══ -->
+<!-- 11. 劇情節奏 -->
+<div class="section">
+  <div class="sec-head" onclick="toggle(this)">
+    <span class="sec-title"><span class="sec-icon">🎭</span>劇情節奏偏好</span>
+    <span class="sec-arrow">▼</span>
+  </div>
+  <div class="sec-body">
+    <div class="field">
+      <div class="field-label">喘息場景比例</div>
+      <div class="chip-wrap" id="c-breath">
+        <div class="chip" data-v="高喘息比例（多安排營地閒聊、旅途日常等輕鬆互動）">高（多日常互動）</div>
+        <div class="chip on" data-v="中等喘息比例（冒險與溫馨場景均衡分配）">中（均衡分配）</div>
+        <div class="chip" data-v="低喘息比例（劇情推進緊湊，少有日常場景）">低（緊湊推進）</div>
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label">心理描寫深度</div>
+      <div class="chip-wrap" id="c-psycho">
+        <div class="chip" data-v="淺層（行為描寫為主，心理活動點到為止）">淺層</div>
+        <div class="chip on" data-v="中層（偶有心理活動穿插，情感自然流露）">中層</div>
+        <div class="chip" data-v="深層（大量內心獨白與情感剖析，適合虐戀路線）">深層</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 12. 存活與規則 -->
 <div class="section">
   <div class="sec-head" onclick="toggle(this)">
     <span class="sec-title"><span class="sec-icon">🛡</span>存活與規則設定</span>
     <span class="sec-arrow">▼</span>
   </div>
   <div class="sec-body">
-
     <div class="field-label" style="margin-bottom:10px;">存活設定</div>
-    <div class="toggle-row">
-      <span class="toggle-label">索林存活 Happy Ending（需完整感情修復）</span>
-      <label class="sw"><input type="checkbox" id="sw-he" checked><span class="sw-track"></span></label>
-    </div>
-    <div class="toggle-row">
-      <span class="toggle-label">菲力・奇力全員存活</span>
-      <label class="sw"><input type="checkbox" id="sw-survive" checked><span class="sw-track"></span></label>
-    </div>
-    <div class="toggle-row">
-      <span class="toggle-label">十三矮人全員存活</span>
-      <label class="sw"><input type="checkbox" id="sw-all13" checked><span class="sw-track"></span></label>
-    </div>
-    <div class="toggle-row">
-      <span class="toggle-label">比爾博存活並安全返回夏爾</span>
-      <label class="sw"><input type="checkbox" id="sw-bilbo" checked><span class="sw-track"></span></label>
-    </div>
-
+    <div class="toggle-row"><span class="toggle-label">索林存活 Happy Ending</span><label class="sw"><input type="checkbox" id="sw-he" checked><span class="sw-track"></span></label></div>
+    <div class="toggle-row"><span class="toggle-label">菲力・奇力全員存活</span><label class="sw"><input type="checkbox" id="sw-survive" checked><span class="sw-track"></span></label></div>
+    <div class="toggle-row"><span class="toggle-label">十三矮人全員存活</span><label class="sw"><input type="checkbox" id="sw-all13" checked><span class="sw-track"></span></label></div>
+    <div class="toggle-row"><span class="toggle-label">比爾博安全返回夏爾</span><label class="sw"><input type="checkbox" id="sw-bilbo" checked><span class="sw-track"></span></label></div>
     <hr class="sub-divider">
     <div class="field-label" style="margin-bottom:10px;">感情線規則</div>
-    <div class="toggle-row">
-      <span class="toggle-label">開啟感情線</span>
-      <label class="sw"><input type="checkbox" id="sw-romance" checked><span class="sw-track"></span></label>
-    </div>
-    <div class="toggle-row">
-      <span class="toggle-label">阿肯寶石誤會事件（索林主線核心轉折）</span>
-      <label class="sw"><input type="checkbox" id="sw-arkenstone" checked><span class="sw-track"></span></label>
-    </div>
-    <div class="toggle-row">
-      <span class="toggle-label">決裂階段必須存在（五軍之戰前）</span>
-      <label class="sw"><input type="checkbox" id="sw-breakup" checked><span class="sw-track"></span></label>
-    </div>
-    <div class="toggle-row">
-      <span class="toggle-label">索林道歉必須完整呈現（不可輕描淡寫）</span>
-      <label class="sw"><input type="checkbox" id="sw-apology" checked><span class="sw-track"></span></label>
-    </div>
-
+    <div class="toggle-row"><span class="toggle-label">開啟感情線</span><label class="sw"><input type="checkbox" id="sw-romance" checked><span class="sw-track"></span></label></div>
+    <div class="toggle-row"><span class="toggle-label">阿肯寶石誤會事件</span><label class="sw"><input type="checkbox" id="sw-arkenstone" checked><span class="sw-track"></span></label></div>
+    <div class="toggle-row"><span class="toggle-label">決裂階段必須存在</span><label class="sw"><input type="checkbox" id="sw-breakup" checked><span class="sw-track"></span></label></div>
+    <div class="toggle-row"><span class="toggle-label">索林道歉必須完整呈現</span><label class="sw"><input type="checkbox" id="sw-apology" checked><span class="sw-track"></span></label></div>
     <hr class="sub-divider">
-    <div class="field-label" style="margin-bottom:10px;">龍病設定</div>
     <div class="field">
       <div class="field-label">龍病嚴重程度</div>
       <div class="chip-wrap" id="c-dragonsick">
@@ -1025,43 +991,27 @@ body.theme-white .out-btn.primary { color:#fff; }
         <div class="chip on" data-v="中度龍病（索林明顯偏執多疑，但仍有清醒時刻）">中度</div>
         <div class="chip" data-v="重度龍病（索林幾乎無法控制，傷害行為明顯）">重度</div>
       </div>
-      <p class="hint">龍病影響索林在阿肯寶石事件中的行為極端程度</p>
     </div>
-
     <hr class="sub-divider">
     <div class="field-label" style="margin-bottom:10px;">NPC行為規則</div>
-    <div class="toggle-row">
-      <span class="toggle-label">禁止NPC無條件支持玩家</span>
-      <label class="sw"><input type="checkbox" id="sw-npc-hard" checked><span class="sw-track"></span></label>
-    </div>
-    <div class="toggle-row">
-      <span class="toggle-label">開啟隱藏支線</span>
-      <label class="sw"><input type="checkbox" id="sw-sub" checked><span class="sw-track"></span></label>
-    </div>
-    <div class="toggle-row">
-      <span class="toggle-label">危險行為有合理代價</span>
-      <label class="sw"><input type="checkbox" id="sw-consequence" checked><span class="sw-track"></span></label>
-    </div>
-    <div class="toggle-row">
-      <span class="toggle-label">聰明行為給予獎勵或線索</span>
-      <label class="sw"><input type="checkbox" id="sw-reward" checked><span class="sw-track"></span></label>
-    </div>
-
+    <div class="toggle-row"><span class="toggle-label">禁止NPC無條件支持玩家</span><label class="sw"><input type="checkbox" id="sw-npc-hard" checked><span class="sw-track"></span></label></div>
+    <div class="toggle-row"><span class="toggle-label">開啟隱藏支線</span><label class="sw"><input type="checkbox" id="sw-sub" checked><span class="sw-track"></span></label></div>
+    <div class="toggle-row"><span class="toggle-label">危險行為有合理代價</span><label class="sw"><input type="checkbox" id="sw-consequence" checked><span class="sw-track"></span></label></div>
+    <div class="toggle-row"><span class="toggle-label">聰明行為給予獎勵或線索</span><label class="sw"><input type="checkbox" id="sw-reward" checked><span class="sw-track"></span></label></div>
     <hr class="sub-divider">
     <div class="field">
-      <div class="field-label">可犧牲角色（若需要戲劇性代價）</div>
+      <div class="field-label">可犧牲角色設定</div>
       <div class="chip-wrap" id="c-sacrifice">
-        <div class="chip" data-v="無（所有角色皆不可犧牲）">無（全員保護）</div>
+        <div class="chip on" data-v="無（所有角色皆不可犧牲）">無（全員保護）</div>
         <div class="chip" data-v="次要矮人角色可受重傷">次要矮人可重傷</div>
         <div class="chip" data-v="反派陣營可有犧牲">反派陣營犧牲</div>
-        <div class="chip" data-v="由AI依劇情張力自行決定犧牲人選">AI自行決定</div>
+        <div class="chip" data-v="由AI依劇情張力自行決定">AI自行決定</div>
       </div>
     </div>
-
   </div>
 </div>
 
-<!-- ══ 12. 進階自訂 ══ -->
+<!-- 13. 進階自訂 -->
 <div class="section">
   <div class="sec-head" onclick="toggle(this)">
     <span class="sec-title"><span class="sec-icon">✒</span>進階自訂</span>
@@ -1072,27 +1022,27 @@ body.theme-white .out-btn.primary { color:#fff; }
       <div class="field-label">自訂設定（可新增任意項目）</div>
       <div class="extra-list" id="extra-list"></div>
       <div class="add-row">
-        <input type="text" id="extra-inp" placeholder="例：有一隻黑貓、害怕蜘蛛、每晚會作夢見到孤山">
+        <input type="text" id="extra-inp" placeholder="例：有一隻黑貓、害怕蜘蛛、每晚夢見孤山">
         <button class="btn-add" onclick="addExtra()">＋ 新增</button>
       </div>
     </div>
     <div class="field">
       <label>給主持人的特殊要求 / 備注</label>
-      <textarea id="f-note" placeholder="任何想特別交代的事項，例如：希望多描寫索林的心理活動、希望加入特定場景或對話……"></textarea>
+      <textarea id="f-note" placeholder="任何想特別交代的事項……"></textarea>
     </div>
   </div>
 </div>
 
 </div><!-- /form-col -->
 
-<!-- ══ OUTPUT ══ -->
+<!-- OUTPUT -->
 <div id="output-col">
   <div class="out-head">
     <span>產生的指令</span>
     <span class="char-count" id="char-count">0 字</span>
   </div>
   <div id="output-box">
-    <span class="placeholder">填寫左側設定後，按下「產生指令」，即可在此看到完整文字指令。
+    <span class="placeholder">填寫左側設定後，按下「產生指令」即可看到完整文字指令。
 
 複製後貼到 Claude、ChatGPT 或任何 AI 聊天介面，即可開始你的孤山遠征。</span>
   </div>
@@ -1106,317 +1056,127 @@ body.theme-white .out-btn.primary { color:#fff; }
 <div id="toast">✓ 已複製到剪貼簿</div>
 
 <script>
-/* ════ 字體大小 ════ */
-let fsVal = 17;
-function changeFs(d){
-  fsVal = Math.min(36, Math.max(14, fsVal + d));
-  document.documentElement.style.setProperty('--fs', fsVal+'px');
-  document.getElementById('fs-val').textContent = fsVal+'px';
-}
-function resetFs(){
-  fsVal = 17;
-  document.documentElement.style.setProperty('--fs','17px');
-  document.getElementById('fs-val').textContent = '17px';
-}
+/* ── Toolbar ── */
+let tbVisible=true;
+function toggleToolbar(){ tbVisible=!tbVisible; document.getElementById('tb-wrap').classList.toggle('hidden',!tbVisible); document.getElementById('tb-toggle').textContent=tbVisible?'⚙':'☰'; }
 
-/* ════ 字型 ════ */
-function changeFont(f){
-  document.documentElement.style.setProperty('--font-body', f);
-}
+/* ── Font size ── */
+let fsVal=18;
+function changeFs(d){ fsVal=Math.min(36,Math.max(14,fsVal+d)); applyFs(); }
+function resetFs(){ fsVal=18; applyFs(); }
+function applyFs(){ document.documentElement.style.setProperty('--fs',fsVal+'px'); document.getElementById('fs-val').textContent=fsVal+'px'; }
 
-/* ════ 主題 ════ */
-function changeTheme(t){
-  document.body.className = t === 'dark' ? '' : 'theme-'+t;
+/* ── Font ── */
+function changeFont(f){ document.documentElement.style.setProperty('--font-body',f); }
+
+/* ── Theme ── */
+function changeTheme(v){
+  document.body.className=v;
+  if(v==='t-star') initStars(); else stopStars();
 }
 
-/* ════ Section toggle ════ */
-function toggle(head){
-  const body = head.nextElementSibling;
-  const isOpen = head.classList.contains('open');
-  head.classList.toggle('open', !isOpen);
-  body.classList.toggle('open', !isOpen);
-  head.querySelector('.sec-arrow').textContent = isOpen ? '▼' : '▲';
+/* ── Star canvas ── */
+let starAnim=null;
+function initStars(){
+  const c=document.getElementById('star-canvas');
+  c.width=window.innerWidth; c.height=window.innerHeight;
+  const ctx=c.getContext('2d');
+  const stars=Array.from({length:160},()=>({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*1.4+.3,a:Math.random(),da:Math.random()*.008+.002}));
+  function draw(){ ctx.clearRect(0,0,c.width,c.height); stars.forEach(s=>{ s.a+=s.da; if(s.a>1||s.a<0) s.da*=-1; ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fillStyle=`rgba(200,180,255,${s.a})`; ctx.fill(); }); starAnim=requestAnimationFrame(draw); }
+  draw();
 }
+function stopStars(){ if(starAnim){ cancelAnimationFrame(starAnim); starAnim=null; } const c=document.getElementById('star-canvas'); c.getContext('2d').clearRect(0,0,c.width,c.height); }
 
-/* ════ Chip setup ════ */
-const SINGLE_IDS = ['c-gender','c-race','c-origin','c-family','c-home',
-  'c-subplot','c-npcrel','c-joinway','c-intensity','c-lang',
-  'c-rpace','c-ending','c-writemode','c-wordcount','c-pov',
-  'c-chapformat','c-dragonsick','c-sacrifice'];
-const MULTI_IDS  = ['c-traits','c-family-mem','c-hidden','c-rtype'];
+/* ── Section toggle ── */
+function toggle(head){ const body=head.nextElementSibling,isOpen=head.classList.contains('open'); head.classList.toggle('open',!isOpen); body.classList.toggle('open',!isOpen); head.querySelector('.sec-arrow').textContent=isOpen?'▼':'▲'; }
 
-SINGLE_IDS.forEach(id => {
-  const w = document.getElementById(id); if(!w) return;
-  w.querySelectorAll('.chip').forEach(c => {
-    c.onclick = () => {
-      w.querySelectorAll('.chip').forEach(x => x.classList.remove('on'));
-      c.classList.add('on');
-    };
-  });
-});
-MULTI_IDS.forEach(id => {
-  const w = document.getElementById(id); if(!w) return;
-  w.querySelectorAll('.chip').forEach(c => { c.onclick = () => c.classList.toggle('on'); });
-});
-document.querySelectorAll('.sk').forEach(c => { c.onclick = () => c.classList.toggle('on'); });
-document.querySelectorAll('.r-card').forEach(c => {
-  c.onclick = () => {
-    document.querySelectorAll('.r-card').forEach(x => x.classList.remove('on'));
-    c.classList.add('on');
-  };
-});
-// Multi-select card groups
-['c-dwarves','c-elves','c-humans','c-villains'].forEach(id => {
-  const w = document.getElementById(id); if(!w) return;
-  w.querySelectorAll('.ch-card').forEach(c => { c.onclick = () => c.classList.toggle('on'); });
-});
+/* ── Chips ── */
+const SINGLE=['c-gender','c-race','c-origin','c-family','c-home','c-subplot','c-npcrel','c-joinway','c-intensity','c-lang','c-rpace','c-ending','c-writemode','c-wordcount','c-pov','c-chapformat','c-dragonsick','c-sacrifice','c-breath','c-psycho'];
+const MULTI=['c-traits','c-family-mem','c-hidden','c-rtype'];
 
-/* ════ Extra fields ════ */
-const extras = [];
-function addExtra(){
-  const inp = document.getElementById('extra-inp');
-  const v = inp.value.trim(); if(!v) return;
-  extras.push(v); inp.value = ''; renderExtras();
-}
+SINGLE.forEach(id=>{ const w=document.getElementById(id); if(!w) return; w.querySelectorAll('.chip').forEach(c=>{ c.onclick=()=>{ w.querySelectorAll('.chip').forEach(x=>x.classList.remove('on')); c.classList.add('on'); }; }); });
+MULTI.forEach(id=>{ const w=document.getElementById(id); if(!w) return; w.querySelectorAll('.chip').forEach(c=>{ c.onclick=()=>c.classList.toggle('on'); }); });
+document.querySelectorAll('.sk').forEach(c=>{ c.onclick=()=>c.classList.toggle('on'); });
+document.querySelectorAll('.r-card').forEach(c=>{ c.onclick=()=>{ document.querySelectorAll('.r-card').forEach(x=>x.classList.remove('on')); c.classList.add('on'); }; });
+['c-dwarves','c-elves','c-humans','c-villains'].forEach(id=>{ const w=document.getElementById(id); if(!w) return; w.querySelectorAll('.ch-card').forEach(c=>{ c.onclick=()=>c.classList.toggle('on'); }); });
+
+/* ── Extra fields ── */
+const extras=[];
+function addExtra(){ const inp=document.getElementById('extra-inp'),v=inp.value.trim(); if(!v) return; extras.push(v); inp.value=''; renderExtras(); }
 function removeExtra(i){ extras.splice(i,1); renderExtras(); }
-function renderExtras(){
-  document.getElementById('extra-list').innerHTML =
-    extras.map((e,i)=>`<div class="extra-item">${e}<button class="xbtn" onclick="removeExtra(${i})">✕</button></div>`).join('');
-}
+function renderExtras(){ document.getElementById('extra-list').innerHTML=extras.map((e,i)=>`<div class="extra-item">${e}<button class="xbtn" onclick="removeExtra(${i})">✕</button></div>`).join(''); }
 document.getElementById('extra-inp').addEventListener('keydown',e=>{ if(e.key==='Enter') addExtra(); });
 
-/* ════ Helpers ════ */
-function getOne(id){
-  const el = document.getElementById(id); if(!el) return '未指定';
-  const on = el.querySelector('.chip.on,.r-card.on');
-  return on ? on.dataset.v : '未指定';
-}
-function getMany(id, sel='.chip.on'){
-  const el = document.getElementById(id); if(!el) return [];
-  return [...el.querySelectorAll(sel)].map(c=>c.dataset.v);
-}
-function getCards(id){ return getMany(id, '.ch-card.on'); }
+/* ── Helpers ── */
+function getOne(id){ const el=document.getElementById(id); if(!el) return '未指定'; const on=el.querySelector('.chip.on,.r-card.on'); return on?on.dataset.v:'未指定'; }
+function getMany(id,sel='.chip.on'){ const el=document.getElementById(id); if(!el) return []; return [...el.querySelectorAll(sel)].map(c=>c.dataset.v); }
+function getCards(id){ return getMany(id,'.ch-card.on'); }
 function sw(id){ return document.getElementById(id)?.checked; }
 function val(id){ return document.getElementById(id)?.value.trim()||''; }
 
-/* ════ Opening scene by join method ════ */
-function buildOpeningScene(joinCode){
-  const scenes = {
-    OPEN_GANDALF: `夏爾的風帶著青草與麥田的氣息。這本該是平凡的一天。
-然而，當你推開圓門時，發現門外站著一名灰袍巫師。他倚著長杖，煙斗升起淡淡煙霧，那雙深邃的眼睛正注視著你。
-
-「啊，終於見到你了。」甘道夫緩緩露出笑意。「我正準備尋找一位同行者。」
-
-他遞來一封蓋著都靈王族印記的信。信紙展開時，一行字映入眼簾：
-
-『致願意踏上旅途之人。
-若你渴望看見孤山重歸榮耀，
-請於月升之前前往綠龍酒館。
-索林』
-
-請從這裡開始劇情，引導玩家進行接下來的選擇。`,
-
-    OPEN_ACCIDENT: `那一天你只是想在山路上趕路。
-迷霧在林間緩緩流動，遠處傳來矮人們爭吵與行軍的聲音。你本想繞道避開，卻一腳踩空，滾下了山坡，正好撞進了一支正在紮營的遠征隊。
-
-十三名矮人齊齊望向你。
-
-其中一名身材最為高大、藍眼睛如同山中寒潭的男子緩緩站起，表情冰冷地審視著你。
-
-「你是誰。」那不是問句。
-
-旁邊一個年長的矮人輕咳一聲，溫和地說：「孩子，你撞進了索林・橡木盾的遠征隊。現在，你有兩個選擇。」
-
-請從這裡開始劇情，引導玩家進行接下來的選擇。`,
-
-    OPEN_THORIN: `信使在天亮前抵達了你的門口。
-那個矮人沉默地遞來一封信，轉身便走。信封上蓋著都靈王族的印記，裡頭只有短短幾行字：
-
-『你的名字被甘道夫提起。
-若你有膽量，三日後，在布里的「躍馬旅店」等我。
-我需要你。
-索林・橡木盾』
-
-「需要你」。
-你盯著那兩個字看了很久。孤山之王，居然親筆寫下這樣的字眼。
-
-請從這裡開始劇情，引導玩家進行接下來的選擇。`,
-
-    OPEN_FAMILY: `你第一次見到索林・橡木盾，是在你年幼的時候。
-那時他只是個流亡的矮人王子，來到你家尋求庇護。你的父親（或母親）對他以禮相待，兩人之間有著某種你當時還無法理解的舊交情誼。
-
-多年後的今天，同一個人站在你門口，但眼神已截然不同。
-
-「我來兌現舊約。」他的聲音低沉，眉宇間帶著常年流亡磨礪出的重量。
-「你的家族曾給過我庇護。如今我要奪回孤山，我需要你與我同行。」
-
-請從這裡開始劇情，引導玩家進行接下來的選擇。`,
-
-    OPEN_MISSION: `甘道夫在月升前找到了你，地點是一家無名的小酒館。
-他沒有廢話，只是在你面前放下一份羊皮紙卷軸，然後點燃了煙斗。
-
-「你知道孤山。」這不是問句。「你也知道那裡藏著什麼。」
-
-卷軸上畫的是一張地圖，角落裡有一行你幾乎認不出來的古矮人文字。
-
-「索林・橡木盾即將出發，」甘道夫緩緩說，「而我需要一個能在隊伍裡完成某件事的人。那件事，只有你能做。」
-
-他沒有說那件事是什麼。
-
-請從這裡開始劇情，引導玩家進行接下來的選擇。`,
-
-    OPEN_VOLUNTEER: `你聽說索林・橡木盾要重奪孤山，已經不是一天兩天的事了。
-消息從長湖鎮傳出，又在旅人的嘴裡輾轉傳遍了整個中土。大多數人嗤之以鼻——十三個矮人，一個哈比人，憑什麼奪回被史矛革佔領的孤山？
-
-但你不這麼想。
-
-你帶著自己的行囊，在綠龍酒館找到了那支遠征隊。索林看了你很久，眼神像在打量一塊石頭的成色。
-
-「你有什麼理由讓我帶上你？」
-
-請從這裡開始劇情，引導玩家進行接下來的選擇。`,
-
-    OPEN_RANDOM: `夏爾的風帶著青草與麥田的氣息。這本該是平凡的一天。
-然而，當你推開圓門時，發現門外站著一名灰袍巫師。他倚著長杖，煙斗升起淡淡煙霧，那雙深邃的眼睛正注視著你。
-
-「啊，終於見到你了。」甘道夫緩緩露出笑意。「我正準備尋找一位同行者。」
-
-他遞來一封蓋著都靈王族印記的信。信紙展開時，一行字映入眼簾：
-
-『致願意踏上旅途之人。
-若你渴望看見孤山重歸榮耀，
-請於月升之前前往綠龍酒館。
-索林』
-
-請從這裡開始劇情，引導玩家進行接下來的選擇。`
+/* ── Opening scenes ── */
+function buildScene(code){
+  const s={
+    OPEN_GANDALF:`夏爾的風帶著青草與麥田的氣息。這本該是平凡的一天。\n然而，當你推開圓門時，發現門外站著一名灰袍巫師。他倚著長杖，煙斗升起淡淡煙霧，那雙深邃的眼睛正注視著你。\n\n「啊，終於見到你了。」甘道夫緩緩露出笑意。「我正準備尋找一位同行者。」\n\n他遞來一封蓋著都靈王族印記的信。信紙展開時，一行字映入眼簾：\n\n『致願意踏上旅途之人。\n若你渴望看見孤山重歸榮耀，請於月升之前前往綠龍酒館。\n索林』`,
+    OPEN_ACCIDENT:`那一天你只是想在山路上趕路。迷霧在林間緩緩流動，遠處傳來矮人們行軍的聲音。你本想繞道避開，卻一腳踩空，滾下了山坡，正好撞進了一支正在紮營的遠征隊。\n\n十三名矮人齊齊望向你。\n\n其中一名身材最為高大、藍眼睛如同山中寒潭的男子緩緩站起，表情冰冷地審視著你。\n\n「你是誰。」那不是問句。\n\n旁邊一個年長的矮人輕咳一聲，溫和地說：「孩子，你撞進了索林・橡木盾的遠征隊。現在，你有兩個選擇。」`,
+    OPEN_THORIN:`信使在天亮前抵達了你的門口。那個矮人沉默地遞來一封信，轉身便走。信封上蓋著都靈王族的印記，裡頭只有短短幾行字：\n\n『你的名字被甘道夫提起。\n若你有膽量，三日後，在布里的「躍馬旅店」等我。\n我需要你。\n索林・橡木盾』\n\n「需要你」。你盯著那兩個字看了很久。孤山之王，居然親筆寫下這樣的字眼。`,
+    OPEN_FAMILY:`你第一次見到索林・橡木盾，是在你年幼的時候。那時他只是個流亡的矮人王子，來到你家尋求庇護。你的家人對他以禮相待，兩人之間有著某種你當時還無法理解的舊交情誼。\n\n多年後的今天，同一個人站在你門口，但眼神已截然不同。\n\n「我來兌現舊約。」他的聲音低沉，眉宇間帶著常年流亡磨礪出的重量。\n「你的家族曾給過我庇護。如今我要奪回孤山，我需要你與我同行。」`,
+    OPEN_MISSION:`甘道夫在月升前找到了你，地點是一家無名的小酒館。他沒有廢話，只是在你面前放下一份羊皮紙卷軸，然後點燃了煙斗。\n\n「你知道孤山。」這不是問句。「你也知道那裡藏著什麼。」\n\n卷軸上畫的是一張地圖，角落裡有一行你幾乎認不出來的古矮人文字。\n\n「索林・橡木盾即將出發，」甘道夫緩緩說，「而我需要一個能在隊伍裡完成某件事的人。那件事，只有你能做。」他沒有說那件事是什麼。`,
+    OPEN_VOLUNTEER:`你聽說索林・橡木盾要重奪孤山，已經不是一天兩天的事了。大多數人嗤之以鼻——十三個矮人，一個哈比人，憑什麼奪回被史矛革佔領的孤山？\n\n但你不這麼想。\n\n你帶著自己的行囊，在綠龍酒館找到了那支遠征隊。索林看了你很久，眼神像在打量一塊石頭的成色。\n\n「你有什麼理由讓我帶上你？」`,
+    OPEN_RANDOM:`夏爾的風帶著青草與麥田的氣息。這本該是平凡的一天。\n然而，當你推開圓門時，發現門外站著一名灰袍巫師。他倚著長杖，煙斗升起淡淡煙霧，那雙深邃的眼睛正注視著你。\n\n「啊，終於見到你了。」甘道夫緩緩露出笑意。「我正準備尋找一位同行者。」\n\n他遞來一封蓋著都靈王族印記的信。信紙展開時，一行字映入眼簾：\n\n『致願意踏上旅途之人。\n若你渴望看見孤山重歸榮耀，請於月升之前前往綠龍酒館。\n索林』`
   };
-  return scenes[joinCode] || scenes['OPEN_GANDALF'];
+  return s[code]||s['OPEN_GANDALF'];
 }
 
-/* ════ Write mode format rules ════ */
-function buildWriteRules(mode, wordcount, pov, chapformat){
-  const modeRules = {
-    WRITE_ROUND: `【回合制模式】
-每個回合輸出一段劇情，結尾提供4至5個可選行動。
-輸出結構：
-【劇情】
-（${wordcount}，${pov}敘事，小說風格）
-
-可選行動
-1. 行動選項一
-2. 行動選項二
-3. 行動選項三
-4. 行動選項四
-5. 自由行動：玩家可輸入任何想做的事`,
-
-    WRITE_NOVEL: `【長篇小說模式】
-每章至少2500字，以連貫的小說敘事呈現，不頻繁中斷詢問方向。
-章節標題格式：${chapformat}
-輸出結構：
-${chapformat}
-（正文，至少2500字，${pov}敘事）
-
-（章節末尾提供2至3個主要走向供玩家選擇，或直接繼續）`,
-
-    WRITE_DIARY: `【日記體模式】
-以角色的第一人稱日記形式呈現，每篇日記約${wordcount}。
-輸出結構：
-【日期・地點】
-（日記正文，第一人稱，情感細膩，偶爾記錄對特定角色的觀察與心情）
-
-可選行動
-1. 選項一
-2. 選項二
-3. 選項三
-4. 自由行動`,
-
-    WRITE_LETTER: `【書信體模式】
-劇情以書信、便條或口信方式穿插呈現，兼有第三人稱旁白。
-輸出結構：
-（第三人稱旁白，${wordcount}）
-
-【書信片段】
-（來自特定角色的信件或便條，展現角色心境）
-
-可選行動
-1. 選項一
-2. 選項二
-3. 自由行動`,
-
-    WRITE_MIXED: `【混合模式】
-依照劇情需要彈性切換回合制與長篇敘事，張力高的段落以長篇呈現，日常場景以回合制推進。
-每次回合標準字數：${wordcount}
-高潮場景字數：至少1000字連貫敘事
-輸出結構同回合制，但主持人可自行判斷是否延伸為長篇`
+/* ── Write rules ── */
+function buildWriteRules(mode,wc,pov,chap){
+  const r={
+    WRITE_ROUND:`【回合制模式】\n每個回合輸出一段劇情，結尾提供4至5個可選行動。\n輸出結構：\n\n【劇情】\n（${wc}，${pov}，小說敘事風格）\n\n可選行動\n1. 行動選項一\n2. 行動選項二\n3. 行動選項三\n4. 行動選項四\n5. 自由行動：玩家可輸入任何想做的事`,
+    WRITE_NOVEL:`【長篇小說模式】\n每章至少2500字，以連貫的小說敘事呈現，不頻繁中斷詢問方向。\n章節標題格式：${chap}\n\n輸出結構：\n${chap}\n（正文，至少2500字，${pov}，小說敘事）\n（章節末尾提供2至3個主要走向供玩家選擇，或直接延續）`,
+    WRITE_DIARY:`【日記體模式】\n以${pov}日記形式呈現，每篇約${wc}。\n\n輸出結構：\n【日期・地點】\n（日記正文，情感細膩，偶爾記錄對特定角色的觀察與心情）\n\n可選行動\n1. 選項一\n2. 選項二\n3. 選項三\n4. 自由行動`,
+    WRITE_LETTER:`【書信體模式】\n劇情以書信、便條或口信方式穿插呈現，兼有第三人稱旁白。\n\n輸出結構：\n（第三人稱旁白，約${wc}）\n\n【書信片段】\n（來自特定角色的信件或便條，展現角色心境）\n\n可選行動\n1. 選項一\n2. 選項二\n3. 自由行動`,
+    WRITE_MIXED:`【混合模式】\n依照劇情需要彈性切換回合制與長篇敘事。\n・張力高的場景：至少1000字連貫敘事\n・日常場景：回合制，約${wc}\n・長篇章節：至少2500字，${chap}格式\n敘事視角：${pov}`
   };
-  return modeRules[mode] || modeRules['WRITE_ROUND'];
+  return r[mode]||r['WRITE_ROUND'];
 }
 
-/* ════ GENERATE ════ */
+const JOIN_LABELS={OPEN_GANDALF:'甘道夫邀請',OPEN_ACCIDENT:'意外捲入旅程',OPEN_THORIN:'被索林親自指名',OPEN_FAMILY:'家族舊交牽線',OPEN_MISSION:'因秘密任務而加入',OPEN_VOLUNTEER:'自願追隨遠征隊',OPEN_RANDOM:'隨機'};
+
+/* ══ GENERATE ══ */
 function generate(){
-  const name       = val('f-name') || '（請AI依種族隨機生成）';
-  const birthday   = val('f-birthday') || '隨機';
-  const gender     = getOne('c-gender');
-  const race       = getOne('c-race');
-  const origin     = getOne('c-origin');
-  const look       = val('f-look') || '（請AI依種族與性格自行描述）';
-  const mark       = val('f-mark') || '';
-  const family     = getOne('c-family');
-  const homeAtmo   = getOne('c-home');
-  const famMem     = getMany('c-family-mem').join('、') || '隨機';
-  const famStory   = val('f-family-story') || '';
-  const traits     = getMany('c-traits').join('、') || '隨機';
-  const skills     = getMany('c-skills','.sk.on').join('、') || '隨機';
-  const mbti       = val('f-mbti') || '';
-  const fear       = val('f-fear') || '';
-  const talent     = val('f-talent') || '';
-  const romance    = getOne('c-romance');
-  const rtypes     = getMany('c-rtype').join('、') || '慢熱型戀愛';
-  const rpace      = getOne('c-rpace');
-  const ending     = getOne('c-ending');
-  const dwarves    = getCards('c-dwarves').join('；') || '索林、菲力、奇力、巴林';
-  const elves      = getCards('c-elves').join('；') || '甘道夫';
-  const humans     = getCards('c-humans').join('；') || '比爾博・巴金斯';
-  const villains   = getCards('c-villains').join('；') || '（依劇情出場）';
-  const joinCode   = getOne('c-joinway');
-  const npcRel     = getOne('c-npcrel');
-  const subplot    = getOne('c-subplot');
-  const hidden     = getMany('c-hidden').join('、') || '由AI自行決定';
-  const intensity  = getOne('c-intensity');
-  const lang       = getOne('c-lang');
-  const writeMode  = getOne('c-writemode');
-  const wordcount  = getOne('c-wordcount');
-  const pov        = getOne('c-pov');
-  const chapformat = getOne('c-chapformat');
-  const dragonsick = getOne('c-dragonsick');
-  const sacrifice  = getOne('c-sacrifice');
-  const romOn      = sw('sw-romance');
-  const heOn       = sw('sw-he');
-  const survOn     = sw('sw-survive');
-  const all13On    = sw('sw-all13');
-  const bilboOn    = sw('sw-bilbo');
-  const arkenOn    = sw('sw-arkenstone');
-  const breakupOn  = sw('sw-breakup');
-  const apologyOn  = sw('sw-apology');
-  const npcHardOn  = sw('sw-npc-hard');
-  const subOn      = sw('sw-sub');
-  const conseqOn   = sw('sw-consequence');
-  const rewardOn   = sw('sw-reward');
-  const extraAll   = [...extras, val('f-note')].filter(Boolean).join('；') || '無';
-  const openScene  = buildOpeningScene(joinCode);
-  const writeRules = buildWriteRules(writeMode, wordcount, pov, chapformat);
+  const name=val('f-name')||'（請AI依種族隨機生成）',birthday=val('f-birthday')||'隨機';
+  const gender=getOne('c-gender'),race=getOne('c-race'),origin=getOne('c-origin');
+  const look=val('f-look')||'（請AI依種族與性格自行描述）',mark=val('f-mark')||'';
+  const family=getOne('c-family'),homeAtmo=getOne('c-home');
+  const famMem=getMany('c-family-mem').join('、')||'隨機',famStory=val('f-family-story')||'';
+  const traits=getMany('c-traits').join('、')||'隨機';
+  const skills=getMany('c-skills','.sk.on').join('、')||'隨機';
+  const mbti=val('f-mbti')||'',fear=val('f-fear')||'',talent=val('f-talent')||'';
+  const romance=getOne('c-romance'),rtypes=getMany('c-rtype').join('、')||'慢熱型戀愛';
+  const rpace=getOne('c-rpace'),ending=getOne('c-ending');
+  const dwarves=getCards('c-dwarves').join('；')||'索林、菲力、奇力、巴林';
+  const elves=getCards('c-elves').join('；')||'甘道夫';
+  const humans=getCards('c-humans').join('；')||'比爾博・巴金斯';
+  const villains=getCards('c-villains').join('；')||'（依劇情出場）';
+  const joinCode=getOne('c-joinway'),npcRel=getOne('c-npcrel'),subplot=getOne('c-subplot');
+  const hidden=getMany('c-hidden').join('、')||'由AI自行決定';
+  const intensity=getOne('c-intensity'),lang=getOne('c-lang');
+  const writeMode=getOne('c-writemode'),wordcount=getOne('c-wordcount');
+  const pov=getOne('c-pov'),chapformat=getOne('c-chapformat');
+  const breath=getOne('c-breath'),psycho=getOne('c-psycho');
+  const dragonsick=getOne('c-dragonsick'),sacrifice=getOne('c-sacrifice');
+  const romOn=sw('sw-romance'),heOn=sw('sw-he'),survOn=sw('sw-survive');
+  const all13On=sw('sw-all13'),bilboOn=sw('sw-bilbo');
+  const arkenOn=sw('sw-arkenstone'),breakupOn=sw('sw-breakup'),apologyOn=sw('sw-apology');
+  const npcHardOn=sw('sw-npc-hard'),subOn=sw('sw-sub'),conseqOn=sw('sw-consequence'),rewardOn=sw('sw-reward');
+  const extraAll=[...extras,val('f-note')].filter(Boolean).join('；')||'無';
+  const openScene=buildScene(joinCode);
+  const writeRules=buildWriteRules(writeMode,wordcount,pov,chapformat);
+  const joinLabel=JOIN_LABELS[joinCode]||joinCode;
 
-  const joinLabels = {
-    OPEN_GANDALF:'甘道夫邀請', OPEN_ACCIDENT:'意外捲入旅程',
-    OPEN_THORIN:'被索林親自指名', OPEN_FAMILY:'家族舊交牽線',
-    OPEN_MISSION:'因秘密任務而加入', OPEN_VOLUNTEER:'自願追隨遠征隊',
-    OPEN_RANDOM:'隨機'
-  };
+  const prompt=`你將作為沉浸式文字遊戲主持人，帶領玩家進入《哈比人》與《魔戒》的中土世界。
 
-  const prompt =
-`你將作為沉浸式文字遊戲主持人，帶領玩家進入《哈比人》與《魔戒》的中土世界。
-
-故事背景設定參考托爾金原著，玩家將在第三紀元末期踏上改變命運的旅程，歷經夏爾、瑞文戴爾、迷霧山脈、幽暗密林、長湖鎮、孤山奪還戰與五軍之戰等重大事件。整體劇情涵蓋冒險、友情、種族衝突、政治局勢、家族榮譽、愛情發展與個人成長。
+故事背景設定參考托爾金原著，玩家將在第三紀元末期踏上改變命運的旅程，歷經夏爾、瑞文戴爾、迷霧山脈、幽暗密林、長湖鎮、孤山奪還戰與五軍之戰等重大事件。
 
 
 ━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1428,13 +1188,13 @@ function generate(){
 性別：${gender}
 種族：${race}
 出生地：${origin}
-外貌：${look}${mark ? '\n特殊外貌標記：'+mark : ''}
+外貌：${look}${mark?'\n特殊外貌標記：'+mark:''}
 家庭背景：${family}
 家庭氛圍：${homeAtmo}
-家庭成員：${famMem}${famStory ? '\n家族背景：'+famStory : ''}
+家庭成員：${famMem}${famStory?'\n家族背景：'+famStory:''}
 性格特質：${traits}
-專長與興趣：${skills}${mbti ? '\nMBTI與個性補充：'+mbti : ''}${fear ? '\n弱點與恐懼：'+fear : ''}${talent ? '\n特殊天賦：'+talent : ''}
-加入遠征隊的方式：${joinLabels[joinCode] || joinCode}
+專長與興趣：${skills}${mbti?'\nMBTI與個性補充：'+mbti:''}${fear?'\n弱點與恐懼：'+fear:''}${talent?'\n特殊天賦：'+talent:''}
+加入遠征隊方式：${joinLabel}
 自訂設定：${extraAll}
 
 
@@ -1442,8 +1202,8 @@ function generate(){
 【感情線設定】
 ━━━━━━━━━━━━━━━━━━━━━━━━
 
-感情線啟用：${romOn ? '是' : '否（僅走冒險主線）'}
-${romOn ? `攻略對象：${romance}
+感情線啟用：${romOn?'是':'否（僅走冒險主線）'}
+${romOn?`攻略對象：${romance}
 感情類型：${rtypes}
 感情節奏：${rpace}
 結局傾向：${ending}
@@ -1453,34 +1213,24 @@ ${romOn ? `攻略對象：${romance}
 ・嚴禁無理由快速告白，嚴禁無理由快速原諒
 ・${romance}即使對玩家有好感，仍會優先考慮責任、使命與身分
 ・感情推進以細節與行動呈現，而非直接白話告白
-${romance.includes('索林') ? `
+${romance.includes('索林')?`
 索林感情線七個階段（依序推進，不可跳過）：
-第一階段｜不信任：索林對玩家警戒疏遠，需玩家透過行動贏得尊重
+第一階段｜不信任：索林對玩家警戒疏遠，玩家需透過行動贏得尊重
 第二階段｜信任建立：歷經迷霧山脈等事件後，索林開始習慣玩家存在
 第三階段｜感情萌芽：長湖鎮至孤山期間，情感逐漸難以壓抑
-第四階段｜阿肯寶石誤會${arkenOn ? '（開啟）：索林因'+dragonsick+'與王權壓力對玩家產生嚴重誤會，懷疑背叛，此誤會不可輕易化解' : '（關閉）'}
-第五階段｜決裂${breakupOn ? '（開啟）：五軍之戰前，雙方正式決裂，是感情線最黑暗時期' : '（關閉）'}
+第四階段｜阿肯寶石誤會${arkenOn?'（開啟）：索林因'+dragonsick+'與王權壓力對玩家產生嚴重誤會，不可輕易化解':'（關閉）'}
+第五階段｜決裂${breakupOn?'（開啟）：五軍之戰前，雙方正式決裂，感情線最黑暗時期':'（關閉）'}
 第六階段｜戰場重逢：五軍之戰中，共同面對死亡，誤會逐漸揭開
-第七階段｜${ending}` : ''}` : ''}
-
-
+第七階段｜${ending}`:''}
+`:''}
 ━━━━━━━━━━━━━━━━━━━━━━━━
 【角色戲份分配】
 ━━━━━━━━━━━━━━━━━━━━━━━━
 
-以下矮人請給予較多戲份、對話與個人弧線：
-${dwarves}
-
-以下精靈與巫師角色請給予較多戲份：
-${elves}
-
-以下人類與哈比人角色請給予較多戲份：
-${humans}
-
-以下反派角色將在劇情中扮演重要威脅：
-${villains}
-
-未列出的角色以背景角色呈現，但需符合原著個性。
+重點矮人：${dwarves}
+重點精靈與巫師：${elves}
+重點人類與哈比人：${humans}
+重要反派：${villains}
 
 
 ━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1489,7 +1239,7 @@ ${villains}
 
 與NPC初始關係：${npcRel}
 劇情強度：${intensity}
-隱藏支線：${subOn ? '啟用，開啟方式為「'+subplot+'」，優先展開：'+hidden : '關閉'}
+隱藏支線：${subOn?'啟用，開啟方式為「'+subplot+'」，優先展開：'+hidden:'關閉'}
 輸出語言：${lang}
 
 
@@ -1497,38 +1247,44 @@ ${villains}
 【存活設定】
 ━━━━━━━━━━━━━━━━━━━━━━━━
 
-索林存活 Happy Ending：${heOn ? '開啟（五軍之戰後索林必須存活；'+( apologyOn ? '索林須親自承認錯誤並正式道歉，不可輕描淡寫' : '感情修復過程可較簡短')+')' : '依劇情走向'}
-菲力・奇力存活：${survOn ? '開啟（需透過合理劇情達成）' : '依劇情走向'}
-十三矮人全員存活：${all13On ? '開啟（玩家行動可改變命運，但不可直接忽略戰爭代價）' : '依劇情走向'}
-比爾博安全返回夏爾：${bilboOn ? '開啟' : '依劇情走向'}
+索林存活HE：${heOn?'開啟（'+(apologyOn?'索林須親自承認錯誤並正式道歉':'感情修復可較簡短')+')':'依劇情走向'}
+菲力・奇力存活：${survOn?'開啟':'依劇情走向'}
+十三矮人全員存活：${all13On?'開啟':'依劇情走向'}
+比爾博返回夏爾：${bilboOn?'開啟':'依劇情走向'}
 龍病嚴重程度：${dragonsick}
-可犧牲角色設定：${sacrifice}
+可犧牲角色：${sacrifice}
 
 
 ━━━━━━━━━━━━━━━━━━━━━━━━
 【NPC行為準則】
 ━━━━━━━━━━━━━━━━━━━━━━━━
 
-NPC必須嚴格依照托爾金原著個性塑造：
-・索林・橡木盾：驕傲固執、責任感極強、情感深藏不露，不會因玩家出現立刻動心
-・比爾博・巴金斯：聰明善良、重視家與和平、初期膽小但有過人智慧
-・奇力：開朗衝動、熱情好奇、對玩家較快建立友誼
-・菲力：穩重可靠、具領袖氣質、對弟弟奇力保護欲強
-・巴林：睿智溫和，是遠征隊中最具遠見的長者
-・德瓦林：忠誠直接、寡言少語、行動力強
-・甘道夫：深知中土局勢，行動目的往往超出表面所見
-・瑟蘭督伊：高傲冷靜，行事以精靈族長遠利益為先
-・勒苟拉斯：驕傲但並非冷酷，有自己的判斷與原則
-・愛隆：半精靈之主，智慧深遠，態度中立
-・塔烏瑞爾：勇敢直率，情感真摯（電影角色）
+・索林・橡木盾：驕傲固執、責任感極強、情感深藏不露
+・比爾博・巴金斯：聰明善良、重視家與和平
+・奇力：開朗衝動、熱情好奇
+・菲力：穩重可靠、具領袖氣質
+・巴林：睿智溫和，最具遠見的長者
+・德瓦林：忠誠直接、寡言行動派
+・甘道夫：行動目的往往超出表面所見
+・瑟蘭督伊：高傲冷靜，行事以精靈族利益為先
+・勒苟拉斯：驕傲但並非冷酷
+・愛隆：智慧深遠，態度中立
+・塔烏瑞爾：勇敢直率（電影角色）
 ・巴德：沉穩正直，背負家族使命
 ・阿索格：殘酷無情，與索林有血海深仇
-・波格：阿索格之子，同樣殘暴，電影版角色
-・史矛革：狡猾嗜血，有魅惑說話能力，不可小覷
+・波格：阿索格之子，同樣殘暴（電影角色）
+・史矛革：狡猾嗜血，有魅惑說話能力
 
-${npcHardOn ? 'NPC不會無條件支持玩家，需要玩家透過行動與選擇贏得信任與尊重。' : 'NPC對玩家持較開放友善的態度。'}
-${conseqOn ? '危險行為必須有合理的後果與代價。' : ''}
-${rewardOn ? '聰明的行為與判斷應給予獎勵、線索或NPC好感提升。' : ''}
+${npcHardOn?'NPC不會無條件支持玩家，需要玩家透過行動與選擇贏得信任。':'NPC對玩家持較開放友善的態度。'}
+${conseqOn?'危險行為必須有合理的後果與代價。':''}${rewardOn?'\n聰明的行為應給予獎勵、線索或NPC好感提升。':''}
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+【劇情節奏】
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+喘息場景比例：${breath}
+心理描寫深度：${psycho}
 
 
 ━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1539,7 +1295,7 @@ ${rewardOn ? '聰明的行為與判斷應給予獎勵、線索或NPC好感提升
 ・禁止無理由快速告白，禁止無理由快速原諒
 ・劇情必須有連續性，記住所有已發生的事件
 ・不要一次透露所有秘密，懸念應逐步揭開
-・不要輸出「{{user}}」，統一使用「你」稱呼玩家
+・不要輸出「{{user}}」
 ・角色的稱呼方式應隨關係深淺自然變化
 
 
@@ -1556,39 +1312,33 @@ ${writeRules}
 ・強烈降低AI感，避免制式起承轉合
 ・透過事件與互動展現角色個性，而非直接說明
 ・多用白描與中土世界細節營造畫面感
-・心理描寫細膩，尤其是情感壓抑的場景
 
 
 ━━━━━━━━━━━━━━━━━━━━━━━━
 【開局場景】
 ━━━━━━━━━━━━━━━━━━━━━━━━
 
-加入方式：${joinLabels[joinCode] || joinCode}
+加入方式：${joinLabel}
 
 請直接從以下場景進入，不要再列出角色設定表單：
 
-${openScene}`;
+${openScene}
 
-  const box = document.getElementById('output-box');
-  box.textContent = prompt;
-  document.getElementById('char-count').textContent = prompt.length + ' 字';
-  document.getElementById('btn-copy').style.display = '';
-  box.scrollTop = 0;
+請從這裡開始劇情，引導玩家進行接下來的選擇。`;
+
+  const box=document.getElementById('output-box');
+  box.textContent=prompt;
+  document.getElementById('char-count').textContent=prompt.length+' 字';
+  document.getElementById('btn-copy').style.display='';
+  box.scrollTop=0;
 }
 
-/* ════ Copy ════ */
+/* ── Copy ── */
 async function copyPrompt(){
-  const text = document.getElementById('output-box').textContent;
-  if(!text) return;
-  try { await navigator.clipboard.writeText(text); }
-  catch(e){
-    const ta = document.createElement('textarea');
-    ta.value = text; ta.style.cssText='position:fixed;opacity:0;';
-    document.body.appendChild(ta); ta.select();
-    document.execCommand('copy'); document.body.removeChild(ta);
-  }
-  const t = document.getElementById('toast');
-  t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2200);
+  const text=document.getElementById('output-box').textContent; if(!text) return;
+  try{ await navigator.clipboard.writeText(text); }
+  catch(e){ const ta=document.createElement('textarea'); ta.value=text; ta.style.cssText='position:fixed;opacity:0;'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); }
+  const t=document.getElementById('toast'); t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200);
 }
 </script>
 </body>
