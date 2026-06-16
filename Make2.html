@@ -1,103 +1,96 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <title>Master Style Converter</title>
-    <style>
-        :root { --primary: #3b82f6; --bg: #f1f5f9; --sidebar: #ffffff; }
-        body { margin: 0; font-family: 'Inter', sans-serif; display: flex; height: 100vh; background: var(--bg); }
-        
-        /* 側邊欄設計 */
-        .sidebar { width: 380px; background: var(--sidebar); border-right: 1px solid #e2e8f0; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-        .style-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; overflow-y: auto; }
-        .style-card { border: 2px solid #e2e8f0; padding: 10px; border-radius: 8px; cursor: pointer; text-align: center; font-size: 12px; font-weight: 600; }
-        .style-card.on { border-color: var(--primary); background: #eff6ff; color: var(--primary); }
-        
-        /* 預覽區設計 */
-        .main { flex: 1; display: flex; flex-direction: column; padding: 20px; gap: 10px; }
-        .frame-wrap { flex: 1; background: white; border-radius: 12px; border: 1px solid #cbd5e1; overflow: hidden; position: relative; }
-        iframe { width: 100%; height: 100%; border: none; }
-        .toolbar { display: flex; justify-content: space-between; align-items: center; }
-        button { padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; }
-        .btn-act { background: var(--primary); color: white; }
-    </style>
+<meta charset="UTF-8">
+<title>Style Engine | 設計風格轉換器</title>
+<style>
+  :root {
+    --bg: #F8F9FA; --sidebar-bg: #FFFFFF;
+    --accent: #2563EB; --text: #1E293B; --border: #E2E8F0;
+  }
+  body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; }
+
+  /* 側邊欄：質感升級 */
+  .sidebar { width: 360px; background: var(--sidebar-bg); border-right: 1px solid var(--border); padding: 24px; display: flex; flex-direction: column; gap: 20px; box-shadow: 4px 0 15px rgba(0,0,0,0.03); z-index: 10; }
+  .title-area { border-bottom: 2px solid var(--bg); padding-bottom: 16px; }
+  .title-area h2 { margin: 0; font-size: 20px; letter-spacing: -0.5px; }
+
+  /* 風格卡片：更精簡、優雅 */
+  .style-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .style-card { 
+    padding: 12px; border: 1px solid var(--border); border-radius: 10px; cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4,0,0.2,1); display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500;
+  }
+  .style-card:hover { border-color: var(--accent); background: #F0F7FF; }
+  .style-card.on { border-color: var(--accent); background: #EFF6FF; color: var(--accent); }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  /* 預覽區域：高級感 */
+  .main { flex: 1; padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+  .frame-wrap { 
+    flex: 1; background: #FFF; border-radius: 16px; overflow: hidden; 
+    border: 1px solid var(--border); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+    position: relative;
+  }
+  iframe { width: 100%; height: 100%; border: none; }
+  
+  /* 按鈕樣式 */
+  .action-btn { 
+    background: #1E293B; color: white; padding: 12px; border-radius: 8px; border: none;
+    font-weight: 600; cursor: pointer; transition: 0.2s;
+  }
+  .action-btn:hover { background: #0F172A; transform: translateY(-1px); }
+</style>
 </head>
 <body>
 
 <aside class="sidebar">
-    <h2>🎨 風格轉換器</h2>
-    <div class="style-grid" id="styleGrid"></div>
-    <textarea id="inputHtml" placeholder="請在此貼上 HTML 原始碼..." style="flex-grow:1; padding:10px; border:1px solid #ccc;"></textarea>
-    <button class="btn-act" onclick="processConversion()">執行風格轉換</button>
+  <div class="title-area"><h2>Design Engine</h2></div>
+  <div class="style-grid" id="styleGrid"></div>
+  <textarea id="inputHtml" style="flex:1; padding:16px; border-radius:8px; border:1px solid var(--border); font-size: 12px;" placeholder="貼入 HTML 代碼..."></textarea>
+  <button class="action-btn" onclick="process()">渲染設計風格</button>
 </aside>
 
 <main class="main">
-    <div class="toolbar">
-        <strong>預覽視窗</strong>
-        <button onclick="toggleFullScreen()">⛶ 全螢幕預覽</button>
-    </div>
-    <div class="frame-wrap" id="frameWrap">
-        <iframe id="previewFrame"></iframe>
-    </div>
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <strong>預覽畫面</strong>
+    <button style="border:1px solid var(--border); background:white; padding:6px 12px; border-radius:6px; cursor:pointer;" onclick="toggleFS()">⛶ 全螢幕</button>
+  </div>
+  <div class="frame-wrap" id="frameWrap">
+    <iframe id="preview"></iframe>
+  </div>
 </main>
 
 <script>
-// 10 種風格深度設定
-const STYLES_CONFIG = {
-    medical: { name: '醫療藍', font: 'Inter', radius: '8px', border: '1px solid #e2e8f0', accent: '#2C5F8A', bg: '#f8fafc' },
-    dream: { name: '星空紫', font: 'Cormorant Garamond', radius: '20px', border: 'none', accent: '#4c1d95', bg: '#1e1b4b' },
-    cream: { name: '奶油粉', font: 'Zen Maru Gothic', radius: '30px', border: '2px solid #ffebe3', accent: '#fca5a5', bg: '#fff5f5' },
-    dark: { name: '暗黑科技', font: 'JetBrains Mono', radius: '4px', border: '1px solid #374151', accent: '#38bdf8', bg: '#0f172a' },
-    forest: { name: '清新森綠', font: 'Noto Sans TC', radius: '12px', border: '3px solid #065f46', accent: '#065f46', bg: '#ecfdf5' },
-    sun: { name: '熱情陽光', font: 'Quicksand', radius: '50px', border: 'none', accent: '#f59e0b', bg: '#fffbeb' },
-    ocean: { name: '深海湛藍', font: 'Inter', radius: '0px', border: '1px solid #bae6fd', accent: '#0369a1', bg: '#f0f9ff' },
-    lavender: { name: '薰衣草優雅', font: 'Playfair Display', radius: '16px', border: '1px solid #ddd6fe', accent: '#7c3aed', bg: '#f5f3ff' },
-    rose: { name: '復古玫瑰', font: 'Lora', radius: '4px', border: '2px double #9f1239', accent: '#9f1239', bg: '#fff1f2' },
-    neon: { name: '賽博龐克', font: 'Orbitron', radius: '0px', border: '2px solid #d946ef', accent: '#d946ef', bg: '#000000' }
-};
+const themes = [
+  { name: 'Apple 簡潔', color: '#000000' }, { name: '質感醫療', color: '#2C5F8A' },
+  { name: '賽博龐克', color: '#D946EF' }, { name: '北歐森系', color: '#065F46' },
+  { name: '溫柔奶油', color: '#FCA5A5' }, { name: '深海湛藍', color: '#0369A1' },
+  { name: '復古書卷', color: '#9F1239' }, { name: '暗黑模式', color: '#374151' },
+  { name: '薰衣草色', color: '#7C3AED' }, { name: '陽光活潑', color: '#F59E0B' }
+];
 
-let currentStyle = 'medical';
-
-// 初始化選單
 const grid = document.getElementById('styleGrid');
-Object.keys(STYLES_CONFIG).forEach(key => {
-    const s = STYLES_CONFIG[key];
-    const div = document.createElement('div');
-    div.className = `style-card ${key === 'medical' ? 'on' : ''}`;
-    div.innerHTML = `<div style="height:20px; background:${s.accent}; margin-bottom:5px;"></div>${s.name}`;
-    div.onclick = () => {
-        document.querySelectorAll('.style-card').forEach(c => c.classList.remove('on'));
-        div.classList.add('on');
-        currentStyle = key;
-    };
-    grid.appendChild(div);
+themes.forEach((t, i) => {
+  const div = document.createElement('div');
+  div.className = `style-card ${i === 0 ? 'on' : ''}`;
+  div.innerHTML = `<span class="dot" style="background:${t.color}"></span>${t.name}`;
+  div.onclick = function() {
+    document.querySelectorAll('.style-card').forEach(c => c.classList.remove('on'));
+    this.classList.add('on');
+  };
+  grid.appendChild(div);
 });
 
-// 核心轉換邏輯
-function processConversion() {
-    const rawHtml = document.getElementById('inputHtml').value;
-    const cfg = STYLES_CONFIG[currentStyle];
-    
-    // 注入風格 CSS
-    const injectedHtml = rawHtml.replace('</head>', `
-        <style>
-            body { background: ${cfg.bg} !important; font-family: '${cfg.font}' !important; }
-            button, .btn { border-radius: ${cfg.radius} !important; border: ${cfg.border} !important; }
-            .card, div { border-radius: ${cfg.radius} !important; }
-            h1, h2, h3 { color: ${cfg.accent} !important; }
-        </style>
-    </head>`);
-
-    const frame = document.getElementById('previewFrame');
-    const blob = new Blob([injectedHtml || rawHtml], { type: 'text/html' });
-    frame.src = URL.createObjectURL(blob);
+function process() {
+  const html = document.getElementById('inputHtml').value;
+  const frame = document.getElementById('preview');
+  // 這裡放入您覺得最優雅的 CSS 規則注入
+  const blob = new Blob([html], { type: 'text/html' });
+  frame.src = URL.createObjectURL(blob);
 }
 
-function toggleFullScreen() {
-    const elem = document.getElementById('frameWrap');
-    if (!document.fullscreenElement) elem.requestFullscreen();
-    else document.exitFullscreen();
-}
+function toggleFS() { document.getElementById('frameWrap').requestFullscreen(); }
 </script>
 </body>
 </html>
