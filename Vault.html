@@ -715,19 +715,148 @@
   /* ── Divider ── */
   .divider { width: 1px; background: var(--parchment3); margin: 0 4px; align-self: stretch; }
 
-  /* ── Responsive ── */
+  /* ── Mobile bottom tab bar (hidden on desktop) ── */
+  .mobile-tabbar { display: none; }
+  .btn-back { display: none; }
+
+  /* ── Responsive: tablet ── */
   @media (max-width: 640px) {
     .sidebar { width: 240px; }
     .text-editor { padding: 20px; }
     .code-editor { font-size: 0.75rem; }
     .detail-toolbar { gap: 5px; }
   }
-  @media (max-width: 480px) {
-    .main { flex-direction: column; }
-    .sidebar { width: 100%; max-height: 260px; border-right: none; border-bottom: 1px solid var(--parchment3); }
+
+  /* ── Mobile: ≤600px full redesign ── */
+  @media (max-width: 600px) {
+
+    /* Header: compact */
+    header { padding: 10px 14px; }
+    .logo { font-size: 1rem; }
+    .logo span { display: none; }
+    .btn-header { font-size: 0.68rem; padding: 5px 9px; }
+
+    /* Tabs: tighter */
+    .tab { font-size: 0.78rem; padding: 10px 14px; }
+
+    /* Main: vertical stack, fills viewport minus header+tabs+tabbar */
+    .main {
+      flex-direction: column;
+      height: calc(100dvh - 44px - 44px - 54px);
+      /* header ~44, tabs ~44, tabbar ~54 */
+    }
+
+    /* Sidebar: full width, collapsible */
+    .sidebar {
+      width: 100%;
+      border-right: none;
+      border-bottom: 1px solid var(--parchment3);
+      flex-shrink: 0;
+      max-height: 55dvh;
+      transition: max-height 0.3s ease, opacity 0.25s, border 0.2s;
+      overflow: hidden;
+    }
+    .sidebar.mobile-hidden {
+      max-height: 0 !important;
+      opacity: 0;
+      pointer-events: none;
+      border-bottom: none;
+    }
+
+    /* Content: fills the rest */
+    .content { flex: 1; min-height: 0; }
+
+    /* Toolbar: compact wrap */
+    .detail-toolbar { padding: 7px 10px; gap: 5px; flex-wrap: wrap; }
+    .detail-title-input { font-size: 0.9rem; min-width: 60px; }
+    .folder-select-wrap { font-size: 0.68rem; }
+    .folder-select { font-size: 0.68rem; max-width: 80px; padding: 3px 5px; }
+    .detail-toolbar .divider { display: none; }
+    .btn-action { font-size: 0.68rem; padding: 5px 9px; }
+
+    /* Show back button on mobile */
+    .btn-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 0.75rem;
+      padding: 5px 10px;
+      border-radius: 7px;
+      border: 1px solid var(--parchment3);
+      background: var(--parchment);
+      color: var(--ink-soft);
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      font-family: 'Noto Sans TC', sans-serif;
+      transition: background 0.15s;
+    }
+    .btn-back:hover { background: var(--parchment3); }
+
+    /* Hide desktop view-toggle (bottom tab bar takes over) */
+    .view-toggle { display: none; }
+
+    /* Split view: vertical */
     .split-view { flex-direction: column; }
-    .split-left, .split-right { flex: none; height: 50%; }
-    .split-left { border-right: none; border-bottom: 1px solid var(--parchment3); }
+    .split-left {
+      border-right: none;
+      border-bottom: 1px solid var(--parchment3);
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .split-right {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .code-editor { font-size: 0.74rem; padding: 12px 14px; }
+    .text-editor  { padding: 14px 16px; }
+
+    /* Bottom tab bar */
+    .mobile-tabbar {
+      display: flex;
+      background: var(--ink);
+      border-top: 1px solid rgba(255,255,255,0.07);
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 90;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      height: 54px;
+    }
+    .mobile-tabbar.hidden { display: none !important; }
+
+    .mob-tab {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 4px 8px;
+      border: none;
+      background: transparent;
+      color: rgba(240,220,180,0.45);
+      cursor: pointer;
+      font-family: 'Noto Sans TC', sans-serif;
+      font-size: 0.58rem;
+      gap: 3px;
+      transition: color 0.15s, background 0.15s;
+      letter-spacing: 0.02em;
+    }
+    .mob-tab .mob-icon { font-size: 1.05rem; line-height: 1; }
+    .mob-tab.active { color: var(--amber-soft); }
+    .mob-tab:active { background: rgba(255,255,255,0.06); }
+
+    /* Separator between list and actions in tabbar */
+    .mob-tab-sep {
+      width: 1px;
+      background: rgba(255,255,255,0.08);
+      align-self: stretch;
+      margin: 8px 0;
+      flex-shrink: 0;
+    }
   }
 </style>
 </head>
@@ -895,6 +1024,26 @@
       <button class="settings-reset" onclick="resetSettings()">↺ 恢復預設值</button>
     </div>
   </div>
+</div>
+
+<!-- Mobile bottom tab bar (code items only, hidden on desktop via CSS) -->
+<div class="mobile-tabbar hidden" id="mobileTabbar">
+  <button class="mob-tab active" id="mobTab-editor" onclick="setView('editor')">
+    <span class="mob-icon">✏️</span>編輯
+  </button>
+  <button class="mob-tab" id="mobTab-split" onclick="setView('split')">
+    <span class="mob-icon">⬛</span>分割
+  </button>
+  <button class="mob-tab" id="mobTab-preview" onclick="setView('preview')">
+    <span class="mob-icon">👁</span>預覽
+  </button>
+  <div class="mob-tab-sep"></div>
+  <button class="mob-tab" onclick="manualSave()">
+    <span class="mob-icon">💾</span>儲存
+  </button>
+  <button class="mob-tab" onclick="copyContent()">
+    <span class="mob-icon">📋</span>複製
+  </button>
 </div>
 
 <!-- Toast -->
@@ -1084,11 +1233,45 @@ function selectItem(id) {
   else renderTextDetail(item);
 }
 
+// ── Mobile helpers ──
+function isMobile() { return window.innerWidth <= 600; }
+
+function showMobileTabbar(show) {
+  const bar = document.getElementById('mobileTabbar');
+  if (show) bar.classList.remove('hidden');
+  else bar.classList.add('hidden');
+}
+
+function updateMobileTabbarActive(v) {
+  ['editor','split','preview'].forEach(name => {
+    const btn = document.getElementById('mobTab-' + name);
+    if (btn) btn.classList.toggle('active', name === v);
+  });
+}
+
+function mobileSidebarHide() {
+  document.querySelector('.sidebar').classList.add('mobile-hidden');
+}
+function mobileSidebarShow() {
+  document.querySelector('.sidebar').classList.remove('mobile-hidden');
+}
+
+function mobileBack() {
+  // Save before going back
+  manualSave(true);
+  currentId = null;
+  showMobileTabbar(false);
+  mobileSidebarShow();
+  renderList();
+  showWelcome();
+}
+
 // ── Code detail ──
 function renderCodeDetail(item) {
   currentView = 'split';
   document.getElementById('contentArea').innerHTML = `
     <div class="detail-toolbar">
+      <button class="btn-back" onclick="mobileBack()">‹ 返回</button>
       <input class="detail-title-input" id="detailTitle" value="${escHtml(item.name)}" placeholder="專案名稱" oninput="scheduleSave()">
       <div class="folder-select-wrap">
         <span>📁</span>
@@ -1111,6 +1294,10 @@ function renderCodeDetail(item) {
       ${buildCodeViewHtml(item.content)}
     </div>
   `;
+  if (isMobile()) {
+    mobileSidebarHide();
+    showMobileTabbar(true);
+  }
   setView('split');
   applySettingsToEditor();
 }
@@ -1136,8 +1323,11 @@ function setView(v) {
   const sv = document.getElementById('splitView');
   const left = sv ? sv.querySelector('.split-left') : null;
   const right = sv ? sv.querySelector('.split-right') : null;
+  // Desktop view-toggle buttons
   const btns = document.querySelectorAll('.view-btn');
   btns.forEach((b,i) => b.classList.toggle('active', ['editor','split','preview'][i] === v));
+  // Mobile tabbar active
+  updateMobileTabbarActive(v);
   if (!sv) return;
   if (v === 'editor') { left.style.flex='1'; left.style.display=''; right.style.display='none'; }
   else if (v === 'preview') { left.style.display='none'; right.style.display=''; right.style.flex='1'; }
@@ -1159,6 +1349,7 @@ function refreshPreview() {
 function renderTextDetail(item) {
   document.getElementById('contentArea').innerHTML = `
     <div class="detail-toolbar">
+      <button class="btn-back" onclick="mobileBack()">‹ 返回</button>
       <input class="detail-title-input" id="detailTitle" value="${escHtml(item.name)}" placeholder="文章標題" oninput="scheduleSave()">
       <div class="folder-select-wrap">
         <span>📁</span>
@@ -1174,6 +1365,10 @@ function renderTextDetail(item) {
     </div>
     <textarea class="text-editor" id="textEditor" placeholder="在這裡輸入文章內容…" oninput="scheduleSave()">${escHtml(item.content)}</textarea>
   `;
+  if (isMobile()) {
+    mobileSidebarHide();
+    showMobileTabbar(false); // text has no preview, no tabbar needed
+  }
   applySettingsToEditor();
 }
 
@@ -1242,7 +1437,7 @@ function deleteItem() {
   currentId = null;
   saveDB();
   renderList();
-  showWelcome();
+  showWelcome(); // showWelcome already handles mobile state
   showToast('已刪除');
 }
 
@@ -1254,6 +1449,8 @@ function showWelcome() {
       <p>程式碼專案可以即時預覽效果<br>文字文章可以在這裡安靜閱讀與編輯</p>
     </div>
   `;
+  showMobileTabbar(false);
+  mobileSidebarShow();
 }
 
 // ── Item Modal ──
