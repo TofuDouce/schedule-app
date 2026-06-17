@@ -118,8 +118,8 @@ header {
 
 .btn-hdr {
   font-family: 'Noto Sans TC', sans-serif;
-  font-size: 0.72rem;
-  padding: 5px 12px;
+  font-size: 0.85rem;
+  padding: 6px 13px;
   border-radius: 16px;
   border: 1px solid rgba(255,255,255,0.15);
   background: transparent;
@@ -366,7 +366,7 @@ header {
 .detail-title-input {
   flex: 1;
   font-family: 'Noto Serif TC', serif;
-  font-size: 1rem;
+  font-size: 1.15rem;
   font-weight: 600;
   border: none;
   background: transparent;
@@ -380,9 +380,9 @@ header {
 
 .btn-act {
   font-family: 'Noto Sans TC', sans-serif;
-  font-size: 0.72rem;
-  padding: 5px 11px;
-  border-radius: 6px;
+  font-size: 1rem;
+  padding: 7px 14px;
+  border-radius: 7px;
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--ink-soft);
@@ -397,18 +397,18 @@ header {
 .btn-act.settings-act { font-size: 0.8rem; }
 
 /* Folder select */
-.folder-sel-wrap { display: flex; align-items: center; gap: 4px; font-size: 0.72rem; color: var(--ink-muted); }
+.folder-sel-wrap { display: flex; align-items: center; gap: 4px; font-size: 1rem; color: var(--ink-muted); }
 .folder-sel {
   font-family: 'Noto Sans TC', sans-serif;
-  font-size: 0.72rem;
-  padding: 4px 7px;
+  font-size: 1rem;
+  padding: 6px 9px;
   border-radius: 5px;
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--ink-soft);
   outline: none;
   cursor: pointer;
-  max-width: 110px;
+  max-width: 130px;
 }
 .folder-sel:focus { border-color: var(--gold); }
 
@@ -430,15 +430,15 @@ header {
 .dl-menu.show { display: block; }
 .dl-item {
   display: flex; align-items: center; gap: 8px;
-  padding: 7px 10px;
+  padding: 9px 12px;
   border-radius: 7px;
   cursor: pointer;
-  font-size: 0.75rem;
+  font-size: 0.95rem;
   color: var(--ink-soft);
   transition: background 0.1s, color 0.1s;
 }
 .dl-item:hover { background: var(--bg2); color: var(--ink); }
-.dl-item .dl-ico { font-size: 0.9rem; }
+.dl-item .dl-ico { font-size: 1.05rem; }
 
 /* ── Reader ── */
 .reader-wrap {
@@ -740,8 +740,8 @@ header {
 /* Back btn (mobile) */
 .btn-back {
   display: none;
-  font-size: 0.72rem;
-  padding: 4px 9px;
+  font-size: 1rem;
+  padding: 6px 12px;
   border-radius: 6px;
   border: 1px solid var(--border);
   background: var(--surface);
@@ -776,7 +776,7 @@ header {
   header { padding: 0 14px; height: 46px; }
   .logo { font-size: 0.95rem; }
   .logo-sub { display: none; }
-  .btn-hdr { font-size: 0.65rem; padding: 4px 8px; }
+  .btn-hdr { font-size: 0.8rem; padding: 5px 10px; }
 
   .app-body { height: calc(100dvh - 46px); }
 
@@ -799,13 +799,14 @@ header {
   .app-body { flex-direction: column; }
   /* Content fills remaining space — welcome will be centred within it */
   .content { flex: 1; min-height: 0; overflow: hidden; }
-  .detail-toolbar { padding: 7px 10px; }
-  .detail-title-input { font-size: 0.88rem; }
+  .detail-toolbar { padding: 8px 10px; gap: 5px; }
+  .detail-title-input { font-size: 1.05rem; min-width: 60px; }
   .vdiv { display: none; }
-  .btn-act { font-size: 0.65rem; padding: 4px 8px; }
-  .folder-sel { max-width: 75px; font-size: 0.65rem; }
+  .btn-act { font-size: 0.9rem; padding: 6px 10px; }
+  .folder-sel-wrap { font-size: 0.85rem; }
+  .folder-sel { max-width: 90px; font-size: 0.85rem; padding: 5px 6px; }
   .reader-inner { padding: 20px 20px; }
-  .btn-back { display: inline-flex; }
+  .btn-back { display: inline-flex; font-size: 0.9rem; padding: 5px 9px; }
 }
 </style>
 </head>
@@ -941,6 +942,7 @@ header {
           <span class="s-label">左右邊界</span>
           <div class="margin-row">
             <button class="margin-btn" onclick="adjustMargin(-1)">縮小</button>
+            <span class="s-val" id="marginVal" style="min-width:38px">60px</span>
             <button class="margin-btn" onclick="adjustMargin(1)">放大</button>
           </div>
         </div>
@@ -1310,15 +1312,23 @@ function printPdf(title, content) {
   const fontName = S.fontFamily.includes('LXGW') ? 'LXGW WenKai TC' :
     S.fontFamily.includes('Noto Serif') ? 'Noto Serif TC' :
     S.fontFamily.includes('Noto Sans') ? 'Noto Sans TC' : 'Noto Serif TC';
+  const isTate = S.dir === 'tate';
   win.document.write(`<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8">
 <title>${escHtml(title)}</title>
 <link href="https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontName)}:wght@400;600&display=swap" rel="stylesheet">
 <style>
-@page{margin:2cm 2.5cm;}
+@page{margin:3cm;}
+html,body{margin:0;padding:0;}
 body{font-family:'${fontName}','Noto Serif TC',serif;font-size:${Math.max(11, S.fontSize - 2)}pt;
-line-height:${S.lineHeight};color:#1a1a1a;background:#fff;}
-h1{font-size:1.4em;margin-bottom:1.2em;font-weight:600;}
-pre{white-space:pre-wrap;font-family:inherit;font-size:inherit;line-height:inherit;}
+line-height:${S.lineHeight};color:#1a1a1a;background:#fff;
+${isTate ? 'writing-mode:vertical-rl; height: 100%;' : ''}
+box-sizing:border-box;
+padding: ${isTate ? '0.5cm 1cm' : '0'};
+}
+h1{font-size:1.4em;margin-bottom:1.2em;font-weight:600;${isTate ? 'margin-right:1.2em;' : ''}}
+pre{white-space:pre-wrap;font-family:inherit;font-size:inherit;line-height:inherit;margin:0;
+${isTate ? 'padding-left:0.8em;' : 'padding-right:0.5cm;'}
+}
 </style></head><body>
 <h1>${escHtml(title)}</h1>
 <pre>${escHtml(content)}</pre>
@@ -1371,6 +1381,7 @@ function batchDownloadPDF() {
   const fontName = S.fontFamily.includes('LXGW') ? 'LXGW WenKai TC' :
     S.fontFamily.includes('Noto Serif') ? 'Noto Serif TC' :
     S.fontFamily.includes('Noto Sans') ? 'Noto Sans TC' : 'Noto Serif TC';
+  const isTate = S.dir === 'tate';
   const body = items.map((item, idx) => `
     ${idx > 0 ? '<div style="page-break-before:always"></div>' : ''}
     <h1>${escHtml(item.name)}</h1>
@@ -1380,11 +1391,18 @@ function batchDownloadPDF() {
 <title>文庫合併匯出</title>
 <link href="https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontName)}:wght@400;600&display=swap" rel="stylesheet">
 <style>
-@page{margin:2cm 2.5cm;}
+@page{margin:3cm;}
+html,body{margin:0;padding:0;}
 body{font-family:'${fontName}','Noto Serif TC',serif;font-size:${Math.max(11,S.fontSize-2)}pt;
-line-height:${S.lineHeight};color:#1a1a1a;}
-h1{font-size:1.4em;margin-bottom:1em;font-weight:600;border-bottom:1px solid #ccc;padding-bottom:0.4em;}
-pre{white-space:pre-wrap;font-family:inherit;font-size:inherit;line-height:inherit;}
+line-height:${S.lineHeight};color:#1a1a1a;
+${isTate ? 'writing-mode:vertical-rl; height: 100%;' : ''}
+box-sizing:border-box;
+padding: ${isTate ? '0.5cm 1cm' : '0'};
+}
+h1{font-size:1.4em;margin-bottom:1em;font-weight:600;border-bottom:1px solid #ccc;padding-bottom:0.4em;${isTate ? 'margin-right:1.2em;' : ''}}
+pre{white-space:pre-wrap;font-family:inherit;font-size:inherit;line-height:inherit;margin:0;
+${isTate ? 'padding-left:0.8em;' : 'padding-right:0.5cm;'}
+}
 </style></head><body>
 ${body}
 <script>window.onload=function(){setTimeout(function(){window.print();},900);};<\/script>
@@ -1551,9 +1569,11 @@ function setDir(d) {
 }
 
 function adjustMargin(delta) {
-  S.margin = Math.max(16, Math.min(160, S.margin + delta * 16));
+  S.margin = Math.max(16, Math.min(160, S.margin + delta * 8));
   saveSettings();
   applyReaderStyles();
+  const v = document.getElementById('marginVal');
+  if (v) v.textContent = S.margin + 'px';
   showToast(`邊界：${S.margin}px`);
 }
 
@@ -1580,6 +1600,7 @@ function syncSettingsUI() {
   document.getElementById('slineHeight').value = S.lineHeight;
   document.getElementById('sfontSizeVal').textContent = S.fontSize + 'px';
   document.getElementById('slineHeightVal').textContent = S.lineHeight.toFixed(1);
+  document.getElementById('marginVal').textContent = S.margin + 'px';
   document.getElementById('dirHori').classList.toggle('active', S.dir === 'hori');
   document.getElementById('dirTate').classList.toggle('active', S.dir === 'tate');
   document.querySelectorAll('.theme-dot').forEach(d => d.classList.toggle('active', d.dataset.t === (S.theme || 'light')));
