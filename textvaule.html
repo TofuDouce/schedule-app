@@ -415,16 +415,16 @@ header {
 /* Download dropdown */
 .dl-wrap { position: relative; }
 .dl-menu {
-  position: absolute;
-  top: calc(100% + 6px);
-  right: 0;
+  position: fixed;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 5px;
   box-shadow: 0 6px 24px var(--shadow-md);
-  z-index: 50;
-  min-width: 130px;
+  z-index: 250;
+  min-width: 150px;
+  width: max-content;
+  max-width: min(220px, calc(100vw - 24px));
   display: none;
 }
 .dl-menu.show { display: block; }
@@ -1222,10 +1222,28 @@ function showWelcome() {
 function toggleDlMenu(e) {
   e.stopPropagation();
   const m = document.getElementById('dlMenu');
+  const btn = e.currentTarget;
   dlMenuOpen = !dlMenuOpen;
   m.classList.toggle('show', dlMenuOpen);
+  if (dlMenuOpen) {
+    const btnRect = btn.getBoundingClientRect();
+    const menuWidth = Math.min(220, window.innerWidth - 24);
+    let left = btnRect.left;
+    // Clamp so menu never overflows right edge
+    if (left + menuWidth > window.innerWidth - 12) {
+      left = window.innerWidth - menuWidth - 12;
+    }
+    // Clamp so menu never overflows left edge
+    if (left < 12) left = 12;
+    m.style.left = left + 'px';
+    m.style.top = (btnRect.bottom + 6) + 'px';
+  }
 }
 document.addEventListener('click', () => {
+  const m = document.getElementById('dlMenu');
+  if (m && dlMenuOpen) { m.classList.remove('show'); dlMenuOpen = false; }
+});
+window.addEventListener('resize', () => {
   const m = document.getElementById('dlMenu');
   if (m && dlMenuOpen) { m.classList.remove('show'); dlMenuOpen = false; }
 });
@@ -1313,22 +1331,20 @@ function printPdf(title, content) {
     S.fontFamily.includes('Noto Serif') ? 'Noto Serif TC' :
     S.fontFamily.includes('Noto Sans') ? 'Noto Sans TC' : 'Noto Serif TC';
   const isTate = S.dir === 'tate';
+  // Convert the reader's px margin into a print-friendly cm value (min 2cm, scaled from S.margin)
+  const marginCm = Math.max(2, Math.min(6, (S.margin / 96 * 2.54))).toFixed(2);
   win.document.write(`<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8">
 <title>${escHtml(title)}</title>
 <link href="https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontName)}:wght@400;600&display=swap" rel="stylesheet">
 <style>
-@page{margin:3cm;}
+@page{margin:${marginCm}cm;}
 html,body{margin:0;padding:0;}
 body{font-family:'${fontName}','Noto Serif TC',serif;font-size:${Math.max(11, S.fontSize - 2)}pt;
 line-height:${S.lineHeight};color:#1a1a1a;background:#fff;
-${isTate ? 'writing-mode:vertical-rl; height: 100%;' : ''}
-box-sizing:border-box;
-padding: ${isTate ? '0.5cm 1cm' : '0'};
+${isTate ? 'writing-mode:vertical-rl; height: 100vh;' : ''}
 }
-h1{font-size:1.4em;margin-bottom:1.2em;font-weight:600;${isTate ? 'margin-right:1.2em;' : ''}}
-pre{white-space:pre-wrap;font-family:inherit;font-size:inherit;line-height:inherit;margin:0;
-${isTate ? 'padding-left:0.8em;' : 'padding-right:0.5cm;'}
-}
+h1{font-size:1.4em;margin-bottom:1.2em;font-weight:600;}
+pre{white-space:pre-wrap;font-family:inherit;font-size:inherit;line-height:inherit;margin:0;}
 </style></head><body>
 <h1>${escHtml(title)}</h1>
 <pre>${escHtml(content)}</pre>
@@ -1382,6 +1398,7 @@ function batchDownloadPDF() {
     S.fontFamily.includes('Noto Serif') ? 'Noto Serif TC' :
     S.fontFamily.includes('Noto Sans') ? 'Noto Sans TC' : 'Noto Serif TC';
   const isTate = S.dir === 'tate';
+  const marginCm = Math.max(2, Math.min(6, (S.margin / 96 * 2.54))).toFixed(2);
   const body = items.map((item, idx) => `
     ${idx > 0 ? '<div style="page-break-before:always"></div>' : ''}
     <h1>${escHtml(item.name)}</h1>
@@ -1391,18 +1408,14 @@ function batchDownloadPDF() {
 <title>文庫合併匯出</title>
 <link href="https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontName)}:wght@400;600&display=swap" rel="stylesheet">
 <style>
-@page{margin:3cm;}
+@page{margin:${marginCm}cm;}
 html,body{margin:0;padding:0;}
 body{font-family:'${fontName}','Noto Serif TC',serif;font-size:${Math.max(11,S.fontSize-2)}pt;
 line-height:${S.lineHeight};color:#1a1a1a;
-${isTate ? 'writing-mode:vertical-rl; height: 100%;' : ''}
-box-sizing:border-box;
-padding: ${isTate ? '0.5cm 1cm' : '0'};
+${isTate ? 'writing-mode:vertical-rl; height: 100vh;' : ''}
 }
-h1{font-size:1.4em;margin-bottom:1em;font-weight:600;border-bottom:1px solid #ccc;padding-bottom:0.4em;${isTate ? 'margin-right:1.2em;' : ''}}
-pre{white-space:pre-wrap;font-family:inherit;font-size:inherit;line-height:inherit;margin:0;
-${isTate ? 'padding-left:0.8em;' : 'padding-right:0.5cm;'}
-}
+h1{font-size:1.4em;margin-bottom:1em;font-weight:600;border-bottom:1px solid #ccc;padding-bottom:0.4em;}
+pre{white-space:pre-wrap;font-family:inherit;font-size:inherit;line-height:inherit;margin:0;}
 </style></head><body>
 ${body}
 <script>window.onload=function(){setTimeout(function(){window.print();},900);};<\/script>
