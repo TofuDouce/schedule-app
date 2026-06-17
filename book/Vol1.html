@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>漠北鎖鸞</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700;900&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink-black:#1A1410;
+    --felt-brown:#3D2B1F;
+    --felt-brown-light:#4E3826;
+    --wolf-red:#8B2635;
+    --court-gold:#C9A24B;
+    --moon-white:#E8DFD0;
+    --steel-grey:#5C6670;
+  }
+
+  *{ box-sizing:border-box; }
+
+  html,body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(ellipse at 50% -10%, rgba(201,162,75,0.10), transparent 55%),
+      repeating-linear-gradient(135deg, rgba(201,162,75,0.025) 0 2px, transparent 2px 14px),
+      var(--ink-black);
+    color:var(--moon-white);
+    font-family:'Noto Serif TC', serif;
+    display:flex;
+    justify-content:center;
+    padding:32px 16px 64px;
+  }
+
+  .stage{
+    width:100%;
+    max-width:680px;
+  }
+
+  /* ---------- 共用元件 ---------- */
+  .panel{
+    background:var(--felt-brown);
+    border:1px solid rgba(201,162,75,0.35);
+    border-radius:6px;
+    box-shadow:0 18px 40px rgba(0,0,0,0.45), inset 0 0 60px rgba(0,0,0,0.25);
+    padding:32px 28px;
+    position:relative;
+  }
+  .panel::before{
+    content:"";
+    position:absolute; inset:8px;
+    border:1px solid rgba(201,162,75,0.18);
+    border-radius:4px;
+    pointer-events:none;
+  }
+
+  .eyebrow{
+    font-family:'Noto Sans TC', sans-serif;
+    font-size:12px;
+    letter-spacing:.32em;
+    color:var(--court-gold);
+    text-transform:uppercase;
+    opacity:.85;
+  }
+
+  button{
+    font-family:'Noto Sans TC', sans-serif;
+    cursor:pointer;
+  }
+  button:focus-visible, input:focus-visible{
+    outline:2px solid var(--court-gold);
+    outline-offset:2px;
+  }
+
+  /* ---------- 開場畫面 ---------- */
+  #screen-title{ text-align:center; }
+  #screen-title h1{
+    font-family:'Noto Serif TC', serif;
+    font-weight:900;
+    font-size:clamp(32px,7vw,46px);
+    letter-spacing:.18em;
+    margin:6px 0 8px;
+    color:var(--court-gold);
+    text-shadow:0 0 24px rgba(201,162,75,0.35);
+  }
+  #screen-title .sub{
+    font-family:'Noto Sans TC', sans-serif;
+    font-size:14px;
+    letter-spacing:.06em;
+    color:var(--moon-white);
+    opacity:.72;
+    margin-bottom:30px;
+  }
+  .divider{
+    width:64px; height:1px;
+    background:linear-gradient(90deg, transparent, var(--court-gold), transparent);
+    margin:0 auto 28px;
+  }
+
+  .name-row{
+    display:flex;
+    gap:14px;
+    margin-bottom:26px;
+    flex-wrap:wrap;
+  }
+  .name-field{
+    flex:1 1 200px;
+    text-align:left;
+  }
+  .name-field label{
+    display:block;
+    font-family:'Noto Sans TC', sans-serif;
+    font-size:11px;
+    letter-spacing:.18em;
+    color:var(--court-gold);
+    opacity:.8;
+    margin-bottom:6px;
+  }
+  .name-field input{
+    width:100%;
+    background:rgba(0,0,0,0.25);
+    border:1px solid rgba(201,162,75,0.4);
+    border-radius:4px;
+    color:var(--moon-white);
+    font-family:'Noto Serif TC', serif;
+    font-size:17px;
+    padding:10px 12px;
+  }
+  .name-field input::placeholder{ color:rgba(232,223,208,0.4); }
+
+  .start-btn{
+    background:transparent;
+    border:1px solid var(--court-gold);
+    color:var(--court-gold);
+    font-size:15px;
+    letter-spacing:.2em;
+    padding:12px 38px;
+    border-radius:3px;
+    transition:background .25s, color .25s, box-shadow .25s;
+  }
+  .start-btn:hover{
+    background:var(--court-gold);
+    color:var(--ink-black);
+    box-shadow:0 0 28px rgba(201,162,75,0.45);
+  }
+
+  .tags-note{
+    margin-top:22px;
+    font-family:'Noto Sans TC', sans-serif;
+    font-size:11.5px;
+    color:var(--steel-grey);
+    letter-spacing:.04em;
+  }
+
+  /* ---------- 遊戲畫面 ---------- */
+  #screen-game{ display:none; }
+
+  .meter-wrap{ margin:18px 0 26px; }
+  .meter-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:8px;
+    font-family:'Noto Sans TC', sans-serif;
+  }
+  .meter-top .tier{
+    font-family:'Noto Serif TC', serif;
+    font-weight:700;
+    font-size:16px;
+    color:var(--court-gold);
+    letter-spacing:.05em;
+  }
+  .meter-track{
+    position:relative;
+    height:10px;
+    border-radius:5px;
+    overflow:hidden;
+    background:linear-gradient(90deg, var(--steel-grey) 0%, #7A5C3E 28%, var(--wolf-red) 62%, var(--court-gold) 100%);
+    border:1px solid rgba(0,0,0,0.4);
+  }
+  .meter-track::after{
+    content:"";
+    position:absolute; inset:0;
+    background:repeating-linear-gradient(90deg, rgba(0,0,0,0.18) 0 2px, transparent 2px 18px);
+  }
+  .meter-mask{
+    position:absolute; top:0; right:0; height:100%;
+    background:var(--felt-brown);
+    width:100%;
+    transition:width .7s ease;
+  }
+
+  .chapter-label{
+    font-family:'Noto Sans TC', sans-serif;
+    font-size:12px;
+    letter-spacing:.2em;
+    color:var(--steel-grey);
+    margin-bottom:4px;
+  }
+
+  .story-box p{
+    opacity:0;
+    margin:0 0 1.05em;
+    line-height:1.95;
+    font-size:16.5px;
+    color:var(--moon-white);
+    animation:fadeUp .65s ease forwards;
+  }
+  .story-box p:last-child{ margin-bottom:0; }
+
+  @keyframes fadeUp{
+    from{ opacity:0; transform:translateY(8px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+
+  .choices{
+    margin-top:26px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .choice-btn{
+    text-align:left;
+    background:rgba(0,0,0,0.22);
+    border:1px solid rgba(201,162,75,0.3);
+    color:var(--moon-white);
+    font-family:'Noto Serif TC', serif;
+    font-size:15px;
+    padding:14px 16px;
+    border-radius:4px;
+    transition:transform .18s, border-color .18s, background .18s;
+  }
+  .choice-btn:hover{
+    border-color:var(--court-gold);
+    background:rgba(201,162,75,0.12);
+    transform:translateX(4px);
+  }
+
+  /* ---------- 結局畫面 ---------- */
+  #screen-epilogue{ display:none; text-align:center; }
+  #screen-epilogue h2{
+    font-family:'Noto Serif TC', serif;
+    font-weight:900;
+    font-size:clamp(24px,5.6vw,32px);
+    color:var(--court-gold);
+    letter-spacing:.12em;
+    margin:10px 0 22px;
+  }
+  #screen-epilogue .story-box{ text-align:left; }
+  .restart-btn{
+    margin-top:28px;
+    background:transparent;
+    border:1px solid rgba(201,162,75,0.5);
+    color:var(--moon-white);
+    font-size:13px;
+    letter-spacing:.16em;
+    padding:10px 26px;
+    border-radius:3px;
+    transition:border-color .2s, color .2s;
+  }
+  .restart-btn:hover{
+    border-color:var(--court-gold);
+    color:var(--court-gold);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .story-box p{ animation:none; opacity:1; }
+    .meter-mask{ transition:none; }
+    .choice-btn{ transition:none; }
+  }
+
+  @media (max-width:480px){
+    .panel{ padding:24px 18px; }
+    .name-row{ flex-direction:column; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+
+  <!-- 開場畫面 -->
+  <section id="screen-title" class="panel">
+    <div class="eyebrow">古代 · 異族之戀 · 禁錮之愛 · 虐戀情深</div>
+    <h1>漠北鎖鸞</h1>
+    <div class="sub">一段任你執筆的異域禁戀 — 試作版</div>
+    <div class="divider"></div>
+
+    <div class="name-row">
+      <div class="name-field">
+        <label for="female-input">女主角</label>
+        <input id="female-input" type="text" value="顧璃" maxlength="12">
+      </div>
+      <div class="name-field">
+        <label for="male-input">男主角（單于）</label>
+        <input id="male-input" type="text" value="攣鞮烏烈" maxlength="12">
+      </div>
+    </div>
+
+    <button class="start-btn" id="start-btn">入 帳</button>
+    <div class="tags-note">本篇劇情已固定寫好，正式版可自由更換姓名重玩，不會消耗任何 AI 額度。</div>
+  </section>
+
+  <!-- 遊戲畫面 -->
+  <section id="screen-game" class="panel">
+    <div class="meter-wrap">
+      <div class="meter-top">
+        <span class="eyebrow">緣分之弦</span>
+        <span class="tier" id="tier-label">戰俘</span>
+      </div>
+      <div class="meter-track">
+        <div class="meter-mask" id="meter-mask"></div>
+      </div>
+    </div>
+
+    <div class="chapter-label" id="chapter-label">卷一・入帳</div>
+    <div class="story-box" id="story-box"></div>
+
+    <div class="choices" id="choices"></div>
+  </section>
+
+  <!-- 結局畫面 -->
+  <section id="screen-epilogue" class="panel">
+    <div class="eyebrow">結局</div>
+    <h2 id="epilogue-title">緣定龍城</h2>
+    <div class="story-box" id="epilogue-box"></div>
+    <button class="restart-btn" id="restart-btn">重新開始</button>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  let femaleName = '顧璃';
+  let maleName = '攣鞮烏烈';
+  let score = 0;
+  let currentChapter = 0;
+
+  const chapters = [
+    {
+      label:'卷一・入帳',
+      text:(f,m)=>`風沙捲著血腥味灌進營帳的縫隙。${f}的手腕還留著繩痕，被人推跌在鋪滿狼皮的地上，仰頭便撞進一雙鷹隼般的眼睛——那是新繼位的單于，${m}。
+
+帳外傳令兵的吼聲還未散盡：「漢女已擒，獻予單于。」${m}沒有看那些跪地請賞的部下，只是緩緩踱近，像在審視一件戰利品，又像在辨認一件他從未見過的東西。`,
+      choices:[
+        {text:'「我不是戰利品。」——昂首直視', delta:10},
+        {text:'垂眼沉默，不發一語', delta:4},
+        {text:'試探地用匈奴語問他：「你要殺我嗎？」', delta:16},
+      ]
+    },
+    {
+      label:'卷二・帳中囚居',
+      text:(f,m)=>`${m}沒有殺她，卻也沒有放她走。他將她留在自己王帳的一角，只用一道氈簾隔開，日夜有甲士看守。
+
+${f}漸漸明白，自己不是俘虜，也不是賓客，而是某種說不清的存在——像被拴在腰間的獵鷹，飛不遠，卻也未被棄置。某夜，${m}帶傷歸帳，軍醫卻被他揮退在外。`,
+      choices:[
+        {text:'掀開氈簾，主動上前替他清理傷口', delta:20},
+        {text:'隔著氈簾冷眼旁觀，不發一言', delta:3},
+        {text:'質問他：「為何不肯放我回中原？」', delta:10},
+      ]
+    },
+    {
+      label:'卷三・王庭風波',
+      text:(f,m)=>`${f}的存在很快引來王庭側目。當眾譯話間，總有人話裡帶刺：「漢人的女子，也配留在單于帳下？」
+
+${f}知道，稍有差池，她連「戰俘」這個身分都保不住，而${m}從未替她解圍，只是冷冷地看著，彷彿在等她自己證明什麼。`,
+      choices:[
+        {text:'低頭隱忍，假裝聽不懂那些譏諷', delta:6},
+        {text:'以醫術救下一名部族孩童，當眾證明價值', delta:18},
+        {text:'以匈奴語當眾反駁，寸步不讓', delta:12},
+      ]
+    },
+    {
+      label:'卷四・漸生情愫',
+      text:(f,m)=>`草原的夜長得像沒有盡頭。${m}漸漸不再避開她的視線，甚至會在深夜獨自前來，只是坐在氈簾外，聽${f}低聲哼著中原的小調。
+
+一次，他忽然開口，聲音裡帶著從未有過的猶疑：「漢人都這樣騙人嗎——用一首歌，讓敵人放下刀？」`,
+      choices:[
+        {text:'反問他：「那你呢，單于，也放下刀了嗎？」', delta:20},
+        {text:'沉默不答，只是繼續哼著那首小調', delta:10},
+        {text:'老實告訴他，這只是想家了', delta:14},
+      ]
+    },
+    {
+      label:'卷五・心結與抉擇',
+      text:(f,m)=>`中原使者北來，帶著文書，要求單于交還被擄的漢女，以換邊境三年互市之約。
+
+${m}將文書擲入火盆，一字一句說：「告訴你們的皇帝，人，朕不還。」帳外風雪呼嘯，${f}卻第一次說不清自己心裡翻湧的，究竟是恐懼，還是別的什麼。`,
+      choices:[
+        {text:'懇求他放自己歸鄉：「我終究是漢人。」', delta:2},
+        {text:'留下，但要他親口說明為何不肯放手', delta:16},
+        {text:'一言不發，任由文書焚盡，默默走近他身側', delta:22},
+      ]
+    },
+  ];
+
+  const epilogueData = {
+    high:{
+      title:'緣定龍城',
+      text:(f,m)=>`文書焚成灰燼那夜，${m}沒有再說一句多餘的話，只是將${f}冰冷的手攥進掌心，像是終於找回了一件曾以為會失去的東西。
+
+後來的史官記下：某年，單于不顧各方非議，立漢女${f}為左賢妃，龍城的爐火，從此多了一道不肯熄滅的影子。
+
+草原依舊遼闊，邊境依舊緊繃，但至少在那一座王帳之內，兩個原該是仇敵的人，終究選擇了彼此。`
+    },
+    mid:{
+      title:'懸而未決',
+      text:(f,m)=>`${m}沒有再提歸還的事，${f}也沒有再開口求歸。兩人之間像是懸著一根看不見的弦，誰都不肯先鬆手，卻也沒有誰敢真正拉到底。
+
+草原的風一年年吹過龍庭，${f}始終留在那道氈簾之後——是俘虜，是賓客，還是別的什麼，連她自己都說不清楚。
+
+故事到這裡，沒有答案，只有兩個人，仍在彼此的目光裡，慢慢地、痛著地，靠近。`
+    },
+    low:{
+      title:'鎖鸞折翼',
+      text:(f,m)=>`最終，${m}還是讓人備了車馬，送${f}回中原——他從未說出口的理由，是邊境三年的太平，還是別的什麼，沒人知道。
+
+${f}坐在搖晃的車裡，回頭望了一眼漸漸縮小的王帳輪廓，忽然發現自己竟記不清，那雙鷹隼般的眼睛，最初到底是想殺她，還是想留她。
+
+風沙掩去了來時的痕跡，只有龍城的篝火，在很多年後，仍會被一個年邁的單于，獨自望著，直到燃盡。`
+    }
+  };
+
+  function getTier(s){
+    if(s>=95) return '龍城共生';
+    if(s>=80) return '不可言說的執念';
+    if(s>=60) return '心尖之刺';
+    if(s>=40) return '看不透的漢女';
+    if(s>=20) return '帳中礙眼之人';
+    return '戰俘';
+  }
+
+  const titleScreen = document.getElementById('screen-title');
+  const gameScreen = document.getElementById('screen-game');
+  const epilogueScreen = document.getElementById('screen-epilogue');
+  const chapterLabelEl = document.getElementById('chapter-label');
+  const storyBox = document.getElementById('story-box');
+  const choicesWrap = document.getElementById('choices');
+  const meterMask = document.getElementById('meter-mask');
+  const tierLabel = document.getElementById('tier-label');
+  const epilogueTitle = document.getElementById('epilogue-title');
+  const epilogueBox = document.getElementById('epilogue-box');
+
+  function renderParagraphs(container, raw){
+    container.innerHTML = '';
+    raw.split('\n\n').forEach((p,i)=>{
+      const el = document.createElement('p');
+      el.style.animationDelay = (i*0.28)+'s';
+      el.textContent = p;
+      container.appendChild(el);
+    });
+  }
+
+  function updateMeter(){
+    meterMask.style.width = (100-score)+'%';
+    tierLabel.textContent = getTier(score);
+  }
+
+  function showChapter(idx){
+    const ch = chapters[idx];
+    chapterLabelEl.textContent = ch.label;
+    renderParagraphs(storyBox, ch.text(femaleName, maleName));
+    choicesWrap.innerHTML = '';
+    ch.choices.forEach(c=>{
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.textContent = c.text;
+      btn.addEventListener('click', ()=>handleChoice(idx, c.delta));
+      choicesWrap.appendChild(btn);
+    });
+    updateMeter();
+  }
+
+  function handleChoice(idx, delta){
+    score = Math.min(100, score + delta);
+    updateMeter();
+    if(idx + 1 < chapters.length){
+      currentChapter = idx + 1;
+      showChapter(currentChapter);
+    } else {
+      showEpilogue();
+    }
+  }
+
+  function showEpilogue(){
+    gameScreen.style.display = 'none';
+    epilogueScreen.style.display = 'block';
+    let band = score >= 80 ? 'high' : (score >= 40 ? 'mid' : 'low');
+    const data = epilogueData[band];
+    epilogueTitle.textContent = data.title;
+    renderParagraphs(epilogueBox, data.text(femaleName, maleName));
+  }
+
+  document.getElementById('start-btn').addEventListener('click', ()=>{
+    const fInput = document.getElementById('female-input').value.trim();
+    const mInput = document.getElementById('male-input').value.trim();
+    femaleName = fInput || '顧璃';
+    maleName = mInput || '攣鞮烏烈';
+    score = 0;
+    currentChapter = 0;
+    titleScreen.style.display = 'none';
+    gameScreen.style.display = 'block';
+    showChapter(0);
+  });
+
+  document.getElementById('restart-btn').addEventListener('click', ()=>{
+    location.reload();
+  });
+})();
+</script>
+
+</body>
+</html>
