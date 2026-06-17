@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vault — 收藏庫</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;600&family=Noto+Sans+TC:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>Vault — 我的收藏庫</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;600&family=Noto+Sans+TC:wght@300;400;500&family=Lora:ital,wght@0,400;0,600;1,400&family=Source+Han+Serif+TC:wght@300;400;600&family=JetBrains+Mono:wght@400;500&family=Fira+Code:wght@400;500&family=Source+Code+Pro:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
     --ink:        #2C2016;
@@ -145,15 +145,87 @@
   }
   .btn-new:hover { background: var(--amber-soft); transform: scale(1.05); }
 
+  /* ── Folder section in sidebar ── */
   .item-list { flex: 1; overflow-y: auto; padding: 8px; }
   .item-list::-webkit-scrollbar { width: 4px; }
   .item-list::-webkit-scrollbar-thumb { background: var(--parchment3); border-radius: 4px; }
 
-  .item-card {
-    padding: 12px 14px;
-    border-radius: 10px;
+  /* Folder row */
+  .folder-row {
+    display: flex;
+    align-items: center;
+    padding: 7px 10px;
+    border-radius: 8px;
     cursor: pointer;
-    margin-bottom: 4px;
+    user-select: none;
+    margin-bottom: 2px;
+    gap: 6px;
+    transition: background 0.15s;
+  }
+  .folder-row:hover { background: var(--parchment3); }
+  .folder-row.active-folder { background: var(--amber-pale); }
+
+  .folder-arrow {
+    font-size: 0.65rem;
+    color: var(--ink-muted);
+    transition: transform 0.2s;
+    width: 12px;
+    flex-shrink: 0;
+  }
+  .folder-arrow.open { transform: rotate(90deg); }
+
+  .folder-icon { font-size: 0.85rem; flex-shrink: 0; }
+  .folder-name {
+    flex: 1;
+    font-size: 0.83rem;
+    font-weight: 500;
+    color: var(--ink-soft);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .folder-count {
+    font-size: 0.68rem;
+    color: var(--ink-muted);
+    background: var(--parchment3);
+    border-radius: 10px;
+    padding: 1px 7px;
+    flex-shrink: 0;
+  }
+  .folder-actions {
+    display: none;
+    gap: 3px;
+    flex-shrink: 0;
+  }
+  .folder-row:hover .folder-actions { display: flex; }
+  .folder-action-btn {
+    width: 20px; height: 20px;
+    border: none;
+    background: transparent;
+    color: var(--ink-muted);
+    cursor: pointer;
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem;
+    transition: background 0.15s, color 0.15s;
+  }
+  .folder-action-btn:hover { background: var(--parchment); color: var(--ink); }
+  .folder-action-btn.del:hover { color: var(--rose); }
+
+  /* Items inside folder */
+  .folder-items {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.25s ease;
+  }
+  .folder-items.open { max-height: 9999px; }
+  .folder-items-inner { padding: 2px 0 4px 16px; }
+
+  .item-card {
+    padding: 10px 12px;
+    border-radius: 9px;
+    cursor: pointer;
+    margin-bottom: 3px;
     border: 1px solid transparent;
     transition: all 0.15s;
     position: relative;
@@ -162,7 +234,7 @@
   .item-card.active { background: var(--parchment); border-color: var(--amber-pale); box-shadow: 0 1px 6px var(--shadow); }
   .item-card .card-title {
     font-family: 'Noto Serif TC', serif;
-    font-size: 0.92rem;
+    font-size: 0.88rem;
     font-weight: 600;
     color: var(--ink);
     margin-bottom: 3px;
@@ -171,14 +243,14 @@
     text-overflow: ellipsis;
   }
   .item-card .card-meta {
-    font-size: 0.72rem;
+    font-size: 0.70rem;
     color: var(--ink-muted);
     display: flex;
     align-items: center;
     gap: 6px;
   }
   .badge {
-    font-size: 0.66rem;
+    font-size: 0.64rem;
     padding: 1px 7px;
     border-radius: 10px;
     font-weight: 500;
@@ -195,6 +267,29 @@
     line-height: 1.8;
   }
   .empty-list .icon { font-size: 2rem; margin-bottom: 10px; opacity: 0.5; }
+
+  .empty-folder {
+    padding: 10px 12px;
+    color: var(--ink-muted);
+    font-size: 0.75rem;
+    font-style: italic;
+  }
+
+  /* Add folder button at bottom of list */
+  .add-folder-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--ink-muted);
+    font-size: 0.78rem;
+    border: 1px dashed var(--parchment3);
+    margin-top: 6px;
+    transition: all 0.15s;
+  }
+  .add-folder-row:hover { border-color: var(--amber-soft); color: var(--amber); background: var(--amber-pale); }
 
   /* ── Content area ── */
   .content {
@@ -261,6 +356,28 @@
   .btn-action.primary:hover { background: var(--amber-soft); border-color: var(--amber-soft); }
   .btn-action.danger { color: var(--rose); border-color: var(--rose-pale); }
   .btn-action.danger:hover { background: var(--rose-pale); }
+
+  /* Folder selector in toolbar */
+  .folder-select-wrap {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.75rem;
+    color: var(--ink-muted);
+  }
+  .folder-select {
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--parchment3);
+    background: var(--parchment);
+    color: var(--ink-soft);
+    outline: none;
+    cursor: pointer;
+    max-width: 130px;
+  }
+  .folder-select:focus { border-color: var(--amber-soft); }
 
   /* ── Editor ── */
   .editor-wrap { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
@@ -381,6 +498,26 @@
   .modal-input:focus, .modal-select:focus { border-color: var(--amber-soft); }
   .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 22px; }
 
+  /* Emoji picker row */
+  .emoji-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .emoji-btn {
+    width: 34px; height: 34px;
+    border: 1px solid var(--parchment3);
+    border-radius: 7px;
+    background: var(--parchment2);
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .emoji-btn:hover { border-color: var(--amber-soft); background: var(--amber-pale); }
+  .emoji-btn.selected { border-color: var(--amber); background: var(--amber-pale); box-shadow: 0 0 0 2px var(--amber-pale); }
+
   /* ── Toast ── */
   .toast {
     position: fixed;
@@ -400,6 +537,181 @@
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+  /* ── Settings panel ── */
+  .settings-overlay {
+    position: fixed; inset: 0;
+    background: rgba(44,32,22,0.3);
+    z-index: 150;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.25s;
+  }
+  .settings-overlay.show { opacity: 1; pointer-events: all; }
+
+  .settings-panel {
+    position: fixed;
+    top: 0; right: 0;
+    width: min(360px, 92vw);
+    height: 100%;
+    background: var(--parchment);
+    box-shadow: -4px 0 32px var(--shadow-md);
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+    z-index: 151;
+    overflow: hidden;
+  }
+  .settings-overlay.show .settings-panel { transform: translateX(0); }
+
+  .settings-header {
+    padding: 20px 22px 16px;
+    border-bottom: 1px solid var(--parchment3);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--parchment2);
+    flex-shrink: 0;
+  }
+  .settings-header h3 {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .settings-close {
+    width: 28px; height: 28px;
+    border: none;
+    background: transparent;
+    color: var(--ink-muted);
+    cursor: pointer;
+    font-size: 1.1rem;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s, color 0.15s;
+  }
+  .settings-close:hover { background: var(--parchment3); color: var(--ink); }
+
+  .settings-body { flex: 1; overflow-y: auto; padding: 20px 22px; }
+  .settings-body::-webkit-scrollbar { width: 4px; }
+  .settings-body::-webkit-scrollbar-thumb { background: var(--parchment3); border-radius: 4px; }
+
+  .settings-section {
+    margin-bottom: 28px;
+  }
+  .settings-section-title {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--parchment3);
+  }
+  .settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    gap: 12px;
+  }
+  .settings-label {
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+    flex-shrink: 0;
+  }
+  .settings-select {
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 0.78rem;
+    padding: 5px 10px;
+    border-radius: 7px;
+    border: 1px solid var(--parchment3);
+    background: var(--parchment2);
+    color: var(--ink);
+    outline: none;
+    cursor: pointer;
+    flex: 1;
+    min-width: 0;
+    transition: border-color 0.2s;
+  }
+  .settings-select:focus { border-color: var(--amber-soft); }
+
+  /* Slider */
+  .slider-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+  }
+  .settings-slider {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 4px;
+    border-radius: 4px;
+    background: var(--parchment3);
+    outline: none;
+    cursor: pointer;
+  }
+  .settings-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--amber);
+    cursor: pointer;
+    box-shadow: 0 1px 4px var(--shadow-md);
+    transition: background 0.15s, transform 0.1s;
+  }
+  .settings-slider::-webkit-slider-thumb:hover { background: var(--amber-soft); transform: scale(1.15); }
+  .settings-slider::-moz-range-thumb {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--amber);
+    cursor: pointer;
+    border: none;
+  }
+  .slider-value {
+    font-size: 0.75rem;
+    color: var(--ink-muted);
+    min-width: 30px;
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Font preview */
+  .font-preview {
+    margin-top: 8px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: var(--parchment2);
+    border: 1px solid var(--parchment3);
+    font-size: 0.88rem;
+    color: var(--ink-soft);
+    line-height: 1.7;
+    transition: all 0.2s;
+    min-height: 52px;
+  }
+  .font-preview.code-preview {
+    background: #1E1810;
+    color: #E8D8B8;
+    border-color: #3a3020;
+    font-size: 0.8rem;
+  }
+
+  .settings-reset {
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 0.75rem;
+    padding: 6px 14px;
+    border-radius: 7px;
+    border: 1px solid var(--parchment3);
+    background: transparent;
+    color: var(--ink-muted);
+    cursor: pointer;
+    width: 100%;
+    margin-top: 8px;
+    transition: all 0.15s;
+  }
+  .settings-reset:hover { background: var(--parchment3); color: var(--ink); }
+
   /* ── Divider ── */
   .divider { width: 1px; background: var(--parchment3); margin: 0 4px; align-self: stretch; }
 
@@ -412,7 +724,7 @@
   }
   @media (max-width: 480px) {
     .main { flex-direction: column; }
-    .sidebar { width: 100%; max-height: 220px; border-right: none; border-bottom: 1px solid var(--parchment3); }
+    .sidebar { width: 100%; max-height: 260px; border-right: none; border-bottom: 1px solid var(--parchment3); }
     .split-view { flex-direction: column; }
     .split-left, .split-right { flex: none; height: 50%; }
     .split-left { border-right: none; border-bottom: 1px solid var(--parchment3); }
@@ -428,6 +740,7 @@
     <button class="btn-header" onclick="exportData()">匯出備份</button>
     <button class="btn-header" onclick="document.getElementById('importFile').click()">匯入還原</button>
     <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+    <button class="btn-header" onclick="openSettings()" style="letter-spacing:0.05em;">⚙ 設定</button>
   </div>
 </header>
 
@@ -443,7 +756,7 @@
   <div class="sidebar">
     <div class="sidebar-top">
       <input class="search-input" id="searchInput" placeholder="搜尋…" oninput="renderList()">
-      <button class="btn-new" title="新增" onclick="openNewModal()">＋</button>
+      <button class="btn-new" title="新增項目" onclick="openNewItemModal()">＋</button>
     </div>
     <div class="item-list" id="itemList"></div>
   </div>
@@ -458,22 +771,128 @@
   </div>
 </div>
 
-<!-- New/Rename Modal -->
-<div class="modal-overlay" id="newModal">
+<!-- New Item Modal -->
+<div class="modal-overlay" id="newItemModal">
   <div class="modal">
-    <h3 id="modalTitle">新增項目</h3>
+    <h3 id="itemModalTitle">新增項目</h3>
     <div class="modal-label">名稱</div>
-    <input class="modal-input" id="modalName" placeholder="輸入名稱…" maxlength="60">
-    <div id="modalTypeRow">
+    <input class="modal-input" id="itemModalName" placeholder="輸入名稱…" maxlength="60">
+    <div id="itemModalTypeRow">
       <div class="modal-label">類型</div>
-      <select class="modal-select" id="modalType">
+      <select class="modal-select" id="itemModalType">
         <option value="code">💻 程式碼專案（HTML）</option>
         <option value="text">📝 文字文章</option>
       </select>
     </div>
+    <div class="modal-label">資料夾</div>
+    <select class="modal-select" id="itemModalFolder"></select>
     <div class="modal-actions">
-      <button class="btn-action" onclick="closeModal()">取消</button>
-      <button class="btn-action primary" id="modalConfirm" onclick="confirmModal()">建立</button>
+      <button class="btn-action" onclick="closeItemModal()">取消</button>
+      <button class="btn-action primary" id="itemModalConfirm" onclick="confirmItemModal()">建立</button>
+    </div>
+  </div>
+</div>
+
+<!-- New/Rename Folder Modal -->
+<div class="modal-overlay" id="folderModal">
+  <div class="modal">
+    <h3 id="folderModalTitle">新增資料夾</h3>
+    <div class="modal-label">資料夾名稱</div>
+    <input class="modal-input" id="folderModalName" placeholder="例如：互動小說、工具類…" maxlength="30">
+    <div class="modal-label">圖示</div>
+    <div class="emoji-row" id="emojiRow"></div>
+    <div class="modal-actions">
+      <button class="btn-action" onclick="closeFolderModal()">取消</button>
+      <button class="btn-action primary" id="folderModalConfirm" onclick="confirmFolderModal()">建立</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings Panel -->
+<div class="settings-overlay" id="settingsOverlay" onclick="closeSettingsOnBg(event)">
+  <div class="settings-panel" id="settingsPanel">
+    <div class="settings-header">
+      <h3>⚙ 外觀設定</h3>
+      <button class="settings-close" onclick="closeSettings()">✕</button>
+    </div>
+    <div class="settings-body">
+
+      <!-- Text editor settings -->
+      <div class="settings-section">
+        <div class="settings-section-title">📝 文字編輯器</div>
+
+        <div class="settings-row">
+          <span class="settings-label">字型</span>
+          <select class="settings-select" id="textFontFamily" onchange="applySettings()">
+            <option value="'Noto Serif TC', serif">Noto Serif TC（明體）</option>
+            <option value="'Noto Sans TC', sans-serif">Noto Sans TC（黑體）</option>
+            <option value="'Lora', serif">Lora（英文襯線）</option>
+            <option value="Georgia, serif">Georgia</option>
+            <option value="-apple-system, sans-serif">系統預設</option>
+          </select>
+        </div>
+
+        <div class="settings-row">
+          <span class="settings-label">字體大小</span>
+          <div class="slider-wrap">
+            <input type="range" class="settings-slider" id="textFontSize" min="12" max="22" step="1" oninput="applySettings()">
+            <span class="slider-value" id="textFontSizeVal">15</span>
+          </div>
+        </div>
+
+        <div class="settings-row">
+          <span class="settings-label">行距</span>
+          <div class="slider-wrap">
+            <input type="range" class="settings-slider" id="textLineHeight" min="1.4" max="3.0" step="0.1" oninput="applySettings()">
+            <span class="slider-value" id="textLineHeightVal">2.1</span>
+          </div>
+        </div>
+
+        <div class="font-preview" id="textFontPreview">
+          願我如星君如月，夜夜流光相皎潔。<br>
+          The quick brown fox jumps over the lazy dog.
+        </div>
+      </div>
+
+      <!-- Code editor settings -->
+      <div class="settings-section">
+        <div class="settings-section-title">💻 程式碼編輯器</div>
+
+        <div class="settings-row">
+          <span class="settings-label">字型</span>
+          <select class="settings-select" id="codeFontFamily" onchange="applySettings()">
+            <option value="'JetBrains Mono', monospace">JetBrains Mono</option>
+            <option value="'Fira Code', monospace">Fira Code</option>
+            <option value="'Source Code Pro', monospace">Source Code Pro</option>
+            <option value="'Courier New', monospace">Courier New</option>
+            <option value="monospace">系統等寬</option>
+          </select>
+        </div>
+
+        <div class="settings-row">
+          <span class="settings-label">字體大小</span>
+          <div class="slider-wrap">
+            <input type="range" class="settings-slider" id="codeFontSize" min="10" max="20" step="1" oninput="applySettings()">
+            <span class="slider-value" id="codeFontSizeVal">13</span>
+          </div>
+        </div>
+
+        <div class="settings-row">
+          <span class="settings-label">行距</span>
+          <div class="slider-wrap">
+            <input type="range" class="settings-slider" id="codeLineHeight" min="1.3" max="2.4" step="0.1" oninput="applySettings()">
+            <span class="slider-value" id="codeLineHeightVal">1.75</span>
+          </div>
+        </div>
+
+        <div class="font-preview code-preview" id="codeFontPreview">
+          const greet = (name) => {<br>
+          &nbsp;&nbsp;return `Hello, ${name}!`;<br>
+          };
+        </div>
+      </div>
+
+      <button class="settings-reset" onclick="resetSettings()">↺ 恢復預設值</button>
     </div>
   </div>
 </div>
@@ -482,23 +901,63 @@
 <div class="toast" id="toast"></div>
 
 <script>
+// ── Constants ──
+const FOLDER_EMOJIS = ['📁','💻','📝','🎮','🛠️','📖','🎨','🌟','🔮','💡','🗂️','📦','🎭','🌿','🔧','📜','🎵','🏠','⚗️','🗺️'];
+
 // ── State ──
-let db = JSON.parse(localStorage.getItem('vault_db') || '{"items":[]}');
+let db = JSON.parse(localStorage.getItem('vault_db_v2') || 'null');
+// Migrate from old vault_db if exists
+if (!db) {
+  const old = JSON.parse(localStorage.getItem('vault_db') || '{"items":[]}');
+  db = {
+    folders: {
+      code: [{ id: 'code_default', name: '全部', icon: '📁', builtIn: true }],
+      text: [{ id: 'text_default', name: '全部', icon: '📁', builtIn: true }]
+    },
+    items: old.items || []
+  };
+  // Assign all old items to default folder
+  db.items.forEach(i => { if (!i.folderId) i.folderId = i.type + '_default'; });
+  saveDB();
+}
+
 let currentTab = 'code';
 let currentId = null;
-let modalMode = 'new'; // 'new' | 'rename'
-let currentView = 'split'; // 'editor' | 'preview' | 'split'
+let currentView = 'split';
 let autoSaveTimer = null;
 
-function save() {
-  localStorage.setItem('vault_db', JSON.stringify(db));
+// Folder open/closed state (not persisted, just UI)
+let openFolders = new Set();
+
+// Folder modal state
+let folderModalMode = 'new'; // 'new' | 'rename'
+let folderModalTab = 'code';
+let folderModalEditId = null;
+let selectedEmoji = '📁';
+
+// Item modal state
+let itemModalMode = 'new';
+
+function saveDB() {
+  localStorage.setItem('vault_db_v2', JSON.stringify(db));
 }
 
 function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2);
 }
 
-function getItems(tab, q = '') {
+function getFolders(tab) {
+  return db.folders[tab] || [];
+}
+
+function getItemsInFolder(folderId, q = '') {
+  return db.items
+    .filter(i => i.folderId === folderId)
+    .filter(i => !q || i.name.toLowerCase().includes(q.toLowerCase()) || i.content.toLowerCase().includes(q.toLowerCase()))
+    .sort((a, b) => b.updatedAt - a.updatedAt);
+}
+
+function getAllItems(tab, q = '') {
   return db.items
     .filter(i => i.type === tab)
     .filter(i => !q || i.name.toLowerCase().includes(q.toLowerCase()) || i.content.toLowerCase().includes(q.toLowerCase()))
@@ -511,21 +970,74 @@ function switchTab(tab) {
   currentId = null;
   document.getElementById('tab-code').classList.toggle('active', tab === 'code');
   document.getElementById('tab-text').classList.toggle('active', tab === 'text');
-  document.getElementById('modalType').value = tab;
   renderList();
   showWelcome();
 }
 
 // ── Sidebar list ──
 function renderList() {
-  const q = document.getElementById('searchInput').value;
-  const items = getItems(currentTab, q);
+  const q = document.getElementById('searchInput').value.trim();
   const el = document.getElementById('itemList');
-  if (!items.length) {
-    el.innerHTML = `<div class="empty-list"><div class="icon">${currentTab === 'code' ? '💻' : '📝'}</div>還沒有${currentTab === 'code' ? '程式碼專案' : '文字文章'}<br>點右上角 ＋ 新增一個</div>`;
+  const folders = getFolders(currentTab);
+
+  if (!folders.length) {
+    el.innerHTML = `<div class="empty-list"><div class="icon">${currentTab === 'code' ? '💻' : '📝'}</div>還沒有資料夾<br>點下方新增一個</div>`;
+    renderAddFolderBtn(el);
     return;
   }
-  el.innerHTML = items.map(item => `
+
+  let html = '';
+
+  // If searching, show flat list across all folders
+  if (q) {
+    const items = getAllItems(currentTab, q);
+    if (!items.length) {
+      html = `<div class="empty-list"><div class="icon">🔍</div>找不到符合的項目</div>`;
+    } else {
+      html = items.map(item => renderItemCard(item)).join('');
+    }
+    el.innerHTML = html;
+    return;
+  }
+
+  // Normal folder view
+  folders.forEach(folder => {
+    const items = getItemsInFolder(folder.id);
+    const isOpen = openFolders.has(folder.id);
+    const arrowClass = isOpen ? 'open' : '';
+
+    html += `
+      <div class="folder-row ${isOpen ? 'active-folder' : ''}" onclick="toggleFolder('${folder.id}')">
+        <span class="folder-arrow ${arrowClass}">▶</span>
+        <span class="folder-icon">${folder.icon}</span>
+        <span class="folder-name">${escHtml(folder.name)}</span>
+        <span class="folder-count">${items.length}</span>
+        <span class="folder-actions" onclick="event.stopPropagation()">
+          ${!folder.builtIn ? `
+            <button class="folder-action-btn" title="重新命名" onclick="openRenameFolderModal('${folder.id}')">✏️</button>
+            <button class="folder-action-btn del" title="刪除資料夾" onclick="deleteFolder('${folder.id}')">✕</button>
+          ` : `
+            <button class="folder-action-btn" title="重新命名" onclick="openRenameFolderModal('${folder.id}')">✏️</button>
+          `}
+        </span>
+      </div>
+      <div class="folder-items ${isOpen ? 'open' : ''}" id="folder-${folder.id}">
+        <div class="folder-items-inner">
+          ${items.length
+            ? items.map(item => renderItemCard(item)).join('')
+            : `<div class="empty-folder">尚無項目，點右上角 ＋ 新增</div>`
+          }
+        </div>
+      </div>
+    `;
+  });
+
+  el.innerHTML = html;
+  renderAddFolderBtn(el);
+}
+
+function renderItemCard(item) {
+  return `
     <div class="item-card ${item.id === currentId ? 'active' : ''}" onclick="selectItem('${item.id}')">
       <div class="card-title">${escHtml(item.name)}</div>
       <div class="card-meta">
@@ -533,7 +1045,24 @@ function renderList() {
         ${formatDate(item.updatedAt)}
       </div>
     </div>
-  `).join('');
+  `;
+}
+
+function renderAddFolderBtn(el) {
+  const div = document.createElement('div');
+  div.className = 'add-folder-row';
+  div.innerHTML = `<span>📁</span><span>新增資料夾</span>`;
+  div.onclick = () => openNewFolderModal(currentTab);
+  el.appendChild(div);
+}
+
+function toggleFolder(folderId) {
+  if (openFolders.has(folderId)) {
+    openFolders.delete(folderId);
+  } else {
+    openFolders.add(folderId);
+  }
+  renderList();
 }
 
 function formatDate(ts) {
@@ -542,7 +1071,7 @@ function formatDate(ts) {
 }
 
 function escHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 // ── Select item ──
@@ -561,26 +1090,33 @@ function renderCodeDetail(item) {
   document.getElementById('contentArea').innerHTML = `
     <div class="detail-toolbar">
       <input class="detail-title-input" id="detailTitle" value="${escHtml(item.name)}" placeholder="專案名稱" oninput="scheduleSave()">
+      <div class="folder-select-wrap">
+        <span>📁</span>
+        <select class="folder-select" id="detailFolder" onchange="moveItemFolder()">
+          ${getFolders(item.type).map(f => `<option value="${f.id}" ${f.id === item.folderId ? 'selected' : ''}>${f.icon} ${escHtml(f.name)}</option>`).join('')}
+        </select>
+      </div>
       <div class="view-toggle">
-        <button class="view-btn ${currentView==='editor'?'active':''}" onclick="setView('editor')">編輯</button>
-        <button class="view-btn ${currentView==='split'?'active':''}" onclick="setView('split')">分割</button>
-        <button class="view-btn ${currentView==='preview'?'active':''}" onclick="setView('preview')">預覽</button>
+        <button class="view-btn" onclick="setView('editor')">編輯</button>
+        <button class="view-btn active" onclick="setView('split')">分割</button>
+        <button class="view-btn" onclick="setView('preview')">預覽</button>
       </div>
       <div class="divider"></div>
       <button class="btn-action primary" onclick="manualSave()">儲存</button>
       <button class="btn-action" onclick="copyContent()">複製</button>
-      <button class="btn-action" onclick="downloadFile()">下載 .html</button>
+      <button class="btn-action" onclick="downloadFile()">下載</button>
       <button class="btn-action danger" onclick="deleteItem()">刪除</button>
     </div>
     <div class="editor-wrap" id="editorWrap">
       ${buildCodeViewHtml(item.content)}
     </div>
   `;
-  setView(currentView);
+  setView('split');
+  applySettingsToEditor();
 }
 
 function buildCodeViewHtml(content) {
-  const safe = content.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const safe = content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   return `
     <div class="split-view" id="splitView">
       <div class="split-left">
@@ -603,8 +1139,8 @@ function setView(v) {
   const btns = document.querySelectorAll('.view-btn');
   btns.forEach((b,i) => b.classList.toggle('active', ['editor','split','preview'][i] === v));
   if (!sv) return;
-  if (v === 'editor') { left.style.flex='1'; right.style.display='none'; }
-  else if (v === 'preview') { left.style.display='none'; right.style.flex='1'; }
+  if (v === 'editor') { left.style.flex='1'; left.style.display=''; right.style.display='none'; }
+  else if (v === 'preview') { left.style.display='none'; right.style.display=''; right.style.flex='1'; }
   else { left.style.flex='1'; left.style.display=''; right.style.display=''; right.style.flex='1'; }
   refreshPreview();
 }
@@ -624,14 +1160,37 @@ function renderTextDetail(item) {
   document.getElementById('contentArea').innerHTML = `
     <div class="detail-toolbar">
       <input class="detail-title-input" id="detailTitle" value="${escHtml(item.name)}" placeholder="文章標題" oninput="scheduleSave()">
+      <div class="folder-select-wrap">
+        <span>📁</span>
+        <select class="folder-select" id="detailFolder" onchange="moveItemFolder()">
+          ${getFolders(item.type).map(f => `<option value="${f.id}" ${f.id === item.folderId ? 'selected' : ''}>${f.icon} ${escHtml(f.name)}</option>`).join('')}
+        </select>
+      </div>
       <div class="divider"></div>
       <button class="btn-action primary" onclick="manualSave()">儲存</button>
       <button class="btn-action" onclick="copyContent()">複製</button>
-      <button class="btn-action" onclick="downloadFile()">下載 .txt</button>
+      <button class="btn-action" onclick="downloadFile()">下載</button>
       <button class="btn-action danger" onclick="deleteItem()">刪除</button>
     </div>
     <textarea class="text-editor" id="textEditor" placeholder="在這裡輸入文章內容…" oninput="scheduleSave()">${escHtml(item.content)}</textarea>
   `;
+  applySettingsToEditor();
+}
+
+// ── Move item to different folder ──
+function moveItemFolder() {
+  if (!currentId) return;
+  const item = db.items.find(i => i.id === currentId);
+  if (!item) return;
+  const sel = document.getElementById('detailFolder');
+  if (!sel) return;
+  item.folderId = sel.value;
+  item.updatedAt = Date.now();
+  // Make sure target folder is open
+  openFolders.add(item.folderId);
+  saveDB();
+  renderList();
+  showToast('已移至資料夾 ✓');
 }
 
 // ── Save logic ──
@@ -649,7 +1208,7 @@ function manualSave(silent = false) {
   if (titleEl) item.name = titleEl.value.trim() || '未命名';
   if (editorEl) item.content = editorEl.value;
   item.updatedAt = Date.now();
-  save();
+  saveDB();
   renderList();
   if (!silent) showToast('已儲存 ✓');
 }
@@ -681,7 +1240,7 @@ function deleteItem() {
   if (!confirm(`確定刪除「${item.name}」？此操作無法復原。`)) return;
   db.items = db.items.filter(i => i.id !== currentId);
   currentId = null;
-  save();
+  saveDB();
   renderList();
   showWelcome();
   showToast('已刪除');
@@ -697,45 +1256,168 @@ function showWelcome() {
   `;
 }
 
-// ── Modal ──
-function openNewModal() {
-  modalMode = 'new';
-  document.getElementById('modalTitle').textContent = '新增項目';
-  document.getElementById('modalName').value = '';
-  document.getElementById('modalType').value = currentTab;
-  document.getElementById('modalTypeRow').style.display = '';
-  document.getElementById('modalConfirm').textContent = '建立';
-  document.getElementById('newModal').classList.add('show');
-  setTimeout(() => document.getElementById('modalName').focus(), 100);
+// ── Item Modal ──
+function openNewItemModal() {
+  itemModalMode = 'new';
+  document.getElementById('itemModalTitle').textContent = '新增項目';
+  document.getElementById('itemModalName').value = '';
+  document.getElementById('itemModalType').value = currentTab;
+  document.getElementById('itemModalTypeRow').style.display = '';
+  document.getElementById('itemModalConfirm').textContent = '建立';
+  // Populate folder dropdown
+  populateItemModalFolders(currentTab);
+  document.getElementById('newItemModal').classList.add('show');
+  setTimeout(() => document.getElementById('itemModalName').focus(), 100);
 }
 
-function closeModal() {
-  document.getElementById('newModal').classList.remove('show');
+function populateItemModalFolders(tab) {
+  const sel = document.getElementById('itemModalFolder');
+  const folders = getFolders(tab);
+  sel.innerHTML = folders.map(f => `<option value="${f.id}">${f.icon} ${escHtml(f.name)}</option>`).join('');
 }
 
-function confirmModal() {
-  const name = document.getElementById('modalName').value.trim();
-  if (!name) { document.getElementById('modalName').focus(); return; }
-  if (modalMode === 'new') {
-    const type = document.getElementById('modalType').value;
-    const item = { id: uid(), name, type, content: '', createdAt: Date.now(), updatedAt: Date.now() };
-    db.items.push(item);
-    save();
-    if (type !== currentTab) switchTab(type);
-    else renderList();
-    closeModal();
-    selectItem(item.id);
-    showToast('已建立 ✓');
+document.getElementById('itemModalType').addEventListener('change', function() {
+  populateItemModalFolders(this.value);
+});
+
+function closeItemModal() {
+  document.getElementById('newItemModal').classList.remove('show');
+}
+
+function confirmItemModal() {
+  const name = document.getElementById('itemModalName').value.trim();
+  if (!name) { document.getElementById('itemModalName').focus(); return; }
+  const type = document.getElementById('itemModalType').value;
+  const folderId = document.getElementById('itemModalFolder').value;
+
+  const item = {
+    id: uid(),
+    name,
+    type,
+    folderId,
+    content: '',
+    createdAt: Date.now(),
+    updatedAt: Date.now()
+  };
+  db.items.push(item);
+  saveDB();
+  openFolders.add(folderId);
+  if (type !== currentTab) switchTab(type);
+  else renderList();
+  closeItemModal();
+  selectItem(item.id);
+  showToast('已建立 ✓');
+}
+
+document.getElementById('newItemModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('newItemModal')) closeItemModal();
+});
+document.getElementById('itemModalName').addEventListener('keydown', e => {
+  if (e.key === 'Enter') confirmItemModal();
+  if (e.key === 'Escape') closeItemModal();
+});
+
+// ── Folder Modal ──
+function buildEmojiPicker() {
+  const row = document.getElementById('emojiRow');
+  row.innerHTML = FOLDER_EMOJIS.map(e => `
+    <button class="emoji-btn ${e === selectedEmoji ? 'selected' : ''}" onclick="selectEmoji('${e}')">${e}</button>
+  `).join('');
+}
+
+function selectEmoji(e) {
+  selectedEmoji = e;
+  buildEmojiPicker();
+}
+
+function openNewFolderModal(tab) {
+  folderModalMode = 'new';
+  folderModalTab = tab;
+  folderModalEditId = null;
+  selectedEmoji = '📁';
+  document.getElementById('folderModalTitle').textContent = '新增資料夾';
+  document.getElementById('folderModalName').value = '';
+  document.getElementById('folderModalConfirm').textContent = '建立';
+  buildEmojiPicker();
+  document.getElementById('folderModal').classList.add('show');
+  setTimeout(() => document.getElementById('folderModalName').focus(), 100);
+}
+
+function openRenameFolderModal(folderId) {
+  const tab = currentTab;
+  const folder = getFolders(tab).find(f => f.id === folderId);
+  if (!folder) return;
+  folderModalMode = 'rename';
+  folderModalTab = tab;
+  folderModalEditId = folderId;
+  selectedEmoji = folder.icon || '📁';
+  document.getElementById('folderModalTitle').textContent = '重新命名資料夾';
+  document.getElementById('folderModalName').value = folder.name;
+  document.getElementById('folderModalConfirm').textContent = '儲存';
+  buildEmojiPicker();
+  document.getElementById('folderModal').classList.add('show');
+  setTimeout(() => document.getElementById('folderModalName').focus(), 100);
+}
+
+function closeFolderModal() {
+  document.getElementById('folderModal').classList.remove('show');
+}
+
+function confirmFolderModal() {
+  const name = document.getElementById('folderModalName').value.trim();
+  if (!name) { document.getElementById('folderModalName').focus(); return; }
+
+  if (folderModalMode === 'new') {
+    const folder = { id: uid(), name, icon: selectedEmoji, builtIn: false };
+    if (!db.folders[folderModalTab]) db.folders[folderModalTab] = [];
+    db.folders[folderModalTab].push(folder);
+    openFolders.add(folder.id);
+    saveDB();
+    renderList();
+    closeFolderModal();
+    showToast(`資料夾「${name}」已建立 ✓`);
+  } else {
+    const folder = getFolders(folderModalTab).find(f => f.id === folderModalEditId);
+    if (folder) {
+      folder.name = name;
+      folder.icon = selectedEmoji;
+      saveDB();
+      renderList();
+    }
+    closeFolderModal();
+    showToast('已更新 ✓');
   }
 }
 
-document.getElementById('newModal').addEventListener('click', e => {
-  if (e.target === document.getElementById('newModal')) closeModal();
+document.getElementById('folderModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('folderModal')) closeFolderModal();
 });
-document.getElementById('modalName').addEventListener('keydown', e => {
-  if (e.key === 'Enter') confirmModal();
-  if (e.key === 'Escape') closeModal();
+document.getElementById('folderModalName').addEventListener('keydown', e => {
+  if (e.key === 'Enter') confirmFolderModal();
+  if (e.key === 'Escape') closeFolderModal();
 });
+
+function deleteFolder(folderId) {
+  const folder = getFolders(currentTab).find(f => f.id === folderId);
+  if (!folder) return;
+  const count = getItemsInFolder(folderId).length;
+  const msg = count > 0
+    ? `確定刪除資料夾「${folder.name}」？\n裡面的 ${count} 個項目會移到「全部」資料夾。`
+    : `確定刪除資料夾「${folder.name}」？`;
+  if (!confirm(msg)) return;
+
+  // Move items to default folder
+  const defaultFolder = getFolders(currentTab).find(f => f.builtIn);
+  db.items.forEach(i => {
+    if (i.folderId === folderId) i.folderId = defaultFolder ? defaultFolder.id : '';
+  });
+
+  db.folders[currentTab] = db.folders[currentTab].filter(f => f.id !== folderId);
+  openFolders.delete(folderId);
+  saveDB();
+  renderList();
+  showToast('資料夾已刪除');
+}
 
 // ── Export / Import ──
 function exportData() {
@@ -756,16 +1438,35 @@ function importData(event) {
   reader.onload = e => {
     try {
       const imported = JSON.parse(e.target.result);
-      if (!imported.items || !Array.isArray(imported.items)) throw new Error();
-      const count = imported.items.length;
+      // Support both old and new format
+      const importedItems = imported.items || [];
+      const importedFolders = imported.folders || null;
+      if (!Array.isArray(importedItems)) throw new Error();
+      const count = importedItems.length;
       if (!confirm(`匯入 ${count} 個項目？\n這會與現有資料合併（不會刪除現有項目）。`)) return;
-      // merge by id
       const existingIds = new Set(db.items.map(i => i.id));
       let added = 0;
-      imported.items.forEach(item => {
-        if (!existingIds.has(item.id)) { db.items.push(item); added++; }
+      importedItems.forEach(item => {
+        if (!existingIds.has(item.id)) {
+          if (!item.folderId) item.folderId = item.type + '_default';
+          db.items.push(item);
+          added++;
+        }
       });
-      save();
+      // Merge folders
+      if (importedFolders) {
+        ['code','text'].forEach(tab => {
+          if (!importedFolders[tab]) return;
+          const existingFolderIds = new Set((db.folders[tab]||[]).map(f => f.id));
+          importedFolders[tab].forEach(f => {
+            if (!existingFolderIds.has(f.id)) {
+              if (!db.folders[tab]) db.folders[tab] = [];
+              db.folders[tab].push(f);
+            }
+          });
+        });
+      }
+      saveDB();
       renderList();
       showToast(`已匯入 ${added} 個新項目`);
     } catch {
@@ -774,6 +1475,124 @@ function importData(event) {
     event.target.value = '';
   };
   reader.readAsText(file);
+}
+
+// ── Settings ──
+const SETTINGS_DEFAULTS = {
+  textFontFamily: "'Noto Serif TC', serif",
+  textFontSize: 15,
+  textLineHeight: 2.1,
+  codeFontFamily: "'JetBrains Mono', monospace",
+  codeFontSize: 13,
+  codeLineHeight: 1.75
+};
+
+let appSettings = JSON.parse(localStorage.getItem('vault_settings') || 'null') || { ...SETTINGS_DEFAULTS };
+
+function saveSettings() {
+  localStorage.setItem('vault_settings', JSON.stringify(appSettings));
+}
+
+function applySettings() {
+  // Read current UI values
+  appSettings.textFontFamily  = document.getElementById('textFontFamily').value;
+  appSettings.textFontSize    = parseFloat(document.getElementById('textFontSize').value);
+  appSettings.textLineHeight  = parseFloat(document.getElementById('textLineHeight').value);
+  appSettings.codeFontFamily  = document.getElementById('codeFontFamily').value;
+  appSettings.codeFontSize    = parseFloat(document.getElementById('codeFontSize').value);
+  appSettings.codeLineHeight  = parseFloat(document.getElementById('codeLineHeight').value);
+
+  // Update slider labels
+  document.getElementById('textFontSizeVal').textContent   = appSettings.textFontSize + 'px';
+  document.getElementById('textLineHeightVal').textContent = appSettings.textLineHeight.toFixed(1);
+  document.getElementById('codeFontSizeVal').textContent   = appSettings.codeFontSize + 'px';
+  document.getElementById('codeLineHeightVal').textContent = appSettings.codeLineHeight.toFixed(1);
+
+  // Update previews
+  const tp = document.getElementById('textFontPreview');
+  tp.style.fontFamily  = appSettings.textFontFamily;
+  tp.style.fontSize    = appSettings.textFontSize + 'px';
+  tp.style.lineHeight  = appSettings.textLineHeight;
+
+  const cp = document.getElementById('codeFontPreview');
+  cp.style.fontFamily  = appSettings.codeFontFamily;
+  cp.style.fontSize    = appSettings.codeFontSize + 'px';
+  cp.style.lineHeight  = appSettings.codeLineHeight;
+
+  // Apply to live editors if open
+  const textEditor = document.getElementById('textEditor');
+  if (textEditor) {
+    textEditor.style.fontFamily  = appSettings.textFontFamily;
+    textEditor.style.fontSize    = appSettings.textFontSize + 'px';
+    textEditor.style.lineHeight  = appSettings.textLineHeight;
+  }
+  const codeEditor = document.getElementById('codeEditor');
+  if (codeEditor) {
+    codeEditor.style.fontFamily  = appSettings.codeFontFamily;
+    codeEditor.style.fontSize    = appSettings.codeFontSize + 'px';
+    codeEditor.style.lineHeight  = appSettings.codeLineHeight;
+  }
+
+  saveSettings();
+}
+
+function syncSettingsUI() {
+  document.getElementById('textFontFamily').value  = appSettings.textFontFamily;
+  document.getElementById('textFontSize').value    = appSettings.textFontSize;
+  document.getElementById('textLineHeight').value  = appSettings.textLineHeight;
+  document.getElementById('codeFontFamily').value  = appSettings.codeFontFamily;
+  document.getElementById('codeFontSize').value    = appSettings.codeFontSize;
+  document.getElementById('codeLineHeight').value  = appSettings.codeLineHeight;
+  // Trigger label & preview update without saving again
+  document.getElementById('textFontSizeVal').textContent   = appSettings.textFontSize + 'px';
+  document.getElementById('textLineHeightVal').textContent = appSettings.textLineHeight.toFixed(1);
+  document.getElementById('codeFontSizeVal').textContent   = appSettings.codeFontSize + 'px';
+  document.getElementById('codeLineHeightVal').textContent = appSettings.codeLineHeight.toFixed(1);
+  const tp = document.getElementById('textFontPreview');
+  tp.style.fontFamily = appSettings.textFontFamily;
+  tp.style.fontSize   = appSettings.textFontSize + 'px';
+  tp.style.lineHeight = appSettings.textLineHeight;
+  const cp = document.getElementById('codeFontPreview');
+  cp.style.fontFamily = appSettings.codeFontFamily;
+  cp.style.fontSize   = appSettings.codeFontSize + 'px';
+  cp.style.lineHeight = appSettings.codeLineHeight;
+}
+
+function applySettingsToEditor() {
+  // Called after an editor is rendered into DOM
+  const textEditor = document.getElementById('textEditor');
+  if (textEditor) {
+    textEditor.style.fontFamily = appSettings.textFontFamily;
+    textEditor.style.fontSize   = appSettings.textFontSize + 'px';
+    textEditor.style.lineHeight = appSettings.textLineHeight;
+  }
+  const codeEditor = document.getElementById('codeEditor');
+  if (codeEditor) {
+    codeEditor.style.fontFamily = appSettings.codeFontFamily;
+    codeEditor.style.fontSize   = appSettings.codeFontSize + 'px';
+    codeEditor.style.lineHeight = appSettings.codeLineHeight;
+  }
+}
+
+function resetSettings() {
+  appSettings = { ...SETTINGS_DEFAULTS };
+  syncSettingsUI();
+  applySettingsToEditor();
+  saveSettings();
+  showToast('已恢復預設值');
+}
+
+function openSettings() {
+  syncSettingsUI();
+  document.getElementById('settingsOverlay').classList.add('show');
+}
+
+function closeSettings() {
+  document.getElementById('settingsOverlay').classList.remove('show');
+}
+
+function closeSettingsOnBg(e) {
+  if (e.target === document.getElementById('settingsOverlay')) closeSettings();
 }
 
 // ── Toast ──
@@ -786,7 +1605,11 @@ function showToast(msg) {
 }
 
 // ── Init ──
+// Open default folders
+getFolders('code').forEach(f => openFolders.add(f.id));
 renderList();
+// Apply persisted settings (editors not open yet, just ready for when they open)
+// Settings will be applied via applySettingsToEditor() when an item is selected
 </script>
 </body>
 </html>
