@@ -3,1706 +3,1667 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>文庫 — 我的文章收藏</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;600&family=Noto+Sans+TC:wght@300;400;500&family=Lora:ital,wght@0,400;0,600;1,400&family=LXGW+WenKai+TC:wght@300;400;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<title>萌想引擎 v5・終極版指令產生器</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700;900&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-/* ── Design tokens ── */
-:root {
-  /* Light theme (default) */
-  --bg:          #F9F6F0;
-  --bg2:         #F1EBE0;
-  --bg3:         #E8DFD0;
-  --surface:     #FDFAF5;
-  --ink:         #2A1F14;
-  --ink-soft:    #5C4A35;
-  --ink-muted:   #9A8470;
-  --accent:      #7B6A52;
-  --accent-soft: #A08C70;
-  --accent-pale: #EAE0D0;
-  --gold:        #C09A5A;
-  --gold-pale:   #F5EDD8;
-  --border:      #DDD5C5;
-  --shadow:      rgba(42,31,20,0.08);
-  --shadow-md:   rgba(42,31,20,0.16);
-  --reader-bg:   #FDFAF5;
-  --reader-ink:  #2A1F14;
-}
-
-[data-theme="night"] {
-  --bg:          #18140F;
-  --bg2:         #211C16;
-  --bg3:         #2C2520;
-  --surface:     #1C1812;
-  --ink:         #E8DCC8;
-  --ink-soft:    #B8A888;
-  --ink-muted:   #786858;
-  --accent:      #C09A5A;
-  --accent-soft: #D4B07A;
-  --accent-pale: #2C2416;
-  --gold:        #C09A5A;
-  --gold-pale:   #241E14;
-  --border:      #362E24;
-  --shadow:      rgba(0,0,0,0.3);
-  --shadow-md:   rgba(0,0,0,0.5);
-  --reader-bg:   #1C1812;
-  --reader-ink:  #E8DCC8;
-}
-
-[data-theme="antique"] {
-  --bg:          #F0E6C8;
-  --bg2:         #E8D9B2;
-  --bg3:         #DDD0A0;
-  --surface:     #F5EDD5;
-  --ink:         #2C1F0A;
-  --ink-soft:    #5A3E18;
-  --ink-muted:   #8C6E3C;
-  --accent:      #8B5E2A;
-  --accent-soft: #A87840;
-  --accent-pale: #EAD8A8;
-  --gold:        #A07030;
-  --gold-pale:   #F0E0A8;
-  --border:      #C8B888;
-  --shadow:      rgba(44,31,10,0.12);
-  --shadow-md:   rgba(44,31,10,0.22);
-  --reader-bg:   #F5EDD5;
-  --reader-ink:  #2C1F0A;
-}
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  font-family: 'Noto Sans TC', sans-serif;
-  background: var(--bg);
-  color: var(--ink);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  transition: background 0.3s, color 0.3s;
-}
-
-/* ── Header ── */
-header {
-  background: var(--ink);
-  padding: 0 24px;
-  height: 52px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: 0 2px 16px var(--shadow-md);
-  flex-shrink: 0;
-}
-
-.logo {
-  font-family: 'Noto Serif TC', serif;
-  font-weight: 600;
-  font-size: 1.1rem;
-  color: var(--gold);
-  letter-spacing: 0.12em;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.logo-sub {
-  font-family: 'Noto Sans TC', sans-serif;
-  font-weight: 300;
-  font-size: 0.75rem;
-  color: var(--ink-muted);
-  letter-spacing: 0.05em;
-}
-
-.header-right { display: flex; gap: 6px; align-items: center; }
-
-.btn-hdr {
-  font-family: 'Noto Sans TC', sans-serif;
-  font-size: 0.85rem;
-  padding: 6px 13px;
-  border-radius: 16px;
-  border: 1px solid rgba(255,255,255,0.15);
-  background: transparent;
-  color: rgba(240,228,200,0.75);
-  cursor: pointer;
-  transition: all 0.2s;
-  letter-spacing: 0.03em;
-  white-space: nowrap;
-}
-.btn-hdr:hover { background: rgba(255,255,255,0.1); color: var(--gold); border-color: var(--gold); }
-
-/* ── Layout ── */
-.app-body {
-  display: flex;
-  flex: 1;
-  min-height: 0;
-  height: calc(100dvh - 52px);
-}
-
-/* ── Sidebar ── */
-.sidebar {
-  width: 268px;
-  min-width: 200px;
-  background: var(--bg2);
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  flex-shrink: 0;
-  transition: background 0.3s, border-color 0.3s;
-}
-
-.sidebar-top {
-  padding: 12px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  gap: 6px;
-}
-
-.search-box {
-  flex: 1;
-  font-family: 'Noto Sans TC', sans-serif;
-  font-size: 0.78rem;
-  padding: 7px 11px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--ink);
-  outline: none;
-  transition: border-color 0.2s, background 0.3s;
-}
-.search-box::placeholder { color: var(--ink-muted); }
-.search-box:focus { border-color: var(--gold); }
-
-.btn-new-item {
-  width: 32px; height: 32px;
-  border-radius: 8px;
-  border: none;
-  background: var(--gold);
-  color: #fff;
-  font-size: 1.2rem;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-  transition: background 0.2s, transform 0.1s;
-}
-.btn-new-item:hover { background: var(--accent-soft); transform: scale(1.06); }
-
-.item-list {
-  flex: 1;
-  overflow-y: auto;
-  padding: 8px;
-}
-.item-list::-webkit-scrollbar { width: 3px; }
-.item-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-
-/* Folder rows */
-.folder-row {
-  display: flex;
-  align-items: center;
-  padding: 7px 8px;
-  border-radius: 7px;
-  cursor: pointer;
-  user-select: none;
-  margin-bottom: 1px;
-  gap: 5px;
-  transition: background 0.15s;
-}
-.folder-row:hover { background: var(--bg3); }
-.folder-row.open-folder { background: var(--accent-pale); }
-.folder-arrow { font-size: 0.55rem; color: var(--ink-muted); transition: transform 0.2s; width: 10px; flex-shrink: 0; }
-.folder-arrow.open { transform: rotate(90deg); }
-.folder-icon { font-size: 0.82rem; flex-shrink: 0; }
-.folder-name { flex: 1; font-size: 0.8rem; font-weight: 500; color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.folder-count { font-size: 0.62rem; color: var(--ink-muted); background: var(--bg3); border-radius: 8px; padding: 1px 6px; flex-shrink: 0; }
-.folder-actions { display: none; gap: 2px; }
-.folder-row:hover .folder-actions { display: flex; }
-.folder-act-btn {
-  width: 18px; height: 18px;
-  border: none; background: transparent;
-  color: var(--ink-muted); cursor: pointer;
-  border-radius: 4px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 0.65rem;
-  transition: background 0.1s, color 0.1s;
-}
-.folder-act-btn:hover { background: var(--bg); color: var(--ink); }
-.folder-act-btn.del:hover { color: #c0605a; }
-
-.folder-children { overflow: hidden; max-height: 0; transition: max-height 0.25s ease; }
-.folder-children.open { max-height: 9999px; }
-.folder-children-inner { padding: 2px 0 4px 12px; }
-
-/* Item cards */
-.item-card {
-  padding: 9px 10px;
-  border-radius: 8px;
-  cursor: pointer;
-  margin-bottom: 2px;
-  border: 1px solid transparent;
-  transition: all 0.15s;
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-}
-.item-card:hover { background: var(--surface); border-color: var(--border); }
-.item-card.active { background: var(--surface); border-color: var(--gold-pale); box-shadow: 0 1px 5px var(--shadow); }
-
-.item-check {
-  width: 16px; height: 16px;
-  border: 1.5px solid var(--border);
-  border-radius: 4px;
-  flex-shrink: 0;
-  margin-top: 2px;
-  cursor: pointer;
-  background: var(--surface);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 0.65rem;
-  color: transparent;
-  transition: all 0.15s;
-}
-.item-check.checked {
-  background: var(--gold);
-  border-color: var(--gold);
-  color: #fff;
-}
-
-.item-card-body { flex: 1; min-width: 0; }
-.card-title {
-  font-family: 'Noto Serif TC', serif;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--ink);
-  margin-bottom: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.card-meta { font-size: 0.67rem; color: var(--ink-muted); }
-
-.empty-folder { padding: 8px 10px; color: var(--ink-muted); font-size: 0.72rem; font-style: italic; }
-.empty-msg { text-align: center; padding: 36px 16px; color: var(--ink-muted); font-size: 0.82rem; line-height: 2; }
-.empty-msg .ico { font-size: 2rem; opacity: 0.4; display: block; margin-bottom: 8px; }
-
-.add-folder-btn {
-  display: flex; align-items: center; gap: 6px;
-  padding: 7px 8px;
-  border-radius: 7px;
-  cursor: pointer;
-  color: var(--ink-muted);
-  font-size: 0.74rem;
-  border: 1px dashed var(--border);
-  margin-top: 6px;
-  transition: all 0.15s;
-}
-.add-folder-btn:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-pale); }
-
-/* Batch download bar */
-.batch-bar {
-  padding: 8px 12px;
-  background: var(--gold-pale);
-  border-top: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-.batch-bar.hidden { display: none; }
-.batch-count { font-size: 0.74rem; color: var(--ink-soft); flex: 1; }
-.btn-batch {
-  font-size: 0.7rem;
-  padding: 5px 10px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--ink-soft);
-  cursor: pointer;
-  transition: all 0.15s;
-  white-space: nowrap;
-}
-.btn-batch:hover { background: var(--gold); border-color: var(--gold); color: #fff; }
-.btn-batch-clear { background: transparent; border-color: transparent; color: var(--ink-muted); }
-.btn-batch-clear:hover { background: var(--bg3); color: var(--ink); border-color: var(--border); }
-
-/* ── Content area ── */
-.content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-/* Welcome */
-.welcome {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  text-align: center;
-  padding: 24px 32px;
-  color: var(--ink-muted);
-  /* Don't let it expand beyond viewport on mobile */
-  max-height: 100%;
-}
-.welcome .w-icon { font-size: 2rem; opacity: 0.3; }
-.welcome h2 { font-family: 'Noto Serif TC', serif; font-weight: 400; font-size: 0.95rem; color: var(--ink-soft); }
-.welcome p { font-size: 0.78rem; line-height: 1.9; }
-
-/* Detail toolbar */
-.detail-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 9px 16px;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg2);
-  flex-wrap: wrap;
-  flex-shrink: 0;
-  transition: background 0.3s;
-}
-
-.detail-title-input {
-  flex: 1;
-  font-family: 'Noto Serif TC', serif;
-  font-size: 1.15rem;
-  font-weight: 600;
-  border: none;
-  background: transparent;
-  color: var(--ink);
-  outline: none;
-  min-width: 80px;
-}
-.detail-title-input::placeholder { color: var(--ink-muted); }
-
-.vdiv { width: 1px; background: var(--border); align-self: stretch; margin: 0 3px; }
-
-.btn-act {
-  font-family: 'Noto Sans TC', sans-serif;
-  font-size: 1rem;
-  padding: 7px 14px;
-  border-radius: 7px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--ink-soft);
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.15s;
-}
-.btn-act:hover { background: var(--bg3); color: var(--ink); }
-.btn-act.primary { background: var(--gold); border-color: var(--gold); color: #fff; }
-.btn-act.primary:hover { background: var(--accent-soft); border-color: var(--accent-soft); }
-.btn-act.danger:hover { background: #f9e8e8; color: #c05050; border-color: #e0c0c0; }
-.btn-act.settings-act { font-size: 0.8rem; }
-
-/* Folder select */
-.folder-sel-wrap { display: flex; align-items: center; gap: 4px; font-size: 1rem; color: var(--ink-muted); }
-.folder-sel {
-  font-family: 'Noto Sans TC', sans-serif;
-  font-size: 1rem;
-  padding: 6px 9px;
-  border-radius: 5px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--ink-soft);
-  outline: none;
-  cursor: pointer;
-  max-width: 130px;
-}
-.folder-sel:focus { border-color: var(--gold); }
-
-/* Download dropdown */
-.dl-wrap { position: relative; }
-.dl-menu {
-  position: fixed;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 5px;
-  box-shadow: 0 6px 24px var(--shadow-md);
-  z-index: 250;
-  min-width: 150px;
-  width: max-content;
-  max-width: min(220px, calc(100vw - 24px));
-  display: none;
-}
-.dl-menu.show { display: block; }
-.dl-item {
-  display: flex; align-items: center; gap: 8px;
-  padding: 9px 12px;
-  border-radius: 7px;
-  cursor: pointer;
-  font-size: 0.95rem;
-  color: var(--ink-soft);
-  transition: background 0.1s, color 0.1s;
-}
-.dl-item:hover { background: var(--bg2); color: var(--ink); }
-.dl-item .dl-ico { font-size: 1.05rem; }
-
-/* ── Reader ── */
-.reader-wrap {
-  flex: 1;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  background: var(--reader-bg);
-  transition: background 0.3s;
-}
-
-/* Writing direction */
-.reader-inner {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 36px 60px;
-}
-.reader-inner::-webkit-scrollbar { width: 4px; }
-.reader-inner::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-
-/* Vertical (tate) mode — container scrolls horizontally */
-.reader-inner.tate {
-  writing-mode: vertical-rl;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding: 40px 36px;
-  /* must NOT clip the textarea width */
-  display: flex;
-  flex-direction: row;
-}
-
-.text-editor {
-  width: 100%;
-  min-height: 100%;
-  font-family: 'Noto Serif TC', serif;
-  font-size: 16px;
-  line-height: 2.1;
-  border: none;
-  background: transparent;
-  color: var(--reader-ink);
-  resize: none;
-  outline: none;
-  transition: font-family 0.2s, font-size 0.2s, line-height 0.2s, color 0.3s;
-}
-
-/* Tate textarea — must have explicit height & auto width to expand horizontally */
-.reader-inner.tate .text-editor {
-  writing-mode: vertical-rl;
-  width: max-content;
-  min-width: 100%;
-  height: 100%;
-  min-height: unset;
-}
-
-/* ── Settings Panel ── */
-.settings-overlay {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.3);
-  z-index: 200;
-  opacity: 0; pointer-events: none;
-  transition: opacity 0.25s;
-}
-.settings-overlay.show { opacity: 1; pointer-events: all; }
-
-.settings-panel {
-  position: fixed;
-  top: 0; right: 0;
-  width: min(340px, 94vw);
-  height: 100%;
-  background: var(--bg);
-  border-left: 1px solid var(--border);
-  box-shadow: -6px 0 32px var(--shadow-md);
-  display: flex; flex-direction: column;
-  transform: translateX(100%);
-  transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
-  z-index: 201;
-  overflow: hidden;
-}
-.settings-overlay.show .settings-panel { transform: translateX(0); }
-
-.settings-hdr {
-  padding: 16px 18px;
-  border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between;
-  background: var(--bg2);
-  flex-shrink: 0;
-}
-.settings-hdr h3 { font-family: 'Noto Serif TC', serif; font-size: 0.95rem; font-weight: 600; color: var(--ink); }
-.settings-close {
-  width: 26px; height: 26px;
-  border: none; background: transparent; color: var(--ink-muted);
-  cursor: pointer; font-size: 1rem; border-radius: 5px;
-  display: flex; align-items: center; justify-content: center;
-  transition: background 0.1s, color 0.1s;
-}
-.settings-close:hover { background: var(--bg3); color: var(--ink); }
-
-.settings-body { flex: 1; overflow-y: auto; padding: 18px; }
-.settings-body::-webkit-scrollbar { width: 3px; }
-.settings-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-
-.s-section { margin-bottom: 24px; }
-.s-section-title {
-  font-size: 0.64rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  color: var(--ink-muted);
-  text-transform: uppercase;
-  margin-bottom: 12px;
-  padding-bottom: 5px;
-  border-bottom: 1px solid var(--border);
-}
-
-.s-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 10px; }
-.s-label { font-size: 0.8rem; color: var(--ink-soft); flex-shrink: 0; }
-
-.s-select {
-  font-family: 'Noto Sans TC', sans-serif;
-  font-size: 0.75rem;
-  padding: 5px 8px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  background: var(--bg2);
-  color: var(--ink);
-  outline: none;
-  cursor: pointer;
-  flex: 1;
-  min-width: 0;
-  transition: border-color 0.2s;
-}
-.s-select:focus { border-color: var(--gold); }
-
-/* Direction toggle */
-.dir-toggle { display: flex; gap: 4px; flex: 1; }
-.dir-btn {
-  flex: 1;
-  font-size: 0.72rem;
-  padding: 5px 8px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  background: var(--bg2);
-  color: var(--ink-muted);
-  cursor: pointer;
-  transition: all 0.15s;
-  display: flex; align-items: center; justify-content: center; gap: 4px;
-}
-.dir-btn.active { background: var(--gold); border-color: var(--gold); color: #fff; }
-
-/* Theme picker */
-.theme-picker { display: flex; gap: 6px; flex: 1; justify-content: flex-end; }
-.theme-dot {
-  width: 28px; height: 28px;
-  border-radius: 50%;
-  cursor: pointer;
-  border: 2px solid transparent;
-  transition: all 0.15s;
-  position: relative;
-  overflow: hidden;
-}
-.theme-dot.active { border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold-pale); }
-.theme-dot[data-t="light"] { background: linear-gradient(135deg, #F9F6F0 50%, #C09A5A 50%); }
-.theme-dot[data-t="night"] { background: linear-gradient(135deg, #18140F 50%, #C09A5A 50%); }
-.theme-dot[data-t="antique"] { background: linear-gradient(135deg, #F0E6C8 50%, #8B5E2A 50%); }
-
-/* Slider */
-.slider-wrap { display: flex; align-items: center; gap: 8px; flex: 1; }
-.s-slider {
-  flex: 1;
-  -webkit-appearance: none;
-  height: 3px;
-  border-radius: 3px;
-  background: var(--border);
-  outline: none;
-  cursor: pointer;
-}
-.s-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 15px; height: 15px;
-  border-radius: 50%;
-  background: var(--gold);
-  cursor: pointer;
-  box-shadow: 0 1px 4px var(--shadow-md);
-  transition: transform 0.1s;
-}
-.s-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
-.s-slider::-moz-range-thumb {
-  width: 15px; height: 15px;
-  border-radius: 50%;
-  background: var(--gold);
-  cursor: pointer;
-  border: none;
-}
-.s-val {
-  font-size: 0.7rem;
-  color: var(--ink-muted);
-  min-width: 28px;
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Margin preview row */
-.margin-row { display: flex; gap: 5px; align-items: center; flex: 1; justify-content: flex-end; }
-.margin-btn {
-  font-size: 0.72rem;
-  padding: 4px 10px;
-  border-radius: 5px;
-  border: 1px solid var(--border);
-  background: var(--bg2);
-  color: var(--ink-soft);
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.margin-btn:hover { background: var(--gold); color: #fff; border-color: var(--gold); }
-
-/* Font preview */
-.font-preview {
-  margin-top: 6px;
-  padding: 10px 12px;
-  border-radius: 8px;
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  font-size: 0.9rem;
-  color: var(--ink-soft);
-  line-height: 1.9;
-  min-height: 50px;
-  transition: all 0.2s;
-}
-
-.s-reset {
-  font-family: 'Noto Sans TC', sans-serif;
-  font-size: 0.72rem;
-  padding: 7px 0;
-  border-radius: 7px;
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--ink-muted);
-  cursor: pointer;
-  width: 100%;
-  margin-top: 4px;
-  transition: all 0.15s;
-}
-.s-reset:hover { background: var(--bg3); color: var(--ink); }
-
-/* ── Modals ── */
-.modal-overlay {
-  position: fixed; inset: 0;
-  background: rgba(42,31,20,0.45);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 250;
-  opacity: 0; pointer-events: none;
-  transition: opacity 0.2s;
-}
-.modal-overlay.show { opacity: 1; pointer-events: all; }
-
-.modal {
-  background: var(--surface);
-  border-radius: 14px;
-  padding: 24px 26px;
-  width: min(88vw, 400px);
-  box-shadow: 0 8px 40px var(--shadow-md);
-  transform: translateY(8px);
-  transition: transform 0.2s;
-  border: 1px solid var(--border);
-}
-.modal-overlay.show .modal { transform: translateY(0); }
-.modal h3 { font-family: 'Noto Serif TC', serif; font-size: 1rem; margin-bottom: 16px; color: var(--ink); }
-.m-label { font-size: 0.76rem; color: var(--ink-soft); margin-bottom: 5px; margin-top: 12px; }
-.m-input, .m-select {
-  width: 100%;
-  font-family: 'Noto Sans TC', sans-serif;
-  font-size: 0.85rem;
-  padding: 8px 12px;
-  border-radius: 7px;
-  border: 1px solid var(--border);
-  background: var(--bg2);
-  color: var(--ink);
-  outline: none;
-  transition: border-color 0.2s;
-}
-.m-input:focus, .m-select:focus { border-color: var(--gold); }
-.m-actions { display: flex; justify-content: flex-end; gap: 6px; margin-top: 18px; }
-
-/* Emoji picker */
-.emoji-row { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; }
-.emoji-btn {
-  width: 32px; height: 32px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--bg2);
-  cursor: pointer;
-  font-size: 0.95rem;
-  display: flex; align-items: center; justify-content: center;
-  transition: all 0.12s;
-}
-.emoji-btn:hover { border-color: var(--gold); background: var(--gold-pale); }
-.emoji-btn.sel { border-color: var(--gold); background: var(--gold-pale); box-shadow: 0 0 0 2px var(--gold-pale); }
-
-/* Back btn (mobile) */
-.btn-back {
-  display: none;
-  font-size: 1rem;
-  padding: 6px 12px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--ink-soft);
-  cursor: pointer;
-  align-items: center; gap: 2px;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-/* ── Toast ── */
-.toast {
-  position: fixed;
-  bottom: 24px; left: 50%;
-  transform: translateX(-50%) translateY(16px);
-  background: var(--ink);
-  color: var(--gold);
-  font-size: 0.78rem;
-  padding: 8px 18px;
-  border-radius: 18px;
-  z-index: 400;
-  opacity: 0;
-  transition: all 0.28s;
-  pointer-events: none;
-  white-space: nowrap;
-  box-shadow: 0 4px 16px var(--shadow-md);
-}
-.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-/* ── Mobile ── */
-@media (max-width: 600px) {
-  header { padding: 0 14px; height: 46px; }
-  .logo { font-size: 0.95rem; }
-  .logo-sub { display: none; }
-  .btn-hdr { font-size: 0.8rem; padding: 5px 10px; }
-
-  .app-body { height: calc(100dvh - 46px); }
-
-  .sidebar {
-    width: 100%;
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-    /* Let sidebar take only as much as it needs, up to 50% */
-    max-height: 50dvh;
-    overflow-y: auto;
-    transition: max-height 0.3s ease, opacity 0.25s;
+  :root{
+    --bg:#F2E6D2;
+    --card:#FAF1E1;
+    --card-border:#D9C4A0;
+    --ink:#4A3526;
+    --ink-soft:#8A7058;
+    --accent:#8B5A2B;
+    --accent-deep:#6E4521;
+    --chip-on:#8B5A2B;
+    --warn-bg:#FBEFD9;
+    --warn-border:#D9A45C;
+    --warn-ink:#7A5212;
+    --danger:#A8553A;
   }
-  .sidebar.mob-hidden {
-    max-height: 0 !important;
-    opacity: 0;
-    pointer-events: none;
-    border-bottom: none;
-  }
-  .app-body { flex-direction: column; }
-  /* Content fills remaining space — welcome will be centred within it */
-  .content { flex: 1; min-height: 0; overflow: hidden; }
-  .detail-toolbar { padding: 8px 10px; gap: 5px; }
-  .detail-title-input { font-size: 1.05rem; min-width: 60px; }
-  .vdiv { display: none; }
-  .btn-act { font-size: 0.9rem; padding: 6px 10px; }
-  .folder-sel-wrap { font-size: 0.85rem; }
-  .folder-sel { max-width: 90px; font-size: 0.85rem; padding: 5px 6px; }
-  .reader-inner { padding: 20px 20px; }
-  .btn-back { display: inline-flex; font-size: 0.9rem; padding: 5px 9px; }
-}
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; background:var(--bg); color:var(--ink); font-family:'Noto Serif TC', serif; }
+  .stage{ max-width:720px; margin:0 auto; padding:28px 16px 80px; }
+  h1{ font-size:clamp(22px,5.5vw,28px); font-weight:900; letter-spacing:.06em; margin:0 0 4px; }
+  .lead{ font-family:'Noto Sans TC', sans-serif; font-size:13.5px; color:var(--ink-soft); margin:0 0 16px; line-height:1.7; }
+  .v-badge{ display:inline-block; font-family:'Noto Sans TC', sans-serif; font-size:11px; letter-spacing:.1em; color:#fff; background:var(--accent); border-radius:999px; padding:3px 10px; margin-bottom:10px; }
+  .toolbar{ display:flex; gap:10px; margin-bottom:20px; }
+  .randomize-all-btn{ flex:1; background:#fff; border:1px dashed var(--accent); color:var(--accent); border-radius:10px; padding:12px; font-family:'Noto Sans TC', sans-serif; font-weight:700; font-size:13.5px; cursor:pointer; }
+  .randomize-all-btn:hover{ background:var(--accent); color:#fff; }
+  details.card{ background:var(--card); border:1px solid var(--card-border); border-radius:12px; margin-bottom:14px; overflow:hidden; }
+  details.card[open]{ box-shadow:0 4px 14px rgba(74,53,38,0.08); }
+  details.card > summary{ list-style:none; cursor:pointer; padding:16px 18px; display:flex; align-items:center; justify-content:space-between; font-family:'Noto Sans TC', sans-serif; font-weight:700; font-size:15.5px; }
+  details.card > summary::-webkit-details-marker{ display:none; }
+  .summary-left{ display:flex; align-items:center; gap:10px; }
+  .chev{ transition:transform .2s; color:var(--ink-soft); }
+  details.card[open] .chev{ transform:rotate(180deg); }
+  .card-body{ padding:0 18px 18px; }
+  label{ display:block; font-family:'Noto Sans TC', sans-serif; font-size:12px; color:var(--ink-soft); margin:14px 0 6px; }
+  label:first-child{ margin-top:0; }
+  .row2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  @media (max-width:480px){ .row2{ grid-template-columns:1fr; } }
+  input[type=text], input[type=number], textarea{ width:100%; background:#fff; border:1px solid var(--card-border); border-radius:8px; padding:10px 12px; font-family:'Noto Serif TC', serif; font-size:15px; color:var(--ink); }
+  textarea{ resize:vertical; min-height:70px; line-height:1.6; }
+  input::placeholder, textarea::placeholder{ color:#B7A488; }
+  .pill-group{ display:flex; flex-wrap:wrap; gap:8px; }
+  .pill{ font-family:'Noto Sans TC', sans-serif; font-size:13.5px; padding:9px 16px; border-radius:999px; border:1px solid var(--card-border); background:#fff; color:var(--ink); cursor:pointer; transition:background .15s, color .15s, border-color .15s; }
+  .pill.dice{ border-style:dashed; color:var(--ink-soft); }
+  .pill.selected{ background:var(--chip-on); border-color:var(--accent-deep); color:#fff; }
+  .pill:hover:not(.selected){ border-color:var(--accent); }
+  .hint{ font-family:'Noto Sans TC', sans-serif; font-size:11.5px; color:var(--ink-soft); margin-top:8px; line-height:1.6; }
+  .subhead{ font-family:'Noto Sans TC', sans-serif; font-weight:700; font-size:13px; color:var(--ink); margin:18px 0 8px; }
+  .subhead:first-child{ margin-top:0; }
+  .subhead.minor{ font-weight:500; font-size:11.5px; color:var(--ink-soft); margin:10px 0 6px; }
+  hr.divider{ border:none; border-top:1px dashed var(--card-border); margin:18px 0; }
+  select{ width:100%; background:#fff; border:1px solid var(--card-border); border-radius:8px; padding:10px 12px; font-family:'Noto Sans TC', sans-serif; font-size:14.5px; color:var(--ink); }
+  .hidden{ display:none !important; }
+  #order-list{ display:none; }
+  .order-row{ display:flex; align-items:center; gap:8px; background:#fff; border:1px solid var(--card-border); border-radius:8px; padding:7px 10px; margin-bottom:6px; font-family:'Noto Sans TC', sans-serif; font-size:13px; color:var(--ink); }
+  .order-row span.idx{ color:var(--accent); font-weight:700; }
+  .order-row .arrows{ margin-left:auto; display:flex; gap:4px; }
+  .arrow-btn{ border:1px solid var(--card-border); background:#fff; color:var(--ink-soft); border-radius:5px; width:26px; height:26px; font-size:12px; cursor:pointer; }
+  .arrow-btn:hover{ border-color:var(--accent); color:var(--accent); }
+  .arrow-btn:disabled{ opacity:.3; cursor:default; }
+  .li-card{ background:#fff; border:1px solid var(--card-border); border-radius:10px; padding:14px; margin-bottom:14px; }
+  .li-card-head{ display:flex; justify-content:space-between; align-items:center; font-family:'Noto Sans TC', sans-serif; font-weight:700; font-size:14px; color:var(--accent-deep); margin-bottom:4px; }
+  .li-remove-btn{ background:transparent; border:1px solid #C99A86; color:var(--danger); border-radius:6px; font-size:11.5px; padding:4px 10px; cursor:pointer; font-family:'Noto Sans TC', sans-serif; }
+  .li-remove-btn:hover{ background:var(--danger); color:#fff; }
+  .add-li-btn{ width:100%; border:1px dashed var(--accent); background:transparent; color:var(--accent); border-radius:8px; padding:10px; font-family:'Noto Sans TC', sans-serif; font-size:13.5px; cursor:pointer; }
+  .add-li-btn:hover{ background:var(--accent); color:#fff; }
+  .lib-row{ display:flex; align-items:center; gap:8px; background:#fff; border:1px solid var(--card-border); border-radius:8px; padding:8px 10px; margin-bottom:6px; font-family:'Noto Sans TC', sans-serif; font-size:12.5px; }
+  .lib-row .lib-name{ flex:1; font-weight:700; color:var(--ink); }
+  .lib-btn{ border:1px solid var(--card-border); background:#fff; color:var(--ink); border-radius:6px; padding:5px 10px; font-size:12px; cursor:pointer; font-family:'Noto Sans TC', sans-serif; white-space:nowrap; }
+  .lib-btn:hover{ border-color:var(--accent); color:var(--accent); }
+  .lib-btn.danger:hover{ border-color:var(--danger); color:var(--danger); }
+  .lib-save-row{ display:flex; gap:8px; margin-top:10px; }
+  .lib-save-row input{ flex:1; }
+  .lib-loading{ font-family:'Noto Sans TC', sans-serif; font-size:12px; color:var(--ink-soft); }
+  .generate-btn{ width:100%; background:var(--accent); color:#fff; border:none; border-radius:10px; padding:16px; font-family:'Noto Sans TC', sans-serif; font-weight:700; font-size:16px; letter-spacing:.08em; cursor:pointer; margin:18px 0 16px; transition:background .15s; }
+  .generate-btn:hover{ background:var(--accent-deep); }
+  .warning-box{ background:var(--warn-bg); border:1px solid var(--warn-border); border-radius:8px; padding:10px 14px; margin-bottom:12px; font-family:'Noto Sans TC', sans-serif; font-size:12.5px; color:var(--warn-ink); line-height:1.7; display:none; }
+  .warning-box.show{ display:block; }
+  .warning-box ul{ margin:4px 0 0; padding-left:18px; }
+  .output-head{ display:flex; justify-content:space-between; align-items:baseline; font-family:'Noto Sans TC', sans-serif; margin-bottom:8px; }
+  .output-head .eyebrow{ font-size:12px; letter-spacing:.2em; color:var(--ink-soft); }
+  .output-head .count{ font-size:12px; color:var(--ink-soft); }
+  #output{ width:100%; min-height:160px; background:#fff; border:1px solid var(--card-border); border-radius:10px; padding:16px; font-family:'Noto Sans TC', sans-serif; font-size:13.5px; line-height:1.8; color:var(--ink); white-space:pre-wrap; }
+  #output:empty::before{ content:"填好上面的設定後，按下「產生指令」，完整文字會出現在這裡，複製後貼到 Claude 或 ChatGPT 的對話框即可開始玩。"; color:#B7A488; }
+  .copy-btn{ margin-top:10px; background:transparent; border:1px solid var(--accent); color:var(--accent); border-radius:8px; padding:9px 20px; font-family:'Noto Sans TC', sans-serif; font-size:13.5px; cursor:pointer; transition:background .15s, color .15s; }
+  .copy-btn:hover{ background:var(--accent); color:#fff; }
+  .copy-feedback{ margin-left:10px; font-family:'Noto Sans TC', sans-serif; font-size:12.5px; color:#5C7A4A; opacity:0; transition:opacity .2s; }
+  .copy-feedback.show{ opacity:1; }
 </style>
 </head>
 <body>
+<div class="stage">
 
-<header>
-  <div class="logo">
-    文庫
-    <span class="logo-sub">我的文章收藏</span>
-  </div>
-  <div class="header-right">
-    <button class="btn-hdr" onclick="exportData()">匯出備份</button>
-    <button class="btn-hdr" onclick="document.getElementById('importFile').click()">匯入還原</button>
-    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
-    <button class="btn-hdr" onclick="openSettings()">⚙ 版面設定</button>
-  </div>
-</header>
+  <span class="v-badge">V5</span>
+  <h1>萌想引擎・終極版</h1>
+  <p class="lead">選好世界觀、人物細節、感情線與敘事規則後按「產生指令」，複製貼到 Claude 或 ChatGPT 即可開始玩。這個頁面本身不會呼叫任何 AI，也不會幫你寫故事——它只負責把妳的設定整理成一份完整的指令。</p>
 
-<div class="app-body">
-  <div class="sidebar" id="sidebar">
-    <div class="sidebar-top">
-      <input class="search-box" id="searchBox" placeholder="搜尋文章…" oninput="renderList()">
-      <button class="btn-new-item" title="新增文章" onclick="openNewItemModal()">＋</button>
-    </div>
-    <div class="item-list" id="itemList"></div>
-    <div class="batch-bar hidden" id="batchBar">
-      <span class="batch-count" id="batchCount">已選 0 篇</span>
-      <button class="btn-batch btn-batch-clear" onclick="clearSelection()">清除</button>
-      <button class="btn-batch" onclick="batchDownloadZip()">↓ ZIP</button>
-      <button class="btn-batch" onclick="batchDownloadPDF()">↓ 合併PDF</button>
-    </div>
+  <div class="toolbar">
+    <button type="button" class="randomize-all-btn" id="randomize-all-btn">🎲 整頁隨機（不含敘事結構／格式）</button>
   </div>
 
-  <div class="content" id="contentArea">
-    <div class="welcome">
-      <span class="w-icon">✦</span>
-      <h2>選擇一篇文章，或新增一篇</h2>
-      <p>可在側欄勾選多篇文章<br>進行批次下載（ZIP 或合併 PDF）</p>
-    </div>
-  </div>
-</div>
-
-<!-- New / Edit Item Modal -->
-<div class="modal-overlay" id="itemModal">
-  <div class="modal">
-    <h3 id="itemModalTitle">新增文章</h3>
-    <div class="m-label">標題</div>
-    <input class="m-input" id="itemModalName" placeholder="輸入文章標題…" maxlength="80">
-    <div class="m-label">資料夾</div>
-    <select class="m-select" id="itemModalFolder"></select>
-    <div class="m-actions">
-      <button class="btn-act" onclick="closeItemModal()">取消</button>
-      <button class="btn-act primary" id="itemModalConfirm" onclick="confirmItemModal()">建立</button>
-    </div>
-  </div>
-</div>
-
-<!-- Folder Modal -->
-<div class="modal-overlay" id="folderModal">
-  <div class="modal">
-    <h3 id="folderModalTitle">新增資料夾</h3>
-    <div class="m-label">名稱</div>
-    <input class="m-input" id="folderModalName" placeholder="例如：互動小說、日記…" maxlength="30">
-    <div class="m-label">圖示</div>
-    <div class="emoji-row" id="emojiRow"></div>
-    <div class="m-actions">
-      <button class="btn-act" onclick="closeFolderModal()">取消</button>
-      <button class="btn-act primary" id="folderModalConfirm" onclick="confirmFolderModal()">建立</button>
-    </div>
-  </div>
-</div>
-
-<!-- Settings Panel -->
-<div class="settings-overlay" id="settingsOverlay" onclick="closeSettingsBg(event)">
-  <div class="settings-panel">
-    <div class="settings-hdr">
-      <h3>版面設定</h3>
-      <button class="settings-close" onclick="closeSettings()">✕</button>
-    </div>
-    <div class="settings-body">
-
-      <div class="s-section">
-        <div class="s-section-title">佈景主題</div>
-        <div class="s-row">
-          <span class="s-label">色調</span>
-          <div class="theme-picker">
-            <div class="theme-dot active" data-t="light" title="明亮" onclick="setTheme('light')"></div>
-            <div class="theme-dot" data-t="night" title="夜間" onclick="setTheme('night')"></div>
-            <div class="theme-dot" data-t="antique" title="仿舊" onclick="setTheme('antique')"></div>
+  <details class="card" open>
+    <summary><span class="summary-left">📜 妳的角色</span><span class="chev">▾</span></summary>
+    <div class="card-body">
+      <label for="p-name">姓名</label>
+      <input id="p-name" type="text" placeholder="留白則由 AI 自行命名">
+      <div class="row2">
+        <div>
+          <label for="p-age">年齡</label>
+          <input id="p-age" type="text" placeholder="例如 19，或留白隨機">
+        </div>
+        <div>
+          <label>性別</label>
+          <div class="pill-group" id="p-gender">
+            <button type="button" class="pill selected" data-val="女性">女性</button>
+            <button type="button" class="pill" data-val="男性">男性</button>
+            <button type="button" class="pill" data-val="不指定">不指定</button>
+            <button type="button" class="pill dice" data-random="p-gender">🎲隨機</button>
           </div>
         </div>
       </div>
-
-      <div class="s-section">
-        <div class="s-section-title">排版方向</div>
-        <div class="s-row">
-          <span class="s-label">書寫方向</span>
-          <div class="dir-toggle">
-            <button class="dir-btn active" id="dirHori" onclick="setDir('hori')">≡ 橫排</button>
-            <button class="dir-btn" id="dirTate" onclick="setDir('tate')">⫴ 直排</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="s-section">
-        <div class="s-section-title">文字設定</div>
-        <div class="s-row">
-          <span class="s-label">字型</span>
-          <select class="s-select" id="sfontFamily" onchange="applySettings()">
-            <option value="'Noto Serif TC', serif">思源宋體</option>
-            <option value="'Noto Sans TC', sans-serif">思源黑體</option>
-            <option value="'LXGW WenKai TC', cursive">霞鶩文楷</option>
-            <option value="-apple-system, 'PingFang TC', sans-serif">蘋方黑體</option>
-            <option value="'Hiragino Mincho ProN', 'Noto Serif TC', serif">昭源環方</option>
+      <label for="p-bg">出身背景（選填）</label>
+      <input id="p-bg" type="text" placeholder="例如：沒落貴族之女、普通上班族">
+      <div class="row2">
+        <div>
+          <label for="p-hair">髮色</label>
+          <select id="p-hair">
+            <option value="黑色">黑色</option>
+            <option value="棕色">棕色</option>
+            <option value="金色">金色</option>
+            <option value="銀白色">銀白色</option>
+            <option value="紅褐色">紅褐色</option>
+            <option value="灰色">灰色</option>
+            <option value="其他（請見下方補充）">其他（請見下方補充）</option>
           </select>
         </div>
-        <div class="font-preview" id="fontPreview">願我如星君如月，夜夜流光相皎潔。<br>縱有千古，橫有八荒。</div>
-        <div class="s-row" style="margin-top:12px">
-          <span class="s-label">字體大小</span>
-          <div class="slider-wrap">
-            <input type="range" class="s-slider" id="sfontSize" min="12" max="26" step="1" oninput="applySettings()">
-            <span class="s-val" id="sfontSizeVal">16px</span>
-          </div>
-        </div>
-        <div class="s-row">
-          <span class="s-label">行距</span>
-          <div class="slider-wrap">
-            <input type="range" class="s-slider" id="slineHeight" min="1.4" max="3.2" step="0.1" oninput="applySettings()">
-            <span class="s-val" id="slineHeightVal">2.1</span>
-          </div>
-        </div>
-        <div class="s-row">
-          <span class="s-label">左右邊界</span>
-          <div class="margin-row">
-            <button class="margin-btn" onclick="adjustMargin(-1)">縮小</button>
-            <span class="s-val" id="marginVal" style="min-width:38px">60px</span>
-            <button class="margin-btn" onclick="adjustMargin(1)">放大</button>
-          </div>
+        <div>
+          <label for="p-skin">膚色</label>
+          <select id="p-skin">
+            <option value="蒼白">蒼白</option>
+            <option value="白皙" selected>白皙</option>
+            <option value="健康自然膚色">健康自然膚色</option>
+            <option value="黝黑">黝黑</option>
+            <option value="其他（請見下方補充）">其他（請見下方補充）</option>
+          </select>
         </div>
       </div>
-
-      <button class="s-reset" onclick="resetSettings()">↺ 恢復預設值</button>
+      <label for="p-looks">外貌給人的印象（新增）</label>
+      <select id="p-looks">
+        <option value="樸實普通">樸實普通</option>
+        <option value="順眼乾淨" selected>順眼乾淨</option>
+        <option value="好看出眾">好看出眾</option>
+        <option value="驚艷醒目">驚艷醒目</option>
+        <option value="絕色罕見">絕色罕見</option>
+      </select>
+      <label for="p-appearance-extra">外貌補充細節（選填，新增）</label>
+      <input id="p-appearance-extra" type="text" placeholder="例如：眼睛顏色、身形、五官特徵、穿著風格">
+      <label for="p-mark">特殊外貌標記（選填）</label>
+      <input id="p-mark" type="text" placeholder="例如：天生異瞳、頸後有古代紋飾">
+      <label for="p-quirk">口癖／說話方式（選填，新增）</label>
+      <input id="p-quirk" type="text" placeholder="例如：習慣用反問句、沉默後才回答">
+      <label for="p-token">隨身信物／關鍵物品（選填，新增）</label>
+      <input id="p-token" type="text" placeholder="例如：母親留下的玉珮、一把舊鑰匙">
+      <label for="p-secret">不可告人的秘密或心結（選填，新增）</label>
+      <input id="p-secret" type="text" placeholder="例如：隱瞞真實身分、對某件往事有未解的愧疚">
+      <label>性格特質（可多選，新版精確標籤）</label>
+      <div class="pill-group" id="p-personality"></div>
+      <div class="pill-group" style="margin-top:8px;">
+        <button type="button" class="pill dice" id="p-personality-random">🎲隨機挑 2 個</button>
+      </div>
+      <label for="p-personality-other">其他性格特質（選填，自訂，新增）</label>
+      <input id="p-personality-other" type="text" placeholder="標籤裡沒有想要的詞，可以自己填">
     </div>
-  </div>
-</div>
+  </details>
 
-<!-- Toast -->
-<div class="toast" id="toast"></div>
-
-<script>
-// ── Google Fonts loader for LXGW ──
-(function() {
-  const l = document.createElement('link');
-  l.rel = 'stylesheet';
-  l.href = 'https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC&display=swap';
-  document.head.appendChild(l);
-})();
-
-// ── Constants ──
-const FOLDER_EMOJIS = ['📁','📖','📝','🌙','🌿','🎭','💌','🔮','🏮','🗂️','📜','🌸','🎵','🏔️','⚗️','🦋','🌟','🎨','📦','🗺️'];
-
-// ── DB ──
-let db = JSON.parse(localStorage.getItem('wenku_db') || 'null');
-if (!db) {
-  // Try migrating from old vault_db_v2
-  const old = JSON.parse(localStorage.getItem('vault_db_v2') || 'null');
-  if (old) {
-    const textItems = (old.items || []).filter(i => i.type === 'text');
-    db = {
-      folders: [{ id: 'default', name: '全部收藏', icon: '📖', builtIn: true }],
-      items: textItems.map(i => ({ ...i, folderId: 'default' }))
-    };
-  } else {
-    db = {
-      folders: [{ id: 'default', name: '全部收藏', icon: '📖', builtIn: true }],
-      items: []
-    };
-  }
-  saveDB();
-}
-
-// ── Settings ──
-const DEFAULTS = {
-  theme: 'light',
-  dir: 'hori',
-  fontFamily: "'Noto Serif TC', serif",
-  fontSize: 16,
-  lineHeight: 2.1,
-  margin: 60
-};
-let S = JSON.parse(localStorage.getItem('wenku_settings') || 'null') || { ...DEFAULTS };
-applyTheme(S.theme);
-
-// ── State ──
-let currentId = null;
-let openFolders = new Set(['default']);
-let selectedIds = new Set();
-let folderModalMode = 'new';
-let folderModalEditId = null;
-let selectedEmoji = '📁';
-let autoSaveTimer = null;
-let dlMenuOpen = false;
-
-function saveDB() { localStorage.setItem('wenku_db', JSON.stringify(db)); }
-function saveSettings() { localStorage.setItem('wenku_settings', JSON.stringify(S)); }
-function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
-
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-function formatDate(ts) {
-  const d = new Date(ts);
-  return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-}
-
-// ── Render sidebar ──
-function renderList() {
-  const q = document.getElementById('searchBox').value.trim().toLowerCase();
-  const el = document.getElementById('itemList');
-
-  if (q) {
-    const results = db.items.filter(i =>
-      i.name.toLowerCase().includes(q) || (i.content || '').toLowerCase().includes(q)
-    ).sort((a,b) => b.updatedAt - a.updatedAt);
-    if (!results.length) {
-      el.innerHTML = `<div class="empty-msg"><span class="ico">🔍</span>找不到符合的文章</div>`;
-    } else {
-      el.innerHTML = results.map(renderCard).join('');
-    }
-    updateBatchBar();
-    return;
-  }
-
-  if (!db.folders.length) {
-    el.innerHTML = `<div class="empty-msg"><span class="ico">📖</span>還沒有資料夾<br>點下方新增一個</div>`;
-    renderAddFolderBtn(el);
-    updateBatchBar();
-    return;
-  }
-
-  let html = '';
-  db.folders.forEach(folder => {
-    const items = db.items.filter(i => i.folderId === folder.id).sort((a,b) => b.updatedAt - a.updatedAt);
-    const isOpen = openFolders.has(folder.id);
-    html += `
-      <div class="folder-row ${isOpen ? 'open-folder' : ''}" onclick="toggleFolder('${folder.id}')">
-        <span class="folder-arrow ${isOpen ? 'open' : ''}">▶</span>
-        <span class="folder-icon">${folder.icon}</span>
-        <span class="folder-name">${escHtml(folder.name)}</span>
-        <span class="folder-count">${items.length}</span>
-        <span class="folder-actions" onclick="event.stopPropagation()">
-          <button class="folder-act-btn" title="重新命名" onclick="openRenameFolder('${folder.id}')">✏️</button>
-          ${!folder.builtIn ? `<button class="folder-act-btn del" title="刪除" onclick="deleteFolder('${folder.id}')">✕</button>` : ''}
-        </span>
+  <details class="card" open>
+    <summary><span class="summary-left">🏛️ 時代背景</span><span class="chev">▾</span></summary>
+    <div class="card-body">
+      <div class="subhead">原創背景</div>
+      <div class="pill-group" id="era-original"></div>
+      <div class="subhead">科幻奇幻背景</div>
+      <div class="pill-group" id="era-genre"></div>
+      <div class="subhead">動漫／IP 世界</div>
+      <div class="pill-group" id="era-ip"></div>
+      <div class="pill-group" style="margin-top:12px;">
+        <button type="button" class="pill dice" id="era-random">🎲隨機</button>
       </div>
-      <div class="folder-children ${isOpen ? 'open' : ''}">
-        <div class="folder-children-inner">
-          ${items.length ? items.map(renderCard).join('') : `<div class="empty-folder">尚無文章，點 ＋ 新增</div>`}
-        </div>
-      </div>
-    `;
-  });
-
-  el.innerHTML = html;
-  renderAddFolderBtn(el);
-  updateBatchBar();
-}
-
-function renderCard(item) {
-  const checked = selectedIds.has(item.id);
-  return `
-    <div class="item-card ${item.id === currentId ? 'active' : ''}">
-      <div class="item-check ${checked ? 'checked' : ''}" onclick="toggleSelect(event,'${item.id}')">${checked ? '✓' : ''}</div>
-      <div class="item-card-body" onclick="selectItem('${item.id}')">
-        <div class="card-title">${escHtml(item.name)}</div>
-        <div class="card-meta">${formatDate(item.updatedAt)} · ${(item.content || '').length} 字</div>
-      </div>
+      <p class="hint">單選。會決定故事的世界觀基調。動漫／IP 世界僅描述概略氛圍與通用設定，不會引用原作文字內容。</p>
+      <label for="era-extra">世界觀補充規則（選填，新增）</label>
+      <textarea id="era-extra" placeholder="例如：力量體系怎麼運作、社會階級怎麼分、有哪些陣營正在對立……留白則由 AI 依時代背景自行設計"></textarea>
     </div>
-  `;
-}
+  </details>
 
-function renderAddFolderBtn(el) {
-  const div = document.createElement('div');
-  div.className = 'add-folder-btn';
-  div.innerHTML = '<span>📁</span><span>新增資料夾</span>';
-  div.onclick = openNewFolder;
-  el.appendChild(div);
-}
-
-function toggleFolder(id) {
-  if (openFolders.has(id)) openFolders.delete(id);
-  else openFolders.add(id);
-  renderList();
-}
-
-// ── Selection ──
-function toggleSelect(e, id) {
-  e.stopPropagation();
-  if (selectedIds.has(id)) selectedIds.delete(id);
-  else selectedIds.add(id);
-  updateBatchBar();
-  renderList();
-}
-
-function clearSelection() {
-  selectedIds.clear();
-  updateBatchBar();
-  renderList();
-}
-
-function updateBatchBar() {
-  const bar = document.getElementById('batchBar');
-  const cnt = document.getElementById('batchCount');
-  if (selectedIds.size > 0) {
-    bar.classList.remove('hidden');
-    cnt.textContent = `已選 ${selectedIds.size} 篇`;
-  } else {
-    bar.classList.add('hidden');
-  }
-}
-
-// ── Select item ──
-function selectItem(id) {
-  manualSave(true);
-  currentId = id;
-  renderList();
-  const item = db.items.find(i => i.id === id);
-  if (!item) return;
-  renderDetail(item);
-  if (isMobile()) {
-    document.getElementById('sidebar').classList.add('mob-hidden');
-  }
-}
-
-function isMobile() { return window.innerWidth <= 600; }
-
-function mobileBack() {
-  manualSave(true);
-  currentId = null;
-  document.getElementById('sidebar').classList.remove('mob-hidden');
-  renderList();
-  showWelcome();
-}
-
-// ── Detail view ──
-function renderDetail(item) {
-  const folders = db.folders;
-  document.getElementById('contentArea').innerHTML = `
-    <div class="detail-toolbar">
-      <button class="btn-back" onclick="mobileBack()">‹ 返回</button>
-      <input class="detail-title-input" id="detailTitle" value="${escHtml(item.name)}" placeholder="文章標題" oninput="scheduleSave()">
-      <div class="folder-sel-wrap">
-        <span>📁</span>
-        <select class="folder-sel" id="detailFolder" onchange="moveFolder()">
-          ${folders.map(f => `<option value="${f.id}" ${f.id === item.folderId ? 'selected' : ''}>${f.icon} ${escHtml(f.name)}</option>`).join('')}
+  <details class="card" open>
+    <summary><span class="summary-left">💞 攻略對象</span><span class="chev">▾</span></summary>
+    <div class="card-body">
+      <div id="li-container"></div>
+      <button type="button" class="add-li-btn" id="li-add-btn">＋ 新增一位攻略對象</button>
+      <div id="triangle-wrap" class="hidden">
+        <hr class="divider">
+        <label for="triangle-mode">多角戀模式（新增，兩位以上攻略對象時適用）</label>
+        <select id="triangle-mode">
+          <option value="玩家為中心的競爭">玩家為中心的競爭（攻略對象彼此較少互動，重心在玩家的選擇）</option>
+          <option value="攻略對象之間也有牽連">攻略對象之間也有牽連（他們彼此也有過去或現在的關係）</option>
+          <option value="平行發展互不干涉">平行發展互不干涉（各自推進，較少正面衝突）</option>
         </select>
       </div>
-      <div class="vdiv"></div>
-      <button class="btn-act primary" onclick="manualSave()">儲存</button>
-      <button class="btn-act" onclick="copyContent()">複製</button>
-      <div class="dl-wrap">
-        <button class="btn-act" onclick="toggleDlMenu(event)">下載 ▾</button>
-        <div class="dl-menu" id="dlMenu">
-          <div class="dl-item" onclick="downloadAs('txt')"><span class="dl-ico">📄</span> TXT 純文字</div>
-          <div class="dl-item" onclick="downloadAs('html')"><span class="dl-ico">🌐</span> HTML 網頁</div>
-          <div class="dl-item" onclick="downloadAs('pdf')"><span class="dl-ico">📕</span> PDF 文件</div>
+    </div>
+  </details>
+
+  <details class="card" open>
+    <summary><span class="summary-left">🔗 人物關係模式</span><span class="chev">▾</span></summary>
+    <div class="card-body">
+      <div class="pill-group" id="relation-group"></div>
+      <div class="pill-group" style="margin-top:8px;">
+        <button type="button" class="pill dice" id="relation-random">🎲隨機挑 2 個</button>
+      </div>
+      <p class="hint">可多選，決定兩人是什麼身分、什麼權力結構。每個標籤都附帶一句「核心張力提示」寫入指令裡。</p>
+      <label for="confession-style">告白方式偏好（選填，新增）</label>
+      <select id="confession-style">
+        <option value="不指定">不指定（由 AI 依劇情自然安排）</option>
+        <option value="直接告白">直接告白</option>
+        <option value="用行動證明">用行動證明</option>
+        <option value="被看穿心意">被看穿心意</option>
+      </select>
+    </div>
+  </details>
+
+  <details class="card" open>
+    <summary><span class="summary-left">⚡ 劇情衝突手法</span><span class="chev">▾</span></summary>
+    <div class="card-body">
+      <div class="pill-group" id="plot-group"></div>
+      <div class="pill-group" style="margin-top:8px;">
+        <button type="button" class="pill dice" id="plot-random">🎲隨機挑 1 個</button>
+      </div>
+      <p class="hint">可多選，決定故事怎麼推進、什麼事件驅動劇情。</p>
+      <div class="subhead minor">劇情發展順序（選填）</div>
+      <div class="pill-group">
+        <button type="button" class="pill" id="order-toggle" data-on="0">📌 依序發展（未啟用＝順序隨機）</button>
+      </div>
+      <div id="order-list"></div>
+      <hr class="divider">
+      <div class="subhead">配角產生器（選填，新增）</div>
+      <div class="pill-group" id="support-cast-group"></div>
+      <div class="pill-group" style="margin-top:8px;">
+        <button type="button" class="pill dice" id="support-cast-random">🎲隨機挑 2 個</button>
+      </div>
+      <p class="hint">可多選：勁敵、家人、阻撓者等配角，每個標籤附帶一句作用提示。</p>
+    </div>
+  </details>
+
+  <details class="card" open>
+    <summary><span class="summary-left">🎭 劇情節奏與敘事細節</span><span class="chev">▾</span></summary>
+    <div class="card-body">
+      <div class="subhead">喘息場景比例</div>
+      <div class="pill-group" id="breath-ratio">
+        <button type="button" class="pill" data-val="高（多日常互動）">高（多日常互動）</button>
+        <button type="button" class="pill selected" data-val="中（均衡分配）">中（均衡分配）</button>
+        <button type="button" class="pill" data-val="低（緊湊推進）">低（緊湊推進）</button>
+      </div>
+      <div class="subhead">心理描寫深度</div>
+      <div class="pill-group" id="psych-depth">
+        <button type="button" class="pill" data-val="淺層">淺層</button>
+        <button type="button" class="pill selected" data-val="中層">中層</button>
+        <button type="button" class="pill" data-val="深層">深層</button>
+      </div>
+      <hr class="divider">
+      <label for="subplot-ratio">主線外支線比例（新增）</label>
+      <select id="subplot-ratio">
+        <option value="無支線（純愛情線）">無支線（純愛情線）</option>
+        <option value="少量支線" selected>少量支線</option>
+        <option value="大量支線（政治／家族／事業並重）">大量支線（政治／家族／事業並重）</option>
+      </select>
+      <label for="side-density">配角／勁敵出場密度（新增）</label>
+      <select id="side-density">
+        <option value="低">低</option>
+        <option value="中" selected>中</option>
+        <option value="高">高</option>
+      </select>
+      <label for="time-span">故事時間跨度（新增）</label>
+      <select id="time-span">
+        <option value="短期（數日內）">短期（數日內）</option>
+        <option value="中期（數月）" selected>中期（數月）</option>
+        <option value="長期（跨年）">長期（跨年）</option>
+      </select>
+      <label for="dialogue-ratio">對話與旁白比例（新增）</label>
+      <select id="dialogue-ratio">
+        <option value="對話為主">對話為主</option>
+        <option value="均衡" selected>均衡</option>
+        <option value="旁白描寫為主">旁白描寫為主</option>
+      </select>
+      <label for="sensory-focus">感官描寫側重（新增）</label>
+      <select id="sensory-focus">
+        <option value="均衡" selected>均衡</option>
+        <option value="視覺為主">視覺為主</option>
+        <option value="聽覺為主">聽覺為主</option>
+        <option value="環境氛圍為主">環境氛圍為主</option>
+      </select>
+      <label for="vocab-period">用字時代感（新增）</label>
+      <select id="vocab-period">
+        <option value="中性，依時代背景自然調整" selected>中性，依時代背景自然調整</option>
+        <option value="文言韻味，用詞偏古典">文言韻味，用詞偏古典</option>
+        <option value="現代白話，用詞直白生活化">現代白話，用詞直白生活化</option>
+      </select>
+    </div>
+  </details>
+
+  <details class="card" open>
+    <summary><span class="summary-left">💋 感情戲設定</span><span class="chev">▾</span></summary>
+    <div class="card-body">
+      <label for="intimacy-group">親密程度上限</label>
+      <select id="intimacy-group">
+        <option value="純愛牽手">純愛牽手</option>
+        <option value="曖昧不說破" selected>曖昧不說破</option>
+        <option value="點到為止的吻戲">點到為止的吻戲</option>
+        <option value="留白淡化處理">留白淡化處理（暗示發生，過程跳過不寫）</option>
+        <option value="親密關係（同房，含蓄處理）">親密關係（同房，含蓄處理）</option>
+      </select>
+      <p class="hint" id="intimacy-desc"></p>
+      <p class="hint">最高的「親密關係（同房）」選項，指劇情會承認兩人發展到親密關係、不刻意迴避這個事實，但產生出的指令會明確要求 AI 以含蓄、文學化的方式處理，著重情感與氛圍，全程避免直白色情描寫——這條規則固定寫進指令裡，不論選哪一級都適用。</p>
+    </div>
+  </details>
+
+  <details class="card" open>
+    <summary><span class="summary-left">✒️ 輸出與敘事格式</span><span class="chev">▾</span></summary>
+    <div class="card-body">
+      <div class="subhead">敘事結構</div>
+      <div class="pill-group" id="story-mode">
+        <button type="button" class="pill selected" data-val="long">長篇連載（可能連續100回合以上）</button>
+        <button type="button" class="pill" data-val="oneshot">單篇完結（一次說完整個故事）</button>
+        <button type="button" class="pill" data-val="choice">隨選項進行（每段附選項，依選擇推進）</button>
+      </div>
+      <div id="long-extras-wrap">
+        <div class="subhead">章節標題格式（長篇連載適用）</div>
+        <div class="pill-group" id="chapter-format">
+          <button type="button" class="pill selected" data-val="【第X章・標題】">【第X章・標題】</button>
+          <button type="button" class="pill" data-val="第X章｜標題">第X章｜標題</button>
+          <button type="button" class="pill" data-val="Chapter X">Chapter X</button>
+          <button type="button" class="pill" data-val="無標題">無標題</button>
+        </div>
+        <div class="subhead">預計連載篇幅（長篇連載適用）</div>
+        <div class="pill-group" id="serial-length">
+          <button type="button" class="pill" data-val="30">30回完結</button>
+          <button type="button" class="pill" data-val="50">50回完結</button>
+          <button type="button" class="pill" data-val="100">100回完結</button>
+          <button type="button" class="pill selected" data-val="none">不預設（視劇情自然發展）</button>
         </div>
       </div>
-      <button class="btn-act danger" onclick="deleteItem()">刪除</button>
+      <hr class="divider">
+      <label for="pov">敘事視角（新增）</label>
+      <select id="pov">
+        <option value="second" selected>第二人稱（全程以「妳／你」稱呼玩家敘事，沉浸感最強，推薦）</option>
+        <option value="third-single">第三人稱單視角（聚焦於玩家）</option>
+        <option value="third-dual">第三人稱雙視角（偶爾切換到攻略對象內心）</option>
+        <option value="first">第一人稱（玩家視角自述，以「我」自稱）</option>
+      </select>
+      <label for="length">每次篇幅</label>
+      <select id="length">
+        <option value="短篇，200-300字，節奏快">短篇（200-300字）</option>
+        <option value="中篇，400-600字，標準節奏" selected>中篇（400-600字）</option>
+        <option value="長篇，800字以上，細膩鋪陳">長篇（800字以上）</option>
+      </select>
+      <label for="style">文風</label>
+      <select id="style">
+        <option value="細膩文學向，著重內心描寫與氛圍營造" selected>細膩文學向</option>
+        <option value="漫畫/動畫翻譯腔，貼近輕小說氛圍">漫畫翻譯腔</option>
+        <option value="輕快輕小說向，對話比例高">輕快輕小說向</option>
+      </select>
+      <p class="hint">不論選擇哪種敘事結構，產生出的指令都會要求 AI 為故事附上一個標題（單篇完結也會有標題）。</p>
     </div>
-    <div class="reader-wrap">
-      <div class="reader-inner ${S.dir === 'tate' ? 'tate' : ''}" id="readerInner">
-        <textarea class="text-editor" id="textEditor" placeholder="在這裡書寫…" oninput="scheduleSave()">${escHtml(item.content || '')}</textarea>
+  </details>
+
+  <details class="card hidden" id="choice-extra-card">
+    <summary><span class="summary-left">🎮 選項模式專屬規則</span><span class="chev">▾</span></summary>
+    <div class="card-body">
+      <div class="pill-group">
+        <button type="button" class="pill" id="choice-affection-toggle" data-on="0">顯示好感度變化</button>
+      </div>
+      <div id="affection-style-wrap" class="hidden">
+        <label for="affection-style">好感度顯示方式</label>
+        <select id="affection-style">
+          <option value="數值（例如：好感度 +5）">數值（例如：好感度 +5）</option>
+          <option value="條狀／等級描述（例如：好感度上升一級）">條狀／等級描述（例如：好感度上升一級）</option>
+        </select>
+      </div>
+      <div class="pill-group" style="margin-top:14px;">
+        <button type="button" class="pill" id="choice-branch-toggle" data-on="0">提示「此選擇可能影響結局走向」</button>
+      </div>
+      <p class="hint">不會直接洩漏具體結局，只是在關鍵選項處給一個提示。</p>
+    </div>
+  </details>
+
+  <details class="card">
+    <summary><span class="summary-left">🔥 劇情強度與規則</span><span class="chev">▾</span></summary>
+    <div class="card-body">
+      <label for="intensity">劇情強度</label>
+      <select id="intensity">
+        <option value="甜寵輕鬆，衝突短促且很快化解">甜寵輕鬆</option>
+        <option value="中等張力，有衝突但不致命" selected>中等張力</option>
+        <option value="黑暗心理，道德模糊、高張力衝突">黑暗心理</option>
+      </select>
+      <label for="ending">結局傾向</label>
+      <select id="ending">
+        <option value="全甜HE（圓滿收尾）">全甜 HE</option>
+        <option value="開放式HE（存活但懸而未決）" selected>開放式 HE</option>
+        <option value="BE轉HE（經歷重大失去後，最終仍走向圓滿）">BE 轉 HE</option>
+        <option value="悲劇向（不刻意迴避傷感結局）">悲劇向</option>
+        <option value="雙向毀滅（兩人都無法善終）">雙向毀滅</option>
+        <option value="留白式（不給明確結局，交由想像延伸）">留白式</option>
+      </select>
+      <label for="death">死亡風險</label>
+      <select id="death">
+        <option value="關閉，角色以受傷代替死亡，但後果必須真實" selected>關閉（受傷代替死亡）</option>
+        <option value="開啟，重要角色有真實死亡可能">開啟（真實死亡可能）</option>
+      </select>
+      <hr class="divider">
+      <div class="subhead">一致性鎖定規則（新增，預設開啟）</div>
+      <div class="pill-group">
+        <button type="button" class="pill selected" id="lock-personality">鎖定人格，不得無故突變／OOC</button>
+        <button type="button" class="pill selected" id="lock-no-new-li">禁止無故新增攻略對象</button>
+        <button type="button" class="pill selected" id="lock-death-consistency">生死結果須符合死亡風險設定</button>
       </div>
     </div>
-  `;
-  applyReaderStyles();
-}
+  </details>
 
-function applyReaderStyles() {
-  const editor = document.getElementById('textEditor');
-  const inner = document.getElementById('readerInner');
-  if (!editor || !inner) return;
-  editor.style.fontFamily = S.fontFamily;
-  editor.style.fontSize = S.fontSize + 'px';
-  editor.style.lineHeight = S.lineHeight;
-  editor.style.color = 'var(--reader-ink)';
-  // Margin
-  if (S.dir === 'tate') {
-    inner.style.paddingTop = S.margin + 'px';
-    inner.style.paddingBottom = S.margin + 'px';
-    inner.style.paddingLeft = '36px';
-    inner.style.paddingRight = '36px';
-  } else {
-    inner.style.paddingLeft = S.margin + 'px';
-    inner.style.paddingRight = S.margin + 'px';
-    inner.style.paddingTop = '36px';
-    inner.style.paddingBottom = '36px';
-  }
-}
-
-function showWelcome() {
-  document.getElementById('contentArea').innerHTML = `
-    <div class="welcome">
-      <span class="w-icon">✦</span>
-      <h2>選擇一篇文章，或新增一篇</h2>
-      <p>可在側欄勾選多篇文章<br>進行批次下載（ZIP 或合併 PDF）</p>
+  <details class="card">
+    <summary><span class="summary-left">📖 連載與進度管理</span><span class="chev">▾</span></summary>
+    <div class="card-body">
+      <label for="rel-stage-start">目前感情階段（起點，新增）</label>
+      <select id="rel-stage-start">
+        <option value="尚未開始（從頭開始）" selected>尚未開始（從頭開始）</option>
+        <option value="初識階段">初識階段</option>
+        <option value="已曖昧">已曖昧</option>
+        <option value="信任已生變，需要修復">信任已生變，需要修復</option>
+        <option value="已確認關係">已確認關係</option>
+      </select>
+      <label for="chapter-number">目前章節數（選填）</label>
+      <input id="chapter-number" type="number" min="1" placeholder="例如：23，代表要接續第23回之後">
+      <label for="recap-text">前情提要回填（選填）</label>
+      <textarea id="recap-text" placeholder="把上一回 AI 的回覆或妳自己整理的前情提要貼在這裡，產生出的指令就會要求 AI 直接接續發展，不重新開場"></textarea>
+      <p class="hint">這個欄位只是把妳貼的文字原樣放進指令裡，工具本身不會幫妳摘要或呼叫 AI。</p>
     </div>
-  `;
-}
+  </details>
 
-// ── Download menu ──
-function toggleDlMenu(e) {
-  e.stopPropagation();
-  const m = document.getElementById('dlMenu');
-  const btn = e.currentTarget;
-  dlMenuOpen = !dlMenuOpen;
-  m.classList.toggle('show', dlMenuOpen);
-  if (dlMenuOpen) {
-    const btnRect = btn.getBoundingClientRect();
-    const menuWidth = Math.min(220, window.innerWidth - 24);
-    let left = btnRect.left;
-    // Clamp so menu never overflows right edge
-    if (left + menuWidth > window.innerWidth - 12) {
-      left = window.innerWidth - menuWidth - 12;
-    }
-    // Clamp so menu never overflows left edge
-    if (left < 12) left = 12;
-    m.style.left = left + 'px';
-    m.style.top = (btnRect.bottom + 6) + 'px';
-  }
-}
-document.addEventListener('click', () => {
-  const m = document.getElementById('dlMenu');
-  if (m && dlMenuOpen) { m.classList.remove('show'); dlMenuOpen = false; }
-});
-window.addEventListener('resize', () => {
-  const m = document.getElementById('dlMenu');
-  if (m && dlMenuOpen) { m.classList.remove('show'); dlMenuOpen = false; }
-});
+  <details class="card">
+    <summary><span class="summary-left">💾 角色庫與快速預設</span><span class="chev">▾</span></summary>
+    <div class="card-body">
+      <div class="subhead">快速套用預設組合</div>
+      <div class="pill-group">
+        <button type="button" class="pill" id="preset-sweet">經典甜寵</button>
+        <button type="button" class="pill" id="preset-dark">黑暗虐戀</button>
+        <button type="button" class="pill" id="preset-campus">青澀純愛</button>
+        <button type="button" class="pill" id="preset-domineering">霸道追愛</button>
+      </div>
+      <p class="hint">套用後會調整世界觀、關係、節奏與強度等設定，人物姓名與外貌等細節仍可自行調整。</p>
+      <hr class="divider">
+      <div class="subhead">我的角色庫</div>
+      <p class="hint">把目前所有設定存成範本，下次一鍵套用。範本只存在妳自己的帳號裡，不會被其他人看到。</p>
+      <div class="lib-save-row">
+        <input type="text" id="lib-name-input" placeholder="幫這個範本取個名字">
+        <button type="button" class="lib-btn" id="lib-save-btn">儲存目前設定</button>
+      </div>
+      <div id="lib-list" class="lib-loading">載入中…</div>
+    </div>
+  </details>
 
-// ── Save ──
-function scheduleSave() {
-  clearTimeout(autoSaveTimer);
-  autoSaveTimer = setTimeout(() => manualSave(true), 1500);
-}
+  <details class="card">
+    <summary><span class="summary-left">✏️ 進階自訂</span><span class="chev">▾</span></summary>
+    <div class="card-body">
+      <label for="custom">補充規則／隱藏支線（選填）</label>
+      <textarea id="custom" placeholder="例如：希望加入一段三角關係支線、希望攻略對象有個會威脅劇情的勁敵……"></textarea>
+      <label for="custom-banned">自訂禁用詞／句型（選填，新增）</label>
+      <textarea id="custom-banned" placeholder="例如：不要出現「命中注定」、不要用「兩人相視一笑」這種句型"></textarea>
+    </div>
+  </details>
 
-function manualSave(silent = false) {
-  if (!currentId) return;
-  const item = db.items.find(i => i.id === currentId);
-  if (!item) return;
-  const t = document.getElementById('detailTitle');
-  const e = document.getElementById('textEditor');
-  if (t) item.name = t.value.trim() || '未命名';
-  if (e) item.content = e.value;
-  item.updatedAt = Date.now();
-  saveDB();
-  renderList();
-  if (!silent) showToast('已儲存 ✓');
-}
+  <button class="generate-btn" id="generate-btn">✨ 產生指令</button>
+  <div class="warning-box" id="conflict-warning"></div>
+  <div class="output-head">
+    <span class="eyebrow">GENERATED PROMPT</span>
+    <span class="count" id="char-count">0 字</span>
+  </div>
+  <div id="output"></div>
+  <button class="copy-btn" id="copy-btn">複製文字</button>
+  <span class="copy-feedback" id="copy-feedback">已複製！</span>
 
-function copyContent() {
-  const e = document.getElementById('textEditor');
-  if (!e) return;
-  navigator.clipboard.writeText(e.value).then(() => showToast('已複製 ✓'));
-}
+</div>
 
-function moveFolder() {
-  if (!currentId) return;
-  const item = db.items.find(i => i.id === currentId);
-  const sel = document.getElementById('detailFolder');
-  if (!item || !sel) return;
-  item.folderId = sel.value;
-  item.updatedAt = Date.now();
-  openFolders.add(item.folderId);
-  saveDB();
-  renderList();
-  showToast('已移至資料夾 ✓');
-}
-
-// ── Download single ──
-function downloadAs(fmt) {
-  dlMenuOpen = false;
-  const m = document.getElementById('dlMenu');
-  if (m) m.classList.remove('show');
-  manualSave(true);
-  const item = db.items.find(i => i.id === currentId);
-  if (!item) return;
-  if (fmt === 'txt') {
-    triggerDownload(item.content || '', item.name + '.txt', 'text/plain');
-    showToast('已下載 TXT ✓');
-  } else if (fmt === 'html') {
-    const html = buildHtml(item.name, item.content || '');
-    triggerDownload(html, item.name + '.html', 'text/html');
-    showToast('已下載 HTML ✓');
-  } else if (fmt === 'pdf') {
-    printPdf(item.name, item.content || '');
-  }
-}
-
-function buildHtml(title, content) {
-  const escaped = escHtml(content).replace(/\n/g, '<br>');
-  return `<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${escHtml(title)}</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600&display=swap" rel="stylesheet">
-<style>
-body{font-family:'Noto Serif TC',serif;font-size:${S.fontSize}px;line-height:${S.lineHeight};
-max-width:700px;margin:60px auto;padding:0 40px;color:#2A1F14;background:#FDFAF5;}
-h1{font-size:1.5em;margin-bottom:1.5em;font-weight:600;border-bottom:1px solid #ddd;padding-bottom:0.5em;}
-p{margin-bottom:1.2em;}
-</style></head><body>
-<h1>${escHtml(title)}</h1>
-<div>${escaped}</div>
-</body></html>`;
-}
-
-function printPdf(title, content) {
-  const win = window.open('', '_blank');
-  if (!win) { showToast('請允許彈出視窗後再試'); return; }
-  const fontName = S.fontFamily.includes('LXGW') ? 'LXGW WenKai TC' :
-    S.fontFamily.includes('Noto Serif') ? 'Noto Serif TC' :
-    S.fontFamily.includes('Noto Sans') ? 'Noto Sans TC' : 'Noto Serif TC';
-  const isTate = S.dir === 'tate';
-  // Convert the reader's px margin into a print-friendly cm value
-  const marginCm = Math.max(1.5, Math.min(6, (S.margin / 96 * 2.54))).toFixed(2);
-  win.document.write(`<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8">
-<title>${escHtml(title)}</title>
-<link href="https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontName)}:wght@400;600&display=swap" rel="stylesheet">
-<style>
-  @page { margin: ${marginCm}cm; }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body {
-    width: 100%;
-  }
-  body{
-    font-family:'${fontName}','Noto Serif TC',serif;
-    font-size:${Math.max(11, S.fontSize - 2)}pt;
-    line-height:${S.lineHeight};
-    color:#1a1a1a;
-    background:#fff;
-    ${isTate ? 'writing-mode: vertical-rl;' : ''}
-  }
-  h1{font-size:1.4em;margin-bottom:1.2em;font-weight:600;${isTate ? 'margin-right:0.6em;' : ''}}
-  pre{white-space:pre-wrap;font-family:inherit;font-size:inherit;line-height:inherit;}
-</style></head><body>
-<h1>${escHtml(title)}</h1>
-<pre>${escHtml(content)}</pre>
 <script>
-window.onload=function(){
-  setTimeout(function(){window.print();},800);
-};
-<\/script></body></html>`);
-  win.document.close();
-  showToast('PDF 列印視窗已開啟 ✓');
-}
+(function(){
 
-function triggerDownload(content, filename, mime) {
-  const blob = new Blob([content], { type: mime });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(a.href);
-}
+  /* ============== 資料表 ============== */
 
-// ── Batch download ──
-function getSelectedItems() {
-  return [...selectedIds].map(id => db.items.find(i => i.id === id)).filter(Boolean);
-}
+  const ERA_ALL = [
+    {tag:'古代', group:'original', flavor:'朝代不限，但禮教森嚴、身分階級分明，一舉一動皆受目光審視。'},
+    {tag:'現代', group:'original', flavor:'都市節奏快速，人際關係講求效率，情感往往藏在日常縫隙裡。'},
+    {tag:'職場', group:'original', flavor:'利益與專業包裹著情感，權力關係透過職位高低悄悄滲入互動。'},
+    {tag:'豪門', group:'original', flavor:'家族利益凌駕個人意志，聯姻、繼承、輿論隨時可能介入感情。'},
+    {tag:'娛樂圈', group:'original', flavor:'形象即資本，鏡頭內外是兩種人生，緋聞與真心難以分辨。'},
+    {tag:'末日', group:'original', flavor:'秩序崩解、資源稀缺，信任比愛情更早被考驗。'},
+    {tag:'玄幻', group:'original', flavor:'靈氣與法則重塑人間規矩，身分可能是修士、妖族或神魔。'},
+    {tag:'異域', group:'original', flavor:'文化、語言與立場的隔閣天然存在，相愛本身就是一種冒險。'},
+    {tag:'賽博龐克', group:'genre', flavor:'高科技、低生活的近未來都市，霓虹燈下巨大企業壟斷，義肢改造與虛擬網路高度發達。', suited:'懸疑、反烏托邦、犯罪、科技倫理探討'},
+    {tag:'蒸汽龐克', group:'genre', flavor:'建立在維多利亞時代美學上的架空世界，銅齒輪、飛行船與復古機械構成日常風景。', suited:'冒險、奇幻發明、宮廷鬥爭、工業革命初期的神秘感'},
+    {tag:'星際科幻', group:'genre', flavor:'人類已大規模殖民銀河系，跨星系航行、外星文明接觸與先進太空軍事力量並存。', suited:'史詩戰爭、政治角力、文化碰撞、探索未知'},
+    {tag:'奇幻中世紀', group:'genre', flavor:'擁有魔法、龍、精靈、矮人等神話生物的古典奇幻世界，常帶有騎士精神與封建貴族制度。', suited:'英雄冒險、政治聯姻、地下城探索、史詩戰爭'},
+    {tag:'禁忌維多利亞', group:'genre', flavor:'19世紀歐洲風格，融合靈異現象與偵探推理，迷霧、煤氣燈與陰沉莊園構成氛圍核心。', suited:'懸疑推理、恐怖驚悚、超自然現象'},
+    {tag:'廢土拾荒', group:'genre', flavor:'文明毀滅後的荒原，資源極度匱乏，倖存者在殘破都市遺跡中為燃料、水與食物掙扎求生。', suited:'荒野求生、人性道德抉擇、部落衝突'},
+    {tag:'哈比人中土世界', group:'ip', flavor:'精靈、矮人、人類與半身人共同生活的中土大陸，遠征任務與古老魔法貫穿日常，僅取概略氛圍，不引用原作文字。', suited:'冒險、種族情誼、史詩遠征'},
+    {tag:'霍格華茲魔法世界', group:'ip', flavor:'巫師與麻瓜並存的英倫魔法學校體系，學院制度、魔法咒語與黑暗勢力威脅構成日常張力，僅取概略氛圍。', suited:'校園奇幻、魔法冒險、黑暗勢力對抗'},
+    {tag:'獵人的世界', group:'ip', flavor:'以念能力與獵人資格為核心的世界觀，危險考試、犯罪組織與能力對決充斥其中，僅取概略氛圍。', suited:'能力對決、黑暗心理、組織鬥爭'},
+    {tag:'幽遊白書', group:'ip', flavor:'靈界與人間交界的世界觀，靈力、妖怪與靈界調查員的任務貫穿故事，僅取概略氛圍。', suited:'熱血戰鬥、靈異探案、夥伴情誼'},
+    {tag:'火影忍者', group:'ip', flavor:'忍者村落分立的世界，忍術、查克拉與忍者體制構成日常與衝突核心，僅取概略氛圍。', suited:'熱血成長、忍者對決、村落政治'},
+    {tag:'驅魔少年世界', group:'ip', flavor:'驅魔師對抗千年伯爵與AKUMA的世界觀，教團組織與詛咒道具是常見元素，僅取概略氛圍。', suited:'黑暗奇幻、驅魔戰鬥、悲劇宿命'},
+  ];
 
-async function batchDownloadZip() {
-  manualSave(true);
-  const items = getSelectedItems();
-  if (!items.length) return;
-  const zip = new JSZip();
-  items.forEach(item => {
-    zip.file(sanitizeFilename(item.name) + '.txt', item.content || '');
-  });
-  const blob = await zip.generateAsync({ type: 'blob' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `文庫_匯出_${new Date().toISOString().slice(0,10)}.zip`;
-  a.click();
-  URL.revokeObjectURL(a.href);
-  showToast(`已打包 ${items.length} 篇文章 ✓`);
-}
+  const RELATION = [
+    {tag:'契約婚姻', core:'關係始於利益交換，情感需要在規則之外慢慢生長'},
+    {tag:'青梅竹馬', core:'熟悉感是基礎，但長大後的身分落差會帶來新的摩擦'},
+    {tag:'歡喜冤家', core:'鬥嘴與較勁是表面，互相在意才是底層邏輯'},
+    {tag:'強取豪奪', core:'權力不對等，起點帶有強制性，後續發展需處理信任與和解的張力'},
+    {tag:'禁錮之愛', core:'空間或身分上的拘束製造出親密與壓迫並存的矛盾'},
+    {tag:'異族之戀', core:'身分認同與立場衝突是無法迴避的底色'},
+    {tag:'高冷禁慾', core:'情感表達極度節制，行動遠比言語誠實'},
+    {tag:'病嬌佔有', core:'佔有欲以扭曲方式呈現，愛與危險界線模糊'},
+    {tag:'養成系', core:'陪伴與引導逐漸轉化為依賴，身分落差需要被正視'},
+    {tag:'師生關係', core:'倫理界線是劇情張力的核心，逾越本身就是賭注'},
+    {tag:'上司下屬', core:'職場權力與私人情感互相牽制，公開與否都是風險'},
+    {tag:'死對頭', core:'敵對立場讓每一次靠近都伴隨警戒與背叛的可能'},
+    {tag:'靈魂伴侶', core:'情感連結超越邏輯解釋，但仍需經歷現實考驗'},
+    {tag:'雙向奔赴', core:'雙方都主動靠近，衝突更多來自外部阻力而非彼此猶豫'},
+    {tag:'替身情人', core:'錯位的身分認知是核心懸念，真心何時被識破是關鍵'},
+  ];
 
-function batchDownloadPDF() {
-  manualSave(true);
-  const items = getSelectedItems();
-  if (!items.length) return;
-  const win = window.open('', '_blank');
-  if (!win) { showToast('請允許彈出視窗後再試'); return; }
-  const fontName = S.fontFamily.includes('LXGW') ? 'LXGW WenKai TC' :
-    S.fontFamily.includes('Noto Serif') ? 'Noto Serif TC' :
-    S.fontFamily.includes('Noto Sans') ? 'Noto Sans TC' : 'Noto Serif TC';
-  const isTate = S.dir === 'tate';
-  const marginCm = Math.max(1.5, Math.min(6, (S.margin / 96 * 2.54))).toFixed(2);
-  const body = items.map((item, idx) => `
-    <div class="article${idx > 0 ? ' page-break' : ''}">
-    <h1>${escHtml(item.name)}</h1>
-    <pre>${escHtml(item.content || '')}</pre>
-    </div>
-  `).join('');
-  win.document.write(`<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8">
-<title>文庫合併匯出</title>
-<link href="https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontName)}:wght@400;600&display=swap" rel="stylesheet">
-<style>
-  @page { margin: ${marginCm}cm; }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body { width: 100%; }
-  body{
-    font-family:'${fontName}','Noto Serif TC',serif;
-    font-size:${Math.max(11,S.fontSize-2)}pt;
-    line-height:${S.lineHeight};
-    color:#1a1a1a;
-    ${isTate ? 'writing-mode: vertical-rl;' : ''}
-  }
-  .page-break{ page-break-before: always; }
-  h1{font-size:1.4em;margin-bottom:1em;font-weight:600;border-bottom:1px solid #ccc;padding-bottom:0.4em;${isTate ? 'margin-right:0.6em;' : ''}}
-  pre{white-space:pre-wrap;font-family:inherit;font-size:inherit;line-height:inherit;}
-</style></head><body>
-${body}
-<script>window.onload=function(){setTimeout(function(){window.print();},900);};<\/script>
-</body></html>`);
-  win.document.close();
-  showToast(`合併 ${items.length} 篇，PDF 視窗已開啟 ✓`);
-}
+  const PLOT = [
+    {tag:'先婚後愛', note:'從契約關係出發，感情在共同生活的細節裡逐漸累積'},
+    {tag:'先有後婚', note:'意外事件先行，後續關係建立帶著補救與責任的色彩'},
+    {tag:'久別重逢', note:'過去的未竟之事重新被攤開，舊傷與新局並存'},
+    {tag:'破鏡重圓', note:'曾經的破裂需要被正視，重新信任的過程不宜過快'},
+    {tag:'暗戀成真', note:'單方情感長期積累，告白後的發展應顯得來之不易'},
+    {tag:'追妻火葬場', note:'一方先意識到失去的代價，需用行動而非言語彌補'},
+    {tag:'救贖向', note:'至少一方帶著創傷，情感發展與自我修復同步進行'},
+    {tag:'虐戀情深', note:'情感濃烈但伴隨痛感，過程不輕易和解，張力優先於甜蜜'},
+    {tag:'甜寵無虐', note:'全程基調溫暖，衝突短促且很快被善意化解'},
+    {tag:'帶球跑', note:'懷孕後選擇離開是核心轉折，重逢需處理隱瞞與責任'},
+    {tag:'重生復仇', note:'重來一次的記憶帶著明確目的，情感發展服從於復仇計畫'},
+    {tag:'穿越時空', note:'時空錯位本身製造身分與規則衝突，適應過程即是劇情'},
+    {tag:'誤會錯過', note:'資訊不對等導致關係延宕，需安排合理的解開時機'},
+    {tag:'權謀鬥爭', note:'感情線服從於更大的局勢博弈，私心與大局時常衝突'},
+    {tag:'種田日常', note:'節奏緩慢，衝突多來自生活瑣事而非劇烈事件'},
+  ];
 
-function sanitizeFilename(s) {
-  return s.replace(/[\\/:*?"<>|]/g, '_').trim() || '未命名';
-}
+  const PERSONALITY = [
+    {tag:'勇敢', cue:'面對危險或衝突時不輕易退縮'},
+    {tag:'聰明', cue:'反應快，能迅速理解局勢並做出判斷'},
+    {tag:'善良', cue:'優先考慮他人感受，容易心軟'},
+    {tag:'仗義', cue:'重視情義，願意為朋友兩肋插刀'},
+    {tag:'敏銳', cue:'對周遭變化與他人情緒高度敏感'},
+    {tag:'野心勃勃', cue:'目標明確，願意為達成目的而努力甚至冒險'},
+    {tag:'神秘', cue:'不輕易透露自己的想法與過去'},
+    {tag:'溫柔', cue:'待人和善，言行舉止溫和體貼'},
+    {tag:'細心', cue:'注意細節，容易察覺他人忽略的小事'},
+    {tag:'沉默', cue:'話少，習慣用行動代替言語'},
+    {tag:'活潑', cue:'情緒外顯，互動主動，渾身充滿活力'},
+    {tag:'高傲', cue:'自視甚高，不輕易服軟或低頭'},
+    {tag:'熱心', cue:'主動關心並幫助他人'},
+    {tag:'謹慎', cue:'行事前會反覆思考，不輕易冒險'},
+    {tag:'孤僻', cue:'不擅長也不喜歡與人深交，傾向獨處'},
+    {tag:'寡言', cue:'不多話，但不代表沒有想法'},
+    {tag:'內向', cue:'能量來源於獨處，社交容易消耗精力'},
+    {tag:'外向', cue:'能量來源於與人互動，擅長社交場合'},
+    {tag:'寬容', cue:'不輕易苛責他人，能體諒對方的處境'},
+    {tag:'豪爽', cue:'性格大方不拘小節，行事乾脆'},
+    {tag:'腹黑', cue:'表面溫和，內心常有未說明的算計'},
+  ];
 
-// ── Delete ──
-function deleteItem() {
-  if (!currentId) return;
-  const item = db.items.find(i => i.id === currentId);
-  if (!confirm(`確定刪除「${item.name}」？`)) return;
-  db.items = db.items.filter(i => i.id !== currentId);
-  selectedIds.delete(currentId);
-  currentId = null;
-  saveDB();
-  renderList();
-  showWelcome();
-  if (isMobile()) document.getElementById('sidebar').classList.remove('mob-hidden');
-  showToast('已刪除');
-}
+  const SUPPORT_CAST = [
+    {tag:'情敵介入', note:'第三人帶著真心或算計接近其中一方，製造嫉妒與選擇壓力'},
+    {tag:'宿敵糾葛', note:'過去的對立關係延續到現在，信任建立得更加艱難'},
+    {tag:'反對的長輩', note:'家族長輩以利益或禮教為由阻撓關係，是外部壓力來源'},
+    {tag:'支持的手足', note:'手足或摯友提供情報與助力，是劇情推進的助手'},
+    {tag:'身負秘密的親人', note:'親人隱藏與主線相關的秘密，遲早會被揭露'},
+    {tag:'媒妁之言的第三者', note:'被安排的第三人成為關係中的現實阻力'},
+    {tag:'幕後操控者', note:'隱藏在事件背後操弄局勢的角色，動機在後期揭露'},
+    {tag:'過去的糾葛人物', note:'某一方的舊識帶著未解決的過去重新出現'},
+  ];
 
-// ── Item Modal ──
-function openNewItemModal() {
-  document.getElementById('itemModalTitle').textContent = '新增文章';
-  document.getElementById('itemModalName').value = '';
-  document.getElementById('itemModalConfirm').textContent = '建立';
-  populateItemFolders();
-  document.getElementById('itemModal').classList.add('show');
-  setTimeout(() => document.getElementById('itemModalName').focus(), 80);
-}
-
-function populateItemFolders() {
-  const sel = document.getElementById('itemModalFolder');
-  sel.innerHTML = db.folders.map(f => `<option value="${f.id}">${f.icon} ${escHtml(f.name)}</option>`).join('');
-}
-
-function closeItemModal() { document.getElementById('itemModal').classList.remove('show'); }
-
-function confirmItemModal() {
-  const name = document.getElementById('itemModalName').value.trim();
-  if (!name) { document.getElementById('itemModalName').focus(); return; }
-  const folderId = document.getElementById('itemModalFolder').value;
-  const item = { id: uid(), name, folderId, content: '', createdAt: Date.now(), updatedAt: Date.now() };
-  db.items.push(item);
-  saveDB();
-  openFolders.add(folderId);
-  renderList();
-  closeItemModal();
-  selectItem(item.id);
-  showToast('已建立 ✓');
-}
-
-document.getElementById('itemModal').addEventListener('click', e => {
-  if (e.target === document.getElementById('itemModal')) closeItemModal();
-});
-document.getElementById('itemModalName').addEventListener('keydown', e => {
-  if (e.key === 'Enter') confirmItemModal();
-  if (e.key === 'Escape') closeItemModal();
-});
-
-// ── Folder Modal ──
-const EMOJIS = FOLDER_EMOJIS;
-
-function buildEmojiPicker() {
-  document.getElementById('emojiRow').innerHTML = EMOJIS.map(em =>
-    `<button class="emoji-btn ${em === selectedEmoji ? 'sel' : ''}" onclick="selectEmoji('${em}')">${em}</button>`
-  ).join('');
-}
-function selectEmoji(e) { selectedEmoji = e; buildEmojiPicker(); }
-
-function openNewFolder() {
-  folderModalMode = 'new'; folderModalEditId = null; selectedEmoji = '📁';
-  document.getElementById('folderModalTitle').textContent = '新增資料夾';
-  document.getElementById('folderModalName').value = '';
-  document.getElementById('folderModalConfirm').textContent = '建立';
-  buildEmojiPicker();
-  document.getElementById('folderModal').classList.add('show');
-  setTimeout(() => document.getElementById('folderModalName').focus(), 80);
-}
-
-function openRenameFolder(id) {
-  const folder = db.folders.find(f => f.id === id);
-  if (!folder) return;
-  folderModalMode = 'rename'; folderModalEditId = id; selectedEmoji = folder.icon;
-  document.getElementById('folderModalTitle').textContent = '重新命名資料夾';
-  document.getElementById('folderModalName').value = folder.name;
-  document.getElementById('folderModalConfirm').textContent = '儲存';
-  buildEmojiPicker();
-  document.getElementById('folderModal').classList.add('show');
-  setTimeout(() => document.getElementById('folderModalName').focus(), 80);
-}
-
-function closeFolderModal() { document.getElementById('folderModal').classList.remove('show'); }
-
-function confirmFolderModal() {
-  const name = document.getElementById('folderModalName').value.trim();
-  if (!name) { document.getElementById('folderModalName').focus(); return; }
-  if (folderModalMode === 'new') {
-    const folder = { id: uid(), name, icon: selectedEmoji, builtIn: false };
-    db.folders.push(folder);
-    openFolders.add(folder.id);
-    saveDB(); renderList(); closeFolderModal();
-    showToast(`資料夾「${name}」已建立 ✓`);
-  } else {
-    const folder = db.folders.find(f => f.id === folderModalEditId);
-    if (folder) { folder.name = name; folder.icon = selectedEmoji; }
-    saveDB(); renderList(); closeFolderModal();
-    showToast('已更新 ✓');
-  }
-}
-
-document.getElementById('folderModal').addEventListener('click', e => {
-  if (e.target === document.getElementById('folderModal')) closeFolderModal();
-});
-document.getElementById('folderModalName').addEventListener('keydown', e => {
-  if (e.key === 'Enter') confirmFolderModal();
-  if (e.key === 'Escape') closeFolderModal();
-});
-
-function deleteFolder(id) {
-  const folder = db.folders.find(f => f.id === id);
-  if (!folder) return;
-  const count = db.items.filter(i => i.folderId === id).length;
-  const msg = count > 0
-    ? `確定刪除資料夾「${folder.name}」？\n裡面的 ${count} 篇文章會移到「全部收藏」。`
-    : `確定刪除資料夾「${folder.name}」？`;
-  if (!confirm(msg)) return;
-  db.items.forEach(i => { if (i.folderId === id) i.folderId = 'default'; });
-  db.folders = db.folders.filter(f => f.id !== id);
-  openFolders.delete(id);
-  saveDB(); renderList();
-  showToast('資料夾已刪除');
-}
-
-// ── Settings ──
-function setTheme(t) {
-  S.theme = t;
-  applyTheme(t);
-  saveSettings();
-  document.querySelectorAll('.theme-dot').forEach(d => d.classList.toggle('active', d.dataset.t === t));
-}
-
-function applyTheme(t) {
-  document.documentElement.setAttribute('data-theme', t === 'light' ? '' : t);
-}
-
-function setDir(d) {
-  S.dir = d;
-  document.getElementById('dirHori').classList.toggle('active', d === 'hori');
-  document.getElementById('dirTate').classList.toggle('active', d === 'tate');
-  saveSettings();
-  // Apply to open editor
-  const inner = document.getElementById('readerInner');
-  if (inner) {
-    inner.classList.toggle('tate', d === 'tate');
-    applyReaderStyles();
-  }
-}
-
-function adjustMargin(delta) {
-  S.margin = Math.max(16, Math.min(160, S.margin + delta * 8));
-  saveSettings();
-  applyReaderStyles();
-  const v = document.getElementById('marginVal');
-  if (v) v.textContent = S.margin + 'px';
-  showToast(`邊界：${S.margin}px`);
-}
-
-function applySettings() {
-  S.fontFamily = document.getElementById('sfontFamily').value;
-  S.fontSize = parseInt(document.getElementById('sfontSize').value);
-  S.lineHeight = parseFloat(document.getElementById('slineHeight').value);
-  document.getElementById('sfontSizeVal').textContent = S.fontSize + 'px';
-  document.getElementById('slineHeightVal').textContent = S.lineHeight.toFixed(1);
-  // Preview
-  const prev = document.getElementById('fontPreview');
-  if (prev) {
-    prev.style.fontFamily = S.fontFamily;
-    prev.style.fontSize = S.fontSize + 'px';
-    prev.style.lineHeight = S.lineHeight;
-  }
-  applyReaderStyles();
-  saveSettings();
-}
-
-function syncSettingsUI() {
-  document.getElementById('sfontFamily').value = S.fontFamily;
-  document.getElementById('sfontSize').value = S.fontSize;
-  document.getElementById('slineHeight').value = S.lineHeight;
-  document.getElementById('sfontSizeVal').textContent = S.fontSize + 'px';
-  document.getElementById('slineHeightVal').textContent = S.lineHeight.toFixed(1);
-  document.getElementById('marginVal').textContent = S.margin + 'px';
-  document.getElementById('dirHori').classList.toggle('active', S.dir === 'hori');
-  document.getElementById('dirTate').classList.toggle('active', S.dir === 'tate');
-  document.querySelectorAll('.theme-dot').forEach(d => d.classList.toggle('active', d.dataset.t === (S.theme || 'light')));
-  const prev = document.getElementById('fontPreview');
-  if (prev) {
-    prev.style.fontFamily = S.fontFamily;
-    prev.style.fontSize = S.fontSize + 'px';
-    prev.style.lineHeight = S.lineHeight;
-  }
-}
-
-function resetSettings() {
-  S = { ...DEFAULTS };
-  saveSettings();
-  syncSettingsUI();
-  applyTheme(S.theme);
-  applyReaderStyles();
-  showToast('已恢復預設值');
-}
-
-function openSettings() {
-  syncSettingsUI();
-  document.getElementById('settingsOverlay').classList.add('show');
-}
-function closeSettings() { document.getElementById('settingsOverlay').classList.remove('show'); }
-function closeSettingsBg(e) { if (e.target === document.getElementById('settingsOverlay')) closeSettings(); }
-
-// ── Export / Import ──
-function exportData() {
-  if (!db.items.length) { showToast('還沒有任何文章'); return; }
-  const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `文庫備份_${new Date().toISOString().slice(0,10)}.json`;
-  a.click();
-  URL.revokeObjectURL(a.href);
-  showToast(`已匯出 ${db.items.length} 篇文章 ✓`);
-}
-
-function importData(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const imp = JSON.parse(e.target.result);
-      const impItems = imp.items || [];
-      const impFolders = imp.folders || [];
-      if (!Array.isArray(impItems)) throw new Error();
-      if (!confirm(`匯入 ${impItems.length} 篇文章？（與現有資料合併）`)) return;
-      const existIds = new Set(db.items.map(i => i.id));
-      const existFolderIds = new Set(db.folders.map(f => f.id));
-      impFolders.forEach(f => { if (!existFolderIds.has(f.id)) db.folders.push(f); });
-      let added = 0;
-      impItems.forEach(item => {
-        if (!existIds.has(item.id)) { db.items.push(item); added++; }
-      });
-      saveDB(); renderList();
-      showToast(`已匯入 ${added} 篇新文章 ✓`);
-    } catch { showToast('匯入失敗：格式不正確'); }
-    event.target.value = '';
+  const INTIMACY = {
+    '純愛牽手':'身體接觸僅止於牽手、擁抱等基礎肢體語言，情感推進以言語與眼神為主。',
+    '曖昧不說破':'雙方皆有感覺但刻意不挑明，肢體距離縮短但無明確親密行為。',
+    '點到為止的吻戲':'親密行為止於吻戲，更進一步的發展不予描寫。',
+    '留白淡化處理':'親密關係的發生可被暗示，但具體過程以淡出、跳轉時間等手法處理，不直接描寫。',
+    '親密關係（同房，含蓄處理）':'親密關係確實發生，劇情不刻意迴避這個事實，但全程以含蓄、文學化的手法處理，著重情感與氛圍而非身體細節，避免直白色情描寫。',
   };
-  reader.readAsText(file);
-}
 
-// ── Toast ──
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  clearTimeout(t._t);
-  t._t = setTimeout(() => t.classList.remove('show'), 2400);
-}
+  const STORY_MODE_BASE = {
+    long:'請以長篇連載形式推進，每次只寫一個場景或一小段進度，結尾留待下一回合繼續，不需在短時間內收尾。',
+    oneshot:'請在這一次回覆內把整個故事說完整，包含起承轉合與明確結局，不需分回合，也不受「每次篇幅」字數限制，篇幅以說完整個故事為優先。',
+    choice:'本模式的詳細輸出格式與寫作規則，請完全依照下方「選項模式輸出規範」段落執行。',
+  };
 
-// ── Init ──
-renderList();
+  function buildChoiceOutputSpec(era, affectionOn, affectionStyle, branchOn){
+    const extraLines = [];
+    if(affectionOn){
+      extraLines.push('每次選項後，請以「'+affectionStyle+'」的方式呈現好感度變化。');
+    } else {
+      extraLines.push('好感度變化不需明示數值，僅透過劇情與態度暗示。');
+    }
+    if(branchOn){
+      extraLines.push('在關鍵選項處，請提示「此選擇可能影響後續劇情走向」，但不需直接洩漏具體結局。');
+    }
+    const extraText = extraLines.map((l,i)=> (12+i)+'. '+l).join('\n');
+    return '輸出格式為【劇情＋### 可選行動】，劇情部分的敘事規則請參考「### 重要規則」。\n\n'
+    + '### 可選行動\n'
+    + '請固定附上5個行動／對話選項，其中前4項為依劇情設計的具體選項，第5項固定保留「自由行動」：\n'
+    + '1. （具體行動或對話選項一）\n'
+    + '2. （具體行動或對話選項二）\n'
+    + '3. （具體行動或對話選項三）\n'
+    + '4. （具體行動或對話選項四）\n'
+    + '5. 自由行動：玩家可輸入任何想做的事\n\n'
+    + '### 重要規則（務必非常注意並持續遵守！！此部分會極高程度且直觀地影響玩家體驗！）\n'
+    + '1. 劇情部分請儘量偏向小說敘事，而非單純事件列點，讓玩家像在閱讀一部節奏合理且流暢的小說。\n'
+    + '2. 一次輸出應有一定長度與劇情推進，不要每發生一點小事就不斷詢問玩家接下來的方向，也不應在某個日常情境停留過久；請根據玩家與NPC的角色設定合理推進符合「'+era+'」風格的劇情，敘事節奏稍微緊湊。\n'
+    + '3. 語句追求自然流暢且乾淨俐落，貼近小說或翻譯小說等文學作品的敘事架構（可參考《哈利波特》中譯本的文字質感）：多將形容詞、副詞、感受與細節織入句子結構本身，使節奏流暢、長短錯落有致。\n'
+    + '4. 禁止用「把」替代原有動詞；例如「他把某樣食物吃了」不正確，應寫成「他吃了某樣食物」。\n'
+    + '5. 強烈避免文字有AI感，完全禁止以下句型：「不是⋯而是那種⋯」、「他沒說，但你知道⋯」、「像是⋯像是⋯」、「他沒說，但你注意到了⋯」、「不是⋯也不是⋯」、「⋯你知道⋯」、「⋯一個人扛⋯」、「⋯⋯正在開始」、「真是有趣⋯」。也禁止使用「這種、某種、那種、像是某種、若有所思、說不清楚的、很穩、扛」等詞，並減少相鄰字詞重複，不要為了強調而強調；情緒與狀態請透過細節和行為呈現，不在句子裡二次確認。\n'
+    + '6. 禁止使用破折號。\n'
+    + '7. 多用白描手法展現事件與場景細節，強調「'+era+'」背景特有的氛圍，讓玩家有畫面感，而非直接說明時間空間、誰做了什麼；但也不應過度文學化，否則會使玩家閱讀起來更辛苦。\n'
+    + '8. 利用細節側寫呈現角色個性，而非生硬攤出設定；角色關係的變化也應透過劇情推進的敘事展現，而非直接點明「兩人感情變好了」。\n'
+    + '9. 角色是立體的，不同面向可能隨時間和關係發展而有所變化，也可能因突發事件出現特定反應；請避免只強調角色的某一項特質，也避免寫出與其年齡及經驗不符的行為。\n'
+    + '10. 角色之間的稱呼要隨關係發展有所變動，例如更熟悉之後出現暱稱、愛稱等。\n'
+    + '11. 若玩家輸入繁體字，請嚴格避免輸出包含中國大陸用語或翻譯腔（例如「晚上好」、「緊繃」、「鬆弛」等），請使用台灣慣用的繁體中文表達方式。\n'
+    + extraText + '\n\n'
+    + '其他設定：此模擬器希望在提供高度沉浸感的同時，讓玩家發展專屬劇情，因此若玩家提出任何要求，請以玩家的需求為優先，協助玩家盡情享受模擬體驗。\n\n'
+    + '請詳細理解以上規則，並在持續推進故事劇情的過程中完全執行所有要求，不需要玩家多次提醒相同內容，尤其特別注意「### 重要規則」中的各項規範。';
+  }
+
+  /* ============== 共用小工具 ============== */
+
+  function buildMultiGroup(container, data, store){
+    data.forEach(item=>{
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'pill';
+      btn.textContent = item.tag;
+      btn.addEventListener('click', ()=>{
+        if(store.has(item.tag)){ store.delete(item.tag); btn.classList.remove('selected'); }
+        else{ store.add(item.tag); btn.classList.add('selected'); }
+      });
+      container.appendChild(btn);
+    });
+  }
+
+  function randomMultiSet(container, data, store, count){
+    store.clear();
+    container.querySelectorAll('.pill').forEach(p=>p.classList.remove('selected'));
+    const idxs = new Set();
+    while(idxs.size < Math.min(count, data.length)){ idxs.add(Math.floor(Math.random()*data.length)); }
+    const pills = container.querySelectorAll('.pill');
+    idxs.forEach(i=>{ pills[i].classList.add('selected'); store.add(data[i].tag); });
+  }
+
+  function applyTagsToContainer(containerEl, store, tags){
+    store.clear();
+    containerEl.querySelectorAll('.pill').forEach(p=>{
+      if(tags.indexOf(p.textContent) >= 0){ p.classList.add('selected'); store.add(p.textContent); }
+      else{ p.classList.remove('selected'); }
+    });
+  }
+
+  function joinTags(set){ return set.size ? Array.from(set).join('、') : '（未選擇，請AI自行設計）'; }
+  function joinNotes(set, data, key){
+    if(!set.size) return '（未選擇）';
+    return Array.from(set).map(tag=>{
+      const found = data.find(d=>d.tag===tag);
+      return '・'+tag+'：'+(found ? found[key] : '');
+    }).join('\n');
+  }
+
+  function composePersonality(set, customText){
+    const tags = Array.from(set);
+    if(customText) tags.push(customText);
+    const tagsLine = tags.length ? tags.join('、') : '（未選擇，請AI自行設計）';
+    const notesLines = Array.from(set).map(tag=>{
+      const found = PERSONALITY.find(d=>d.tag===tag);
+      return '・'+tag+'：'+(found ? found.cue : '');
+    });
+    if(customText) notesLines.push('・'+customText+'：（玩家自訂特質，請AI依字面意思自行詮釋）');
+    const notesText = notesLines.length ? notesLines.join('\n') : '（未選擇）';
+    return {tagsLine:tagsLine, notesText:notesText};
+  }
+
+  function composeAppearance(hair, skin, looks, extra, mark){
+    const lines = [];
+    lines.push('髮色：'+hair);
+    lines.push('膚色：'+skin);
+    lines.push('外貌給人的印象：'+looks);
+    if(extra) lines.push('外貌補充：'+extra);
+    if(mark) lines.push('特殊外貌標記：'+mark);
+    return lines.join('\n');
+  }
+
+  function setSimpleSingleSelect(groupId, val){
+    const group = document.getElementById(groupId);
+    group.querySelectorAll('.pill[data-val]').forEach(p=>{
+      p.classList.toggle('selected', p.dataset.val === val);
+    });
+    group.dispatchEvent(new Event('change'));
+  }
+  function getSelectedVal(groupId){
+    const el = document.querySelector('#'+groupId+' .pill.selected[data-val]');
+    return el ? el.dataset.val : '不指定';
+  }
+  function randomizeNativeSelect(id){
+    const el = document.getElementById(id);
+    const idx = Math.floor(Math.random()*el.options.length);
+    el.selectedIndex = idx;
+    el.dispatchEvent(new Event('change'));
+  }
+
+  /* ============== 狀態 ============== */
+
+  const selectedEra = {value:null};
+  const selectedRelation = new Set();
+  const selectedSupportCast = new Set();
+  const plotOrderArr = [];
+  let orderEnabled = false;
+  const selectedPPersonality = new Set();
+
+  let liSeq = 0;
+  const liIds = [];
+  const liPersonalitySets = {};
+
+  function setEra(tag){
+    document.querySelectorAll('.era-pill').forEach(p=>{
+      p.classList.toggle('selected', p.textContent === tag);
+    });
+    selectedEra.value = tag;
+  }
+  function setPlotTags(tags, ordered){
+    plotOrderArr.length = 0;
+    const pg = document.getElementById('plot-group');
+    pg.querySelectorAll('.pill').forEach(p=>p.classList.remove('selected'));
+    tags.forEach(t=>{
+      plotOrderArr.push(t);
+      pg.querySelectorAll('.pill').forEach(p=>{ if(p.textContent===t) p.classList.add('selected'); });
+    });
+    orderEnabled = !!ordered;
+    document.getElementById('order-toggle').classList.toggle('selected', orderEnabled);
+    renderOrderList();
+  }
+
+  /* ============== 時代背景 ============== */
+
+  const eraContainers = {
+    original: document.getElementById('era-original'),
+    genre: document.getElementById('era-genre'),
+    ip: document.getElementById('era-ip'),
+  };
+  ERA_ALL.forEach((item)=>{
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'pill era-pill';
+    btn.textContent = item.tag;
+    btn.addEventListener('click', ()=>{ setEra(item.tag); });
+    eraContainers[item.group].appendChild(btn);
+  });
+  document.getElementById('era-random').addEventListener('click', ()=>{
+    const idx = Math.floor(Math.random()*ERA_ALL.length);
+    setEra(ERA_ALL[idx].tag);
+  });
+
+  /* ============== 玩家性格 / 人物關係 / 配角 ============== */
+
+  buildMultiGroup(document.getElementById('p-personality'), PERSONALITY, selectedPPersonality);
+  buildMultiGroup(document.getElementById('relation-group'), RELATION, selectedRelation);
+  buildMultiGroup(document.getElementById('support-cast-group'), SUPPORT_CAST, selectedSupportCast);
+
+  document.getElementById('p-personality-random').addEventListener('click', ()=>{
+    randomMultiSet(document.getElementById('p-personality'), PERSONALITY, selectedPPersonality, 2);
+  });
+  document.getElementById('relation-random').addEventListener('click', ()=>{
+    randomMultiSet(document.getElementById('relation-group'), RELATION, selectedRelation, 2);
+  });
+  document.getElementById('support-cast-random').addEventListener('click', ()=>{
+    randomMultiSet(document.getElementById('support-cast-group'), SUPPORT_CAST, selectedSupportCast, 2);
+  });
+
+  document.getElementById('p-gender').querySelectorAll('[data-random]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const opts = ['女性','男性','不指定'];
+      const pick = opts[Math.floor(Math.random()*opts.length)];
+      setSimpleSingleSelect('p-gender', pick);
+    });
+  });
+
+  /* ============== 劇情衝突手法（多選＋排序） ============== */
+
+  const plotGroup = document.getElementById('plot-group');
+  PLOT.forEach(item=>{
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'pill';
+    btn.textContent = item.tag;
+    btn.addEventListener('click', ()=>{
+      const i = plotOrderArr.indexOf(item.tag);
+      if(i>=0){ plotOrderArr.splice(i,1); btn.classList.remove('selected'); }
+      else{ plotOrderArr.push(item.tag); btn.classList.add('selected'); }
+      renderOrderList();
+    });
+    plotGroup.appendChild(btn);
+  });
+
+  function renderOrderList(){
+    const wrap = document.getElementById('order-list');
+    if(!orderEnabled || plotOrderArr.length===0){
+      wrap.style.display = 'none';
+      wrap.innerHTML = '';
+      return;
+    }
+    wrap.style.display = 'block';
+    wrap.innerHTML = '';
+    plotOrderArr.forEach((tag,i)=>{
+      const row = document.createElement('div');
+      row.className = 'order-row';
+      row.innerHTML = '<span class="idx">'+(i+1)+'.</span><span>'+tag+'</span>';
+      const arrows = document.createElement('div');
+      arrows.className = 'arrows';
+      const up = document.createElement('button');
+      up.type='button'; up.className='arrow-btn'; up.textContent='▲'; up.disabled = (i===0);
+      up.addEventListener('click', ()=>{
+        const tmp = plotOrderArr[i-1]; plotOrderArr[i-1] = plotOrderArr[i]; plotOrderArr[i] = tmp;
+        renderOrderList();
+      });
+      const down = document.createElement('button');
+      down.type='button'; down.className='arrow-btn'; down.textContent='▼'; down.disabled = (i===plotOrderArr.length-1);
+      down.addEventListener('click', ()=>{
+        const tmp = plotOrderArr[i+1]; plotOrderArr[i+1] = plotOrderArr[i]; plotOrderArr[i] = tmp;
+        renderOrderList();
+      });
+      arrows.appendChild(up); arrows.appendChild(down);
+      row.appendChild(arrows);
+      wrap.appendChild(row);
+    });
+  }
+
+  document.getElementById('order-toggle').addEventListener('click', (e)=>{
+    orderEnabled = !orderEnabled;
+    e.currentTarget.classList.toggle('selected', orderEnabled);
+    renderOrderList();
+  });
+
+  document.getElementById('plot-random').addEventListener('click', ()=>{
+    plotOrderArr.length = 0;
+    plotGroup.querySelectorAll('.pill').forEach(p=>p.classList.remove('selected'));
+    const idx = Math.floor(Math.random()*PLOT.length);
+    plotGroup.querySelectorAll('.pill')[idx].classList.add('selected');
+    plotOrderArr.push(PLOT[idx].tag);
+    renderOrderList();
+  });
+
+  /* ============== 攻略對象（多人） ============== */
+
+  function liCardHTML(id){
+    return ''
+    + '<div class="li-card" data-li-id="'+id+'">'
+    + '  <div class="li-card-head"><span>攻略對象 #'+id+'</span><button type="button" class="li-remove-btn">移除</button></div>'
+    + '  <label>姓名</label>'
+    + '  <input type="text" class="li-name" placeholder="留白則由 AI 自行設計">'
+    + '  <div class="row2">'
+    + '    <div><label>性別</label><select class="li-gender"><option value="男性">男性</option><option value="女性">女性</option><option value="不指定">不指定</option></select></div>'
+    + '    <div><label>身分／設定</label><input type="text" class="li-role" placeholder="例如：單于、霸總、冷面上司"></div>'
+    + '  </div>'
+    + '  <div class="row2">'
+    + '    <div><label>髮色</label><select class="li-hair">'
+    + '      <option value="黑色">黑色</option><option value="棕色">棕色</option><option value="金色">金色</option>'
+    + '      <option value="銀白色">銀白色</option><option value="紅褐色">紅褐色</option><option value="灰色">灰色</option>'
+    + '      <option value="其他（請見下方補充）">其他（請見下方補充）</option></select></div>'
+    + '    <div><label>膚色</label><select class="li-skin">'
+    + '      <option value="蒼白">蒼白</option><option value="白皙">白皙</option><option value="健康自然膚色" selected>健康自然膚色</option>'
+    + '      <option value="黝黑">黝黑</option><option value="其他（請見下方補充）">其他（請見下方補充）</option></select></div>'
+    + '  </div>'
+    + '  <label>外貌給人的印象</label>'
+    + '  <select class="li-looks">'
+    + '    <option value="樸實普通">樸實普通</option><option value="順眼乾淨">順眼乾淨</option>'
+    + '    <option value="好看出眾" selected>好看出眾</option><option value="驚艷醒目">驚艷醒目</option>'
+    + '    <option value="絕色罕見">絕色罕見</option></select>'
+    + '  <label>外貌補充細節（選填）</label><input type="text" class="li-appearance-extra" placeholder="例如：身形高瘦、鷹眼、聲線低沉">'
+    + '  <label>特殊外貌標記（選填）</label><input type="text" class="li-mark" placeholder="選填">'
+    + '  <label>性格特質（可多選）</label>'
+    + '  <div class="pill-group li-personality"></div>'
+    + '  <div class="pill-group" style="margin-top:8px;"><button type="button" class="pill dice li-personality-random">🎲隨機挑 2 個</button></div>'
+    + '  <label>其他性格特質（選填，自訂）</label><input type="text" class="li-personality-other" placeholder="標籤裡沒有想要的詞，可以自己填">'
+    + '  <label>軟肋／弱點（選填，新增）</label><input type="text" class="li-weakness" placeholder="例如：唯獨見不得她哭">'
+    + '  <label>隱藏動機（選填，新增）</label><input type="text" class="li-agenda" placeholder="例如：接近玩家其實另有目的，留白則無">'
+    + '  <label>過往感情史（選填，新增）</label><input type="text" class="li-past" placeholder="例如：曾有過一段無法善終的關係">'
+    + '  <label>玩家對其初始態度（新增）</label><select class="li-attitude"><option value="戒備">戒備</option><option value="好奇" selected>好奇</option><option value="反感">反感</option><option value="崇拜">崇拜</option><option value="不指定">不指定</option></select>'
+    + '</div>';
+  }
+
+  function wireLiCard(card, id){
+    const pgroup = card.querySelector('.li-personality');
+    liPersonalitySets[id] = liPersonalitySets[id] || new Set();
+    buildMultiGroup(pgroup, PERSONALITY, liPersonalitySets[id]);
+    card.querySelector('.li-personality-random').addEventListener('click', ()=>{
+      randomMultiSet(pgroup, PERSONALITY, liPersonalitySets[id], 2);
+    });
+    card.querySelector('.li-remove-btn').addEventListener('click', ()=>{
+      if(liIds.length<=1) return;
+      const idx = liIds.indexOf(id);
+      if(idx>=0) liIds.splice(idx,1);
+      delete liPersonalitySets[id];
+      card.remove();
+      syncTriangleVisibility();
+    });
+  }
+
+  function addLoveInterest(prefill){
+    liSeq++;
+    const id = liSeq;
+    liIds.push(id);
+    const container = document.getElementById('li-container');
+    container.insertAdjacentHTML('beforeend', liCardHTML(id));
+    const card = container.querySelector('[data-li-id="'+id+'"]');
+    wireLiCard(card, id);
+    if(prefill) fillLiCard(card, id, prefill);
+    syncTriangleVisibility();
+  }
+
+  function fillLiCard(card, id, data){
+    card.querySelector('.li-name').value = data.name || '';
+    card.querySelector('.li-gender').value = data.gender || '男性';
+    card.querySelector('.li-role').value = data.role || '';
+    card.querySelector('.li-hair').value = data.hair || '黑色';
+    card.querySelector('.li-skin').value = data.skin || '健康自然膚色';
+    card.querySelector('.li-looks').value = data.looks || '好看出眾';
+    card.querySelector('.li-appearance-extra').value = data.appearanceExtra || '';
+    card.querySelector('.li-mark').value = data.mark || '';
+    card.querySelector('.li-personality-other').value = data.personalityOther || '';
+    card.querySelector('.li-weakness').value = data.weakness || '';
+    card.querySelector('.li-agenda').value = data.agenda || '';
+    card.querySelector('.li-past').value = data.past || '';
+    card.querySelector('.li-attitude').value = data.attitude || '好奇';
+    if(data.personality && data.personality.length){
+      applyTagsToContainer(card.querySelector('.li-personality'), liPersonalitySets[id], data.personality);
+    }
+  }
+
+  function clearAllLoveInterests(){
+    document.getElementById('li-container').innerHTML = '';
+    liIds.length = 0;
+    Object.keys(liPersonalitySets).forEach(k=> delete liPersonalitySets[k]);
+  }
+
+  function syncTriangleVisibility(){
+    document.getElementById('triangle-wrap').classList.toggle('hidden', liIds.length<=1);
+  }
+
+  document.getElementById('li-add-btn').addEventListener('click', ()=> addLoveInterest());
+  addLoveInterest(); // 預設先放一位
+
+  /* ============== 簡單單選 pill 群組 ============== */
+
+  function wireSimpleSingleSelect(id){
+    const group = document.getElementById(id);
+    group.querySelectorAll('.pill[data-val]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        group.querySelectorAll('.pill[data-val]').forEach(p=>p.classList.remove('selected'));
+        btn.classList.add('selected');
+        group.dispatchEvent(new Event('change'));
+      });
+    });
+  }
+  ['p-gender','breath-ratio','psych-depth','story-mode','chapter-format','serial-length'].forEach(wireSimpleSingleSelect);
+
+  const longExtrasWrap = document.getElementById('long-extras-wrap');
+  const choiceExtraCard = document.getElementById('choice-extra-card');
+  function syncStoryModeExtras(){
+    const mode = getSelectedVal('story-mode');
+    longExtrasWrap.classList.toggle('hidden', mode !== 'long');
+    choiceExtraCard.classList.toggle('hidden', mode !== 'choice');
+  }
+  document.getElementById('story-mode').addEventListener('change', syncStoryModeExtras);
+  syncStoryModeExtras();
+
+  /* ============== 選項模式專屬規則 ============== */
+
+  document.getElementById('choice-affection-toggle').addEventListener('click', (e)=>{
+    e.currentTarget.classList.toggle('selected');
+    document.getElementById('affection-style-wrap').classList.toggle('hidden', !e.currentTarget.classList.contains('selected'));
+  });
+  document.getElementById('choice-branch-toggle').addEventListener('click', (e)=>{
+    e.currentTarget.classList.toggle('selected');
+  });
+
+  /* ============== 一致性鎖定 toggle ============== */
+
+  ['lock-personality','lock-no-new-li','lock-death-consistency'].forEach(id=>{
+    document.getElementById(id).addEventListener('click', (e)=>{
+      e.currentTarget.classList.toggle('selected');
+    });
+  });
+
+  /* ============== 親密程度說明文字 ============== */
+
+  function syncIntimacyDesc(){
+    const val = document.getElementById('intimacy-group').value;
+    document.getElementById('intimacy-desc').textContent = INTIMACY[val] || '';
+  }
+  document.getElementById('intimacy-group').addEventListener('change', syncIntimacyDesc);
+  syncIntimacyDesc();
+
+  /* ============== 快速預設組合 ============== */
+
+  function presetSweet(){
+    setEra('現代');
+    applyTagsToContainer(document.getElementById('relation-group'), selectedRelation, ['雙向奔赴','青梅竹馬']);
+    setPlotTags(['甜寵無虐'], false);
+    setSimpleSingleSelect('breath-ratio','高（多日常互動）');
+    setSimpleSingleSelect('psych-depth','淺層');
+    document.getElementById('intensity').value = '甜寵輕鬆，衝突短促且很快化解';
+    document.getElementById('ending').value = '全甜HE（圓滿收尾）';
+    document.getElementById('death').value = '關閉，角色以受傷代替死亡，但後果必須真實';
+    document.getElementById('intimacy-group').value = '曖昧不說破'; syncIntimacyDesc();
+    document.getElementById('confession-style').value = '被看穿心意';
+    document.getElementById('subplot-ratio').value = '無支線（純愛情線）';
+  }
+  function presetDark(){
+    setEra('玄幻');
+    applyTagsToContainer(document.getElementById('relation-group'), selectedRelation, ['禁錮之愛','病嬌佔有']);
+    setPlotTags(['虐戀情深'], false);
+    setSimpleSingleSelect('breath-ratio','低（緊湊推進）');
+    setSimpleSingleSelect('psych-depth','深層');
+    document.getElementById('intensity').value = '黑暗心理，道德模糊、高張力衝突';
+    document.getElementById('ending').value = 'BE轉HE（經歷重大失去後，最終仍走向圓滿）';
+    document.getElementById('death').value = '開啟，重要角色有真實死亡可能';
+    document.getElementById('intimacy-group').value = '留白淡化處理'; syncIntimacyDesc();
+    document.getElementById('confession-style').value = '用行動證明';
+  }
+  function presetCampus(){
+    setEra('現代');
+    applyTagsToContainer(document.getElementById('relation-group'), selectedRelation, ['青梅竹馬','歡喜冤家']);
+    setPlotTags(['暗戀成真'], false);
+    setSimpleSingleSelect('breath-ratio','高（多日常互動）');
+    setSimpleSingleSelect('psych-depth','中層');
+    document.getElementById('intensity').value = '甜寵輕鬆，衝突短促且很快化解';
+    document.getElementById('ending').value = '開放式HE（存活但懸而未決）';
+    document.getElementById('death').value = '關閉，角色以受傷代替死亡，但後果必須真實';
+    document.getElementById('intimacy-group').value = '點到為止的吻戲'; syncIntimacyDesc();
+    document.getElementById('confession-style').value = '直接告白';
+  }
+  function presetDomineering(){
+    setEra('豪門');
+    applyTagsToContainer(document.getElementById('relation-group'), selectedRelation, ['強取豪奪','上司下屬']);
+    setPlotTags(['追妻火葬場'], false);
+    setSimpleSingleSelect('breath-ratio','中（均衡分配）');
+    setSimpleSingleSelect('psych-depth','深層');
+    document.getElementById('intensity').value = '中等張力，有衝突但不致命';
+    document.getElementById('ending').value = '全甜HE（圓滿收尾）';
+    document.getElementById('death').value = '關閉，角色以受傷代替死亡，但後果必須真實';
+    document.getElementById('intimacy-group').value = '留白淡化處理'; syncIntimacyDesc();
+    document.getElementById('confession-style').value = '用行動證明';
+  }
+  document.getElementById('preset-sweet').addEventListener('click', presetSweet);
+  document.getElementById('preset-dark').addEventListener('click', presetDark);
+  document.getElementById('preset-campus').addEventListener('click', presetCampus);
+  document.getElementById('preset-domineering').addEventListener('click', presetDomineering);
+
+  /* ============== 整頁隨機 ============== */
+
+  function randomizeAllByClass(cls){
+    document.querySelectorAll(cls).forEach(el=>{
+      if(el.tagName === 'SELECT'){ el.selectedIndex = Math.floor(Math.random()*el.options.length); }
+    });
+  }
+
+  document.getElementById('randomize-all-btn').addEventListener('click', ()=>{
+    document.getElementById('era-random').click();
+    document.getElementById('relation-random').click();
+    document.getElementById('support-cast-random').click();
+    document.getElementById('p-personality-random').click();
+    document.getElementById('plot-random').click();
+    document.querySelectorAll('.li-personality-random').forEach(btn=>btn.click());
+    setSimpleSingleSelect('breath-ratio', ['高（多日常互動）','中（均衡分配）','低（緊湊推進）'][Math.floor(Math.random()*3)]);
+    setSimpleSingleSelect('psych-depth', ['淺層','中層','深層'][Math.floor(Math.random()*3)]);
+    ['intensity','ending','death','intimacy-group','confession-style','pov',
+     'subplot-ratio','side-density','time-span','dialogue-ratio','sensory-focus','vocab-period',
+     'p-hair','p-skin','p-looks'
+    ].forEach(randomizeNativeSelect);
+    randomizeAllByClass('.li-hair');
+    randomizeAllByClass('.li-skin');
+    randomizeAllByClass('.li-looks');
+    syncIntimacyDesc();
+  });
+
+  /* ============== 收集 / 套用 完整狀態 ============== */
+
+  function collectState(){
+    return {
+      player:{
+        name: document.getElementById('p-name').value,
+        age: document.getElementById('p-age').value,
+        gender: getSelectedVal('p-gender'),
+        bg: document.getElementById('p-bg').value,
+        hair: document.getElementById('p-hair').value,
+        skin: document.getElementById('p-skin').value,
+        looks: document.getElementById('p-looks').value,
+        appearanceExtra: document.getElementById('p-appearance-extra').value,
+        mark: document.getElementById('p-mark').value,
+        quirk: document.getElementById('p-quirk').value,
+        token: document.getElementById('p-token').value,
+        secret: document.getElementById('p-secret').value,
+        personality: Array.from(selectedPPersonality),
+        personalityOther: document.getElementById('p-personality-other').value,
+      },
+      era: selectedEra.value,
+      eraExtra: document.getElementById('era-extra').value,
+      loveInterests: liIds.map(function(id){
+        const card = document.querySelector('[data-li-id="'+id+'"]');
+        return {
+          name: card.querySelector('.li-name').value,
+          gender: card.querySelector('.li-gender').value,
+          role: card.querySelector('.li-role').value,
+          hair: card.querySelector('.li-hair').value,
+          skin: card.querySelector('.li-skin').value,
+          looks: card.querySelector('.li-looks').value,
+          appearanceExtra: card.querySelector('.li-appearance-extra').value,
+          mark: card.querySelector('.li-mark').value,
+          weakness: card.querySelector('.li-weakness').value,
+          agenda: card.querySelector('.li-agenda').value,
+          past: card.querySelector('.li-past').value,
+          attitude: card.querySelector('.li-attitude').value,
+          personality: Array.from(liPersonalitySets[id] || []),
+          personalityOther: card.querySelector('.li-personality-other').value,
+        };
+      }),
+      triangleMode: document.getElementById('triangle-mode').value,
+      relation: Array.from(selectedRelation),
+      confession: document.getElementById('confession-style').value,
+      plotOrder: plotOrderArr.slice(),
+      orderEnabled: orderEnabled,
+      supportCast: Array.from(selectedSupportCast),
+      breath: getSelectedVal('breath-ratio'),
+      psych: getSelectedVal('psych-depth'),
+      subplotRatio: document.getElementById('subplot-ratio').value,
+      sideDensity: document.getElementById('side-density').value,
+      timeSpan: document.getElementById('time-span').value,
+      dialogueRatio: document.getElementById('dialogue-ratio').value,
+      sensoryFocus: document.getElementById('sensory-focus').value,
+      vocabPeriod: document.getElementById('vocab-period').value,
+      intimacy: document.getElementById('intimacy-group').value,
+      storyMode: getSelectedVal('story-mode'),
+      chapterFormat: getSelectedVal('chapter-format'),
+      serialLength: getSelectedVal('serial-length'),
+      pov: document.getElementById('pov').value,
+      length: document.getElementById('length').value,
+      style: document.getElementById('style').value,
+      choiceAffectionOn: document.getElementById('choice-affection-toggle').classList.contains('selected'),
+      affectionStyle: document.getElementById('affection-style').value,
+      choiceBranchOn: document.getElementById('choice-branch-toggle').classList.contains('selected'),
+      intensity: document.getElementById('intensity').value,
+      ending: document.getElementById('ending').value,
+      death: document.getElementById('death').value,
+      lockPersonality: document.getElementById('lock-personality').classList.contains('selected'),
+      lockNoNewLi: document.getElementById('lock-no-new-li').classList.contains('selected'),
+      lockDeathConsistency: document.getElementById('lock-death-consistency').classList.contains('selected'),
+      relStageStart: document.getElementById('rel-stage-start').value,
+      chapterNumber: document.getElementById('chapter-number').value,
+      recapText: document.getElementById('recap-text').value,
+      custom: document.getElementById('custom').value,
+      customBanned: document.getElementById('custom-banned').value,
+    };
+  }
+
+  function applyState(state){
+    if(!state) return;
+    const p = state.player || {};
+    document.getElementById('p-name').value = p.name || '';
+    document.getElementById('p-age').value = p.age || '';
+    setSimpleSingleSelect('p-gender', p.gender || '女性');
+    document.getElementById('p-bg').value = p.bg || '';
+    document.getElementById('p-hair').value = p.hair || '黑色';
+    document.getElementById('p-skin').value = p.skin || '白皙';
+    document.getElementById('p-looks').value = p.looks || '順眼乾淨';
+    document.getElementById('p-appearance-extra').value = p.appearanceExtra || '';
+    document.getElementById('p-mark').value = p.mark || '';
+    document.getElementById('p-quirk').value = p.quirk || '';
+    document.getElementById('p-token').value = p.token || '';
+    document.getElementById('p-secret').value = p.secret || '';
+    applyTagsToContainer(document.getElementById('p-personality'), selectedPPersonality, p.personality || []);
+    document.getElementById('p-personality-other').value = p.personalityOther || '';
+
+    if(state.era) setEra(state.era);
+    document.getElementById('era-extra').value = state.eraExtra || '';
+
+    clearAllLoveInterests();
+    (state.loveInterests && state.loveInterests.length ? state.loveInterests : [{}]).forEach(function(li){
+      addLoveInterest(li);
+    });
+    syncTriangleVisibility();
+    if(state.triangleMode) document.getElementById('triangle-mode').value = state.triangleMode;
+
+    applyTagsToContainer(document.getElementById('relation-group'), selectedRelation, state.relation || []);
+    document.getElementById('confession-style').value = state.confession || '不指定';
+    setPlotTags(state.plotOrder || [], !!state.orderEnabled);
+    applyTagsToContainer(document.getElementById('support-cast-group'), selectedSupportCast, state.supportCast || []);
+
+    setSimpleSingleSelect('breath-ratio', state.breath || '中（均衡分配）');
+    setSimpleSingleSelect('psych-depth', state.psych || '中層');
+    document.getElementById('subplot-ratio').value = state.subplotRatio || '少量支線';
+    document.getElementById('side-density').value = state.sideDensity || '中';
+    document.getElementById('time-span').value = state.timeSpan || '中期（數月）';
+    document.getElementById('dialogue-ratio').value = state.dialogueRatio || '均衡';
+    document.getElementById('sensory-focus').value = state.sensoryFocus || '均衡';
+    document.getElementById('vocab-period').value = state.vocabPeriod || '中性，依時代背景自然調整';
+
+    document.getElementById('intimacy-group').value = state.intimacy || '曖昧不說破';
+    syncIntimacyDesc();
+
+    setSimpleSingleSelect('story-mode', state.storyMode || 'long');
+    setSimpleSingleSelect('chapter-format', state.chapterFormat || '【第X章・標題】');
+    setSimpleSingleSelect('serial-length', state.serialLength || 'none');
+    syncStoryModeExtras();
+    document.getElementById('pov').value = state.pov || 'second';
+    document.getElementById('length').value = state.length || '中篇，400-600字，標準節奏';
+    document.getElementById('style').value = state.style || '細膩文學向，著重內心描寫與氛圍營造';
+
+    document.getElementById('choice-affection-toggle').classList.toggle('selected', !!state.choiceAffectionOn);
+    document.getElementById('affection-style-wrap').classList.toggle('hidden', !state.choiceAffectionOn);
+    if(state.affectionStyle) document.getElementById('affection-style').value = state.affectionStyle;
+    document.getElementById('choice-branch-toggle').classList.toggle('selected', !!state.choiceBranchOn);
+
+    document.getElementById('intensity').value = state.intensity || '中等張力，有衝突但不致命';
+    document.getElementById('ending').value = state.ending || '開放式HE（存活但懸而未決）';
+    document.getElementById('death').value = state.death || '關閉，角色以受傷代替死亡，但後果必須真實';
+    document.getElementById('lock-personality').classList.toggle('selected', state.lockPersonality !== false);
+    document.getElementById('lock-no-new-li').classList.toggle('selected', state.lockNoNewLi !== false);
+    document.getElementById('lock-death-consistency').classList.toggle('selected', state.lockDeathConsistency !== false);
+
+    document.getElementById('rel-stage-start').value = state.relStageStart || '尚未開始（從頭開始）';
+    document.getElementById('chapter-number').value = state.chapterNumber || '';
+    document.getElementById('recap-text').value = state.recapText || '';
+
+    document.getElementById('custom').value = state.custom || '';
+    document.getElementById('custom-banned').value = state.customBanned || '';
+  }
+
+  /* ============== 角色庫（持久化儲存） ============== */
+
+  async function refreshLibList(){
+    const listEl = document.getElementById('lib-list');
+    listEl.textContent = '載入中…';
+    try{
+      const res = await window.storage.list('template:', false);
+      const keys = (res && res.keys) ? res.keys : [];
+      if(keys.length===0){ listEl.textContent = '尚未儲存任何範本。'; return; }
+      listEl.innerHTML = '';
+      for(let i=0;i<keys.length;i++){
+        const key = keys[i];
+        try{
+          const item = await window.storage.get(key, false);
+          if(!item) continue;
+          const data = JSON.parse(item.value);
+          const row = document.createElement('div');
+          row.className = 'lib-row';
+          const nameSpan = document.createElement('span');
+          nameSpan.className = 'lib-name';
+          nameSpan.textContent = data.name || '未命名範本';
+          const applyBtn = document.createElement('button');
+          applyBtn.type='button'; applyBtn.className='lib-btn'; applyBtn.textContent='套用';
+          applyBtn.addEventListener('click', function(){ applyState(data.state); });
+          const delBtn = document.createElement('button');
+          delBtn.type='button'; delBtn.className='lib-btn danger'; delBtn.textContent='刪除';
+          delBtn.addEventListener('click', async function(){
+            try{ await window.storage.delete(key, false); refreshLibList(); }
+            catch(e){ alert('刪除失敗，請稍後再試'); }
+          });
+          row.appendChild(nameSpan); row.appendChild(applyBtn); row.appendChild(delBtn);
+          listEl.appendChild(row);
+        }catch(e){ /* 跳過讀取失敗的項目 */ }
+      }
+      if(listEl.children.length===0){ listEl.textContent = '尚未儲存任何範本。'; }
+    }catch(e){
+      listEl.textContent = '讀取範本庫時發生錯誤，請稍後再試。';
+    }
+  }
+
+  document.getElementById('lib-save-btn').addEventListener('click', async function(){
+    const nameInput = document.getElementById('lib-name-input');
+    const name = nameInput.value.trim() || ('範本 '+new Date().toLocaleString());
+    const state = collectState();
+    const key = 'template:'+Date.now();
+    try{
+      const result = await window.storage.set(key, JSON.stringify({name:name, state:state}), false);
+      if(!result){ alert('儲存失敗，請稍後再試'); return; }
+      nameInput.value = '';
+      refreshLibList();
+    }catch(e){
+      alert('儲存失敗，請稍後再試');
+    }
+  });
+
+  refreshLibList();
+
+  /* ============== 衝突防呆檢查 ============== */
+
+  function checkConflicts(){
+    const warnings = [];
+    const deathVal = document.getElementById('death').value;
+    const endingVal = document.getElementById('ending').value;
+    const intensityVal = document.getElementById('intensity').value;
+    if(deathVal.indexOf('開啟')===0 && endingVal.indexOf('全甜HE')===0){
+      warnings.push('已開啟「死亡風險」，但結局傾向選擇「全甜HE」，兩者方向可能衝突，建議再確認。');
+    }
+    if(endingVal.indexOf('雙向毀滅')===0 && deathVal.indexOf('關閉')===0){
+      warnings.push('結局傾向「雙向毀滅」通常需要較高的死亡或重大犧牲風險，但目前死亡風險是關閉的，建議確認是否要開啟。');
+    }
+    if(intensityVal.indexOf('甜寵輕鬆')===0 && (selectedRelation.has('病嬌佔有')||selectedRelation.has('強取豪奪')||selectedRelation.has('禁錮之愛'))){
+      warnings.push('選擇了「甜寵輕鬆」的劇情強度，但人物關係模式中包含較強烈／壓迫性的標籤（病嬌佔有、強取豪奪或禁錮之愛），調性可能不一致。');
+    }
+    if(plotOrderArr.indexOf('虐戀情深')>=0 && intensityVal.indexOf('甜寵輕鬆')===0){
+      warnings.push('「虐戀情深」與「甜寵輕鬆」的劇情強度方向相反，建議確認想要的整體基調。');
+    }
+    if(plotOrderArr.indexOf('種田日常')>=0 && getSelectedVal('breath-ratio')==='低（緊湊推進）'){
+      warnings.push('「種田日常」通常節奏較慢，但喘息場景比例選擇了「低（緊湊推進）」，建議確認。');
+    }
+    return warnings;
+  }
+
+  /* ============== 產生指令 ============== */
+
+  document.getElementById('generate-btn').addEventListener('click', ()=>{
+
+    const warnings = checkConflicts();
+    const warnBox = document.getElementById('conflict-warning');
+    if(warnings.length){
+      warnBox.innerHTML = '<strong>小提醒：</strong><ul>'+warnings.map(w=>'<li>'+w+'</li>').join('')+'</ul>';
+      warnBox.classList.add('show');
+    } else {
+      warnBox.classList.remove('show');
+    }
+
+    const pName = document.getElementById('p-name').value.trim() || '（請AI自行命名）';
+    const pAge = document.getElementById('p-age').value.trim() || '隨機';
+    const pGender = getSelectedVal('p-gender');
+    const pBg = document.getElementById('p-bg').value.trim() || '（請AI依時代背景與性格自行設計）';
+    const pronoun = pGender === '男性' ? '你' : '妳';
+    const pHair = document.getElementById('p-hair').value;
+    const pSkin = document.getElementById('p-skin').value;
+    const pLooks = document.getElementById('p-looks').value;
+    const pAppearanceExtra = document.getElementById('p-appearance-extra').value.trim();
+    const pMark = document.getElementById('p-mark').value.trim();
+    const pAppearanceBlock = composeAppearance(pHair, pSkin, pLooks, pAppearanceExtra, pMark);
+    const pQuirk = document.getElementById('p-quirk').value.trim();
+    const pToken = document.getElementById('p-token').value.trim();
+    const pSecret = document.getElementById('p-secret').value.trim();
+    const pPersonalityOther = document.getElementById('p-personality-other').value.trim();
+    const pPersonalityComposed = composePersonality(selectedPPersonality, pPersonalityOther);
+    const pPersonalityTags = pPersonalityComposed.tagsLine;
+    const pPersonalityNotes = pPersonalityComposed.notesText;
+
+    const era = selectedEra.value || '（未選擇，請AI自行設計一個原創時代背景）';
+    const eraData = ERA_ALL.find(e=>e.tag===selectedEra.value) || {};
+    const eraFlavor = eraData.flavor || '';
+    const eraSuited = eraData.suited ? '\n適合風格：'+eraData.suited : '';
+    const eraExtra = document.getElementById('era-extra').value.trim();
+
+    function liBlockText(id, idx, total){
+      const card = document.querySelector('[data-li-id="'+id+'"]');
+      const name = card.querySelector('.li-name').value.trim() || '（請AI依以下標籤自行設計）';
+      const gender = card.querySelector('.li-gender').value;
+      const role = card.querySelector('.li-role').value.trim() || '（請AI依人物關係標籤自行設計）';
+      const hair = card.querySelector('.li-hair').value;
+      const skin = card.querySelector('.li-skin').value;
+      const looks = card.querySelector('.li-looks').value;
+      const appearanceExtra = card.querySelector('.li-appearance-extra').value.trim();
+      const mark = card.querySelector('.li-mark').value.trim();
+      const appearanceBlock = composeAppearance(hair, skin, looks, appearanceExtra, mark);
+      const weakness = card.querySelector('.li-weakness').value.trim();
+      const agenda = card.querySelector('.li-agenda').value.trim();
+      const past = card.querySelector('.li-past').value.trim();
+      const attitude = card.querySelector('.li-attitude').value;
+      const pset = liPersonalitySets[id] || new Set();
+      const personalityOther = card.querySelector('.li-personality-other').value.trim();
+      const composed = composePersonality(pset, personalityOther);
+      const personalityTags = composed.tagsLine;
+      const personalityNotes = composed.notesText;
+      const label = total>1 ? ('攻略對象 '+idx+'／'+total) : '攻略對象';
+      let block = '【'+label+'】\n';
+      block += '姓名：'+name+'\n';
+      block += '性別：'+gender+'\n';
+      block += '身分／設定：'+role+'\n';
+      block += '外貌：\n'+appearanceBlock+'\n';
+      block += '性格特質：'+personalityTags+'\n';
+      block += '性格提示：\n'+personalityNotes+'\n';
+      if(weakness) block += '軟肋／弱點：'+weakness+'\n';
+      if(agenda) block += '隱藏動機：'+agenda+'\n';
+      if(past) block += '過往感情史：'+past+'\n';
+      block += '玩家對其初始態度：'+attitude;
+      return block;
+    }
+
+    const liNames = liIds.map(function(id){
+      const card = document.querySelector('[data-li-id="'+id+'"]');
+      return card.querySelector('.li-name').value.trim();
+    });
+    const firstLiNameOrPlaceholder = liNames[0] || '攻略對象';
+    const liBlocks = liIds.map(function(id,i){ return liBlockText(id, i+1, liIds.length); }).join('\n\n');
+    let triangleBlock = '';
+    if(liIds.length>1){
+      triangleBlock = '\n多角戀模式：'+document.getElementById('triangle-mode').value+'\n（請依此模式安排多位攻略對象之間的互動與張力，避免角色淪為單純的背景板）\n';
+    }
+
+    const relationTags = joinTags(selectedRelation);
+    const relationNotes = joinNotes(selectedRelation, RELATION, 'core');
+    const confessionVal = document.getElementById('confession-style').value;
+
+    let plotTagsLine, plotNotesBlock;
+    if(plotOrderArr.length === 0){
+      plotTagsLine = '（未選擇，請AI自行設計）';
+      plotNotesBlock = '（未選擇）';
+    } else if(orderEnabled){
+      plotTagsLine = plotOrderArr.map((t,i)=>(i+1)+'.'+t).join('、') + '（請依此順序發展劇情）';
+      plotNotesBlock = plotOrderArr.map(t=>{ const f=PLOT.find(p=>p.tag===t); return '・'+t+'：'+(f?f.note:''); }).join('\n');
+    } else {
+      plotTagsLine = plotOrderArr.join('、') + '（順序不拘，請AI自行決定合理的發展順序）';
+      plotNotesBlock = plotOrderArr.map(t=>{ const f=PLOT.find(p=>p.tag===t); return '・'+t+'：'+(f?f.note:''); }).join('\n');
+    }
+
+    const supportCastTags = joinTags(selectedSupportCast);
+    const supportCastNotes = joinNotes(selectedSupportCast, SUPPORT_CAST, 'note');
+
+    const breathRatio = getSelectedVal('breath-ratio');
+    const psychDepth = getSelectedVal('psych-depth');
+    const subplotRatio = document.getElementById('subplot-ratio').value;
+    const sideDensity = document.getElementById('side-density').value;
+    const timeSpan = document.getElementById('time-span').value;
+    const dialogueRatio = document.getElementById('dialogue-ratio').value;
+    const sensoryFocus = document.getElementById('sensory-focus').value;
+    const vocabPeriod = document.getElementById('vocab-period').value;
+
+    const intimacyVal = document.getElementById('intimacy-group').value;
+    const intimacyDesc = INTIMACY[intimacyVal] || '';
+
+    const storyModeVal = getSelectedVal('story-mode');
+    const storyModeLabel = document.querySelector('#story-mode .pill.selected').textContent;
+    let storyModeInstruction = STORY_MODE_BASE[storyModeVal] || '';
+    let chapterFormat = '（本模式不使用章節標題）';
+    if(storyModeVal === 'long'){
+      chapterFormat = getSelectedVal('chapter-format');
+      const sl = getSelectedVal('serial-length');
+      storyModeInstruction += sl === 'none'
+        ? ' 連載長度不預設，視劇情自然發展節奏進行，不需強行收尾。'
+        : ' 本次連載預計於第'+sl+'回完結，請以此為節奏基準鋪陳劇情高潮與收尾，避免提前結束或嚴重拖長。';
+    }
+    const povSel = document.getElementById('pov').value;
+    let pov;
+    if(povSel === 'second'){
+      pov = '第二人稱，全程以「'+pronoun+'」稱呼玩家進行敘事（例如：「'+pronoun+'走進房間，看見他站在窗邊」），沉浸感最強，為推薦寫法。';
+    } else if(povSel === 'third-dual'){
+      pov = '第三人稱雙視角，敘事聚焦於玩家，但偶爾會切換到攻略對象的內心視角。';
+    } else if(povSel === 'first'){
+      pov = '第一人稱，以「我」自稱進行敘事，呈現玩家視角的自述。';
+    } else {
+      pov = '第三人稱單視角，敘事聚焦於玩家，以「'+pronoun+'」或玩家姓名稱呼。';
+    }
+    const intensity = document.getElementById('intensity').value;
+    const ending = document.getElementById('ending').value;
+    const death = document.getElementById('death').value;
+    const length = document.getElementById('length').value;
+    const style = document.getElementById('style').value;
+    const custom = document.getElementById('custom').value.trim();
+
+    let choiceExtraSection = '';
+    if(storyModeVal === 'choice'){
+      const affectionOn = document.getElementById('choice-affection-toggle').classList.contains('selected');
+      const branchOn = document.getElementById('choice-branch-toggle').classList.contains('selected');
+      const affectionStyleVal = document.getElementById('affection-style').value;
+      const eraForSpec = selectedEra.value || '原創世界';
+      const spec = buildChoiceOutputSpec(eraForSpec, affectionOn, affectionStyleVal, branchOn);
+      choiceExtraSection = '\n━━━━━━━━━━━━━━━━━━━━━\n【選項模式輸出規範】\n━━━━━━━━━━━━━━━━━━━━━\n'+spec+'\n';
+    }
+
+    const relStageStart = document.getElementById('rel-stage-start').value;
+    const chapterNumber = document.getElementById('chapter-number').value.trim();
+    const recapText = document.getElementById('recap-text').value.trim();
+    let progressSection = '';
+    if(recapText || chapterNumber || relStageStart !== '尚未開始（從頭開始）'){
+      progressSection = '\n━━━━━━━━━━━━━━━━━━━━━\n【連載進度與前情提要】\n━━━━━━━━━━━━━━━━━━━━━\n'
+        + (chapterNumber ? '目前章節數：第'+chapterNumber+'回\n' : '')
+        + '目前感情階段：'+relStageStart+'\n'
+        + (recapText ? '\n前情提要：\n'+recapText+'\n' : '')
+        + '\n請延續以上進度自然發展，不需重新自我介紹或重複交代已經發生過的事。\n';
+    }
+
+    const writingRules = [
+      '描寫須具體獨特，避免泛化的形容詞堆疊',
+      '角色個性透過行為、互動、旁人反應側寫，禁止直接說明性格',
+      '關係變化透過劇情細節呈現，禁止直接說明「兩人感情變好了」',
+    ];
+    if(storyModeVal !== 'choice'){
+      writingRules.push('禁止AI感用詞：「這種、某種、那種、若有所思」等');
+      writingRules.push('禁止句型：「不是⋯而是⋯」「像是⋯像是⋯」');
+    }
+    writingRules.push('親密場面不得超出「感情戲設定」中親密程度上限所定義的尺度，且全程避免低俗、直白的色情描寫，著重情感與氛圍');
+    if(document.getElementById('lock-personality').classList.contains('selected')){
+      writingRules.push('攻略對象（與其他重要角色）的人格特質須保持一致，不得無故突變或OOC');
+    }
+    if(document.getElementById('lock-no-new-li').classList.contains('selected')){
+      writingRules.push('不得無故新增未經設定的攻略對象，新角色出場須服務於既有劇情');
+    }
+    if(document.getElementById('lock-death-consistency').classList.contains('selected')){
+      writingRules.push('角色的死亡或重大傷害須符合「死亡風險」設定，不得隨意安排超出設定範圍的生死結果');
+    }
+    const customBanned = document.getElementById('custom-banned').value.trim();
+    if(customBanned){
+      writingRules.push('額外禁用詞／句型：'+customBanned);
+    }
+    const writingRulesText = writingRules.map((r,i)=>(i+1)+'. '+r).join('\n');
+
+    const wordHint = length.indexOf('短')===0 ? '200-300' : (length.indexOf('長')===0 ? '800以上' : '400-600');
+    let openingInstruction;
+    if(recapText){
+      openingInstruction = '已提供前情提要，請直接從目前進度接續發展，創作下一段約'+wordHint+'字的劇情'
+        + (storyModeVal==='choice' ? '，並依「選項模式輸出規範」的格式附上### 可選行動' : '，結尾留出讓'+pronoun+'選擇下一步行動或對話的空間')
+        + '。不需重新打招呼或重新自我介紹，也不需重新列出設定表。';
+    } else {
+      openingInstruction = '確認以上設定後，請先給出故事標題，再直接創作一段約'+wordHint+'字的開場場景，讓'+pronoun+'與'+(liIds.length>1?'攻略對象們':firstLiNameOrPlaceholder)+'初次相遇或產生互動。不需重新列出設定表'
+        + (storyModeVal==='choice' ? '，並依「選項模式輸出規範」的格式附上### 可選行動' : '，結尾留出讓'+pronoun+'選擇下一步行動或對話的空間')
+        + '。';
+    }
+
+    const prompt =
+`你將擔任沉浸式文字遊戲主持人，帶領玩家進入一個由以下設定組成的原創故事世界。
+故事與人物皆為原創創作（若世界觀取材自動漫作品，僅借用概略氛圍與通用設定，不引用原作文字內容），無須對應任何真實存在的人物或事件。
+玩家性別為${pGender}，全程以「${pronoun}」稱呼玩家，禁止使用「玩家」或「主角」等代稱。
+
+━━━━━━━━━━━━━━━━━━━━━
+【玩家角色設定】
+━━━━━━━━━━━━━━━━━━━━━
+
+姓名：${pName}
+年齡：${pAge}
+性別：${pGender}
+出身背景：${pBg}
+外貌：
+${pAppearanceBlock}
+性格特質：${pPersonalityTags}
+性格提示：
+${pPersonalityNotes}${pQuirk ? '\n口癖／說話方式：'+pQuirk : ''}${pToken ? '\n隨身信物／關鍵物品：'+pToken : ''}${pSecret ? '\n不可告人的秘密或心結：'+pSecret : ''}
+
+━━━━━━━━━━━━━━━━━━━━━
+【故事世界設定】
+━━━━━━━━━━━━━━━━━━━━━
+
+時代背景：${era}
+世界氛圍：${eraFlavor}${eraSuited}
+（請以原創故事為主，不需嚴格考據真實歷史或原作劇情細節）${eraExtra ? '\n世界觀補充規則：\n'+eraExtra : ''}
+
+━━━━━━━━━━━━━━━━━━━━━
+【攻略對象設定】
+━━━━━━━━━━━━━━━━━━━━━
+
+${liBlocks}
+${triangleBlock}
+━━━━━━━━━━━━━━━━━━━━━
+【感情線設定】
+━━━━━━━━━━━━━━━━━━━━━
+
+感情線啟用：是
+人物關係模式：${relationTags}
+核心張力提示：
+${relationNotes}
+
+劇情衝突手法：${plotTagsLine}
+節奏與基調提示：
+${plotNotesBlock}
+
+配角／支線人物：${supportCastTags}
+配角作用提示：
+${supportCastNotes}
+
+結局傾向：${ending}
+親密程度上限：${intimacyVal}
+親密戲說明：${intimacyDesc}
+告白方式偏好：${confessionVal}
+
+感情線核心規則：
+・親密場面不得超出以上設定的尺度，且全程避免低俗、直白的色情描寫，著重情感與氛圍
+・感情必須從以上設定的衝突或張力中有機生長，不得無故告白或快速和解
+・攻略對象的行動必須優先遵從其自身設定與人格邏輯，不會無條件遷就玩家
+・感情表達以細節、行動與沉默呈現，避免廉價的直白表白
+
+━━━━━━━━━━━━━━━━━━━━━
+【劇情節奏與敘事規則】
+━━━━━━━━━━━━━━━━━━━━━
+
+喘息場景比例：${breathRatio}
+心理描寫深度：${psychDepth}
+主線外支線比例：${subplotRatio}
+配角／勁敵出場密度：${sideDensity}
+故事時間跨度：${timeSpan}
+對話與旁白比例：${dialogueRatio}
+感官描寫側重：${sensoryFocus}
+用字時代感：${vocabPeriod}
+
+━━━━━━━━━━━━━━━━━━━━━
+【劇情強度與規則】
+━━━━━━━━━━━━━━━━━━━━━
+
+劇情強度：${intensity}
+死亡風險：${death}
+${progressSection}${choiceExtraSection}
+━━━━━━━━━━━━━━━━━━━━━
+【輸出格式規範】
+━━━━━━━━━━━━━━━━━━━━━
+
+敘事結構：${storyModeLabel}
+${storyModeInstruction}
+敘事視角：${pov}
+章節標題格式：${chapterFormat}
+每次篇幅：${length}
+文風：${style}
+輸出語言：繁體中文
+故事標題：請構思一個貼合整體基調的標題，並於故事最開頭呈現（不論採用何種敘事結構，皆需要標題）。
+
+寫作規範（全程遵守）：
+${writingRulesText}
+${custom ? '\n補充規則／隱藏支線：\n'+custom+'\n' : ''}
+━━━━━━━━━━━━━━━━━━━━━
+【開局指示】
+━━━━━━━━━━━━━━━━━━━━━
+
+${openingInstruction}`;
+
+    const output = document.getElementById('output');
+    output.textContent = prompt;
+    document.getElementById('char-count').textContent = prompt.length + ' 字';
+  });
+
+  document.getElementById('copy-btn').addEventListener('click', async ()=>{
+    const text = document.getElementById('output').textContent;
+    if(!text) return;
+    try{
+      await navigator.clipboard.writeText(text);
+    }catch(e){
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    const fb = document.getElementById('copy-feedback');
+    fb.classList.add('show');
+    setTimeout(()=>fb.classList.remove('show'), 1500);
+  });
+
+})();
 </script>
 </body>
 </html>
