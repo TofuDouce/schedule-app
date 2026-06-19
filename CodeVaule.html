@@ -14,6 +14,7 @@
   --gold:#C09A5A; --gold-pale:#F5EDD8; --border:#DDD5C5;
   --shadow:rgba(42,31,20,0.08); --shadow-md:rgba(42,31,20,0.16);
   --code-bg:#FBF7EE; --code-ink:#3A2C1A;
+  --t-tag:#9C6B2E; --t-attr:#B07D3A; --t-str:#5E7A3E; --t-com:#B0A488; --t-kw:#A65A7E; --t-num:#B07A2E; --t-punc:#8A7A60; --t-prop:#A65A7E;
   --title-size:15px; --font-read:'Noto Serif TC', serif; --code-size:13px;
 }
 [data-theme="night"] {
@@ -23,6 +24,7 @@
   --gold:#C09A5A; --gold-pale:#241E14; --border:#362E24;
   --shadow:rgba(0,0,0,0.3); --shadow-md:rgba(0,0,0,0.5);
   --code-bg:#15110C; --code-ink:#D6C8A8;
+  --t-tag:#D4A85A; --t-attr:#CDA46E; --t-str:#9FB36A; --t-com:#6E6048; --t-kw:#D58AB2; --t-num:#E0B070; --t-punc:#9A8A70; --t-prop:#D58AB2;
 }
 [data-theme="antique"] {
   --bg:#F0E6C8; --bg2:#E8D9B2; --bg3:#DDD0A0; --surface:#F5EDD5;
@@ -31,6 +33,7 @@
   --gold:#A07030; --gold-pale:#F0E0A8; --border:#C8B888;
   --shadow:rgba(44,31,10,0.12); --shadow-md:rgba(44,31,10,0.22);
   --code-bg:#F5ECCE; --code-ink:#3A2A0C;
+  --t-tag:#8B5E2A; --t-attr:#A0702E; --t-str:#5E6E2A; --t-com:#A8945A; --t-kw:#9C4A6A; --t-num:#A0702E; --t-punc:#7A5E2A; --t-prop:#9C4A6A;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body {
@@ -114,15 +117,16 @@ header {
 .footer b { color: var(--gold); }
 
 /* ── Detail (preview + source) ── */
-.detail-overlay { position: fixed; inset: 0; background: rgba(42,31,20,0.5); z-index: 220; opacity: 0; pointer-events: none; transition: opacity 0.22s; padding: 16px; display: flex; align-items: center; justify-content: center; }
+.detail-overlay { position: fixed; left: 0; right: 0; top: 0; height: 100vh; height: 100svh; background: rgba(42,31,20,0.5); z-index: 220; opacity: 0; pointer-events: none; transition: opacity 0.22s; display: flex; align-items: center; justify-content: center; padding: 14px; padding-top: max(14px, env(safe-area-inset-top)); padding-bottom: max(14px, env(safe-area-inset-bottom)); }
 .detail-overlay.show { opacity: 1; pointer-events: all; }
-.detail-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; width: min(96vw, 920px); height: min(92vh, 760px); display: flex; flex-direction: column; box-shadow: 0 12px 48px var(--shadow-md); overflow: hidden; transform: translateY(10px); transition: transform 0.22s; }
+.detail-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; width: min(96vw, 920px); height: 760px; max-height: 100%; display: flex; flex-direction: column; box-shadow: 0 12px 48px var(--shadow-md); overflow: hidden; transform: translateY(10px); transition: transform 0.22s; }
 .detail-overlay.show .detail-panel { transform: translateY(0); }
 .detail-hdr { display: flex; align-items: center; gap: 10px; padding: 13px 16px; border-bottom: 1px solid var(--border); background: var(--bg2); flex-shrink: 0; }
 .detail-hdr .d-ico { font-size: 1.1rem; }
 .detail-hdr .d-title { flex: 1; min-width: 0; font-family: var(--font-read); font-size: 1rem; font-weight: 600; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.detail-close { width: 28px; height: 28px; border: none; background: transparent; color: var(--ink-muted); cursor: pointer; font-size: 1.05rem; border-radius: 6px; flex-shrink: 0; }
+.detail-close { width: 36px; height: 36px; border: 1px solid var(--border); background: var(--surface); color: var(--ink-soft); cursor: pointer; font-size: 1.1rem; border-radius: 9px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.12s; }
 .detail-close:hover { background: var(--bg3); color: var(--ink); }
+.detail-close:active { transform: scale(0.92); }
 .tabs { display: flex; gap: 4px; padding: 8px 16px 0; background: var(--bg2); flex-shrink: 0; }
 .tab { font-family: 'Noto Sans TC', sans-serif; font-size: 0.78rem; padding: 7px 16px; border: 1px solid var(--border); border-bottom: none; border-radius: 8px 8px 0 0; background: transparent; color: var(--ink-muted); cursor: pointer; transition: all 0.12s; }
 .tab.active { background: var(--surface); color: var(--gold); font-weight: 600; }
@@ -131,7 +135,15 @@ header {
 .pane.active { display: block; }
 #previewFrame { width: 100%; height: 100%; border: none; background: #fff; }
 #sourceView { width: 100%; height: 100%; overflow: auto; padding: 16px; margin: 0; background: var(--code-bg); color: var(--code-ink); font-family: 'JetBrains Mono', monospace; font-size: var(--code-size); line-height: 1.6; white-space: pre; tab-size: 2; }
-.detail-foot { display: flex; gap: 8px; padding: 11px 16px; border-top: 1px solid var(--border); background: var(--bg2); flex-shrink: 0; flex-wrap: wrap; }
+#sourceView .t-tag { color: var(--t-tag); }
+#sourceView .t-attr { color: var(--t-attr); }
+#sourceView .t-str { color: var(--t-str); }
+#sourceView .t-com { color: var(--t-com); font-style: italic; }
+#sourceView .t-kw { color: var(--t-kw); font-weight: 500; }
+#sourceView .t-num { color: var(--t-num); }
+#sourceView .t-prop { color: var(--t-prop); }
+#sourceView .t-punc { color: var(--t-punc); }
+.detail-foot { display: flex; gap: 8px; padding: 11px 16px; padding-bottom: max(11px, env(safe-area-inset-bottom)); border-top: 1px solid var(--border); background: var(--bg2); flex-shrink: 0; flex-wrap: wrap; }
 .detail-foot .spacer { flex: 1; }
 .btn-foot { font-family: 'Noto Sans TC', sans-serif; font-size: 0.78rem; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--ink-soft); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
 .btn-foot:hover { background: var(--bg3); color: var(--ink); }
@@ -175,9 +187,9 @@ header {
 .s-reset:hover { background: var(--bg3); color: var(--ink); }
 
 /* ── Modals ── */
-.modal-overlay { position: fixed; inset: 0; background: rgba(42,31,20,0.45); display: flex; align-items: center; justify-content: center; z-index: 250; opacity: 0; pointer-events: none; transition: opacity 0.2s; padding: 16px; }
+.modal-overlay { position: fixed; left: 0; right: 0; top: 0; height: 100vh; height: 100svh; background: rgba(42,31,20,0.45); display: flex; align-items: center; justify-content: center; z-index: 250; opacity: 0; pointer-events: none; transition: opacity 0.2s; padding: 16px; padding-top: max(16px, env(safe-area-inset-top)); padding-bottom: max(16px, env(safe-area-inset-bottom)); }
 .modal-overlay.show { opacity: 1; pointer-events: all; }
-.modal { background: var(--surface); border-radius: 14px; padding: 22px 24px; width: min(94vw, 560px); max-height: 92vh; overflow-y: auto; box-shadow: 0 8px 40px var(--shadow-md); transform: translateY(8px); transition: transform 0.2s; border: 1px solid var(--border); }
+.modal { background: var(--surface); border-radius: 14px; padding: 22px 24px; width: min(94vw, 560px); max-height: 100%; overflow-y: auto; box-shadow: 0 8px 40px var(--shadow-md); transform: translateY(8px); transition: transform 0.2s; border: 1px solid var(--border); }
 .modal-overlay.show .modal { transform: translateY(0); }
 .modal h3 { font-family: 'Noto Serif TC', serif; font-size: 1rem; margin-bottom: 6px; color: var(--ink); }
 .m-desc { font-size: 0.78rem; color: var(--ink-muted); line-height: 1.7; }
@@ -201,6 +213,19 @@ header {
 .emoji-btn:hover { border-color: var(--gold); background: var(--gold-pale); }
 .emoji-btn.sel { border-color: var(--gold); background: var(--gold-pale); box-shadow: 0 0 0 2px var(--gold-pale); }
 
+/* ── Category manager ── */
+.cat-row { display: flex; align-items: center; gap: 7px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.cat-ico-btn { width: 36px; height: 36px; flex-shrink: 0; border: 1px solid var(--border); border-radius: 8px; background: var(--bg2); font-size: 1.05rem; cursor: pointer; transition: all 0.12s; }
+.cat-ico-btn:hover { border-color: var(--gold); background: var(--gold-pale); }
+.cat-name-input { flex: 1; min-width: 0; font-family: 'Noto Sans TC', sans-serif; font-size: 0.85rem; padding: 7px 10px; border: 1px solid var(--border); border-radius: 7px; background: var(--bg2); color: var(--ink); outline: none; transition: border-color 0.2s; }
+.cat-name-input:focus { border-color: var(--gold); }
+.cat-count { font-size: 0.6rem; color: var(--ink-muted); background: var(--bg3); border-radius: 8px; padding: 2px 6px; flex-shrink: 0; font-family: 'JetBrains Mono', monospace; min-width: 20px; text-align: center; }
+.cat-move-btn { width: 26px; height: 30px; flex-shrink: 0; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--ink-soft); cursor: pointer; font-size: 0.72rem; transition: all 0.12s; }
+.cat-move-btn:hover:not(:disabled) { background: var(--gold); color: #fff; border-color: var(--gold); }
+.cat-move-btn:disabled { opacity: 0.3; cursor: default; }
+.cat-del-btn { width: 30px; height: 30px; flex-shrink: 0; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--ink-muted); cursor: pointer; font-size: 0.72rem; transition: all 0.12s; }
+.cat-del-btn:hover { background: #f3dede; color: #c0605a; border-color: #e0c0c0; }
+
 /* ── Toast ── */
 .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(16px); background: var(--ink); color: var(--gold); font-size: 0.78rem; padding: 8px 18px; border-radius: 18px; z-index: 400; opacity: 0; transition: all 0.28s; pointer-events: none; white-space: nowrap; box-shadow: 0 4px 16px var(--shadow-md); }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -210,7 +235,7 @@ header {
   .logo-sub { display: none; }
   .btn-hdr { font-size: 0.78rem; padding: 5px 10px; }
   .wrap { padding: 14px 12px 50px; }
-  .detail-panel { height: 94vh; width: 100%; border-radius: 12px; }
+  .detail-panel { height: 100%; width: 100%; border-radius: 12px; }
 }
 </style>
 </head>
@@ -228,6 +253,7 @@ header {
   <div class="toolbar">
     <input class="search-box" id="searchBox" placeholder="搜尋程式碼（標題／備註／內容）…" oninput="render()">
     <button class="btn-tool" onclick="openAddModal()">＋ 新增</button>
+    <button class="btn-tool" onclick="openCatManager()">🗂 分類</button>
     <button class="btn-tool" id="editModeBtn" onclick="toggleEditMode()">✎ 編輯</button>
     <button class="btn-tool" id="toggleAllBtn" onclick="toggleAll()">全部收合</button>
   </div>
@@ -346,6 +372,30 @@ header {
   </div>
 </div>
 
+<!-- Category manager -->
+<div class="modal-overlay" id="catModal" onclick="bgClose(event,'catModal')">
+  <div class="modal">
+    <h3>管理分類</h3>
+    <p class="m-desc">新增、改名、換圖示、調整順序或刪除分類。刪除有內容的分類時，裡面的程式碼會自動移到其他分類。</p>
+    <div id="catList" style="margin-top:14px"></div>
+    <button class="btn-act primary wide" style="margin-top:14px" onclick="addCat()">＋ 新增分類</button>
+    <div class="m-actions">
+      <button class="btn-act" onclick="closeModal('catModal')">完成</button>
+    </div>
+  </div>
+</div>
+
+<!-- Category icon picker -->
+<div class="modal-overlay" id="catEmojiModal" onclick="bgClose(event,'catEmojiModal')">
+  <div class="modal" style="width:min(94vw, 360px)">
+    <h3>選擇圖示</h3>
+    <div class="emoji-row" id="catEmojiGrid" style="margin-top:10px"></div>
+    <div class="m-actions">
+      <button class="btn-act" onclick="closeModal('catEmojiModal')">取消</button>
+    </div>
+  </div>
+</div>
+
 <!-- Export source -->
 <div class="modal-overlay" id="exportModal" onclick="bgClose(event,'exportModal')">
   <div class="modal">
@@ -376,12 +426,15 @@ header {
 <script>
 // ════════ 程式碼資料（匯出時會自動更新這一段） ════════
 const SEED = /*<DB>*/[{"title":"範例：漸層歡迎卡片","note":"純 HTML/CSS，可直接預覽","cat":"c1","icon":"🧩","code":"<!DOCTYPE html>\n<html lang=\"zh-Hant\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<style>\n  body{margin:0;height:100vh;display:flex;align-items:center;justify-content:center;\n       background:linear-gradient(135deg,#F9F6F0,#EAD8A8,#C09A5A);font-family:system-ui,sans-serif;}\n  .card{background:rgba(255,255,255,.85);backdrop-filter:blur(6px);padding:40px 48px;\n        border-radius:20px;box-shadow:0 20px 60px rgba(120,90,40,.25);text-align:center;}\n  h1{margin:0 0 8px;color:#5C4A35;font-size:1.6rem;letter-spacing:.05em;}\n  p{margin:0;color:#9A8470;}\n  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#C09A5A;margin:14px 4px 0;\n       animation:b 1.2s infinite ease-in-out;}\n  .dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}\n  @keyframes b{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}\n</style>\n</head>\n<body>\n  <div class=\"card\">\n    <h1>歡迎回來 ✦</h1>\n    <p>這是即時預覽，編輯後立刻看到結果</p>\n    <div><span class=\"dot\"></span><span class=\"dot\"></span><span class=\"dot\"></span></div>\n  </div>\n</body>\n</html>"},{"title":"範例：計數按鈕（含 JS）","note":"測試預覽能不能跑 JavaScript","cat":"c1","icon":"🛠️","code":"<!DOCTYPE html>\n<html lang=\"zh-Hant\">\n<head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<style>\n body{margin:0;height:100vh;display:grid;place-items:center;background:#18140F;font-family:system-ui,sans-serif;color:#E8DCC8;}\n button{font-size:1.1rem;padding:14px 28px;border-radius:14px;border:1px solid #C09A5A;\n        background:#211C16;color:#C09A5A;cursor:pointer;transition:.15s;}\n button:hover{background:#C09A5A;color:#18140F;}\n .n{font-size:3rem;font-weight:700;margin-bottom:18px;color:#C09A5A;}\n</style></head>\n<body>\n <div style=\"text-align:center\">\n  <div class=\"n\" id=\"n\">0</div>\n  <button onclick=\"c()\">點我 +1</button>\n </div>\n <script>let i=0;function c(){i++;document.getElementById('n').textContent=i;}<\/script>\n</body>\n</html>"}]/*</DB>*/;
-const CATS=[{"id":"c1","name":"元件","icon":"🧩"},{"id":"c2","name":"頁面","icon":"📄"},{"id":"c3","name":"工具","icon":"🛠️"},{"id":"c4","name":"草稿","icon":"📝"},{"id":"c5","name":"模板","icon":"🎨"}];
+const SEED_CATS = /*<CATS>*/[{"id":"c1","name":"元件","icon":"🧩"},{"id":"c2","name":"頁面","icon":"📄"},{"id":"c3","name":"工具","icon":"🛠️"},{"id":"c4","name":"草稿","icon":"📝"},{"id":"c5","name":"模板","icon":"🎨"}]/*</CATS>*/;
 const EMOJIS = ['🧩','📄','🛠️','📝','🎨','✨','🔮','☁','🌙','💡','⚗️','🪐','📦','🖋️','🌿','🦋'];
+const CAT_EMOJIS = ['📁','🗂️','🧩','📄','🛠️','📝','🎨','📦','✨','🔮','☁','🌙','💡','⚗️','🪐','🖋️','🌿','🏷️','📚','💰','🎮','🫧'];
 
 // ── State ──
 let DATA = JSON.parse(localStorage.getItem('mycode_db') || 'null');
 if (!DATA || !Array.isArray(DATA)) DATA = JSON.parse(JSON.stringify(SEED));
+let CATS = JSON.parse(localStorage.getItem('mycode_cats') || 'null');
+if (!CATS || !Array.isArray(CATS) || !CATS.length) CATS = JSON.parse(JSON.stringify(SEED_CATS));
 let dirty = localStorage.getItem('mycode_dirty') === '1';
 
 const DEFAULTS = { theme: 'light', density: 'comfort', fontFamily: "'Noto Serif TC', serif", fontSize: 15, codeSize: 13 };
@@ -403,6 +456,7 @@ function saveData() {
   try { localStorage.setItem('mycode_db', JSON.stringify(DATA)); }
   catch (e) { showToast('⚠ 本機儲存空間已滿，請匯出備份'); }
 }
+function saveCats() { localStorage.setItem('mycode_cats', JSON.stringify(CATS)); }
 function saveSettings() { localStorage.setItem('mycode_settings', JSON.stringify(S)); }
 function saveOpen() { localStorage.setItem('mycode_open', JSON.stringify([...openFolders])); }
 function setDirty(v) {
@@ -525,13 +579,101 @@ function toggleEditMode() {
   render();
 }
 
+// ── Syntax highlighter (self-contained, HTML/CSS/JS) ──
+function tEsc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function hlJS(src) {
+  var re = /(\/\*[\s\S]*?\*\/|\/\/[^\n]*)|(`(?:\\[\s\S]|[^`\\])*`|"(?:\\[\s\S]|[^"\\])*"|'(?:\\[\s\S]|[^'\\])*')|(\b\d+(?:\.\d+)?\b)|(\b(?:var|let|const|function|return|if|else|for|while|do|switch|case|default|break|continue|new|this|typeof|instanceof|class|extends|super|try|catch|finally|throw|async|await|yield|delete|void|in|of|null|true|false|undefined)\b)/g;
+  var out = '', last = 0, m;
+  while ((m = re.exec(src))) {
+    out += tEsc(src.slice(last, m.index));
+    if (m[1]) out += '<span class="t-com">' + tEsc(m[1]) + '</span>';
+    else if (m[2]) out += '<span class="t-str">' + tEsc(m[2]) + '</span>';
+    else if (m[3]) out += '<span class="t-num">' + tEsc(m[3]) + '</span>';
+    else if (m[4]) out += '<span class="t-kw">' + tEsc(m[4]) + '</span>';
+    last = re.lastIndex;
+  }
+  return out + tEsc(src.slice(last));
+}
+function hlCSS(src) {
+  var re = /(\/\*[\s\S]*?\*\/)|("[^"]*"|'[^']*')|(#[0-9a-fA-F]{3,8}\b)|(\b\d+(?:\.\d+)?(?:px|em|rem|%|vh|vw|svh|dvh|vmin|vmax|s|ms|deg|fr|pt)?\b)|([a-zA-Z-]+)(\s*:)/g;
+  var out = '', last = 0, m;
+  while ((m = re.exec(src))) {
+    out += tEsc(src.slice(last, m.index));
+    if (m[1]) out += '<span class="t-com">' + tEsc(m[1]) + '</span>';
+    else if (m[2]) out += '<span class="t-str">' + tEsc(m[2]) + '</span>';
+    else if (m[3]) out += '<span class="t-num">' + tEsc(m[3]) + '</span>';
+    else if (m[4]) out += '<span class="t-num">' + tEsc(m[4]) + '</span>';
+    else if (m[5] !== undefined) out += '<span class="t-prop">' + tEsc(m[5]) + '</span><span class="t-punc">' + tEsc(m[6]) + '</span>';
+    last = re.lastIndex;
+  }
+  return out + tEsc(src.slice(last));
+}
+function hlAttrs(s) {
+  var r = /([a-zA-Z_:][\w:.-]*)(\s*=\s*)("[^"]*"|'[^']*'|[^\s"'=<>`]+)/g;
+  var out = '', last = 0, m;
+  while ((m = r.exec(s))) {
+    out += tEsc(s.slice(last, m.index));
+    out += '<span class="t-attr">' + tEsc(m[1]) + '</span><span class="t-punc">' + tEsc(m[2]) + '</span><span class="t-str">' + tEsc(m[3]) + '</span>';
+    last = r.lastIndex;
+  }
+  return out + tEsc(s.slice(last));
+}
+function hlTag(t) {
+  var m = t.match(/^<(\/?)([a-zA-Z][\w:-]*)([\s\S]*?)(\/?)>$/);
+  if (!m) return '<span class="t-punc">' + tEsc(t) + '</span>';
+  return '<span class="t-punc">&lt;' + tEsc(m[1]) + '</span><span class="t-tag">' + tEsc(m[2]) + '</span>'
+    + hlAttrs(m[3]) + '<span class="t-punc">' + tEsc(m[4]) + '&gt;</span>';
+}
+function findTagEnd(code, start) {
+  var i = start + 1, q = null;
+  while (i < code.length) {
+    var ch = code[i];
+    if (q) { if (ch === q) q = null; }
+    else if (ch === '"' || ch === "'") q = ch;
+    else if (ch === '>') return i;
+    i++;
+  }
+  return code.length - 1;
+}
+function startsTag(code, i, name) {
+  if (code.slice(i, i + name.length + 1).toLowerCase() !== '<' + name) return false;
+  var after = code[i + name.length + 1];
+  return after === undefined || after === ' ' || after === '>' || after === '\t' || after === '\n' || after === '\r' || after === '/';
+}
+function hlRaw(code, i, name, hlFn) {
+  var gt = findTagEnd(code, i);
+  var lower = code.toLowerCase();
+  var close = lower.indexOf('</' + name + '>', gt + 1);
+  var bodyEnd = close === -1 ? code.length : close;
+  var out = hlTag(code.slice(i, gt + 1)) + hlFn(code.slice(gt + 1, bodyEnd));
+  var next = code.length;
+  if (close !== -1) { out += hlTag(code.slice(close, close + name.length + 3)); next = close + name.length + 3; }
+  return { html: out, next: next };
+}
+function hl(code) {
+  code = String(code || '');
+  var out = '', i = 0, n = code.length;
+  while (i < n) {
+    if (code.substr(i, 4) === '<!--') {
+      var e = code.indexOf('-->', i + 4); e = e === -1 ? n : e + 3;
+      out += '<span class="t-com">' + tEsc(code.slice(i, e)) + '</span>'; i = e; continue;
+    }
+    if (startsTag(code, i, 'script')) { var rs = hlRaw(code, i, 'script', hlJS); out += rs.html; i = rs.next; continue; }
+    if (startsTag(code, i, 'style')) { var rt = hlRaw(code, i, 'style', hlCSS); out += rt.html; i = rt.next; continue; }
+    if (code[i] === '<') { var gt = findTagEnd(code, i); out += hlTag(code.slice(i, gt + 1)); i = gt + 1; continue; }
+    var lt = code.indexOf('<', i); var te = lt === -1 ? n : lt;
+    out += tEsc(code.slice(i, te)); i = te;
+  }
+  return out;
+}
+
 // ── Detail: preview + source ──
 function openDetail(i) {
   const b = DATA[i]; if (!b) return;
   detailIndex = i;
   document.getElementById('dIco').textContent = b.icon || '✦';
   document.getElementById('dTitle').textContent = b.title || '未命名';
-  document.getElementById('sourceView').textContent = b.code || '';
+  document.getElementById('sourceView').innerHTML = hl(b.code || '');
   document.getElementById('previewFrame').srcdoc = b.code || '<!doctype html><body style="font-family:sans-serif;color:#999;padding:40px">（這筆還沒有程式碼）';
   switchTab('preview');
   document.getElementById('detailOverlay').classList.add('show');
@@ -653,6 +795,68 @@ document.getElementById('bmCode').addEventListener('keydown', function (e) {
   }
 });
 
+// ── Category manager ──
+function genCatId() { return 'c' + Date.now() + Math.floor(Math.random() * 1000); }
+function openCatManager() { renderCatList(); document.getElementById('catModal').classList.add('show'); }
+function renderCatList() {
+  document.getElementById('catList').innerHTML = CATS.map((c, idx) => {
+    const count = DATA.filter(b => b.cat === c.id).length;
+    return `<div class="cat-row">
+      <button class="cat-ico-btn" onclick="openCatEmoji('${c.id}')">${c.icon || '📁'}</button>
+      <input class="cat-name-input" value="${escHtml(c.name)}" maxlength="20" oninput="renameCat('${c.id}', this.value)">
+      <span class="cat-count">${count}</span>
+      <button class="cat-move-btn" ${idx === 0 ? 'disabled' : ''} onclick="moveCat('${c.id}',-1)">↑</button>
+      <button class="cat-move-btn" ${idx === CATS.length - 1 ? 'disabled' : ''} onclick="moveCat('${c.id}',1)">↓</button>
+      <button class="cat-del-btn" onclick="deleteCat('${c.id}')">✕</button>
+    </div>`;
+  }).join('');
+}
+function renameCat(id, val) {
+  const c = catById(id); if (!c) return;
+  c.name = val; saveCats(); setDirty(true); render();
+}
+function moveCat(id, dir) {
+  const i = CATS.findIndex(c => c.id === id); if (i < 0) return;
+  const j = i + dir; if (j < 0 || j >= CATS.length) return;
+  const tmp = CATS[i]; CATS[i] = CATS[j]; CATS[j] = tmp;
+  saveCats(); setDirty(true); renderCatList(); render();
+}
+function addCat() {
+  const c = { id: genCatId(), name: '新分類', icon: '📁' };
+  CATS.push(c); openFolders.add(c.id);
+  saveCats(); saveOpen(); setDirty(true); renderCatList(); render();
+  setTimeout(() => {
+    const inputs = document.querySelectorAll('#catList .cat-name-input');
+    const last = inputs[inputs.length - 1];
+    if (last) { last.focus(); last.select(); }
+  }, 60);
+}
+function deleteCat(id) {
+  if (CATS.length <= 1) { showToast('至少要保留一個分類'); return; }
+  const c = catById(id); if (!c) return;
+  const items = DATA.filter(b => b.cat === id);
+  const target = CATS.find(x => x.id !== id);
+  let msg = `確定刪除分類「${c.name}」？`;
+  if (items.length) msg += `\n其中 ${items.length} 筆程式碼會移到「${target.name}」。`;
+  if (!confirm(msg)) return;
+  items.forEach(b => b.cat = target.id);
+  CATS.splice(CATS.findIndex(x => x.id === id), 1);
+  openFolders.delete(id);
+  saveCats(); saveData(); saveOpen(); setDirty(true);
+  renderCatList(); render(); showToast('已刪除分類');
+}
+let catEmojiId = null;
+function openCatEmoji(id) {
+  catEmojiId = id;
+  document.getElementById('catEmojiGrid').innerHTML = CAT_EMOJIS.map(em =>
+    `<button class="emoji-btn" onclick="setCatIcon('${em}')">${em}</button>`).join('');
+  document.getElementById('catEmojiModal').classList.add('show');
+}
+function setCatIcon(em) {
+  const c = catById(catEmojiId); if (c) c.icon = em;
+  saveCats(); setDirty(true); closeModal('catEmojiModal'); renderCatList(); render();
+}
+
 // ── Settings ──
 function applyTheme(t) { document.documentElement.setAttribute('data-theme', t === 'light' ? '' : t); }
 function setTheme(t) { S.theme = t; applyTheme(t); saveSettings(); document.querySelectorAll('.theme-dot').forEach(d => d.classList.toggle('active', d.dataset.t === t)); }
@@ -701,24 +905,26 @@ function buildSource() {
   const root = document.documentElement;
   const list = document.getElementById('list'); const listHtml = list.innerHTML; list.innerHTML = '';
   const sb = document.getElementById('searchBox'); const sv = sb.value; sb.value = '';
-  const src_view = document.getElementById('sourceView'); const svh = src_view.textContent; src_view.textContent = '';
+  const src_view = document.getElementById('sourceView'); const svh = src_view.innerHTML; src_view.innerHTML = '';
   const pf = document.getElementById('previewFrame'); pf.removeAttribute('srcdoc');
   const code_ta = document.getElementById('bmCode'); const cta = code_ta.value; code_ta.value = '';
+  const catList = document.getElementById('catList'); const clh = catList.innerHTML; catList.innerHTML = '';
   const prevTheme = root.getAttribute('data-theme'); root.setAttribute('data-theme', '');
   const prevDens = root.getAttribute('data-density'); root.setAttribute('data-density', 'comfort');
   const shown = document.querySelectorAll('.settings-overlay.show, .modal-overlay.show, .detail-overlay.show');
   shown.forEach(o => o.classList.remove('show'));
 
   const dataStr = JSON.stringify(DATA).replace(/<\//g, '<\\/');
-  const M1 = '/*' + '<DB>' + '*/';
-  const M2 = '/*' + '</DB>' + '*/';
-  const re = new RegExp('/\\*<DB>\\*/[\\s\\S]*?/\\*<\\/DB>\\*/');
+  const catStr = JSON.stringify(CATS).replace(/<\//g, '<\\/');
+  const reD = new RegExp('/\\*<DB>\\*/[\\s\\S]*?/\\*<\\/DB>\\*/');
+  const reC = new RegExp('/\\*<CATS>\\*/[\\s\\S]*?/\\*<\\/CATS>\\*/');
   let src = '<!DOCTYPE html>\n' + root.outerHTML;
-  src = src.replace(re, M1 + dataStr + M2);
+  src = src.replace(reD, ('/*' + '<DB>' + '*/') + dataStr + ('/*' + '</DB>' + '*/'));
+  src = src.replace(reC, ('/*' + '<CATS>' + '*/') + catStr + ('/*' + '</CATS>' + '*/'));
 
   // restore live DOM
   list.innerHTML = listHtml; sb.value = sv;
-  src_view.textContent = svh; code_ta.value = cta;
+  src_view.innerHTML = svh; code_ta.value = cta; catList.innerHTML = clh;
   if (prevTheme !== null) root.setAttribute('data-theme', prevTheme);
   if (prevDens !== null) root.setAttribute('data-density', prevDens);
   shown.forEach(o => o.classList.add('show'));
@@ -743,9 +949,12 @@ function copySource() {
   }).catch(() => showToast('複製失敗，請改用下載'));
 }
 function resetToBaked() {
-  if (!confirm('清除本機所有新增與修改，恢復成網頁內建的範例？')) return;
+  if (!confirm('清除本機所有新增與修改（含分類），恢復成網頁內建的範例？')) return;
   localStorage.removeItem('mycode_db');
+  localStorage.removeItem('mycode_cats');
   DATA = JSON.parse(JSON.stringify(SEED));
+  CATS = JSON.parse(JSON.stringify(SEED_CATS));
+  openFolders = new Set(CATS.map(c => c.id)); saveOpen();
   setDirty(false); render();
   closeModal('exportModal');
   showToast('已重設為網頁內建範例');
@@ -754,7 +963,7 @@ function openExport() { document.getElementById('exportModal').classList.add('sh
 
 // ── JSON backup / restore ──
 function exportJSON() {
-  const payload = { type: 'mycode-backup', version: 1, exportedAt: new Date().toISOString(), snippets: DATA };
+  const payload = { type: 'mycode-backup', version: 2, exportedAt: new Date().toISOString(), cats: CATS, snippets: DATA };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json;charset=utf-8' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -777,6 +986,11 @@ function importJSON(event) {
       const existKeys = new Set(DATA.map(b => (b.title || '') + '\u0000' + (b.code || '')));
       const fresh = incoming.filter(b => !existKeys.has((b.title || '') + '\u0000' + (b.code || '')));
       if (!confirm(`檔案內共 ${incoming.length} 筆，其中 ${fresh.length} 筆是新的。\n確定合併匯入？（標題＋內容重複者會自動略過）`)) { event.target.value = ''; return; }
+      if (Array.isArray(parsed.cats)) {
+        const have = new Set(CATS.map(c => c.id));
+        parsed.cats.forEach(c => { if (c && c.id && c.name && !have.has(c.id)) { CATS.push({ id: c.id, name: c.name, icon: c.icon || '📁' }); openFolders.add(c.id); } });
+        saveCats(); saveOpen();
+      }
       fresh.forEach(b => DATA.push({ title: b.title, note: b.note || '', cat: b.cat || CATS[0].id, icon: b.icon || '🧩', code: b.code || '' }));
       saveData(); setDirty(true); render();
       showToast(`已匯入 ${fresh.length} 筆新程式碼 ✓`);
@@ -795,6 +1009,8 @@ function showToast(msg) {
 // ── Esc closes top-most overlay ──
 document.addEventListener('keydown', e => {
   if (e.key !== 'Escape') return;
+  if (document.getElementById('catEmojiModal').classList.contains('show')) return closeModal('catEmojiModal');
+  if (document.getElementById('catModal').classList.contains('show')) return closeModal('catModal');
   if (document.getElementById('bmModal').classList.contains('show')) return closeModal('bmModal');
   if (document.getElementById('exportModal').classList.contains('show')) return closeModal('exportModal');
   if (document.getElementById('detailOverlay').classList.contains('show')) return closeDetail();
