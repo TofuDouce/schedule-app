@@ -86,11 +86,27 @@ header {
 .folder-body.open { max-height: 99000px; }
 .bm-grid { display: grid; grid-template-columns: 1fr; gap: 6px; padding: 4px 10px 12px; }
 
+/* ── Sub-folder (nested) ── */
+.subfolder { margin: 4px 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg2); overflow: hidden; }
+.subfolder-row { display: flex; align-items: center; gap: 8px; padding: 9px 12px; cursor: pointer; user-select: none; transition: background 0.15s; }
+.subfolder-row:hover { background: var(--bg3); }
+.subfolder-icon { font-size: 0.92rem; flex-shrink: 0; }
+.subfolder-name { flex: 1; font-family: var(--font-read); font-size: 0.86rem; font-weight: 600; color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.subfolder .folder-body.open { max-height: 99000px; }
+.subfolder .bm-grid { padding: 4px 8px 10px; }
+.sub-act { flex-shrink: 0; width: 26px; height: 26px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--ink-muted); cursor: pointer; font-size: 0.72rem; transition: all 0.12s; }
+.sub-act:hover { background: var(--gold); color: #fff; border-color: var(--gold); }
+
 /* ── Snippet row ── */
 .bm-row { display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 9px; border: 1px solid transparent; background: var(--bg2); cursor: pointer; color: inherit; transition: all 0.15s; position: relative; }
+.subfolder .bm-row { background: var(--surface); }
 .bm-row:hover { background: var(--surface); border-color: var(--gold-pale); box-shadow: 0 2px 8px var(--shadow); transform: translateX(2px); }
 .bm-row.em { border-style: dashed; border-color: var(--border); }
 .bm-row.em:hover { border-color: var(--gold); transform: none; }
+.bm-row.sel { border-color: var(--gold); background: var(--gold-pale); }
+.bm-row.sel:hover { transform: none; }
+.bm-check { width: 22px; height: 22px; flex-shrink: 0; border: 2px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: #fff; background: var(--surface); transition: all 0.12s; }
+.bm-check.on { background: var(--gold); border-color: var(--gold); }
 .bm-ico { width: 22px; height: 22px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; }
 .bm-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
 .bm-title { font-family: var(--font-read); font-size: var(--title-size); font-weight: 600; color: var(--ink); line-height: 1.4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -230,6 +246,16 @@ header {
 .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(16px); background: var(--ink); color: var(--gold); font-size: 0.78rem; padding: 8px 18px; border-radius: 18px; z-index: 400; opacity: 0; transition: all 0.28s; pointer-events: none; white-space: nowrap; box-shadow: 0 4px 16px var(--shadow-md); }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+/* ── Select bar ── */
+.selbar { position: fixed; left: 50%; bottom: 18px; bottom: max(18px, env(safe-area-inset-bottom)); transform: translateX(-50%) translateY(24px); background: var(--ink); border: 1px solid var(--border); border-radius: 16px; padding: 9px 12px; display: flex; align-items: center; gap: 7px; z-index: 150; opacity: 0; pointer-events: none; transition: all 0.24s; box-shadow: 0 8px 28px var(--shadow-md); max-width: calc(100vw - 24px); flex-wrap: wrap; justify-content: center; }
+.selbar.show { opacity: 1; pointer-events: all; transform: translateX(-50%) translateY(0); }
+.sel-count-wrap { font-size: 0.78rem; color: rgba(240,228,200,0.78); padding: 0 6px; white-space: nowrap; }
+.sel-count-wrap b { color: var(--gold); font-size: 0.92rem; }
+.selbar-btn { font-family: 'Noto Sans TC', sans-serif; font-size: 0.78rem; padding: 7px 13px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); background: transparent; color: rgba(240,228,200,0.82); cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+.selbar-btn.ghost:hover { background: rgba(255,255,255,0.1); color: var(--gold); border-color: var(--gold); }
+.selbar-btn.primary { background: var(--gold); border-color: var(--gold); color: #fff; font-weight: 500; }
+.selbar-btn.primary:hover { background: var(--accent-soft); border-color: var(--accent-soft); }
+
 @media (max-width: 600px) {
   header { padding: 0 12px; }
   .logo-sub { display: none; }
@@ -255,6 +281,7 @@ header {
     <button class="btn-tool" onclick="openAddModal()">＋ 新增</button>
     <button class="btn-tool" onclick="openCatManager()">🗂 分類</button>
     <button class="btn-tool" id="editModeBtn" onclick="toggleEditMode()">✎ 編輯</button>
+    <button class="btn-tool" id="selectModeBtn" onclick="toggleSelectMode()">☑ 多選</button>
     <button class="btn-tool" id="toggleAllBtn" onclick="toggleAll()">全部收合</button>
   </div>
 
@@ -360,7 +387,10 @@ header {
     <div class="m-label">備註（可留空）</div>
     <input class="m-input" id="bmNote" placeholder="一句話說明…" maxlength="60">
     <div class="m-label">分類</div>
-    <select class="m-select" id="bmCat"></select>
+    <select class="m-select" id="bmCat" onchange="refreshSubDatalist()"></select>
+    <div class="m-label">子資料夾（可留空）</div>
+    <input class="m-input" id="bmSub" list="subDatalist" placeholder="例如：哈比人模擬器（同名會收進同一層）" maxlength="40">
+    <datalist id="subDatalist"></datalist>
     <div class="m-label">圖示</div>
     <div class="emoji-row" id="bmEmoji"></div>
     <div class="m-label">程式碼 <span class="hint" id="codeCount">0 字</span></div>
@@ -416,9 +446,23 @@ header {
       <input type="file" id="jsonFile" accept=".json,application/json" style="display:none" onchange="importJSON(event)">
     </div>
 
+    <div class="s-section-title" style="margin-top:22px">打包下載（ZIP）</div>
+    <p class="m-desc">把每筆程式碼各自存成 .html，依「分類／子資料夾」整理後打包成一個 ZIP。也可在「☑ 多選」模式只打包勾選的幾筆。</p>
+    <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px">
+      <button class="btn-act wide" onclick="downloadAllZip()">🗜 下載全部為 ZIP</button>
+    </div>
+
     <div class="m-divider"></div>
     <button class="btn-reset-line" onclick="resetToBaked()">↺ 重設為網頁內建範例（清除本機新增與修改）</button>
   </div>
+</div>
+
+<div class="selbar" id="selbar">
+  <span class="sel-count-wrap">已選 <b id="selCount">0</b> 筆</span>
+  <button class="selbar-btn ghost" onclick="selectAllVisible()">全選</button>
+  <button class="selbar-btn ghost" onclick="clearSelect()">清除</button>
+  <button class="selbar-btn primary" onclick="downloadSelectedZip()">↧ 下載 ZIP</button>
+  <button class="selbar-btn ghost" onclick="toggleSelectMode()">完成</button>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -446,6 +490,8 @@ const savedOpen = JSON.parse(localStorage.getItem('mycode_open') || 'null');
 openFolders = savedOpen ? new Set(savedOpen) : new Set(CATS.map(c => c.id));
 
 let editMode = false;
+let selectMode = false;
+let selected = new Set();
 let modalMode = 'add';
 let editIndex = -1;
 let selectedIcon = '🧩';
@@ -466,6 +512,10 @@ function setDirty(v) {
 }
 
 function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+// safe for embedding inside a single-quoted JS string within a double-quoted HTML attribute
+function escAttr(s) { return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function subFolderKey(catId, sub) { return 's\u0000' + catId + '\u0000' + sub; }
+function sanitizeFolder(s) { return (String(s || '').trim().replace(/[\\/:*?"<>|]/g, '_').slice(0, 80)) || '未命名'; }
 function catById(id) { return CATS.find(c => c.id === id); }
 function fmtSize(str) {
   const n = new Blob([str || '']).size;
@@ -486,11 +536,12 @@ function render() {
   if (q) {
     const results = [];
     DATA.forEach((b, i) => {
-      if ((b.title||'').toLowerCase().includes(q) || (b.note||'').toLowerCase().includes(q) || (b.code||'').toLowerCase().includes(q))
+      if ((b.title||'').toLowerCase().includes(q) || (b.note||'').toLowerCase().includes(q) || (b.sub||'').toLowerCase().includes(q) || (b.code||'').toLowerCase().includes(q))
         results.push({ b, i });
     });
     if (!results.length) { el.innerHTML = `<div class="empty"><span class="ico">🔍</span>沒有找到符合的程式碼 (˘ω˘)</div>`; return; }
     el.innerHTML = `<div class="folder"><div class="folder-body open"><div class="bm-grid">${results.map(r => renderRow(r.b, r.i)).join('')}</div></div></div>`;
+    updateSelbar();
     return;
   }
 
@@ -500,44 +551,71 @@ function render() {
   let html = '';
   CATS.forEach(cat => {
     const items = groups[cat.id] || [];
-    const isOpen = openFolders.has(cat.id);
-    html += `
-      <div class="folder">
-        <div class="folder-row" onclick="toggleFolder('${cat.id}')">
-          <span class="folder-arrow ${isOpen ? 'open' : ''}">▶</span>
-          <span class="folder-icon">${cat.icon}</span>
-          <span class="folder-name">${escHtml(cat.name)}</span>
-          <span class="folder-count">${items.length}</span>
-        </div>
-        <div class="folder-body ${isOpen ? 'open' : ''}">
-          <div class="bm-grid">
-            ${items.length ? items.map(r => renderRow(r.b, r.i)).join('') : '<div class="empty" style="padding:16px;font-size:0.76rem">這個資料夾還沒有程式碼</div>'}
-          </div>
-        </div>
-      </div>`;
+    html += renderCategory(cat.id, cat.icon, cat.name, items);
   });
 
   const known = new Set(CATS.map(c => c.id));
   const leftover = [];
   DATA.forEach((b, i) => { if (!known.has(b.cat)) leftover.push({ b, i }); });
-  if (leftover.length) {
-    const isOpen = openFolders.has('__uncat__');
-    html += `
-      <div class="folder">
-        <div class="folder-row" onclick="toggleFolder('__uncat__')">
-          <span class="folder-arrow ${isOpen ? 'open' : ''}">▶</span>
-          <span class="folder-icon">🗂️</span>
-          <span class="folder-name">未分類</span>
-          <span class="folder-count">${leftover.length}</span>
-        </div>
-        <div class="folder-body ${isOpen ? 'open' : ''}">
-          <div class="bm-grid">${leftover.map(r => renderRow(r.b, r.i)).join('')}</div>
-        </div>
-      </div>`;
-  }
+  if (leftover.length) html += renderCategory('__uncat__', '🗂️', '未分類', leftover);
 
   el.innerHTML = html;
   updateToggleAllBtn();
+  updateSelbar();
+}
+
+// Render one category: subfolders first, then loose items
+function renderCategory(catId, icon, name, items) {
+  const isOpen = openFolders.has(catId);
+  // split into subfolders (preserve first-appearance order) + loose
+  const subOrder = [];
+  const subMap = {};
+  const loose = [];
+  items.forEach(r => {
+    const s = (r.b.sub || '').trim();
+    if (s) {
+      if (!subMap[s]) { subMap[s] = []; subOrder.push(s); }
+      subMap[s].push(r);
+    } else loose.push(r);
+  });
+
+  let body = '';
+  subOrder.forEach(s => {
+    const subOpen = openFolders.has(subFolderKey(catId, s));
+    const subItems = subMap[s];
+    const sEsc = escAttr(s);
+    let edit = '';
+    if (editMode) {
+      edit = `<button class="sub-act" title="重新命名" onclick="event.stopPropagation();renameSub('${catId}', '${sEsc}')">✎</button>
+        <button class="sub-act" title="解散子資料夾" onclick="event.stopPropagation();dissolveSub('${catId}', '${sEsc}')">⊘</button>`;
+    }
+    body += `
+      <div class="subfolder">
+        <div class="subfolder-row" onclick="toggleSub('${catId}', '${sEsc}')">
+          <span class="folder-arrow ${subOpen ? 'open' : ''}">▶</span>
+          <span class="subfolder-icon">📁</span>
+          <span class="subfolder-name">${escHtml(s)}</span>
+          <span class="folder-count">${subItems.length}</span>
+          ${edit}
+        </div>
+        <div class="folder-body ${subOpen ? 'open' : ''}">
+          <div class="bm-grid">${subItems.map(r => renderRow(r.b, r.i)).join('')}</div>
+        </div>
+      </div>`;
+  });
+  if (loose.length) body += `<div class="bm-grid">${loose.map(r => renderRow(r.b, r.i)).join('')}</div>`;
+  if (!items.length) body = '<div class="empty" style="padding:16px;font-size:0.76rem">這個資料夾還沒有程式碼</div>';
+
+  return `
+    <div class="folder">
+      <div class="folder-row" onclick="toggleFolder('${catId}')">
+        <span class="folder-arrow ${isOpen ? 'open' : ''}">▶</span>
+        <span class="folder-icon">${icon}</span>
+        <span class="folder-name">${escHtml(name)}</span>
+        <span class="folder-count">${items.length}</span>
+      </div>
+      <div class="folder-body ${isOpen ? 'open' : ''}">${body}</div>
+    </div>`;
 }
 
 function renderRow(b, i) {
@@ -547,6 +625,13 @@ function renderRow(b, i) {
       <span class="bm-title">${escHtml(b.title || '未命名')}</span>
       <span class="bm-note">${b.note ? escHtml(b.note) : '<span style="opacity:.5">無備註</span>'}<span class="bm-size">${fmtSize(b.code)}</span></span>
     </span>`;
+  if (selectMode) {
+    const on = selected.has(i);
+    return `<div class="bm-row${on ? ' sel' : ''}" onclick="toggleSelect(${i})">
+      <span class="bm-check${on ? ' on' : ''}">${on ? '✓' : ''}</span>
+      ${ico}${main}
+    </div>`;
+  }
   if (editMode) {
     return `<div class="bm-row em" onclick="openEditModal(${i})">
       ${ico}${main}
@@ -559,6 +644,11 @@ function renderRow(b, i) {
 
 function toggleFolder(id) {
   if (openFolders.has(id)) openFolders.delete(id); else openFolders.add(id);
+  saveOpen(); render();
+}
+function toggleSub(catId, sub) {
+  const k = subFolderKey(catId, sub);
+  if (openFolders.has(k)) openFolders.delete(k); else openFolders.add(k);
   saveOpen(); render();
 }
 function toggleAll() {
@@ -574,9 +664,110 @@ function updateToggleAllBtn() {
 // ── Edit mode ──
 function toggleEditMode() {
   editMode = !editMode;
+  if (editMode && selectMode) exitSelectMode();
   document.getElementById('editModeBtn').classList.toggle('active', editMode);
   document.getElementById('editBanner').style.display = editMode ? 'flex' : 'none';
   render();
+}
+
+// ── Sub-folder management (edit mode) ──
+function renameSub(catId, oldSub) {
+  const nv = prompt('子資料夾改名為：', oldSub);
+  if (nv === null) return;
+  const name = nv.trim();
+  if (!name) { showToast('名稱不能空白'); return; }
+  if (name === oldSub) return;
+  DATA.forEach(b => { if (b.cat === catId && (b.sub || '') === oldSub) b.sub = name; });
+  // carry open state over
+  if (openFolders.has(subFolderKey(catId, oldSub))) { openFolders.delete(subFolderKey(catId, oldSub)); openFolders.add(subFolderKey(catId, name)); }
+  saveData(); saveOpen(); setDirty(true); render(); showToast('已改名');
+}
+function dissolveSub(catId, sub) {
+  const items = DATA.filter(b => b.cat === catId && (b.sub || '') === sub);
+  if (!confirm(`解散子資料夾「${sub}」？\n裡面 ${items.length} 筆會移到分類底下（不會刪除）。`)) return;
+  items.forEach(b => b.sub = '');
+  openFolders.delete(subFolderKey(catId, sub));
+  saveData(); saveOpen(); setDirty(true); render(); showToast('已解散子資料夾');
+}
+
+// ── Select mode (multi-select → ZIP) ──
+function toggleSelectMode() {
+  selectMode = !selectMode;
+  if (selectMode && editMode) toggleEditMode();
+  if (!selectMode) selected.clear();
+  document.getElementById('selectModeBtn').classList.toggle('active', selectMode);
+  render();
+}
+function exitSelectMode() {
+  selectMode = false; selected.clear();
+  document.getElementById('selectModeBtn').classList.remove('active');
+}
+function toggleSelect(i) {
+  if (selected.has(i)) selected.delete(i); else selected.add(i);
+  render();
+}
+function selectAllVisible() {
+  // select everything currently in DATA matching the active search filter
+  const q = document.getElementById('searchBox').value.trim().toLowerCase();
+  let any = false;
+  DATA.forEach((b, i) => {
+    const match = !q || (b.title||'').toLowerCase().includes(q) || (b.note||'').toLowerCase().includes(q) || (b.sub||'').toLowerCase().includes(q) || (b.code||'').toLowerCase().includes(q);
+    if (match) { selected.add(i); any = true; }
+  });
+  if (!any) showToast('沒有可選的項目');
+  render();
+}
+function clearSelect() { selected.clear(); render(); }
+function updateSelbar() {
+  const bar = document.getElementById('selbar');
+  if (!bar) return;
+  if (!selectMode) { bar.classList.remove('show'); return; }
+  bar.classList.add('show');
+  document.getElementById('selCount').textContent = selected.size;
+}
+
+// ── ZIP download (JSZip, lazy-loaded) ──
+function ensureJSZip(cb) {
+  if (window.JSZip) return cb();
+  showToast('載入打包元件…');
+  const s = document.createElement('script');
+  s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+  s.onload = () => cb();
+  s.onerror = () => showToast('打包元件載入失敗（需要連線）');
+  document.head.appendChild(s);
+}
+function buildZip(indices) {
+  ensureJSZip(() => {
+    const zip = new JSZip();
+    indices.forEach(i => {
+      const b = DATA[i]; if (!b) return;
+      const cat = catById(b.cat);
+      let path = '';
+      if (cat) path += sanitizeFolder(cat.name) + '/';
+      if (b.sub) path += sanitizeFolder(b.sub) + '/';
+      let name = safeName(b.title);
+      let full = path + name, k = 1;
+      while (zip.file(full)) { k++; full = path + name.replace(/\.html$/i, '') + '(' + k + ').html'; }
+      zip.file(full, b.code || '');
+    });
+    zip.generateAsync({ type: 'blob' }).then(blob => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = '程式碼打包_' + new Date().toISOString().slice(0, 10) + '.zip';
+      a.click();
+      URL.revokeObjectURL(a.href);
+      showToast('已打包 ' + indices.length + ' 個檔案 ✓');
+    }).catch(() => showToast('打包失敗'));
+  });
+}
+function downloadSelectedZip() {
+  if (!selected.size) { showToast('還沒勾選任何程式碼'); return; }
+  buildZip([...selected].sort((a, b) => a - b));
+}
+function downloadAllZip() {
+  if (!DATA.length) { showToast('沒有可打包的程式碼'); return; }
+  buildZip(DATA.map((b, i) => i));
+  closeModal('exportModal');
 }
 
 // ── Syntax highlighter (self-contained, HTML/CSS/JS) ──
@@ -730,6 +921,13 @@ function pickEmoji(em) { selectedIcon = em; buildEmojiPicker(); }
 function fillCatSelect(selId) {
   document.getElementById('bmCat').innerHTML = CATS.map(c =>
     `<option value="${c.id}" ${c.id === selId ? 'selected' : ''}>${c.icon} ${escHtml(c.name)}</option>`).join('');
+  refreshSubDatalist();
+}
+function refreshSubDatalist() {
+  const cat = document.getElementById('bmCat').value;
+  const subs = [];
+  DATA.forEach(b => { const s = (b.sub || '').trim(); if (b.cat === cat && s && subs.indexOf(s) === -1) subs.push(s); });
+  document.getElementById('subDatalist').innerHTML = subs.map(s => `<option value="${escHtml(s)}">`).join('');
 }
 function openAddModal() {
   modalMode = 'add'; editIndex = -1;
@@ -739,6 +937,7 @@ function openAddModal() {
   document.getElementById('bmNote').value = '';
   document.getElementById('bmCode').value = '';
   fillCatSelect(CATS[0].id);
+  document.getElementById('bmSub').value = '';
   selectedIcon = CATS[0].icon;
   buildEmojiPicker(); updateCodeCount();
   document.getElementById('bmModal').classList.add('show');
@@ -753,6 +952,7 @@ function openEditModal(i) {
   document.getElementById('bmNote').value = b.note || '';
   document.getElementById('bmCode').value = b.code || '';
   fillCatSelect(b.cat);
+  document.getElementById('bmSub').value = b.sub || '';
   selectedIcon = b.icon || '🧩';
   buildEmojiPicker(); updateCodeCount();
   document.getElementById('bmModal').classList.add('show');
@@ -762,17 +962,20 @@ function confirmBm() {
   const title = document.getElementById('bmTitle').value.trim();
   const note = document.getElementById('bmNote').value.trim();
   const cat = document.getElementById('bmCat').value;
+  const sub = document.getElementById('bmSub').value.trim();
   const code = document.getElementById('bmCode').value;
   if (!title) { document.getElementById('bmTitle').focus(); showToast('請填標題'); return; }
 
   if (modalMode === 'add') {
-    DATA.push({ title, note, cat, icon: selectedIcon, code });
+    DATA.push({ title, note, cat, sub, icon: selectedIcon, code });
   } else {
     const b = DATA[editIndex];
-    if (b) { b.title = title; b.note = note; b.cat = cat; b.icon = selectedIcon; b.code = code; }
+    if (b) { b.title = title; b.note = note; b.cat = cat; b.sub = sub; b.icon = selectedIcon; b.code = code; }
   }
   saveData(); setDirty(true);
-  openFolders.add(cat); saveOpen();
+  openFolders.add(cat);
+  if (sub) openFolders.add(subFolderKey(cat, sub));
+  saveOpen();
   closeModal('bmModal'); render();
   showToast(modalMode === 'add' ? '已新增 ✓' : '已儲存 ✓');
 }
@@ -911,7 +1114,7 @@ function buildSource() {
   const catList = document.getElementById('catList'); const clh = catList.innerHTML; catList.innerHTML = '';
   const prevTheme = root.getAttribute('data-theme'); root.setAttribute('data-theme', '');
   const prevDens = root.getAttribute('data-density'); root.setAttribute('data-density', 'comfort');
-  const shown = document.querySelectorAll('.settings-overlay.show, .modal-overlay.show, .detail-overlay.show');
+  const shown = document.querySelectorAll('.settings-overlay.show, .modal-overlay.show, .detail-overlay.show, .selbar.show');
   shown.forEach(o => o.classList.remove('show'));
 
   const dataStr = JSON.stringify(DATA).replace(/<\//g, '<\\/');
@@ -991,7 +1194,7 @@ function importJSON(event) {
         parsed.cats.forEach(c => { if (c && c.id && c.name && !have.has(c.id)) { CATS.push({ id: c.id, name: c.name, icon: c.icon || '📁' }); openFolders.add(c.id); } });
         saveCats(); saveOpen();
       }
-      fresh.forEach(b => DATA.push({ title: b.title, note: b.note || '', cat: b.cat || CATS[0].id, icon: b.icon || '🧩', code: b.code || '' }));
+      fresh.forEach(b => DATA.push({ title: b.title, note: b.note || '', cat: b.cat || CATS[0].id, sub: b.sub || '', icon: b.icon || '🧩', code: b.code || '' }));
       saveData(); setDirty(true); render();
       showToast(`已匯入 ${fresh.length} 筆新程式碼 ✓`);
     } catch (err) { showToast('匯入失敗：JSON 格式不正確'); }
