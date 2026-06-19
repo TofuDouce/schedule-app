@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vault — 我的收藏庫</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;600&family=Noto+Sans+TC:wght@300;400;500&family=Lora:ital,wght@0,400;0,600;1,400&family=Source+Han+Serif+TC:wght@300;400;600&family=JetBrains+Mono:wght@400;500&family=Fira+Code:wght@400;500&family=Source+Code+Pro:wght@400;500&display=swap" rel="stylesheet">
+<title>程式碼小金庫</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;600&family=Noto+Sans+TC:wght@300;400;500&family=Lora:ital,wght@0,400;0,600;1,400&family=Zen+Maru+Gothic:wght@300;400;500&family=JetBrains+Mono:wght@400;500&family=Fira+Code:wght@400;500&family=Source+Code+Pro:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
     --ink:        #2C2016;
@@ -229,6 +229,13 @@
     border: 1px solid transparent;
     transition: all 0.15s;
     position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+  .item-card-body {
+    flex: 1;
+    min-width: 0;
   }
   .item-card:hover { background: var(--parchment); border-color: var(--parchment3); }
   .item-card.active { background: var(--parchment); border-color: var(--amber-pale); box-shadow: 0 1px 6px var(--shadow); }
@@ -249,6 +256,23 @@
     align-items: center;
     gap: 6px;
   }
+  .item-rename-btn {
+    display: none;
+    width: 24px; height: 24px;
+    border: none;
+    background: transparent;
+    color: var(--ink-muted);
+    cursor: pointer;
+    border-radius: 5px;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+    margin-left: 4px;
+    transition: background 0.15s, color 0.15s;
+  }
+  .item-card:hover .item-rename-btn { display: flex; }
+  .item-rename-btn:hover { background: var(--parchment3); color: var(--amber); }
   .badge {
     font-size: 0.64rem;
     padding: 1px 7px;
@@ -864,7 +888,7 @@
 
 <!-- Header -->
 <header>
-  <div class="logo">Vault <span>我的收藏庫</span></div>
+  <div class="logo">程式碼小金庫 <span>My Code Vault</span></div>
   <div class="header-actions">
     <button class="btn-header" onclick="exportData()">匯出備份</button>
     <button class="btn-header" onclick="document.getElementById('importFile').click()">匯入還原</button>
@@ -896,6 +920,19 @@
       <div class="big-icon">✦</div>
       <h2>選擇一個項目，或新增一個</h2>
       <p>程式碼專案可以即時預覽效果<br>文字文章可以在這裡安靜閱讀與編輯</p>
+    </div>
+  </div>
+</div>
+
+<!-- Rename Item Modal -->
+<div class="modal-overlay" id="renameItemModal">
+  <div class="modal">
+    <h3>重新命名</h3>
+    <div class="modal-label">新名稱</div>
+    <input class="modal-input" id="renameItemInput" placeholder="輸入新名稱…" maxlength="60">
+    <div class="modal-actions">
+      <button class="btn-action" onclick="closeRenameItemModal()">取消</button>
+      <button class="btn-action primary" onclick="confirmRenameItem()">確認</button>
     </div>
   </div>
 </div>
@@ -955,6 +992,7 @@
           <select class="settings-select" id="textFontFamily" onchange="applySettings()">
             <option value="'Noto Serif TC', serif">Noto Serif TC（明體）</option>
             <option value="'Noto Sans TC', sans-serif">Noto Sans TC（黑體）</option>
+            <option value="'Zen Maru Gothic', sans-serif">Zen Maru Gothic（丸體）</option>
             <option value="'Lora', serif">Lora（英文襯線）</option>
             <option value="Georgia, serif">Georgia</option>
             <option value="-apple-system, sans-serif">系統預設</option>
@@ -1188,11 +1226,14 @@ function renderList() {
 function renderItemCard(item) {
   return `
     <div class="item-card ${item.id === currentId ? 'active' : ''}" onclick="selectItem('${item.id}')">
-      <div class="card-title">${escHtml(item.name)}</div>
-      <div class="card-meta">
-        <span class="badge ${item.type === 'code' ? 'badge-code' : 'badge-text'}">${item.type === 'code' ? 'HTML' : '文章'}</span>
-        ${formatDate(item.updatedAt)}
+      <div class="item-card-body">
+        <div class="card-title">${escHtml(item.name)}</div>
+        <div class="card-meta">
+          <span class="badge ${item.type === 'code' ? 'badge-code' : 'badge-text'}">${item.type === 'code' ? 'HTML' : '文章'}</span>
+          ${formatDate(item.updatedAt)}
+        </div>
       </div>
+      <button class="item-rename-btn" title="重新命名" onclick="event.stopPropagation(); openRenameItemModal('${item.id}')">✏️</button>
     </div>
   `;
 }
@@ -1272,7 +1313,7 @@ function renderCodeDetail(item) {
   document.getElementById('contentArea').innerHTML = `
     <div class="detail-toolbar">
       <button class="btn-back" onclick="mobileBack()">‹ 返回</button>
-      <input class="detail-title-input" id="detailTitle" value="${escHtml(item.name)}" placeholder="專案名稱" oninput="scheduleSave()">
+      <input class="detail-title-input" id="detailTitle" value="${escHtml(item.name)}" placeholder="專案名稱" oninput="scheduleSave()" onkeydown="if(event.key==='Enter'){manualSave();this.blur();}">
       <div class="folder-select-wrap">
         <span>📁</span>
         <select class="folder-select" id="detailFolder" onchange="moveItemFolder()">
@@ -1350,7 +1391,7 @@ function renderTextDetail(item) {
   document.getElementById('contentArea').innerHTML = `
     <div class="detail-toolbar">
       <button class="btn-back" onclick="mobileBack()">‹ 返回</button>
-      <input class="detail-title-input" id="detailTitle" value="${escHtml(item.name)}" placeholder="文章標題" oninput="scheduleSave()">
+      <input class="detail-title-input" id="detailTitle" value="${escHtml(item.name)}" placeholder="文章標題" oninput="scheduleSave()" onkeydown="if(event.key==='Enter'){manualSave();this.blur();}">
       <div class="folder-select-wrap">
         <span>📁</span>
         <select class="folder-select" id="detailFolder" onchange="moveItemFolder()">
@@ -1452,6 +1493,53 @@ function showWelcome() {
   showMobileTabbar(false);
   mobileSidebarShow();
 }
+
+// ── Rename Item ──
+let renameItemTargetId = null;
+
+function openRenameItemModal(id) {
+  renameItemTargetId = id;
+  const item = db.items.find(i => i.id === id);
+  if (!item) return;
+  document.getElementById('renameItemInput').value = item.name;
+  document.getElementById('renameItemModal').classList.add('show');
+  setTimeout(() => {
+    const inp = document.getElementById('renameItemInput');
+    inp.focus();
+    inp.select();
+  }, 100);
+}
+
+function closeRenameItemModal() {
+  document.getElementById('renameItemModal').classList.remove('show');
+  renameItemTargetId = null;
+}
+
+function confirmRenameItem() {
+  const name = document.getElementById('renameItemInput').value.trim();
+  if (!name || !renameItemTargetId) return;
+  const item = db.items.find(i => i.id === renameItemTargetId);
+  if (!item) return;
+  item.name = name;
+  item.updatedAt = Date.now();
+  // Also update toolbar title if this item is currently open
+  if (currentId === renameItemTargetId) {
+    const titleEl = document.getElementById('detailTitle');
+    if (titleEl) titleEl.value = name;
+  }
+  saveDB();
+  renderList();
+  closeRenameItemModal();
+  showToast(`已重新命名為「${name}」✓`);
+}
+
+document.getElementById('renameItemModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('renameItemModal')) closeRenameItemModal();
+});
+document.getElementById('renameItemInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') confirmRenameItem();
+  if (e.key === 'Escape') closeRenameItemModal();
+});
 
 // ── Item Modal ──
 function openNewItemModal() {
