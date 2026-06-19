@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>我的程式碼收藏 ✦</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;600&family=Noto+Sans+TC:wght@300;400;500&family=LXGW+WenKai+TC:wght@300;400;700&family=Zen+Maru+Gothic:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ── Design tokens (sync with 文庫 / 書籤) ── */
+:root {
+  --bg:#F9F6F0; --bg2:#F1EBE0; --bg3:#E8DFD0; --surface:#FDFAF5;
+  --ink:#2A1F14; --ink-soft:#5C4A35; --ink-muted:#9A8470;
+  --accent:#7B6A52; --accent-soft:#A08C70; --accent-pale:#EAE0D0;
+  --gold:#C09A5A; --gold-pale:#F5EDD8; --border:#DDD5C5;
+  --shadow:rgba(42,31,20,0.08); --shadow-md:rgba(42,31,20,0.16);
+  --code-bg:#FBF7EE; --code-ink:#3A2C1A;
+  --title-size:15px; --font-read:'Noto Serif TC', serif; --code-size:13px;
+}
+[data-theme="night"] {
+  --bg:#18140F; --bg2:#211C16; --bg3:#2C2520; --surface:#1C1812;
+  --ink:#E8DCC8; --ink-soft:#B8A888; --ink-muted:#786858;
+  --accent:#C09A5A; --accent-soft:#D4B07A; --accent-pale:#2C2416;
+  --gold:#C09A5A; --gold-pale:#241E14; --border:#362E24;
+  --shadow:rgba(0,0,0,0.3); --shadow-md:rgba(0,0,0,0.5);
+  --code-bg:#15110C; --code-ink:#D6C8A8;
+}
+[data-theme="antique"] {
+  --bg:#F0E6C8; --bg2:#E8D9B2; --bg3:#DDD0A0; --surface:#F5EDD5;
+  --ink:#2C1F0A; --ink-soft:#5A3E18; --ink-muted:#8C6E3C;
+  --accent:#8B5E2A; --accent-soft:#A87840; --accent-pale:#EAD8A8;
+  --gold:#A07030; --gold-pale:#F0E0A8; --border:#C8B888;
+  --shadow:rgba(44,31,10,0.12); --shadow-md:rgba(44,31,10,0.22);
+  --code-bg:#F5ECCE; --code-ink:#3A2A0C;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Noto Sans TC', sans-serif; background: var(--bg); color: var(--ink);
+  min-height: 100vh; display: flex; flex-direction: column;
+  transition: background 0.3s, color 0.3s;
+}
+.mono { font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Consolas, monospace; }
+
+/* ── Header ── */
+header {
+  background: var(--ink); padding: 0 20px; height: 52px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 16px var(--shadow-md); flex-shrink: 0;
+}
+.logo { font-family: 'Noto Serif TC', serif; font-weight: 600; font-size: 1.1rem; color: var(--gold); letter-spacing: 0.1em; display: flex; align-items: baseline; gap: 10px; }
+.logo-sub { font-family: 'JetBrains Mono', monospace; font-weight: 400; font-size: 0.68rem; color: var(--ink-muted); letter-spacing: 0.05em; }
+.header-right { display: flex; gap: 6px; align-items: center; }
+.btn-hdr { font-family: 'Noto Sans TC', sans-serif; font-size: 0.82rem; padding: 6px 12px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.15); background: transparent; color: rgba(240,228,200,0.78); cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+.btn-hdr:hover { background: rgba(255,255,255,0.1); color: var(--gold); border-color: var(--gold); }
+.dot { color: #e08b6a; font-size: 0.7rem; vertical-align: middle; }
+
+/* ── Wrap ── */
+.wrap { width: 100%; max-width: 1080px; margin: 0 auto; flex: 1; padding: 18px 18px 60px; display: flex; flex-direction: column; }
+
+/* ── Toolbar ── */
+.toolbar { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+.search-box { flex: 1; min-width: 150px; font-family: 'Noto Sans TC', sans-serif; font-size: 0.85rem; padding: 9px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); outline: none; transition: border-color 0.2s, background 0.3s; }
+.search-box::placeholder { color: var(--ink-muted); }
+.search-box:focus { border-color: var(--gold); }
+.btn-tool { font-family: 'Noto Sans TC', sans-serif; font-size: 0.76rem; padding: 8px 12px; border-radius: 9px; border: 1px solid var(--border); background: var(--surface); color: var(--ink-soft); cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+.btn-tool:hover { background: var(--gold); border-color: var(--gold); color: #fff; }
+.btn-tool.active { background: var(--gold); border-color: var(--gold); color: #fff; }
+
+/* ── Edit banner ── */
+.edit-banner { display: flex; align-items: center; gap: 10px; background: var(--gold-pale); border: 1px dashed var(--gold); color: var(--ink-soft); font-size: 0.78rem; padding: 9px 14px; border-radius: 10px; margin-bottom: 12px; }
+.edit-banner b { color: var(--gold); }
+.edit-banner button { margin-left: auto; font-size: 0.74rem; padding: 5px 12px; border-radius: 7px; border: 1px solid var(--gold); background: var(--gold); color: #fff; cursor: pointer; }
+
+/* ── Folders ── */
+.folder { margin-bottom: 8px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); overflow: hidden; box-shadow: 0 1px 4px var(--shadow); }
+.folder-row { display: flex; align-items: center; gap: 9px; padding: 11px 14px; cursor: pointer; user-select: none; transition: background 0.15s; }
+.folder-row:hover { background: var(--bg2); }
+.folder-arrow { font-size: 0.6rem; color: var(--ink-muted); transition: transform 0.22s; width: 11px; flex-shrink: 0; }
+.folder-arrow.open { transform: rotate(90deg); }
+.folder-icon { font-size: 1rem; flex-shrink: 0; }
+.folder-name { flex: 1; font-family: 'Noto Serif TC', serif; font-size: 0.92rem; font-weight: 600; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.folder-count { font-size: 0.66rem; color: var(--ink-muted); background: var(--bg3); border-radius: 9px; padding: 2px 9px; flex-shrink: 0; }
+.folder-body { max-height: 0; overflow: hidden; transition: max-height 0.28s ease; }
+.folder-body.open { max-height: 99000px; }
+.bm-grid { display: grid; grid-template-columns: 1fr; gap: 6px; padding: 4px 10px 12px; }
+
+/* ── Snippet row ── */
+.bm-row { display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 9px; border: 1px solid transparent; background: var(--bg2); cursor: pointer; color: inherit; transition: all 0.15s; position: relative; }
+.bm-row:hover { background: var(--surface); border-color: var(--gold-pale); box-shadow: 0 2px 8px var(--shadow); transform: translateX(2px); }
+.bm-row.em { border-style: dashed; border-color: var(--border); }
+.bm-row.em:hover { border-color: var(--gold); transform: none; }
+.bm-ico { width: 22px; height: 22px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; }
+.bm-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.bm-title { font-family: var(--font-read); font-size: var(--title-size); font-weight: 600; color: var(--ink); line-height: 1.4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bm-note { font-size: calc(var(--title-size) - 4px); color: var(--ink-muted); line-height: 1.4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: flex; gap: 8px; align-items: center; }
+.bm-size { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; color: var(--ink-muted); background: var(--bg3); border-radius: 6px; padding: 1px 6px; flex-shrink: 0; }
+.bm-open { flex-shrink: 0; font-size: 0.8rem; color: var(--ink-muted); opacity: 0; transition: opacity 0.15s, color 0.15s; }
+.bm-row:hover .bm-open { opacity: 1; color: var(--gold); }
+.row-del { flex-shrink: 0; width: 24px; height: 24px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); color: var(--ink-muted); cursor: pointer; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; transition: all 0.12s; }
+.row-del:hover { background: #f3dede; color: #c0605a; border-color: #e0c0c0; }
+.row-edit-ico { flex-shrink: 0; color: var(--ink-muted); font-size: 0.8rem; }
+
+@media (min-width: 680px) { .bm-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); } }
+
+/* Density */
+[data-density="compact"] .bm-row { padding: 6px 11px; gap: 9px; }
+[data-density="compact"] .bm-note { display: none; }
+[data-density="compact"] .folder-row { padding: 9px 14px; }
+[data-density="compact"] .bm-grid { gap: 4px; padding: 3px 9px 9px; }
+
+.empty { text-align: center; color: var(--ink-muted); padding: 60px 20px; font-size: 0.86rem; line-height: 2; }
+.empty .ico { font-size: 1.8rem; opacity: 0.4; display: block; margin-bottom: 10px; }
+
+.footer { text-align: center; margin-top: 30px; color: var(--ink-muted); font-size: 0.68rem; letter-spacing: 0.05em; line-height: 2; }
+.footer b { color: var(--gold); }
+
+/* ── Detail (preview + source) ── */
+.detail-overlay { position: fixed; inset: 0; background: rgba(42,31,20,0.5); z-index: 220; opacity: 0; pointer-events: none; transition: opacity 0.22s; padding: 16px; display: flex; align-items: center; justify-content: center; }
+.detail-overlay.show { opacity: 1; pointer-events: all; }
+.detail-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; width: min(96vw, 920px); height: min(92vh, 760px); display: flex; flex-direction: column; box-shadow: 0 12px 48px var(--shadow-md); overflow: hidden; transform: translateY(10px); transition: transform 0.22s; }
+.detail-overlay.show .detail-panel { transform: translateY(0); }
+.detail-hdr { display: flex; align-items: center; gap: 10px; padding: 13px 16px; border-bottom: 1px solid var(--border); background: var(--bg2); flex-shrink: 0; }
+.detail-hdr .d-ico { font-size: 1.1rem; }
+.detail-hdr .d-title { flex: 1; min-width: 0; font-family: var(--font-read); font-size: 1rem; font-weight: 600; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.detail-close { width: 28px; height: 28px; border: none; background: transparent; color: var(--ink-muted); cursor: pointer; font-size: 1.05rem; border-radius: 6px; flex-shrink: 0; }
+.detail-close:hover { background: var(--bg3); color: var(--ink); }
+.tabs { display: flex; gap: 4px; padding: 8px 16px 0; background: var(--bg2); flex-shrink: 0; }
+.tab { font-family: 'Noto Sans TC', sans-serif; font-size: 0.78rem; padding: 7px 16px; border: 1px solid var(--border); border-bottom: none; border-radius: 8px 8px 0 0; background: transparent; color: var(--ink-muted); cursor: pointer; transition: all 0.12s; }
+.tab.active { background: var(--surface); color: var(--gold); font-weight: 600; }
+.detail-body { flex: 1; min-height: 0; position: relative; background: var(--surface); }
+.pane { position: absolute; inset: 0; display: none; }
+.pane.active { display: block; }
+#previewFrame { width: 100%; height: 100%; border: none; background: #fff; }
+#sourceView { width: 100%; height: 100%; overflow: auto; padding: 16px; margin: 0; background: var(--code-bg); color: var(--code-ink); font-family: 'JetBrains Mono', monospace; font-size: var(--code-size); line-height: 1.6; white-space: pre; tab-size: 2; }
+.detail-foot { display: flex; gap: 8px; padding: 11px 16px; border-top: 1px solid var(--border); background: var(--bg2); flex-shrink: 0; flex-wrap: wrap; }
+.detail-foot .spacer { flex: 1; }
+.btn-foot { font-family: 'Noto Sans TC', sans-serif; font-size: 0.78rem; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--ink-soft); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+.btn-foot:hover { background: var(--bg3); color: var(--ink); }
+.btn-foot.primary { background: var(--gold); border-color: var(--gold); color: #fff; }
+.btn-foot.primary:hover { background: var(--accent-soft); border-color: var(--accent-soft); }
+.btn-foot.danger:hover { background: #f3dede; color: #c0605a; border-color: #e0c0c0; }
+
+/* ── Settings panel ── */
+.settings-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
+.settings-overlay.show { opacity: 1; pointer-events: all; }
+.settings-panel { position: fixed; top: 0; right: 0; width: min(340px, 94vw); height: 100%; background: var(--bg); border-left: 1px solid var(--border); box-shadow: -6px 0 32px var(--shadow-md); display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.28s cubic-bezier(0.4,0,0.2,1); z-index: 201; overflow: hidden; }
+.settings-overlay.show .settings-panel { transform: translateX(0); }
+.settings-hdr { padding: 16px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--bg2); flex-shrink: 0; }
+.settings-hdr h3 { font-family: 'Noto Serif TC', serif; font-size: 0.95rem; font-weight: 600; color: var(--ink); }
+.settings-close { width: 26px; height: 26px; border: none; background: transparent; color: var(--ink-muted); cursor: pointer; font-size: 1rem; border-radius: 5px; display: flex; align-items: center; justify-content: center; transition: all 0.1s; }
+.settings-close:hover { background: var(--bg3); color: var(--ink); }
+.settings-body { flex: 1; overflow-y: auto; padding: 18px; }
+.s-section { margin-bottom: 24px; }
+.s-section-title { font-size: 0.64rem; font-weight: 600; letter-spacing: 0.12em; color: var(--ink-muted); text-transform: uppercase; margin-bottom: 12px; padding-bottom: 5px; border-bottom: 1px solid var(--border); }
+.s-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 10px; }
+.s-label { font-size: 0.8rem; color: var(--ink-soft); flex-shrink: 0; }
+.s-select { font-family: 'Noto Sans TC', sans-serif; font-size: 0.75rem; padding: 5px 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg2); color: var(--ink); outline: none; cursor: pointer; flex: 1; min-width: 0; transition: border-color 0.2s; }
+.s-select:focus { border-color: var(--gold); }
+.theme-picker { display: flex; gap: 6px; flex: 1; justify-content: flex-end; }
+.theme-dot { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; }
+.theme-dot.active { border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold-pale); }
+.theme-dot[data-t="light"] { background: linear-gradient(135deg, #F9F6F0 50%, #C09A5A 50%); }
+.theme-dot[data-t="night"] { background: linear-gradient(135deg, #18140F 50%, #C09A5A 50%); }
+.theme-dot[data-t="antique"] { background: linear-gradient(135deg, #F0E6C8 50%, #8B5E2A 50%); }
+.seg { display: flex; gap: 4px; flex: 1; }
+.seg-btn { flex: 1; font-size: 0.74rem; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg2); color: var(--ink-muted); cursor: pointer; transition: all 0.15s; }
+.seg-btn.active { background: var(--gold); border-color: var(--gold); color: #fff; }
+.slider-wrap { display: flex; align-items: center; gap: 8px; flex: 1; }
+.s-slider { flex: 1; -webkit-appearance: none; height: 3px; border-radius: 3px; background: var(--border); outline: none; cursor: pointer; }
+.s-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 15px; height: 15px; border-radius: 50%; background: var(--gold); cursor: pointer; box-shadow: 0 1px 4px var(--shadow-md); }
+.s-slider::-moz-range-thumb { width: 15px; height: 15px; border-radius: 50%; background: var(--gold); cursor: pointer; border: none; }
+.s-val { font-size: 0.7rem; color: var(--ink-muted); min-width: 34px; text-align: right; font-variant-numeric: tabular-nums; }
+.s-preview { margin-top: 8px; padding: 11px 13px; border-radius: 9px; background: var(--bg2); border: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+.s-preview .bm-title { font-family: var(--font-read); font-size: var(--title-size); }
+.s-reset { font-size: 0.72rem; padding: 8px 0; border-radius: 7px; border: 1px solid var(--border); background: transparent; color: var(--ink-muted); cursor: pointer; width: 100%; margin-top: 4px; transition: all 0.15s; }
+.s-reset:hover { background: var(--bg3); color: var(--ink); }
+
+/* ── Modals ── */
+.modal-overlay { position: fixed; inset: 0; background: rgba(42,31,20,0.45); display: flex; align-items: center; justify-content: center; z-index: 250; opacity: 0; pointer-events: none; transition: opacity 0.2s; padding: 16px; }
+.modal-overlay.show { opacity: 1; pointer-events: all; }
+.modal { background: var(--surface); border-radius: 14px; padding: 22px 24px; width: min(94vw, 560px); max-height: 92vh; overflow-y: auto; box-shadow: 0 8px 40px var(--shadow-md); transform: translateY(8px); transition: transform 0.2s; border: 1px solid var(--border); }
+.modal-overlay.show .modal { transform: translateY(0); }
+.modal h3 { font-family: 'Noto Serif TC', serif; font-size: 1rem; margin-bottom: 6px; color: var(--ink); }
+.m-desc { font-size: 0.78rem; color: var(--ink-muted); line-height: 1.7; }
+.m-label { font-size: 0.74rem; color: var(--ink-soft); margin-bottom: 5px; margin-top: 12px; display: flex; justify-content: space-between; align-items: baseline; }
+.m-label .hint { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; color: var(--ink-muted); }
+.m-input, .m-select { width: 100%; font-family: 'Noto Sans TC', sans-serif; font-size: 0.85rem; padding: 8px 12px; border-radius: 7px; border: 1px solid var(--border); background: var(--bg2); color: var(--ink); outline: none; transition: border-color 0.2s; }
+.m-input:focus, .m-select:focus { border-color: var(--gold); }
+.m-code { width: 100%; min-height: 220px; resize: vertical; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 1.55; padding: 11px 13px; border-radius: 9px; border: 1px solid var(--border); background: var(--code-bg); color: var(--code-ink); outline: none; white-space: pre; overflow-wrap: normal; overflow-x: auto; tab-size: 2; transition: border-color 0.2s; }
+.m-code:focus { border-color: var(--gold); }
+.m-actions { display: flex; justify-content: flex-end; gap: 6px; margin-top: 18px; }
+.btn-act { font-family: 'Noto Sans TC', sans-serif; font-size: 0.84rem; padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--ink-soft); cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+.btn-act:hover { background: var(--bg3); color: var(--ink); }
+.btn-act.primary { background: var(--gold); border-color: var(--gold); color: #fff; }
+.btn-act.primary:hover { background: var(--accent-soft); border-color: var(--accent-soft); }
+.btn-act.wide { width: 100%; justify-content: center; text-align: center; padding: 11px; }
+.m-divider { height: 1px; background: var(--border); margin: 16px 0 12px; }
+.btn-reset-line { width: 100%; font-size: 0.74rem; padding: 8px; border-radius: 7px; border: 1px solid transparent; background: transparent; color: var(--ink-muted); cursor: pointer; transition: all 0.15s; }
+.btn-reset-line:hover { background: #f3dede; color: #c0605a; border-color: #e0c0c0; }
+.emoji-row { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
+.emoji-btn { width: 32px; height: 32px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg2); cursor: pointer; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; transition: all 0.12s; }
+.emoji-btn:hover { border-color: var(--gold); background: var(--gold-pale); }
+.emoji-btn.sel { border-color: var(--gold); background: var(--gold-pale); box-shadow: 0 0 0 2px var(--gold-pale); }
+
+/* ── Toast ── */
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(16px); background: var(--ink); color: var(--gold); font-size: 0.78rem; padding: 8px 18px; border-radius: 18px; z-index: 400; opacity: 0; transition: all 0.28s; pointer-events: none; white-space: nowrap; box-shadow: 0 4px 16px var(--shadow-md); }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+@media (max-width: 600px) {
+  header { padding: 0 12px; }
+  .logo-sub { display: none; }
+  .btn-hdr { font-size: 0.78rem; padding: 5px 10px; }
+  .wrap { padding: 14px 12px 50px; }
+  .detail-panel { height: 94vh; width: 100%; border-radius: 12px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">我的程式碼收藏 <span class="logo-sub">&lt;/&gt; code vault</span></div>
+  <div class="header-right">
+    <button class="btn-hdr" onclick="openExport()">↧ 原始碼 <span id="dirtyDot" class="dot" style="display:none">●</span></button>
+    <button class="btn-hdr" onclick="openSettings()">⚙</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="toolbar">
+    <input class="search-box" id="searchBox" placeholder="搜尋程式碼（標題／備註／內容）…" oninput="render()">
+    <button class="btn-tool" onclick="openAddModal()">＋ 新增</button>
+    <button class="btn-tool" id="editModeBtn" onclick="toggleEditMode()">✎ 編輯</button>
+    <button class="btn-tool" id="toggleAllBtn" onclick="toggleAll()">全部收合</button>
+  </div>
+
+  <div class="edit-banner" id="editBanner" style="display:none">
+    <span><b>編輯模式</b>：點任一項目可修改程式碼，按 ✕ 可刪除。</span>
+    <button onclick="toggleEditMode()">完成</button>
+  </div>
+
+  <div id="list"></div>
+
+  <div class="footer">
+    ✦ ─── 我的程式碼收藏 ─── ✦<br>
+    Designed with ♥ by <b>ChuChu</b> · © 2026
+  </div>
+</div>
+
+<!-- Detail: preview + source -->
+<div class="detail-overlay" id="detailOverlay" onclick="bgCloseDetail(event)">
+  <div class="detail-panel">
+    <div class="detail-hdr">
+      <span class="d-ico" id="dIco">✦</span>
+      <span class="d-title" id="dTitle">標題</span>
+      <button class="detail-close" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="tabs">
+      <button class="tab active" id="tabPreview" onclick="switchTab('preview')">▷ 預覽</button>
+      <button class="tab" id="tabSource" onclick="switchTab('source')">&lt;/&gt; 原始碼</button>
+    </div>
+    <div class="detail-body">
+      <div class="pane active" id="panePreview"><iframe id="previewFrame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads allow-popups-to-escape-sandbox"></iframe></div>
+      <div class="pane" id="paneSource"><pre id="sourceView" class="mono"></pre></div>
+    </div>
+    <div class="detail-foot">
+      <button class="btn-foot" onclick="copyDetailCode()">⧉ 複製</button>
+      <button class="btn-foot" onclick="openPreviewNewTab()">⤢ 新分頁開啟</button>
+      <span class="spacer"></span>
+      <button class="btn-foot" onclick="editFromDetail()">✎ 編輯</button>
+      <button class="btn-foot primary" onclick="downloadOne()">↧ 下載 HTML</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings -->
+<div class="settings-overlay" id="settingsOverlay" onclick="closeSettingsBg(event)">
+  <div class="settings-panel">
+    <div class="settings-hdr"><h3>版面設定</h3><button class="settings-close" onclick="closeSettings()">✕</button></div>
+    <div class="settings-body">
+      <div class="s-section">
+        <div class="s-section-title">佈景主題</div>
+        <div class="s-row">
+          <span class="s-label">色調</span>
+          <div class="theme-picker">
+            <div class="theme-dot active" data-t="light" title="明亮" onclick="setTheme('light')"></div>
+            <div class="theme-dot" data-t="night" title="夜間" onclick="setTheme('night')"></div>
+            <div class="theme-dot" data-t="antique" title="仿舊" onclick="setTheme('antique')"></div>
+          </div>
+        </div>
+      </div>
+      <div class="s-section">
+        <div class="s-section-title">版面密度</div>
+        <div class="s-row">
+          <span class="s-label">每行高度</span>
+          <div class="seg">
+            <button class="seg-btn active" id="densComfort" onclick="setDensity('comfort')">舒適</button>
+            <button class="seg-btn" id="densCompact" onclick="setDensity('compact')">密集</button>
+          </div>
+        </div>
+      </div>
+      <div class="s-section">
+        <div class="s-section-title">文字設定</div>
+        <div class="s-row">
+          <span class="s-label">標題字型</span>
+          <select class="s-select" id="sfontFamily" onchange="applySettings()">
+            <option value="'Noto Serif TC', serif">思源宋體</option>
+            <option value="'Noto Sans TC', sans-serif">思源黑體</option>
+            <option value="'LXGW WenKai TC', cursive">霞鶩文楷</option>
+            <option value="'Zen Maru Gothic', sans-serif">圓體（Zen Maru）</option>
+            <option value="-apple-system, 'PingFang TC', sans-serif">蘋方黑體</option>
+            <option value="'Hiragino Mincho ProN', 'Noto Serif TC', serif">昭源環方</option>
+          </select>
+        </div>
+        <div class="s-preview"><span class="bm-ico">🧩</span><span class="bm-title" id="fontPreview">登入頁卡片</span></div>
+        <div class="s-row" style="margin-top:12px">
+          <span class="s-label">標題大小</span>
+          <div class="slider-wrap"><input type="range" class="s-slider" id="sfontSize" min="13" max="20" step="1" oninput="applySettings()"><span class="s-val" id="sfontSizeVal">15px</span></div>
+        </div>
+        <div class="s-row">
+          <span class="s-label">程式碼大小</span>
+          <div class="slider-wrap"><input type="range" class="s-slider" id="scodeSize" min="11" max="17" step="1" oninput="applySettings()"><span class="s-val" id="scodeSizeVal">13px</span></div>
+        </div>
+      </div>
+      <button class="s-reset" onclick="resetSettings()">↺ 恢復版面預設值</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add / Edit snippet -->
+<div class="modal-overlay" id="bmModal" onclick="bgClose(event,'bmModal')">
+  <div class="modal">
+    <h3 id="bmModalTitle">新增程式碼</h3>
+    <div class="m-label">標題</div>
+    <input class="m-input" id="bmTitle" placeholder="例如：登入頁卡片" maxlength="80">
+    <div class="m-label">備註（可留空）</div>
+    <input class="m-input" id="bmNote" placeholder="一句話說明…" maxlength="60">
+    <div class="m-label">分類</div>
+    <select class="m-select" id="bmCat"></select>
+    <div class="m-label">圖示</div>
+    <div class="emoji-row" id="bmEmoji"></div>
+    <div class="m-label">程式碼 <span class="hint" id="codeCount">0 字</span></div>
+    <textarea class="m-code" id="bmCode" spellcheck="false" placeholder="把你的 HTML／程式碼貼在這裡…&#10;預覽會直接 render 這段內容。" oninput="updateCodeCount()"></textarea>
+    <div class="m-actions">
+      <button class="btn-act" onclick="closeModal('bmModal')">取消</button>
+      <button class="btn-act primary" id="bmConfirm" onclick="confirmBm()">建立</button>
+    </div>
+  </div>
+</div>
+
+<!-- Export source -->
+<div class="modal-overlay" id="exportModal" onclick="bgClose(event,'exportModal')">
+  <div class="modal">
+    <h3>資料與部署</h3>
+
+    <div class="s-section-title" style="margin-top:14px">更新線上網站</div>
+    <p class="m-desc">把目前全部程式碼打包進原始碼，上傳到 GitHub 取代舊的 <b>MyCode.html</b>，線上網站就更新了。（所有程式碼會一起內嵌進檔案）</p>
+    <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px">
+      <button class="btn-act primary wide" onclick="downloadSource()">↧ 下載 MyCode.html</button>
+      <button class="btn-act wide" onclick="copySource()">⧉ 複製原始碼到剪貼簿</button>
+    </div>
+
+    <div class="s-section-title" style="margin-top:22px">備份與搬移（JSON）</div>
+    <p class="m-desc">把全部程式碼存成 JSON 檔保管，或在另一台裝置／瀏覽器還原。還原採合併方式，標題＋內容相同者會自動略過。</p>
+    <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px">
+      <button class="btn-act wide" onclick="exportJSON()">⬇ 匯出 JSON 備份</button>
+      <button class="btn-act wide" onclick="document.getElementById('jsonFile').click()">⬆ 匯入 JSON 還原</button>
+      <input type="file" id="jsonFile" accept=".json,application/json" style="display:none" onchange="importJSON(event)">
+    </div>
+
+    <div class="m-divider"></div>
+    <button class="btn-reset-line" onclick="resetToBaked()">↺ 重設為網頁內建範例（清除本機新增與修改）</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════ 程式碼資料（匯出時會自動更新這一段） ════════
+const SEED = /*<DB>*/[{"title":"範例：漸層歡迎卡片","note":"純 HTML/CSS，可直接預覽","cat":"c1","icon":"🧩","code":"<!DOCTYPE html>\n<html lang=\"zh-Hant\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<style>\n  body{margin:0;height:100vh;display:flex;align-items:center;justify-content:center;\n       background:linear-gradient(135deg,#F9F6F0,#EAD8A8,#C09A5A);font-family:system-ui,sans-serif;}\n  .card{background:rgba(255,255,255,.85);backdrop-filter:blur(6px);padding:40px 48px;\n        border-radius:20px;box-shadow:0 20px 60px rgba(120,90,40,.25);text-align:center;}\n  h1{margin:0 0 8px;color:#5C4A35;font-size:1.6rem;letter-spacing:.05em;}\n  p{margin:0;color:#9A8470;}\n  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#C09A5A;margin:14px 4px 0;\n       animation:b 1.2s infinite ease-in-out;}\n  .dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}\n  @keyframes b{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}\n</style>\n</head>\n<body>\n  <div class=\"card\">\n    <h1>歡迎回來 ✦</h1>\n    <p>這是即時預覽，編輯後立刻看到結果</p>\n    <div><span class=\"dot\"></span><span class=\"dot\"></span><span class=\"dot\"></span></div>\n  </div>\n</body>\n</html>"},{"title":"範例：計數按鈕（含 JS）","note":"測試預覽能不能跑 JavaScript","cat":"c1","icon":"🛠️","code":"<!DOCTYPE html>\n<html lang=\"zh-Hant\">\n<head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<style>\n body{margin:0;height:100vh;display:grid;place-items:center;background:#18140F;font-family:system-ui,sans-serif;color:#E8DCC8;}\n button{font-size:1.1rem;padding:14px 28px;border-radius:14px;border:1px solid #C09A5A;\n        background:#211C16;color:#C09A5A;cursor:pointer;transition:.15s;}\n button:hover{background:#C09A5A;color:#18140F;}\n .n{font-size:3rem;font-weight:700;margin-bottom:18px;color:#C09A5A;}\n</style></head>\n<body>\n <div style=\"text-align:center\">\n  <div class=\"n\" id=\"n\">0</div>\n  <button onclick=\"c()\">點我 +1</button>\n </div>\n <script>let i=0;function c(){i++;document.getElementById('n').textContent=i;}<\/script>\n</body>\n</html>"}]/*</DB>*/;
+const CATS=[{"id":"c1","name":"元件","icon":"🧩"},{"id":"c2","name":"頁面","icon":"📄"},{"id":"c3","name":"工具","icon":"🛠️"},{"id":"c4","name":"草稿","icon":"📝"},{"id":"c5","name":"模板","icon":"🎨"}];
+const EMOJIS = ['🧩','📄','🛠️','📝','🎨','✨','🔮','☁','🌙','💡','⚗️','🪐','📦','🖋️','🌿','🦋'];
+
+// ── State ──
+let DATA = JSON.parse(localStorage.getItem('mycode_db') || 'null');
+if (!DATA || !Array.isArray(DATA)) DATA = JSON.parse(JSON.stringify(SEED));
+let dirty = localStorage.getItem('mycode_dirty') === '1';
+
+const DEFAULTS = { theme: 'light', density: 'comfort', fontFamily: "'Noto Serif TC', serif", fontSize: 15, codeSize: 13 };
+let S = JSON.parse(localStorage.getItem('mycode_settings') || 'null') || { ...DEFAULTS };
+S = { ...DEFAULTS, ...S };
+
+let openFolders;
+const savedOpen = JSON.parse(localStorage.getItem('mycode_open') || 'null');
+openFolders = savedOpen ? new Set(savedOpen) : new Set(CATS.map(c => c.id));
+
+let editMode = false;
+let modalMode = 'add';
+let editIndex = -1;
+let selectedIcon = '🧩';
+let detailIndex = -1;
+
+// ── Persist ──
+function saveData() {
+  try { localStorage.setItem('mycode_db', JSON.stringify(DATA)); }
+  catch (e) { showToast('⚠ 本機儲存空間已滿，請匯出備份'); }
+}
+function saveSettings() { localStorage.setItem('mycode_settings', JSON.stringify(S)); }
+function saveOpen() { localStorage.setItem('mycode_open', JSON.stringify([...openFolders])); }
+function setDirty(v) {
+  dirty = v;
+  localStorage.setItem('mycode_dirty', v ? '1' : '0');
+  document.getElementById('dirtyDot').style.display = v ? 'inline' : 'none';
+}
+
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function catById(id) { return CATS.find(c => c.id === id); }
+function fmtSize(str) {
+  const n = new Blob([str || '']).size;
+  if (n < 1024) return n + ' B';
+  if (n < 1024 * 1024) return (n / 1024).toFixed(1) + ' KB';
+  return (n / 1048576).toFixed(2) + ' MB';
+}
+function safeName(t) {
+  let n = (t || 'code').trim().replace(/[\\/:*?"<>|]/g, '_').slice(0, 60);
+  return (n || 'code') + '.html';
+}
+
+// ── Render ──
+function render() {
+  const q = document.getElementById('searchBox').value.trim().toLowerCase();
+  const el = document.getElementById('list');
+
+  if (q) {
+    const results = [];
+    DATA.forEach((b, i) => {
+      if ((b.title||'').toLowerCase().includes(q) || (b.note||'').toLowerCase().includes(q) || (b.code||'').toLowerCase().includes(q))
+        results.push({ b, i });
+    });
+    if (!results.length) { el.innerHTML = `<div class="empty"><span class="ico">🔍</span>沒有找到符合的程式碼 (˘ω˘)</div>`; return; }
+    el.innerHTML = `<div class="folder"><div class="folder-body open"><div class="bm-grid">${results.map(r => renderRow(r.b, r.i)).join('')}</div></div></div>`;
+    return;
+  }
+
+  const groups = {};
+  DATA.forEach((b, i) => { (groups[b.cat] = groups[b.cat] || []).push({ b, i }); });
+
+  let html = '';
+  CATS.forEach(cat => {
+    const items = groups[cat.id] || [];
+    const isOpen = openFolders.has(cat.id);
+    html += `
+      <div class="folder">
+        <div class="folder-row" onclick="toggleFolder('${cat.id}')">
+          <span class="folder-arrow ${isOpen ? 'open' : ''}">▶</span>
+          <span class="folder-icon">${cat.icon}</span>
+          <span class="folder-name">${escHtml(cat.name)}</span>
+          <span class="folder-count">${items.length}</span>
+        </div>
+        <div class="folder-body ${isOpen ? 'open' : ''}">
+          <div class="bm-grid">
+            ${items.length ? items.map(r => renderRow(r.b, r.i)).join('') : '<div class="empty" style="padding:16px;font-size:0.76rem">這個資料夾還沒有程式碼</div>'}
+          </div>
+        </div>
+      </div>`;
+  });
+
+  const known = new Set(CATS.map(c => c.id));
+  const leftover = [];
+  DATA.forEach((b, i) => { if (!known.has(b.cat)) leftover.push({ b, i }); });
+  if (leftover.length) {
+    const isOpen = openFolders.has('__uncat__');
+    html += `
+      <div class="folder">
+        <div class="folder-row" onclick="toggleFolder('__uncat__')">
+          <span class="folder-arrow ${isOpen ? 'open' : ''}">▶</span>
+          <span class="folder-icon">🗂️</span>
+          <span class="folder-name">未分類</span>
+          <span class="folder-count">${leftover.length}</span>
+        </div>
+        <div class="folder-body ${isOpen ? 'open' : ''}">
+          <div class="bm-grid">${leftover.map(r => renderRow(r.b, r.i)).join('')}</div>
+        </div>
+      </div>`;
+  }
+
+  el.innerHTML = html;
+  updateToggleAllBtn();
+}
+
+function renderRow(b, i) {
+  const ico = `<span class="bm-ico">${b.icon || '✦'}</span>`;
+  const main = `
+    <span class="bm-main">
+      <span class="bm-title">${escHtml(b.title || '未命名')}</span>
+      <span class="bm-note">${b.note ? escHtml(b.note) : '<span style="opacity:.5">無備註</span>'}<span class="bm-size">${fmtSize(b.code)}</span></span>
+    </span>`;
+  if (editMode) {
+    return `<div class="bm-row em" onclick="openEditModal(${i})">
+      ${ico}${main}
+      <span class="row-edit-ico">✎</span>
+      <button class="row-del" title="刪除" onclick="event.stopPropagation();deleteSnippet(${i})">✕</button>
+    </div>`;
+  }
+  return `<div class="bm-row" onclick="openDetail(${i})">${ico}${main}<span class="bm-open">▷</span></div>`;
+}
+
+function toggleFolder(id) {
+  if (openFolders.has(id)) openFolders.delete(id); else openFolders.add(id);
+  saveOpen(); render();
+}
+function toggleAll() {
+  const allOpen = CATS.every(c => openFolders.has(c.id));
+  if (allOpen) openFolders.clear(); else CATS.forEach(c => openFolders.add(c.id));
+  saveOpen(); render();
+}
+function updateToggleAllBtn() {
+  const allOpen = CATS.every(c => openFolders.has(c.id));
+  document.getElementById('toggleAllBtn').textContent = allOpen ? '全部收合' : '全部展開';
+}
+
+// ── Edit mode ──
+function toggleEditMode() {
+  editMode = !editMode;
+  document.getElementById('editModeBtn').classList.toggle('active', editMode);
+  document.getElementById('editBanner').style.display = editMode ? 'flex' : 'none';
+  render();
+}
+
+// ── Detail: preview + source ──
+function openDetail(i) {
+  const b = DATA[i]; if (!b) return;
+  detailIndex = i;
+  document.getElementById('dIco').textContent = b.icon || '✦';
+  document.getElementById('dTitle').textContent = b.title || '未命名';
+  document.getElementById('sourceView').textContent = b.code || '';
+  document.getElementById('previewFrame').srcdoc = b.code || '<!doctype html><body style="font-family:sans-serif;color:#999;padding:40px">（這筆還沒有程式碼）';
+  switchTab('preview');
+  document.getElementById('detailOverlay').classList.add('show');
+}
+function switchTab(t) {
+  const isP = t === 'preview';
+  document.getElementById('tabPreview').classList.toggle('active', isP);
+  document.getElementById('tabSource').classList.toggle('active', !isP);
+  document.getElementById('panePreview').classList.toggle('active', isP);
+  document.getElementById('paneSource').classList.toggle('active', !isP);
+}
+function closeDetail() {
+  document.getElementById('detailOverlay').classList.remove('show');
+  document.getElementById('previewFrame').srcdoc = '';
+}
+function bgCloseDetail(e) { if (e.target === document.getElementById('detailOverlay')) closeDetail(); }
+function copyDetailCode() {
+  const b = DATA[detailIndex]; if (!b) return;
+  navigator.clipboard.writeText(b.code || '').then(() => showToast('已複製程式碼 ✓')).catch(() => showToast('複製失敗'));
+}
+function downloadOne() {
+  const b = DATA[detailIndex]; if (!b) return;
+  const blob = new Blob([b.code || ''], { type: 'text/html;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = safeName(b.title);
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast('已下載 ' + a.download + ' ✓');
+}
+function openPreviewNewTab() {
+  const b = DATA[detailIndex]; if (!b) return;
+  const blob = new Blob([b.code || ''], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  window.open(url, '_blank');
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+function editFromDetail() {
+  const i = detailIndex;
+  closeDetail();
+  openEditModal(i);
+}
+
+// ── Add / Edit modal ──
+function updateCodeCount() {
+  const v = document.getElementById('bmCode').value;
+  document.getElementById('codeCount').textContent = v.length + ' 字 · ' + fmtSize(v);
+}
+function buildEmojiPicker() {
+  document.getElementById('bmEmoji').innerHTML = EMOJIS.map(em =>
+    `<button class="emoji-btn ${em === selectedIcon ? 'sel' : ''}" onclick="pickEmoji('${em}')">${em}</button>`).join('');
+}
+function pickEmoji(em) { selectedIcon = em; buildEmojiPicker(); }
+function fillCatSelect(selId) {
+  document.getElementById('bmCat').innerHTML = CATS.map(c =>
+    `<option value="${c.id}" ${c.id === selId ? 'selected' : ''}>${c.icon} ${escHtml(c.name)}</option>`).join('');
+}
+function openAddModal() {
+  modalMode = 'add'; editIndex = -1;
+  document.getElementById('bmModalTitle').textContent = '新增程式碼';
+  document.getElementById('bmConfirm').textContent = '建立';
+  document.getElementById('bmTitle').value = '';
+  document.getElementById('bmNote').value = '';
+  document.getElementById('bmCode').value = '';
+  fillCatSelect(CATS[0].id);
+  selectedIcon = CATS[0].icon;
+  buildEmojiPicker(); updateCodeCount();
+  document.getElementById('bmModal').classList.add('show');
+  setTimeout(() => document.getElementById('bmTitle').focus(), 80);
+}
+function openEditModal(i) {
+  const b = DATA[i]; if (!b) return;
+  modalMode = 'edit'; editIndex = i;
+  document.getElementById('bmModalTitle').textContent = '編輯程式碼';
+  document.getElementById('bmConfirm').textContent = '儲存';
+  document.getElementById('bmTitle').value = b.title || '';
+  document.getElementById('bmNote').value = b.note || '';
+  document.getElementById('bmCode').value = b.code || '';
+  fillCatSelect(b.cat);
+  selectedIcon = b.icon || '🧩';
+  buildEmojiPicker(); updateCodeCount();
+  document.getElementById('bmModal').classList.add('show');
+  setTimeout(() => document.getElementById('bmTitle').focus(), 80);
+}
+function confirmBm() {
+  const title = document.getElementById('bmTitle').value.trim();
+  const note = document.getElementById('bmNote').value.trim();
+  const cat = document.getElementById('bmCat').value;
+  const code = document.getElementById('bmCode').value;
+  if (!title) { document.getElementById('bmTitle').focus(); showToast('請填標題'); return; }
+
+  if (modalMode === 'add') {
+    DATA.push({ title, note, cat, icon: selectedIcon, code });
+  } else {
+    const b = DATA[editIndex];
+    if (b) { b.title = title; b.note = note; b.cat = cat; b.icon = selectedIcon; b.code = code; }
+  }
+  saveData(); setDirty(true);
+  openFolders.add(cat); saveOpen();
+  closeModal('bmModal'); render();
+  showToast(modalMode === 'add' ? '已新增 ✓' : '已儲存 ✓');
+}
+function deleteSnippet(i) {
+  const b = DATA[i]; if (!b) return;
+  if (!confirm(`確定刪除「${b.title}」？此動作無法復原。`)) return;
+  DATA.splice(i, 1);
+  saveData(); setDirty(true); render();
+  showToast('已刪除');
+}
+
+// Tab key inserts two spaces in the code editor
+document.getElementById('bmCode').addEventListener('keydown', function (e) {
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const s = this.selectionStart, en = this.selectionEnd;
+    this.value = this.value.slice(0, s) + '  ' + this.value.slice(en);
+    this.selectionStart = this.selectionEnd = s + 2;
+    updateCodeCount();
+  }
+});
+
+// ── Settings ──
+function applyTheme(t) { document.documentElement.setAttribute('data-theme', t === 'light' ? '' : t); }
+function setTheme(t) { S.theme = t; applyTheme(t); saveSettings(); document.querySelectorAll('.theme-dot').forEach(d => d.classList.toggle('active', d.dataset.t === t)); }
+function setDensity(d) {
+  S.density = d; saveSettings();
+  document.documentElement.setAttribute('data-density', d);
+  document.getElementById('densComfort').classList.toggle('active', d === 'comfort');
+  document.getElementById('densCompact').classList.toggle('active', d === 'compact');
+}
+function applySettings() {
+  S.fontFamily = document.getElementById('sfontFamily').value;
+  S.fontSize = parseInt(document.getElementById('sfontSize').value);
+  S.codeSize = parseInt(document.getElementById('scodeSize').value);
+  document.getElementById('sfontSizeVal').textContent = S.fontSize + 'px';
+  document.getElementById('scodeSizeVal').textContent = S.codeSize + 'px';
+  applyTextVars(); saveSettings();
+}
+function applyTextVars() {
+  document.documentElement.style.setProperty('--font-read', S.fontFamily);
+  document.documentElement.style.setProperty('--title-size', S.fontSize + 'px');
+  document.documentElement.style.setProperty('--code-size', S.codeSize + 'px');
+}
+function syncSettingsUI() {
+  document.getElementById('sfontFamily').value = S.fontFamily;
+  document.getElementById('sfontSize').value = S.fontSize;
+  document.getElementById('sfontSizeVal').textContent = S.fontSize + 'px';
+  document.getElementById('scodeSize').value = S.codeSize;
+  document.getElementById('scodeSizeVal').textContent = S.codeSize + 'px';
+  document.querySelectorAll('.theme-dot').forEach(d => d.classList.toggle('active', d.dataset.t === (S.theme || 'light')));
+  document.getElementById('densComfort').classList.toggle('active', S.density === 'comfort');
+  document.getElementById('densCompact').classList.toggle('active', S.density === 'compact');
+}
+function resetSettings() {
+  S = { ...DEFAULTS }; saveSettings();
+  applyTheme(S.theme); document.documentElement.setAttribute('data-density', S.density);
+  applyTextVars(); syncSettingsUI(); showToast('已恢復版面預設值');
+}
+function openSettings() { syncSettingsUI(); document.getElementById('settingsOverlay').classList.add('show'); }
+function closeSettings() { document.getElementById('settingsOverlay').classList.remove('show'); }
+function closeSettingsBg(e) { if (e.target === document.getElementById('settingsOverlay')) closeSettings(); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+function bgClose(e, id) { if (e.target === document.getElementById(id)) closeModal(id); }
+
+// ── Export source code (self-rebaking) ──
+function buildSource() {
+  const root = document.documentElement;
+  const list = document.getElementById('list'); const listHtml = list.innerHTML; list.innerHTML = '';
+  const sb = document.getElementById('searchBox'); const sv = sb.value; sb.value = '';
+  const src_view = document.getElementById('sourceView'); const svh = src_view.textContent; src_view.textContent = '';
+  const pf = document.getElementById('previewFrame'); pf.removeAttribute('srcdoc');
+  const code_ta = document.getElementById('bmCode'); const cta = code_ta.value; code_ta.value = '';
+  const prevTheme = root.getAttribute('data-theme'); root.setAttribute('data-theme', '');
+  const prevDens = root.getAttribute('data-density'); root.setAttribute('data-density', 'comfort');
+  const shown = document.querySelectorAll('.settings-overlay.show, .modal-overlay.show, .detail-overlay.show');
+  shown.forEach(o => o.classList.remove('show'));
+
+  const dataStr = JSON.stringify(DATA).replace(/<\//g, '<\\/');
+  const M1 = '/*' + '<DB>' + '*/';
+  const M2 = '/*' + '</DB>' + '*/';
+  const re = new RegExp('/\\*<DB>\\*/[\\s\\S]*?/\\*<\\/DB>\\*/');
+  let src = '<!DOCTYPE html>\n' + root.outerHTML;
+  src = src.replace(re, M1 + dataStr + M2);
+
+  // restore live DOM
+  list.innerHTML = listHtml; sb.value = sv;
+  src_view.textContent = svh; code_ta.value = cta;
+  if (prevTheme !== null) root.setAttribute('data-theme', prevTheme);
+  if (prevDens !== null) root.setAttribute('data-density', prevDens);
+  shown.forEach(o => o.classList.add('show'));
+  return src;
+}
+function downloadSource() {
+  const src = buildSource();
+  const blob = new Blob([src], { type: 'text/html;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'MyCode.html';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  setDirty(false);
+  showToast('已下載 MyCode.html ✓');
+}
+function copySource() {
+  const src = buildSource();
+  navigator.clipboard.writeText(src).then(() => {
+    setDirty(false);
+    showToast('原始碼已複製 ✓ 可貼進 GitHub');
+  }).catch(() => showToast('複製失敗，請改用下載'));
+}
+function resetToBaked() {
+  if (!confirm('清除本機所有新增與修改，恢復成網頁內建的範例？')) return;
+  localStorage.removeItem('mycode_db');
+  DATA = JSON.parse(JSON.stringify(SEED));
+  setDirty(false); render();
+  closeModal('exportModal');
+  showToast('已重設為網頁內建範例');
+}
+function openExport() { document.getElementById('exportModal').classList.add('show'); }
+
+// ── JSON backup / restore ──
+function exportJSON() {
+  const payload = { type: 'mycode-backup', version: 1, exportedAt: new Date().toISOString(), snippets: DATA };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '程式碼備份_' + new Date().toISOString().slice(0, 10) + '.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast('已匯出 ' + DATA.length + ' 筆程式碼 ✓');
+}
+function importJSON(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      let incoming = Array.isArray(parsed) ? parsed : (parsed.snippets || parsed.bookmarks || parsed.items || null);
+      if (!Array.isArray(incoming)) throw new Error('bad');
+      incoming = incoming.filter(b => b && b.title);
+      if (!incoming.length) { showToast('檔案裡沒有有效程式碼'); event.target.value = ''; return; }
+      const existKeys = new Set(DATA.map(b => (b.title || '') + '\u0000' + (b.code || '')));
+      const fresh = incoming.filter(b => !existKeys.has((b.title || '') + '\u0000' + (b.code || '')));
+      if (!confirm(`檔案內共 ${incoming.length} 筆，其中 ${fresh.length} 筆是新的。\n確定合併匯入？（標題＋內容重複者會自動略過）`)) { event.target.value = ''; return; }
+      fresh.forEach(b => DATA.push({ title: b.title, note: b.note || '', cat: b.cat || CATS[0].id, icon: b.icon || '🧩', code: b.code || '' }));
+      saveData(); setDirty(true); render();
+      showToast(`已匯入 ${fresh.length} 筆新程式碼 ✓`);
+    } catch (err) { showToast('匯入失敗：JSON 格式不正確'); }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ── Esc closes top-most overlay ──
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (document.getElementById('bmModal').classList.contains('show')) return closeModal('bmModal');
+  if (document.getElementById('exportModal').classList.contains('show')) return closeModal('exportModal');
+  if (document.getElementById('detailOverlay').classList.contains('show')) return closeDetail();
+  if (document.getElementById('settingsOverlay').classList.contains('show')) return closeSettings();
+});
+
+// ── Init ──
+applyTheme(S.theme);
+document.documentElement.setAttribute('data-density', S.density || 'comfort');
+applyTextVars();
+setDirty(dirty);
+render();
+</script>
+</body>
+</html>
