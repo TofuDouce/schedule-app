@@ -455,6 +455,8 @@ body{
 
     font-size:
     calc(var(--base-font-size) * 0.9);
+
+    line-height:1.8;
 }
 
 /* =========================
@@ -654,12 +656,35 @@ body{
 <script>
 
 /* =========================
-   GITHUB
+   GITHUB（自動偵測版）
+   只有使用者名稱要手動填，
+   repo 與資料夾會從網址自動抓，
+   填錯資料夾的問題就不會再發生。
 ========================= */
 
 const GITHUB_USER = "TofuDouce";
-const GITHUB_REPO = "schedule-app";
-const GITHUB_FOLDER = "cloudcream";
+
+/* 目前網頁的完整路徑，例如：
+   /schedule-app/cloudcream/index.html */
+const currentPath = window.location.pathname;
+
+/* 去掉檔名後的資料夾路徑：
+   /schedule-app/cloudcream */
+const folderPath =
+currentPath.substring(
+    0,
+    currentPath.lastIndexOf("/")
+);
+
+/* 拆成 ["schedule-app", "cloudcream"] */
+const pathParts =
+folderPath.split("/").filter(Boolean);
+
+/* 第一段 = repo 名稱 */
+const GITHUB_REPO = pathParts[0] || "";
+
+/* 其餘 = 子資料夾（可能多層） */
+const GITHUB_FOLDER = pathParts.slice(1).join("/");
 
 /* =========================
    DOM
@@ -850,6 +875,31 @@ async function loadApps(){
         const files =
         await response.json();
 
+        /* ===== 防呆：GitHub 沒回傳檔案清單時 =====
+           （通常是 repo 私人、名稱不對、或被限流）
+           直接把真正的原因顯示出來，方便除錯。 */
+        if(!Array.isArray(files)){
+
+            appGrid.innerHTML = `
+
+                <div class="loading">
+                    ❌ 讀不到資料夾<br>
+                    <span style="font-size:0.7em;opacity:0.8">
+                        原因：${files.message || "未知錯誤"}<br>
+                        repo：${GITHUB_REPO || "（抓不到）"}　
+                        資料夾：${GITHUB_FOLDER || "（抓不到）"}
+                    </span>
+                </div>
+
+            `;
+
+            return;
+        }
+
+        /* 目前這個檔案自己的檔名（要從清單排除） */
+        const currentFile =
+        currentPath.split("/").pop().toLowerCase();
+
         const htmlFiles =
         files.filter(file =>
 
@@ -858,7 +908,7 @@ async function loadApps(){
             .endsWith(".html") &&
 
             file.name
-            .toLowerCase() !== "index.html"
+            .toLowerCase() !== currentFile
 
         );
 
@@ -944,7 +994,10 @@ async function loadApps(){
         appGrid.innerHTML = `
 
             <div class="loading">
-                ❌ 無法讀取資料夾內容
+                ❌ 無法讀取資料夾內容<br>
+                <span style="font-size:0.7em;opacity:0.8">
+                    ${error.message || error}
+                </span>
             </div>
 
         `;
