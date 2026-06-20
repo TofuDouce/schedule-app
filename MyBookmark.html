@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" data-theme="" data-density="comfort" data-locked="0" data-gate="0" style="--font-read: 'Zen Maru Gothic', sans-serif; --title-size: 26px;"><head>
+<html lang="zh-Hant">
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>我的網站收藏 ✦</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;600&amp;family=Noto+Sans+TC:wght@300;400;500&amp;family=LXGW+WenKai+TC:wght@300;400;700&amp;family=Zen+Maru+Gothic:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;600&family=Noto+Sans+TC:wght@300;400;500&family=LXGW+WenKai+TC:wght@300;400;700&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 /* ── Design tokens (sync with 文庫) ── */
 :root {
@@ -208,6 +209,19 @@ header {
 .emoji-btn:hover { border-color: var(--gold); background: var(--gold-pale); }
 .emoji-btn.sel { border-color: var(--gold); background: var(--gold-pale); box-shadow: 0 0 0 2px var(--gold-pale); }
 
+/* ── Category manager ── */
+.cat-row { display: flex; align-items: center; gap: 7px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.cat-ico-btn { width: 36px; height: 36px; flex-shrink: 0; border: 1px solid var(--border); border-radius: 8px; background: var(--bg2); font-size: 1.05rem; cursor: pointer; transition: all 0.12s; }
+.cat-ico-btn:hover { border-color: var(--gold); background: var(--gold-pale); }
+.cat-name-input { flex: 1; min-width: 0; font-family: 'Noto Sans TC', sans-serif; font-size: 0.85rem; padding: 7px 10px; border: 1px solid var(--border); border-radius: 7px; background: var(--bg2); color: var(--ink); outline: none; transition: border-color 0.2s; }
+.cat-name-input:focus { border-color: var(--gold); }
+.cat-count { font-size: 0.6rem; color: var(--ink-muted); background: var(--bg3); border-radius: 8px; padding: 2px 6px; flex-shrink: 0; font-family: ui-monospace, monospace; min-width: 20px; text-align: center; }
+.cat-move-btn { width: 26px; height: 30px; flex-shrink: 0; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--ink-soft); cursor: pointer; font-size: 0.72rem; transition: all 0.12s; }
+.cat-move-btn:hover:not(:disabled) { background: var(--gold); color: #fff; border-color: var(--gold); }
+.cat-move-btn:disabled { opacity: 0.3; cursor: default; }
+.cat-del-btn { width: 30px; height: 30px; flex-shrink: 0; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--ink-muted); cursor: pointer; font-size: 0.72rem; transition: all 0.12s; }
+.cat-del-btn:hover { background: #f3dede; color: #c0605a; border-color: #e0c0c0; }
+
 /* ── Login gate (view protection) · 莫蘭迪紫 / 浮動月亮 ── */
 .gate {
   /* 自帶莫蘭迪紫色系，獨立於頁面佈景主題 */
@@ -288,7 +302,7 @@ html[data-gate="1"] header, html[data-gate="1"] .wrap { display: none !important
 /* 早期閘門判斷：在畫面繪製前決定是否要上鎖，避免內容閃現 */
 (function () {
   try {
-    var BAKED = /*<LOCK0>*/{"salt":"2cde0aa118c4c75f","hash":"5d45fc43aa2d1458f536f723b270f5d0984475380da80abe54642ba176a7c9f2","mode":"view"}/*</LOCK0>*/;
+    var BAKED = /*<LOCK0>*/null/*</LOCK0>*/;
     var raw = null; try { raw = localStorage.getItem('bookmark_lock'); } catch (e) {}
     var lock = (raw !== null) ? JSON.parse(raw) : BAKED;
     var unlocked = false; try { unlocked = localStorage.getItem('bookmark_unlocked') === '1'; } catch (e) {}
@@ -304,8 +318,8 @@ html[data-gate="1"] header, html[data-gate="1"] .wrap { display: none !important
 <header>
   <div class="logo">我的網站收藏 <span class="logo-sub">My Bookmark ☁ · 🔐</span></div>
   <div class="header-right">
-    <button class="btn-hdr" id="lockBtn" onclick="headerLockClick()" title="目前已解鎖，點此鎖定">🔓</button>
-    <button class="btn-hdr" onclick="openExport()">↧ 原始碼 <span id="dirtyDot" class="dot" style="display: inline;">●</span></button>
+    <button class="btn-hdr" id="lockBtn" onclick="headerLockClick()" title="編輯保護">🔓</button>
+    <button class="btn-hdr" onclick="openExport()">↧ 原始碼 <span id="dirtyDot" class="dot" style="display:none">●</span></button>
     <button class="btn-hdr" onclick="openSettings()">⚙</button>
   </div>
 </header>
@@ -314,11 +328,12 @@ html[data-gate="1"] header, html[data-gate="1"] .wrap { display: none !important
   <div class="toolbar">
     <input class="search-box" id="searchBox" placeholder="搜尋書籤…" oninput="render()">
     <button class="btn-tool lockable" onclick="openAddModal()">＋ 新增</button>
+    <button class="btn-tool lockable" onclick="openCatManager()">🗂 分類</button>
     <button class="btn-tool lockable" id="editModeBtn" onclick="toggleEditMode()">✎ 編輯</button>
-    <button class="btn-tool" id="toggleAllBtn" onclick="toggleAll()">全部收合</button>
+    <button class="btn-tool" id="toggleAllBtn" onclick="toggleAll()">全部展開</button>
   </div>
 
-  <div class="edit-banner" id="editBanner" style="display: none;">
+  <div class="edit-banner" id="editBanner" style="display:none">
     <span><b>編輯模式</b>：點任一書籤可修改，按 ✕ 可刪除。</span>
     <button onclick="toggleEditMode()">完成</button>
   </div>
@@ -373,22 +388,22 @@ html[data-gate="1"] header, html[data-gate="1"] .wrap { display: none !important
         <div class="s-preview"><span class="bm-ico">🔮</span><span class="bm-title" id="fontPreview">哈比人模擬器</span></div>
         <div class="s-row" style="margin-top:12px">
           <span class="s-label">字體大小</span>
-          <div class="slider-wrap"><input type="range" class="s-slider" id="sfontSize" min="13" max="32" step="1" oninput="applySettings()"><span class="s-val" id="sfontSizeVal">26px</span></div>
+          <div class="slider-wrap"><input type="range" class="s-slider" id="sfontSize" min="13" max="32" step="1" oninput="applySettings()"><span class="s-val" id="sfontSizeVal">15px</span></div>
         </div>
       </div>
       <div class="s-section">
         <div class="s-section-title">編輯保護</div>
-        <p class="lock-note" id="lockStatus">已設定密碼 · 目前已解鎖</p>
+        <p class="lock-note" id="lockStatus">尚未設定密碼</p>
         <div style="display:flex; flex-direction:column; gap:8px; margin-top:4px">
-          <button class="btn-act wide" id="lockToggleBtn" onclick="headerLockClick()" style="display: block;">🔒 立即鎖定（需登入）</button>
-          <button class="btn-act wide" id="lockSetBtn" onclick="setPassword()">變更密碼</button>
-          <button class="btn-act wide" id="lockRemoveBtn" onclick="removePassword()" style="display: block;">移除密碼保護</button>
+          <button class="btn-act wide" id="lockToggleBtn" onclick="headerLockClick()" style="display:none">🔓 解鎖以編輯</button>
+          <button class="btn-act wide" id="lockSetBtn" onclick="setPassword()">設定密碼</button>
+          <button class="btn-act wide" id="lockRemoveBtn" onclick="removePassword()" style="display:none">移除密碼保護</button>
         </div>
-        <div class="s-row" id="lockModeRow" style="display: flex; margin-top: 14px;">
+        <div class="s-row" id="lockModeRow" style="display:none; margin-top:14px">
           <span class="s-label">保護範圍</span>
           <div class="seg">
             <button class="seg-btn" id="lockModeEdit" onclick="setLockMode('edit')">僅編輯</button>
-            <button class="seg-btn active" id="lockModeView" onclick="setLockMode('view')">連瀏覽</button>
+            <button class="seg-btn" id="lockModeView" onclick="setLockMode('view')">連瀏覽</button>
           </div>
         </div>
         <p class="lock-note" style="margin-top:10px"><b>僅編輯</b>：任何人都能瀏覽，編輯才需密碼。<br><b>連瀏覽</b>：整站上鎖，沒密碼連看都看不到（會跳出登入畫面）。<br>密碼只存雜湊值並烤進檔案，設定／變更後記得從「↧ 原始碼」重新下載上傳 GitHub。<br>※ 純前端保護，僅防一般訪客，無法阻止懂技術者繞過。<b>若選「連瀏覽」又忘記密碼，自己也會進不去</b>，需改原始碼把 LOCK 改回 null。</p>
@@ -409,12 +424,36 @@ html[data-gate="1"] header, html[data-gate="1"] .wrap { display: none !important
     <div class="m-label">備註（可留空）</div>
     <input class="m-input" id="bmNote" placeholder="一句話說明…" maxlength="60">
     <div class="m-label">分類</div>
-    <select class="m-select" id="bmCat"><option value="c1781671678054" selected="">☁ 生活工具</option><option value="c1781671678055">🔮 模擬器</option><option value="c1781671678056">✨ 產生器</option><option value="c1781671678057">🎮 小小樂園</option><option value="c1781671678058">🫧 暫存工事中</option><option value="c1781671678059">💰 煉金術</option></select>
+    <select class="m-select" id="bmCat"></select>
     <div class="m-label">圖示</div>
-    <div class="emoji-row" id="bmEmoji"><button class="emoji-btn sel" onclick="pickEmoji('☁')">☁</button><button class="emoji-btn " onclick="pickEmoji('🔮')">🔮</button><button class="emoji-btn " onclick="pickEmoji('✨')">✨</button><button class="emoji-btn " onclick="pickEmoji('🎮')">🎮</button><button class="emoji-btn " onclick="pickEmoji('🫧')">🫧</button><button class="emoji-btn " onclick="pickEmoji('💰')">💰</button><button class="emoji-btn " onclick="pickEmoji('📖')">📖</button><button class="emoji-btn " onclick="pickEmoji('🌙')">🌙</button><button class="emoji-btn " onclick="pickEmoji('🌿')">🌿</button><button class="emoji-btn " onclick="pickEmoji('💌')">💌</button><button class="emoji-btn " onclick="pickEmoji('🏮')">🏮</button><button class="emoji-btn " onclick="pickEmoji('🐸')">🐸</button><button class="emoji-btn " onclick="pickEmoji('🌸')">🌸</button><button class="emoji-btn " onclick="pickEmoji('⚗️')">⚗️</button><button class="emoji-btn " onclick="pickEmoji('🦋')">🦋</button><button class="emoji-btn " onclick="pickEmoji('🌟')">🌟</button><button class="emoji-btn " onclick="pickEmoji('🍵')">🍵</button><button class="emoji-btn " onclick="pickEmoji('🪐')">🪐</button></div>
+    <div class="emoji-row" id="bmEmoji"></div>
     <div class="m-actions">
       <button class="btn-act" onclick="closeModal('bmModal')">取消</button>
       <button class="btn-act primary" id="bmConfirm" onclick="confirmBm()">建立</button>
+    </div>
+  </div>
+</div>
+
+<!-- Category manager -->
+<div class="modal-overlay" id="catModal" onclick="bgClose(event,'catModal')">
+  <div class="modal">
+    <h3>管理分類</h3>
+    <p class="m-desc">新增、改名、換圖示、調整順序或刪除分類。刪除有內容的分類時，裡面的書籤會自動移到其他分類。</p>
+    <div id="catList" style="margin-top:14px"></div>
+    <button class="btn-act primary wide" style="margin-top:14px" onclick="addCat()">＋ 新增分類</button>
+    <div class="m-actions">
+      <button class="btn-act" onclick="closeModal('catModal')">完成</button>
+    </div>
+  </div>
+</div>
+
+<!-- Category icon picker -->
+<div class="modal-overlay" id="catEmojiModal" onclick="bgClose(event,'catEmojiModal')">
+  <div class="modal" style="width:min(94vw, 360px)">
+    <h3>選擇圖示</h3>
+    <div class="emoji-row" id="catEmojiGrid" style="margin-top:10px"></div>
+    <div class="m-actions">
+      <button class="btn-act" onclick="closeModal('catEmojiModal')">取消</button>
     </div>
   </div>
 </div>
@@ -459,18 +498,21 @@ html[data-gate="1"] header, html[data-gate="1"] .wrap { display: none !important
   </div>
 </div>
 
-<div class="toast" id="toast">已刪除</div>
+<div class="toast" id="toast">原始碼已複製 ✓ 可貼進 GitHub</div>
 
 <script>
 // ════════ 書籤資料（匯出時會自動更新這一段） ════════
-const BMS = /*<BMS>*/[{"url":"https://tofudouce.github.io/schedule-app/cloudcream/love.html","title":"哈比人模擬器","note":"","cat":"c1781671678055","icon":"🔮"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/Hp.html","title":"霍格華茲模擬器","note":"","cat":"c1781671678055","icon":"🔮"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/Hunter.html","title":"HUNTER × HUNTER 模擬器","note":"","cat":"c1781671678055","icon":"🔮"},{"url":"https://tofudouce.github.io/schedule-app/tools/Bookmark.html","title":"書籤網站產生器","note":"","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/MakeMake.html","title":"風格轉換器","note":"","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/workspace/workshop.html","title":"Portal 生成器","note":"診所首頁快速建立工具","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/life/Dailysoft.html","title":"今天的小任務","note":"","cat":"c1781671678054","icon":"☁"},{"url":"https://tofudouce.github.io/schedule-app/games/DollyBaby.html","title":"我的娃娃養成觀測站","note":"","cat":"c1781671678057","icon":"🎮"},{"url":"https://tofudouce.github.io/schedule-app/life/taijiao-order.html","title":"一起吃太極鰲車輪餅","note":"","cat":"c1781671678054","icon":"☁"},{"url":"https://tofudouce.github.io/schedule-app/games/frogiveness.html","title":"原諒修行中心","note":"","cat":"c1781671678057","icon":"🎮"},{"url":"https://tofudouce.github.io/schedule-app/life/AllinETF.html","title":"ALL IN ETF","note":"","cat":"c1781671678059","icon":"💰"},{"url":"https://tofudouce.github.io/schedule-app/nexus/IDrift_no1.html","title":"ID產生器","note":"","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/nexus/IDrift_no2.html","title":"DreamID產生器","note":"(星空版)","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/nexus/ShiftPic.html","title":"班表產生器","note":"快速建立每月的班表圖片","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/nexus/archive/ShiftPic_IOS.html","title":"班表產生器IOS","note":"","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/nexus/PFPMaker.html","title":"LINE 風格頭像","note":"PFPMaker","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/nexus/chaos_GuildCard.html","title":"阿毛的萬象名片","note":"","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/nexus/","title":"抓取資料夾中網站","note":"","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/games/cat-witch.html","title":"貓巫醫的垃圾桶 ✦ 負能量黑洞宣洩口","note":"","cat":"c1781671678057","icon":"🎮"},{"url":"https://tofudouce.github.io/schedule-app/life/TradingCost.html","title":"台股交易成本計算","note":"","cat":"c1781671678059","icon":"💰"},{"url":"https://tofudouce.github.io/schedule-app/games/greenfrog.html","title":"綠色是原諒的顏色🐸","note":"","cat":"c1781671678057","icon":"🎮"},{"url":"https://tofudouce.github.io/schedule-app/textvaule.html","title":"我的文庫收藏","note":"textvaule","cat":"c1781671678054","icon":"☁"},{"url":"https://tofudouce.github.io/schedule-app/muse-forge.html","title":"萌想引擎v5","note":"","cat":"c1781671678055","icon":"🔮"},{"url":"https://tofudouce.github.io/schedule-app/MyBookmark.html","title":"我的網站收藏","note":"MyBookmark","cat":"c1781671678054","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/CodeVaule.html","title":"我的程式碼收藏","note":"CodeVaule","cat":"c1781671678054","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/Vault.html","title":"程式碼小金庫","note":"Vault","cat":"c1781671678054","icon":"☁"}]/*</BMS>*/;
-const CATS=[{"id":"c1781671678054","name":"生活工具","icon":"☁"},{"id":"c1781671678055","name":"模擬器","icon":"🔮"},{"id":"c1781671678056","name":"產生器","icon":"✨"},{"id":"c1781671678057","name":"小小樂園","icon":"🎮"},{"id":"c1781671678058","name":"暫存工事中","icon":"🫧"},{"id":"c1781671678059","name":"煉金術","icon":"💰"}];
-const SEED_LOCK = /*<LOCK>*/{"salt":"2cde0aa118c4c75f","hash":"5d45fc43aa2d1458f536f723b270f5d0984475380da80abe54642ba176a7c9f2","mode":"view"}/*</LOCK>*/;
+const BMS = /*<BMS>*/[{"url":"https://tofudouce.github.io/schedule-app/cloudcream/love.html","title":"哈比人模擬器","note":"","cat":"c1781671678055","icon":"🔮"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/Hp.html","title":"霍格華茲模擬器","note":"","cat":"c1781671678055","icon":"🔮"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/Hunter.html","title":"HUNTER × HUNTER 模擬器","note":"","cat":"c1781671678055","icon":"🔮"},{"url":"https://tofudouce.github.io/schedule-app/Bookmark.html","title":"書籤網站產生器","note":"","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/MakeMake.html","title":"風格轉換器","note":"","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/workspace/workshop.html","title":"Portal 生成器","note":"診所首頁快速建立工具","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/Daily%20soft.html","title":"今天的小任務","note":"","cat":"c1781671678054","icon":"☁"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/DollyBaby.html","title":"我的娃娃養成觀測站","note":"","cat":"c1781671678057","icon":"🎮"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/Sorry.html","title":"自動道歉機","note":"","cat":"c1781671678058","icon":"🫧"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/Test.html","title":"星語娃娃觀測站","note":"","cat":"c1781671678058","icon":"🫧"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/WheelOrder.html","title":"一起吃太極鰲車輪餅","note":"","cat":"c1781671678054","icon":"☁"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/catreplyoffice.html","title":"貓咪客服中心","note":"","cat":"c1781671678058","icon":"🫧"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/frogiveness.html","title":"原諒修行中心","note":"","cat":"c1781671678057","icon":"🎮"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/gametest.html","title":"魔法植物溫室","note":"","cat":"c1781671678058","icon":"🫧"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/if0050.html","title":"ALL IN ETF","note":"","cat":"c1781671678059","icon":"💰"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/witchymilk.html","title":"魔女鍊金工房","note":"","cat":"c1781671678058","icon":"🫧"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/Mart.html","title":"深夜便利商店","note":"","cat":"c1781671678057","icon":"🎮"},{"url":"https://tofudouce.github.io/schedule-app/nexus/if0050_moon.html","title":"如果當初買0050","note":"(星空版)","cat":"c1781671678059","icon":"💰"},{"url":"https://tofudouce.github.io/schedule-app/nexus/fee_calculator_moon.html","title":"交易成本計算機","note":"(星空版)","cat":"c1781671678059","icon":"💰"},{"url":"https://tofudouce.github.io/schedule-app/nexus/wealth_ledger.html","title":"每月資產動態記帳本","note":"(星空版)","cat":"c1781671678059","icon":"💰"},{"url":"https://tofudouce.github.io/schedule-app/nexus/IDrift_no1.html","title":"ID產生器","note":"","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/nexus/IDrift_no2.html","title":"DreamID產生器","note":"(星空版)","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/nexus/ShiftPic.html","title":"班表產生器","note":"快速建立每月的班表圖片","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/nexus/archive/ShiftPic_IOS.html","title":"班表產生器IOS","note":"","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/nexus/PFPMaker.html","title":"LINE 風格頭像","note":"PFPMaker","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/nexus/chaos_GuildCard.html","title":"阿毛的萬象名片","note":"","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/nexus/chaos_Whispering.html","title":"群星低語占卜站","note":"","cat":"c1781671678054","icon":"☁"},{"url":"https://tofudouce.github.io/schedule-app/nexus/","title":"抓取資料夾中網站","note":"","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/nexus/chaos_cat-witch.html","title":"貓巫醫的垃圾桶 ✦ 負能量黑洞宣洩口","note":"","cat":"c1781671678057","icon":"🎮"},{"url":"https://tofudouce.github.io/schedule-app/nexus/fee_calculator.html","title":" 台股交易成本計算","note":"","cat":"c1781671678059","icon":"💰"},{"url":"https://tofudouce.github.io/schedule-app/nexus/frog.html","title":"綠色是原諒的顏色🐸","note":"","cat":"c1781671678057","icon":"🎮"},{"url":"https://tofudouce.github.io/schedule-app/nexus/template_mystic.html","title":"✦ 星星模板","note":"","cat":"c1781671678058","icon":"🫧"},{"url":"https://tofudouce.github.io/schedule-app/textvaule.html","title":"我的文庫收藏","note":"textvaule","cat":"c1781671678054","icon":"☁"},{"url":"https://tofudouce.github.io/schedule-app/muse-forge.html","title":"萌想引擎v5","note":"","cat":"c1781671678055","icon":"🔮"},{"url":"https://tofudouce.github.io/schedule-app/MyBookmark.html","title":"我的網站收藏","note":"MyBookmark","cat":"c1781671678054","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/CodeVaule.html","title":"我的程式碼收藏","note":"CodeVaule","cat":"c1781671678054","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/Vault.html","title":"程式碼小金庫","note":"Vault","cat":"c1781671678054","icon":"☁"}]/*</BMS>*/;
+const SEED_CATS = /*<CATS>*/[{"id":"c1781671678054","name":"生活工具","icon":"☁"},{"id":"c1781671678055","name":"模擬器","icon":"🔮"},{"id":"c1781671678056","name":"產生器","icon":"✨"},{"id":"c1781671678057","name":"小小樂園","icon":"🎮"},{"id":"c1781671678058","name":"暫存工事中","icon":"🫧"},{"id":"c1781671678059","name":"煉金術","icon":"💰"}]/*</CATS>*/;
+const SEED_LOCK = /*<LOCK>*/null/*</LOCK>*/;
 const EMOJIS = ['☁','🔮','✨','🎮','🫧','💰','📖','🌙','🌿','💌','🏮','🐸','🌸','⚗️','🦋','🌟','🍵','🪐'];
+const CAT_EMOJIS = ['☁','🔮','✨','🎮','🫧','💰','📁','🗂️','📄','📝','🎨','📦','🌙','💡','⚗️','🪐','🖋️','🌿','🏷️','📚','🍵','🌸'];
 
 // ── State ──
 let DATA = JSON.parse(localStorage.getItem('bookmark_data') || 'null');
 if (!DATA || !Array.isArray(DATA)) DATA = JSON.parse(JSON.stringify(BMS));
+let CATS = JSON.parse(localStorage.getItem('bookmark_cats') || 'null');
+if (!CATS || !Array.isArray(CATS) || !CATS.length) CATS = JSON.parse(JSON.stringify(SEED_CATS));
 let LOCK; { const st = localStorage.getItem('bookmark_lock'); LOCK = (st !== null) ? JSON.parse(st) : SEED_LOCK; }
 let unlocked = !(LOCK && LOCK.hash) ? true : (localStorage.getItem('bookmark_unlocked') === '1');
 let dirty = localStorage.getItem('bookmark_dirty') === '1';
@@ -489,6 +531,7 @@ let selectedIcon = '✨';
 
 // ── Persist ──
 function saveData() { localStorage.setItem('bookmark_data', JSON.stringify(DATA)); }
+function saveCats() { localStorage.setItem('bookmark_cats', JSON.stringify(CATS)); }
 function saveLock() { localStorage.setItem('bookmark_lock', LOCK ? JSON.stringify(LOCK) : 'null'); }
 function saveSettings() { localStorage.setItem('bookmark_settings', JSON.stringify(S)); }
 function saveOpen() { localStorage.setItem('bookmark_open', JSON.stringify([...openFolders])); }
@@ -671,7 +714,68 @@ function deleteBookmark(i) {
   showToast('已刪除');
 }
 
-// ── Edit protection (lock) ──
+// ── Category manager ──
+function genCatId() { return 'c' + Date.now() + Math.floor(Math.random() * 1000); }
+function openCatManager() { if (!guard()) return; renderCatList(); document.getElementById('catModal').classList.add('show'); }
+function renderCatList() {
+  document.getElementById('catList').innerHTML = CATS.map((c, idx) => {
+    const count = DATA.filter(b => b.cat === c.id).length;
+    return `<div class="cat-row">
+      <button class="cat-ico-btn" onclick="openCatEmoji('${c.id}')">${c.icon || '📁'}</button>
+      <input class="cat-name-input" value="${escHtml(c.name)}" maxlength="20" oninput="renameCat('${c.id}', this.value)">
+      <span class="cat-count">${count}</span>
+      <button class="cat-move-btn" ${idx === 0 ? 'disabled' : ''} onclick="moveCat('${c.id}',-1)">↑</button>
+      <button class="cat-move-btn" ${idx === CATS.length - 1 ? 'disabled' : ''} onclick="moveCat('${c.id}',1)">↓</button>
+      <button class="cat-del-btn" onclick="deleteCat('${c.id}')">✕</button>
+    </div>`;
+  }).join('');
+}
+function renameCat(id, val) {
+  const c = catById(id); if (!c) return;
+  c.name = val; saveCats(); setDirty(true); render();
+}
+function moveCat(id, dir) {
+  const i = CATS.findIndex(c => c.id === id); if (i < 0) return;
+  const j = i + dir; if (j < 0 || j >= CATS.length) return;
+  const tmp = CATS[i]; CATS[i] = CATS[j]; CATS[j] = tmp;
+  saveCats(); setDirty(true); renderCatList(); render();
+}
+function addCat() {
+  const c = { id: genCatId(), name: '新分類', icon: '📁' };
+  CATS.push(c); openFolders.add(c.id);
+  saveCats(); saveOpen(); setDirty(true); renderCatList(); render();
+  setTimeout(() => {
+    const inputs = document.querySelectorAll('#catList .cat-name-input');
+    const last = inputs[inputs.length - 1];
+    if (last) { last.focus(); last.select(); }
+  }, 60);
+}
+function deleteCat(id) {
+  if (CATS.length <= 1) { showToast('至少要保留一個分類'); return; }
+  const c = catById(id); if (!c) return;
+  const items = DATA.filter(b => b.cat === id);
+  const target = CATS.find(x => x.id !== id);
+  let msg = `確定刪除分類「${c.name}」？`;
+  if (items.length) msg += `\n其中 ${items.length} 筆書籤會移到「${target.name}」。`;
+  if (!confirm(msg)) return;
+  items.forEach(b => b.cat = target.id);
+  CATS.splice(CATS.findIndex(x => x.id === id), 1);
+  openFolders.delete(id);
+  saveCats(); saveData(); saveOpen(); setDirty(true);
+  renderCatList(); render(); showToast('已刪除分類');
+}
+let catEmojiId = null;
+function openCatEmoji(id) {
+  catEmojiId = id;
+  document.getElementById('catEmojiGrid').innerHTML = CAT_EMOJIS.map(em =>
+    `<button class="emoji-btn" onclick="setCatIcon('${em}')">${em}</button>`).join('');
+  document.getElementById('catEmojiModal').classList.add('show');
+}
+function setCatIcon(em) {
+  const c = catById(catEmojiId); if (c) c.icon = em;
+  saveCats(); setDirty(true); closeModal('catEmojiModal'); renderCatList(); render();
+}
+
 function sha256hex(ascii) {
   function rr(v, a) { return (v >>> a) | (v << (32 - a)); }
   var mp = Math.pow, maxWord = mp(2, 32), result = '';
@@ -874,6 +978,7 @@ function buildSource() {
   const root = document.documentElement;
   const list = document.getElementById('list'); const listHtml = list.innerHTML; list.innerHTML = '';
   const sb = document.getElementById('searchBox'); const sv = sb.value; sb.value = '';
+  const catList = document.getElementById('catList'); const clh = catList.innerHTML; catList.innerHTML = '';
   const prevTheme = root.getAttribute('data-theme'); root.setAttribute('data-theme', '');
   const prevDens = root.getAttribute('data-density'); root.setAttribute('data-density', 'comfort');
   const prevLock = root.getAttribute('data-locked'); root.setAttribute('data-locked', '0');
@@ -882,17 +987,20 @@ function buildSource() {
   shown.forEach(o => o.classList.remove('show'));
 
   const dataStr = JSON.stringify(DATA).replace(/<\//g, '<\\/');
+  const catStr = JSON.stringify(CATS).replace(/<\//g, '<\\/');
   const lockStr = JSON.stringify(LOCK).replace(/<\//g, '<\\/');
   const reD = new RegExp('/\\*<BMS>\\*/[\\s\\S]*?/\\*<\\/BMS>\\*/');
+  const reC = new RegExp('/\\*<CATS>\\*/[\\s\\S]*?/\\*<\\/CATS>\\*/');
   const reL = new RegExp('/\\*<LOCK>\\*/[\\s\\S]*?/\\*<\\/LOCK>\\*/');
   const reL0 = new RegExp('/\\*<LOCK0>\\*/[\\s\\S]*?/\\*<\\/LOCK0>\\*/');
   let src = '<!DOCTYPE html>\n' + root.outerHTML;
   src = src.replace(reD, ('/*' + '<BMS>' + '*/') + dataStr + ('/*' + '</BMS>' + '*/'));
+  src = src.replace(reC, ('/*' + '<CATS>' + '*/') + catStr + ('/*' + '</CATS>' + '*/'));
   src = src.replace(reL, ('/*' + '<LOCK>' + '*/') + lockStr + ('/*' + '</LOCK>' + '*/'));
   src = src.replace(reL0, ('/*' + '<LOCK0>' + '*/') + lockStr + ('/*' + '</LOCK0>' + '*/'));
 
   // restore live DOM
-  list.innerHTML = listHtml; sb.value = sv;
+  list.innerHTML = listHtml; sb.value = sv; catList.innerHTML = clh;
   if (prevTheme !== null) root.setAttribute('data-theme', prevTheme);
   if (prevDens !== null) root.setAttribute('data-density', prevDens);
   if (prevLock !== null) root.setAttribute('data-locked', prevLock);
@@ -920,9 +1028,12 @@ function copySource() {
 }
 function resetToBaked() {
   if (!guard()) return;
-  if (!confirm('清除本機所有新增與修改，恢復成網頁內建的書籤？')) return;
+  if (!confirm('清除本機所有新增與修改，恢復成網頁內建的書籤與分類？')) return;
   localStorage.removeItem('bookmark_data');
+  localStorage.removeItem('bookmark_cats');
   DATA = JSON.parse(JSON.stringify(BMS));
+  CATS = JSON.parse(JSON.stringify(SEED_CATS));
+  openFolders = new Set(CATS.map(c => c.id)); saveOpen();
   setDirty(false); render();
   closeModal('exportModal');
   showToast('已重設為網頁內建書籤');
@@ -931,7 +1042,7 @@ function openExport() { document.getElementById('exportModal').classList.add('sh
 
 // ── JSON backup / restore ──
 function exportJSON() {
-  const payload = { type: 'bookmark-backup', version: 2, exportedAt: new Date().toISOString(), bookmarks: DATA };
+  const payload = { type: 'bookmark-backup', version: 2, exportedAt: new Date().toISOString(), cats: CATS, bookmarks: DATA };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json;charset=utf-8' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -955,6 +1066,11 @@ function importJSON(event) {
       const existUrls = new Set(DATA.map(b => b.url));
       const fresh = incoming.filter(b => !existUrls.has(b.url));
       if (!confirm(`檔案內共 ${incoming.length} 筆書籤，其中 ${fresh.length} 筆是新的。\n確定合併匯入？（重複網址會自動略過）`)) { event.target.value = ''; return; }
+      if (Array.isArray(parsed.cats)) {
+        const have = new Set(CATS.map(c => c.id));
+        parsed.cats.forEach(c => { if (c && c.id && c.name && !have.has(c.id)) { CATS.push({ id: c.id, name: c.name, icon: c.icon || '📁' }); openFolders.add(c.id); } });
+        saveCats(); saveOpen();
+      }
       fresh.forEach(b => DATA.push({ url: b.url, title: b.title, note: b.note || '', cat: b.cat || CATS[0].id, icon: b.icon || '✨' }));
       saveData(); setDirty(true); render();
       showToast(`已匯入 ${fresh.length} 筆新書籤 ✓`);
@@ -973,6 +1089,8 @@ function showToast(msg) {
 // ── Esc closes top-most overlay · Gate Enter submits ──
 document.addEventListener('keydown', e => {
   if (e.key !== 'Escape') return;
+  if (document.getElementById('catEmojiModal').classList.contains('show')) return closeModal('catEmojiModal');
+  if (document.getElementById('catModal').classList.contains('show')) return closeModal('catModal');
   if (document.getElementById('bmModal').classList.contains('show')) return closeModal('bmModal');
   if (document.getElementById('exportModal').classList.contains('show')) return closeModal('exportModal');
   if (document.getElementById('settingsOverlay').classList.contains('show')) return closeSettings();
@@ -989,6 +1107,5 @@ setDirty(dirty);
 updateLockUI();
 render();
 </script>
-
-
-</body></html>
+</body>
+</html>
