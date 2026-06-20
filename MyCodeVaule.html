@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>我的程式碼收藏 ✦</title>
+<title>我的程式碼收藏 v3（登入版） ✦</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;600&family=Noto+Sans+TC:wght@300;400;500&family=LXGW+WenKai+TC:wght@300;400;700&family=Zen+Maru+Gothic:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 /* ── Design tokens (sync with 文庫 / 書籤) ── */
@@ -67,6 +67,11 @@ header {
 .btn-tool { font-family: 'Noto Sans TC', sans-serif; font-size: 0.76rem; padding: 8px 12px; border-radius: 9px; border: 1px solid var(--border); background: var(--surface); color: var(--ink-soft); cursor: pointer; white-space: nowrap; transition: all 0.15s; }
 .btn-tool:hover { background: var(--gold); border-color: var(--gold); color: #fff; }
 .btn-tool.active { background: var(--gold); border-color: var(--gold); color: #fff; }
+
+/* ── Edit protection ── */
+[data-locked="1"] .lockable { display: none !important; }
+[data-locked="1"] #lockBtn { color: var(--gold); border-color: var(--gold); background: rgba(192,154,90,0.12); }
+.lock-note { font-size: 0.72rem; color: var(--ink-muted); line-height: 1.7; }
 
 /* ── Edit banner ── */
 .edit-banner { display: flex; align-items: center; gap: 10px; background: var(--gold-pale); border: 1px dashed var(--gold); color: var(--ink-soft); font-size: 0.78rem; padding: 9px 14px; border-radius: 10px; margin-bottom: 12px; }
@@ -246,6 +251,19 @@ header {
 .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(16px); background: var(--ink); color: var(--gold); font-size: 0.78rem; padding: 8px 18px; border-radius: 18px; z-index: 400; opacity: 0; transition: all 0.28s; pointer-events: none; white-space: nowrap; box-shadow: 0 4px 16px var(--shadow-md); }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+/* ── Login gate (view protection) ── */
+.gate { position: fixed; inset: 0; z-index: 500; background: var(--bg); display: none; align-items: center; justify-content: center; padding: 24px; padding-top: max(24px, env(safe-area-inset-top)); }
+.gate.show { display: flex; }
+.gate-box { width: min(92vw, 340px); text-align: center; }
+.gate-emoji { font-size: 2.2rem; margin-bottom: 10px; }
+.gate-logo { font-family: 'Noto Serif TC', serif; font-size: 1.25rem; font-weight: 600; color: var(--gold); letter-spacing: 0.08em; margin-bottom: 6px; }
+.gate-sub { font-size: 0.82rem; color: var(--ink-muted); margin-bottom: 22px; }
+.gate-input { width: 100%; font-size: 1rem; padding: 12px 14px; border-radius: 11px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); outline: none; text-align: center; letter-spacing: 0.12em; transition: border-color 0.2s; }
+.gate-input:focus { border-color: var(--gold); }
+.gate-btn { width: 100%; margin-top: 10px; font-size: 0.94rem; padding: 12px; border-radius: 11px; border: none; background: var(--gold); color: #fff; cursor: pointer; transition: background 0.15s; }
+.gate-btn:hover { background: var(--accent-soft); }
+.gate-err { color: #c0605a; font-size: 0.78rem; min-height: 18px; margin-top: 12px; }
+
 /* ── Select bar ── */
 .selbar { position: fixed; left: 50%; bottom: 18px; bottom: max(18px, env(safe-area-inset-bottom)); transform: translateX(-50%) translateY(24px); background: var(--ink); border: 1px solid var(--border); border-radius: 16px; padding: 9px 12px; display: flex; align-items: center; gap: 7px; z-index: 150; opacity: 0; pointer-events: none; transition: all 0.24s; box-shadow: 0 8px 28px var(--shadow-md); max-width: calc(100vw - 24px); flex-wrap: wrap; justify-content: center; }
 .selbar.show { opacity: 1; pointer-events: all; transform: translateX(-50%) translateY(0); }
@@ -268,8 +286,9 @@ header {
 <body>
 
 <header>
-  <div class="logo">我的程式碼收藏 <span class="logo-sub">&lt;/&gt; code vault</span></div>
+  <div class="logo">我的程式碼收藏 v3 <span class="logo-sub">&lt;/&gt; code vault · 🔐</span></div>
   <div class="header-right">
+    <button class="btn-hdr" id="lockBtn" onclick="headerLockClick()" title="編輯保護">🔓</button>
     <button class="btn-hdr" onclick="openExport()">↧ 原始碼 <span id="dirtyDot" class="dot" style="display:none">●</span></button>
     <button class="btn-hdr" onclick="openSettings()">⚙</button>
   </div>
@@ -278,9 +297,9 @@ header {
 <div class="wrap">
   <div class="toolbar">
     <input class="search-box" id="searchBox" placeholder="搜尋程式碼（標題／備註／內容）…" oninput="render()">
-    <button class="btn-tool" onclick="openAddModal()">＋ 新增</button>
-    <button class="btn-tool" onclick="openCatManager()">🗂 分類</button>
-    <button class="btn-tool" id="editModeBtn" onclick="toggleEditMode()">✎ 編輯</button>
+    <button class="btn-tool lockable" onclick="openAddModal()">＋ 新增</button>
+    <button class="btn-tool lockable" onclick="openCatManager()">🗂 分類</button>
+    <button class="btn-tool lockable" id="editModeBtn" onclick="toggleEditMode()">✎ 編輯</button>
     <button class="btn-tool" id="selectModeBtn" onclick="toggleSelectMode()">☑ 多選</button>
     <button class="btn-tool" id="toggleAllBtn" onclick="toggleAll()">全部收合</button>
   </div>
@@ -293,7 +312,7 @@ header {
   <div id="list"></div>
 
   <div class="footer">
-    ✦ ─── 我的程式碼收藏 ─── ✦<br>
+    ✦ ─── 我的程式碼收藏 v3 ─── ✦<br>
     Designed with ♥ by <b>ChuChu</b> · © 2026
   </div>
 </div>
@@ -318,7 +337,7 @@ header {
       <button class="btn-foot" onclick="copyDetailCode()">⧉ 複製</button>
       <button class="btn-foot" onclick="openPreviewNewTab()">⤢ 新分頁開啟</button>
       <span class="spacer"></span>
-      <button class="btn-foot" onclick="editFromDetail()">✎ 編輯</button>
+      <button class="btn-foot lockable" onclick="editFromDetail()">✎ 編輯</button>
       <button class="btn-foot primary" onclick="downloadOne()">↧ 下載 HTML</button>
     </div>
   </div>
@@ -372,6 +391,23 @@ header {
           <span class="s-label">程式碼大小</span>
           <div class="slider-wrap"><input type="range" class="s-slider" id="scodeSize" min="11" max="17" step="1" oninput="applySettings()"><span class="s-val" id="scodeSizeVal">13px</span></div>
         </div>
+      </div>
+      <div class="s-section">
+        <div class="s-section-title">編輯保護</div>
+        <p class="lock-note" id="lockStatus">尚未設定密碼</p>
+        <div style="display:flex; flex-direction:column; gap:8px; margin-top:4px">
+          <button class="btn-act wide" id="lockToggleBtn" onclick="headerLockClick()" style="display:none">🔓 解鎖以編輯</button>
+          <button class="btn-act wide" id="lockSetBtn" onclick="setPassword()">設定密碼</button>
+          <button class="btn-act wide" id="lockRemoveBtn" onclick="removePassword()" style="display:none">移除密碼保護</button>
+        </div>
+        <div class="s-row" id="lockModeRow" style="display:none; margin-top:14px">
+          <span class="s-label">保護範圍</span>
+          <div class="seg">
+            <button class="seg-btn" id="lockModeEdit" onclick="setLockMode('edit')">僅編輯</button>
+            <button class="seg-btn" id="lockModeView" onclick="setLockMode('view')">連瀏覽</button>
+          </div>
+        </div>
+        <p class="lock-note" style="margin-top:10px"><b>僅編輯</b>：任何人都能瀏覽，編輯才需密碼。<br><b>連瀏覽</b>：整站上鎖，沒密碼連看都看不到（會跳出登入畫面）。<br>密碼只存雜湊值並烤進檔案，設定／變更後記得從「↧ 原始碼」重新下載上傳 GitHub。<br>※ 純前端保護，僅防一般訪客，無法阻止懂技術者繞過。<b>若選「連瀏覽」又忘記密碼，自己也會進不去</b>，需改原始碼把 LOCK 改回 null。</p>
       </div>
       <button class="s-reset" onclick="resetSettings()">↺ 恢復版面預設值</button>
     </div>
@@ -442,7 +478,7 @@ header {
     <p class="m-desc">把全部程式碼存成 JSON 檔保管，或在另一台裝置／瀏覽器還原。還原採合併方式，標題＋內容相同者會自動略過。</p>
     <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px">
       <button class="btn-act wide" onclick="exportJSON()">⬇ 匯出 JSON 備份</button>
-      <button class="btn-act wide" onclick="document.getElementById('jsonFile').click()">⬆ 匯入 JSON 還原</button>
+      <button class="btn-act wide lockable" onclick="document.getElementById('jsonFile').click()">⬆ 匯入 JSON 還原</button>
       <input type="file" id="jsonFile" accept=".json,application/json" style="display:none" onchange="importJSON(event)">
     </div>
 
@@ -453,7 +489,7 @@ header {
     </div>
 
     <div class="m-divider"></div>
-    <button class="btn-reset-line" onclick="resetToBaked()">↺ 重設為網頁內建範例（清除本機新增與修改）</button>
+    <button class="btn-reset-line lockable" onclick="resetToBaked()">↺ 重設為網頁內建範例（清除本機新增與修改）</button>
   </div>
 </div>
 
@@ -465,28 +501,42 @@ header {
   <button class="selbar-btn ghost" onclick="toggleSelectMode()">完成</button>
 </div>
 
+<div class="gate" id="gate">
+  <div class="gate-box">
+    <div class="gate-emoji">🔐</div>
+    <div class="gate-logo">我的程式碼收藏 v3</div>
+    <div class="gate-sub">此頁面已上鎖，請輸入密碼進入</div>
+    <input type="password" class="gate-input" id="gateInput" placeholder="密碼" autocomplete="current-password">
+    <button class="gate-btn" onclick="gateSubmit()">進入</button>
+    <div class="gate-err" id="gateErr"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
 // ════════ 程式碼資料（匯出時會自動更新這一段） ════════
 const SEED = /*<DB>*/[{"title":"範例：漸層歡迎卡片","note":"純 HTML/CSS，可直接預覽","cat":"c1","icon":"🧩","code":"<!DOCTYPE html>\n<html lang=\"zh-Hant\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<style>\n  body{margin:0;height:100vh;display:flex;align-items:center;justify-content:center;\n       background:linear-gradient(135deg,#F9F6F0,#EAD8A8,#C09A5A);font-family:system-ui,sans-serif;}\n  .card{background:rgba(255,255,255,.85);backdrop-filter:blur(6px);padding:40px 48px;\n        border-radius:20px;box-shadow:0 20px 60px rgba(120,90,40,.25);text-align:center;}\n  h1{margin:0 0 8px;color:#5C4A35;font-size:1.6rem;letter-spacing:.05em;}\n  p{margin:0;color:#9A8470;}\n  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#C09A5A;margin:14px 4px 0;\n       animation:b 1.2s infinite ease-in-out;}\n  .dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}\n  @keyframes b{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}\n</style>\n</head>\n<body>\n  <div class=\"card\">\n    <h1>歡迎回來 ✦</h1>\n    <p>這是即時預覽，編輯後立刻看到結果</p>\n    <div><span class=\"dot\"></span><span class=\"dot\"></span><span class=\"dot\"></span></div>\n  </div>\n</body>\n</html>"},{"title":"範例：計數按鈕（含 JS）","note":"測試預覽能不能跑 JavaScript","cat":"c1","icon":"🛠️","code":"<!DOCTYPE html>\n<html lang=\"zh-Hant\">\n<head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<style>\n body{margin:0;height:100vh;display:grid;place-items:center;background:#18140F;font-family:system-ui,sans-serif;color:#E8DCC8;}\n button{font-size:1.1rem;padding:14px 28px;border-radius:14px;border:1px solid #C09A5A;\n        background:#211C16;color:#C09A5A;cursor:pointer;transition:.15s;}\n button:hover{background:#C09A5A;color:#18140F;}\n .n{font-size:3rem;font-weight:700;margin-bottom:18px;color:#C09A5A;}\n</style></head>\n<body>\n <div style=\"text-align:center\">\n  <div class=\"n\" id=\"n\">0</div>\n  <button onclick=\"c()\">點我 +1</button>\n </div>\n <script>let i=0;function c(){i++;document.getElementById('n').textContent=i;}<\/script>\n</body>\n</html>"}]/*</DB>*/;
 const SEED_CATS = /*<CATS>*/[{"id":"c1","name":"元件","icon":"🧩"},{"id":"c2","name":"頁面","icon":"📄"},{"id":"c3","name":"工具","icon":"🛠️"},{"id":"c4","name":"草稿","icon":"📝"},{"id":"c5","name":"模板","icon":"🎨"}]/*</CATS>*/;
+const SEED_LOCK = /*<LOCK>*/null/*</LOCK>*/;
 const EMOJIS = ['🧩','📄','🛠️','📝','🎨','✨','🔮','☁','🌙','💡','⚗️','🪐','📦','🖋️','🌿','🦋'];
 const CAT_EMOJIS = ['📁','🗂️','🧩','📄','🛠️','📝','🎨','📦','✨','🔮','☁','🌙','💡','⚗️','🪐','🖋️','🌿','🏷️','📚','💰','🎮','🫧'];
 
 // ── State ──
-let DATA = JSON.parse(localStorage.getItem('mycode_db') || 'null');
+let DATA = JSON.parse(localStorage.getItem('mycodev3_db') || 'null');
 if (!DATA || !Array.isArray(DATA)) DATA = JSON.parse(JSON.stringify(SEED));
-let CATS = JSON.parse(localStorage.getItem('mycode_cats') || 'null');
+let CATS = JSON.parse(localStorage.getItem('mycodev3_cats') || 'null');
 if (!CATS || !Array.isArray(CATS) || !CATS.length) CATS = JSON.parse(JSON.stringify(SEED_CATS));
-let dirty = localStorage.getItem('mycode_dirty') === '1';
+let LOCK; { const st = localStorage.getItem('mycodev3_lock'); LOCK = (st !== null) ? JSON.parse(st) : SEED_LOCK; }
+let unlocked = !(LOCK && LOCK.hash) ? true : (localStorage.getItem('mycodev3_unlocked') === '1');
+let dirty = localStorage.getItem('mycodev3_dirty') === '1';
 
 const DEFAULTS = { theme: 'light', density: 'comfort', fontFamily: "'Noto Serif TC', serif", fontSize: 15, codeSize: 13 };
-let S = JSON.parse(localStorage.getItem('mycode_settings') || 'null') || { ...DEFAULTS };
+let S = JSON.parse(localStorage.getItem('mycodev3_settings') || 'null') || { ...DEFAULTS };
 S = { ...DEFAULTS, ...S };
 
 let openFolders;
-const savedOpen = JSON.parse(localStorage.getItem('mycode_open') || 'null');
+const savedOpen = JSON.parse(localStorage.getItem('mycodev3_open') || 'null');
 openFolders = savedOpen ? new Set(savedOpen) : new Set(CATS.map(c => c.id));
 
 let editMode = false;
@@ -499,15 +549,16 @@ let detailIndex = -1;
 
 // ── Persist ──
 function saveData() {
-  try { localStorage.setItem('mycode_db', JSON.stringify(DATA)); }
+  try { localStorage.setItem('mycodev3_db', JSON.stringify(DATA)); }
   catch (e) { showToast('⚠ 本機儲存空間已滿，請匯出備份'); }
 }
-function saveCats() { localStorage.setItem('mycode_cats', JSON.stringify(CATS)); }
-function saveSettings() { localStorage.setItem('mycode_settings', JSON.stringify(S)); }
-function saveOpen() { localStorage.setItem('mycode_open', JSON.stringify([...openFolders])); }
+function saveCats() { localStorage.setItem('mycodev3_cats', JSON.stringify(CATS)); }
+function saveLock() { localStorage.setItem('mycodev3_lock', LOCK ? JSON.stringify(LOCK) : 'null'); }
+function saveSettings() { localStorage.setItem('mycodev3_settings', JSON.stringify(S)); }
+function saveOpen() { localStorage.setItem('mycodev3_open', JSON.stringify([...openFolders])); }
 function setDirty(v) {
   dirty = v;
-  localStorage.setItem('mycode_dirty', v ? '1' : '0');
+  localStorage.setItem('mycodev3_dirty', v ? '1' : '0');
   document.getElementById('dirtyDot').style.display = v ? 'inline' : 'none';
 }
 
@@ -663,6 +714,7 @@ function updateToggleAllBtn() {
 
 // ── Edit mode ──
 function toggleEditMode() {
+  if (!editMode && !guard()) return;
   editMode = !editMode;
   if (editMode && selectMode) exitSelectMode();
   document.getElementById('editModeBtn').classList.toggle('active', editMode);
@@ -768,6 +820,165 @@ function downloadAllZip() {
   if (!DATA.length) { showToast('沒有可打包的程式碼'); return; }
   buildZip(DATA.map((b, i) => i));
   closeModal('exportModal');
+}
+
+// ── Edit protection (lock) ──
+function sha256hex(ascii) {
+  function rr(v, a) { return (v >>> a) | (v << (32 - a)); }
+  var mp = Math.pow, maxWord = mp(2, 32), result = '';
+  var words = [], bitLen = ascii.length * 8, hash = [], k = [], pc = 0, comp = {};
+  for (var cand = 2; pc < 64; cand++) {
+    if (!comp[cand]) {
+      for (var i = 0; i < 313; i += cand) comp[i] = cand;
+      hash[pc] = (mp(cand, 0.5) * maxWord) | 0;
+      k[pc++] = (mp(cand, 1 / 3) * maxWord) | 0;
+    }
+  }
+  ascii += '\x80';
+  while (ascii.length % 64 - 56) ascii += '\x00';
+  for (var i = 0; i < ascii.length; i++) {
+    var j = ascii.charCodeAt(i);
+    if (j >> 8) return '';
+    words[i >> 2] |= j << ((3 - i) % 4) * 8;
+  }
+  words[words.length] = ((bitLen / maxWord) | 0);
+  words[words.length] = (bitLen);
+  for (var j = 0; j < words.length;) {
+    var w = words.slice(j, j += 16), oldHash = hash;
+    hash = hash.slice(0, 8);
+    for (var i = 0; i < 64; i++) {
+      var w15 = w[i - 15], w2 = w[i - 2], a = hash[0], e = hash[4];
+      var t1 = hash[7] + (rr(e, 6) ^ rr(e, 11) ^ rr(e, 25)) + ((e & hash[5]) ^ ((~e) & hash[6])) + k[i]
+        + (w[i] = i < 16 ? w[i] : (w[i - 16] + (rr(w15, 7) ^ rr(w15, 18) ^ (w15 >>> 3)) + w[i - 7] + (rr(w2, 17) ^ rr(w2, 19) ^ (w2 >>> 10))) | 0);
+      var t2 = (rr(a, 2) ^ rr(a, 13) ^ rr(a, 22)) + ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]));
+      hash = [(t1 + t2) | 0].concat(hash);
+      hash[4] = (hash[4] + t1) | 0;
+    }
+    for (var i = 0; i < 8; i++) hash[i] = (hash[i] + oldHash[i]) | 0;
+  }
+  for (var i = 0; i < 8; i++) for (var j = 3; j + 1; j--) { var b = (hash[i] >> (j * 8)) & 255; result += ((b < 16) ? 0 : '') + b.toString(16); }
+  return result;
+}
+function utf8s(s) { return unescape(encodeURIComponent(s)); }
+function randHex(bytes) {
+  var a = new Uint8Array(bytes);
+  if (window.crypto && crypto.getRandomValues) crypto.getRandomValues(a);
+  else for (var i = 0; i < bytes; i++) a[i] = Math.floor(Math.random() * 256);
+  var s = ''; for (var i = 0; i < a.length; i++) s += ('0' + a[i].toString(16)).slice(-2);
+  return s;
+}
+function isProtected() { return !!(LOCK && LOCK.hash); }
+function canEdit() { return !isProtected() || unlocked; }
+function hashPass(salt, pass) { return sha256hex(utf8s(salt + '|' + pass)); }
+function guard() { if (canEdit()) return true; promptUnlock(); return false; }
+
+function promptUnlock() {
+  if (!isProtected()) return;
+  const p = prompt('輸入編輯密碼以解鎖：');
+  if (p === null) return;
+  if (hashPass(LOCK.salt, p) === LOCK.hash) {
+    unlocked = true; localStorage.setItem('mycodev3_unlocked', '1');
+    updateLockUI(); render(); showToast('已解鎖，可以編輯 ✓');
+  } else showToast('密碼錯誤');
+}
+function lockNow() {
+  unlocked = false; localStorage.removeItem('mycodev3_unlocked');
+  if (editMode) toggleEditMode();
+  if (selectMode) toggleSelectMode();
+  updateLockUI(); render(); showToast('已鎖定（唯讀）');
+}
+function headerLockClick() {
+  if (!isProtected()) { setPassword(); return; }
+  if (unlocked) lockNow(); else promptUnlock();
+}
+function setPassword() {
+  if (isProtected() && !unlocked) { promptUnlock(); return; }
+  if (isProtected()) {
+    const cur = prompt('輸入目前的密碼：'); if (cur === null) return;
+    if (hashPass(LOCK.salt, cur) !== LOCK.hash) { showToast('目前密碼錯誤'); return; }
+  }
+  let np = prompt('設定新的編輯密碼（至少 4 個字）：'); if (np === null) return;
+  np = np.trim(); if (np.length < 4) { showToast('密碼至少 4 個字'); return; }
+  const np2 = prompt('再輸入一次新密碼：'); if (np2 === null) return;
+  if (np !== np2) { showToast('兩次輸入不一致'); return; }
+  const salt = randHex(8);
+  const mode = (LOCK && LOCK.mode) ? LOCK.mode : 'edit';
+  LOCK = { salt: salt, hash: hashPass(salt, np), mode: mode };
+  saveLock(); unlocked = true; localStorage.setItem('mycodev3_unlocked', '1');
+  setDirty(true); updateLockUI(); render();
+  showToast('已設定密碼 ✓ 記得重新下載原始碼上傳 GitHub');
+}
+function removePassword() {
+  if (!isProtected()) { showToast('目前沒有設定密碼'); return; }
+  const cur = prompt('輸入目前的密碼以移除保護：'); if (cur === null) return;
+  if (hashPass(LOCK.salt, cur) !== LOCK.hash) { showToast('密碼錯誤'); return; }
+  LOCK = null; saveLock(); unlocked = true; localStorage.removeItem('mycodev3_unlocked');
+  setDirty(true); updateLockUI(); render();
+  showToast('已移除密碼保護 · 記得重新下載原始碼');
+}
+function updateLockUI() {
+  const protectedNow = isProtected();
+  const locked = protectedNow && !unlocked;
+  document.documentElement.setAttribute('data-locked', locked ? '1' : '0');
+  const btn = document.getElementById('lockBtn');
+  if (btn) {
+    if (!protectedNow) { btn.textContent = '🔓'; btn.title = '設定編輯密碼'; }
+    else if (unlocked) { btn.textContent = '🔓'; btn.title = '目前已解鎖，點此鎖定'; }
+    else { btn.textContent = '🔒'; btn.title = '已鎖定，點此輸入密碼解鎖'; }
+  }
+  const st = document.getElementById('lockStatus');
+  if (st) {
+    st.textContent = !protectedNow ? '尚未設定密碼（目前任何人都能編輯）'
+      : unlocked ? '已設定密碼 · 目前已解鎖' : '已設定密碼 · 目前鎖定（唯讀）';
+  }
+  const setBtn = document.getElementById('lockSetBtn');
+  const rmBtn = document.getElementById('lockRemoveBtn');
+  const lockToggleBtn = document.getElementById('lockToggleBtn');
+  if (setBtn) setBtn.textContent = protectedNow ? '變更密碼' : '設定密碼';
+  if (rmBtn) rmBtn.style.display = protectedNow ? 'block' : 'none';
+  if (lockToggleBtn) {
+    lockToggleBtn.style.display = protectedNow ? 'block' : 'none';
+    const viewMode = protectedNow && LOCK.mode === 'view';
+    lockToggleBtn.textContent = unlocked ? (viewMode ? '🔒 立即鎖定（需登入）' : '🔒 立即鎖定（唯讀）') : '🔓 解鎖以編輯';
+  }
+  const modeRow = document.getElementById('lockModeRow');
+  if (modeRow) modeRow.style.display = protectedNow ? 'flex' : 'none';
+  const me = document.getElementById('lockModeEdit'), mv = document.getElementById('lockModeView');
+  if (me && mv) {
+    const mode = (LOCK && LOCK.mode) || 'edit';
+    me.classList.toggle('active', mode === 'edit');
+    mv.classList.toggle('active', mode === 'view');
+  }
+  applyGate();
+}
+
+// ── Login gate (view protection) ──
+function viewGated() { return isProtected() && LOCK.mode === 'view' && !unlocked; }
+function applyGate() {
+  const g = document.getElementById('gate');
+  if (!g) return;
+  if (viewGated()) {
+    g.classList.add('show');
+    document.getElementById('gateErr').textContent = '';
+    const gi = document.getElementById('gateInput'); gi.value = '';
+    setTimeout(() => { try { gi.focus(); } catch (e) {} }, 80);
+  } else g.classList.remove('show');
+}
+function gateSubmit() {
+  const gi = document.getElementById('gateInput');
+  if (!isProtected()) return;
+  if (hashPass(LOCK.salt, gi.value) === LOCK.hash) {
+    unlocked = true; localStorage.setItem('mycodev3_unlocked', '1');
+    updateLockUI(); render(); showToast('歡迎回來 ✓');
+  } else {
+    document.getElementById('gateErr').textContent = '密碼錯誤，請再試一次';
+    gi.value = ''; gi.focus();
+  }
+}
+function setLockMode(mode) {
+  if (!isProtected()) return;
+  LOCK.mode = mode; saveLock(); setDirty(true); updateLockUI();
+  showToast(mode === 'view' ? '已設為：連瀏覽也要密碼 🔐' : '已設為：僅編輯需要密碼');
 }
 
 // ── Syntax highlighter (self-contained, HTML/CSS/JS) ──
@@ -930,6 +1141,7 @@ function refreshSubDatalist() {
   document.getElementById('subDatalist').innerHTML = subs.map(s => `<option value="${escHtml(s)}">`).join('');
 }
 function openAddModal() {
+  if (!guard()) return;
   modalMode = 'add'; editIndex = -1;
   document.getElementById('bmModalTitle').textContent = '新增程式碼';
   document.getElementById('bmConfirm').textContent = '建立';
@@ -944,6 +1156,7 @@ function openAddModal() {
   setTimeout(() => document.getElementById('bmTitle').focus(), 80);
 }
 function openEditModal(i) {
+  if (!guard()) return;
   const b = DATA[i]; if (!b) return;
   modalMode = 'edit'; editIndex = i;
   document.getElementById('bmModalTitle').textContent = '編輯程式碼';
@@ -959,6 +1172,7 @@ function openEditModal(i) {
   setTimeout(() => document.getElementById('bmTitle').focus(), 80);
 }
 function confirmBm() {
+  if (!guard()) return;
   const title = document.getElementById('bmTitle').value.trim();
   const note = document.getElementById('bmNote').value.trim();
   const cat = document.getElementById('bmCat').value;
@@ -1000,7 +1214,7 @@ document.getElementById('bmCode').addEventListener('keydown', function (e) {
 
 // ── Category manager ──
 function genCatId() { return 'c' + Date.now() + Math.floor(Math.random() * 1000); }
-function openCatManager() { renderCatList(); document.getElementById('catModal').classList.add('show'); }
+function openCatManager() { if (!guard()) return; renderCatList(); document.getElementById('catModal').classList.add('show'); }
 function renderCatList() {
   document.getElementById('catList').innerHTML = CATS.map((c, idx) => {
     const count = DATA.filter(b => b.cat === c.id).length;
@@ -1114,22 +1328,27 @@ function buildSource() {
   const catList = document.getElementById('catList'); const clh = catList.innerHTML; catList.innerHTML = '';
   const prevTheme = root.getAttribute('data-theme'); root.setAttribute('data-theme', '');
   const prevDens = root.getAttribute('data-density'); root.setAttribute('data-density', 'comfort');
-  const shown = document.querySelectorAll('.settings-overlay.show, .modal-overlay.show, .detail-overlay.show, .selbar.show');
+  const prevLock = root.getAttribute('data-locked'); root.setAttribute('data-locked', '0');
+  const shown = document.querySelectorAll('.settings-overlay.show, .modal-overlay.show, .detail-overlay.show, .selbar.show, .gate.show');
   shown.forEach(o => o.classList.remove('show'));
 
   const dataStr = JSON.stringify(DATA).replace(/<\//g, '<\\/');
   const catStr = JSON.stringify(CATS).replace(/<\//g, '<\\/');
+  const lockStr = JSON.stringify(LOCK).replace(/<\//g, '<\\/');
   const reD = new RegExp('/\\*<DB>\\*/[\\s\\S]*?/\\*<\\/DB>\\*/');
   const reC = new RegExp('/\\*<CATS>\\*/[\\s\\S]*?/\\*<\\/CATS>\\*/');
+  const reL = new RegExp('/\\*<LOCK>\\*/[\\s\\S]*?/\\*<\\/LOCK>\\*/');
   let src = '<!DOCTYPE html>\n' + root.outerHTML;
   src = src.replace(reD, ('/*' + '<DB>' + '*/') + dataStr + ('/*' + '</DB>' + '*/'));
   src = src.replace(reC, ('/*' + '<CATS>' + '*/') + catStr + ('/*' + '</CATS>' + '*/'));
+  src = src.replace(reL, ('/*' + '<LOCK>' + '*/') + lockStr + ('/*' + '</LOCK>' + '*/'));
 
   // restore live DOM
   list.innerHTML = listHtml; sb.value = sv;
   src_view.innerHTML = svh; code_ta.value = cta; catList.innerHTML = clh;
   if (prevTheme !== null) root.setAttribute('data-theme', prevTheme);
   if (prevDens !== null) root.setAttribute('data-density', prevDens);
+  if (prevLock !== null) root.setAttribute('data-locked', prevLock);
   shown.forEach(o => o.classList.add('show'));
   return src;
 }
@@ -1138,11 +1357,11 @@ function downloadSource() {
   const blob = new Blob([src], { type: 'text/html;charset=utf-8' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'MyCode.html';
+  a.download = 'MyCode_v3.html';
   a.click();
   URL.revokeObjectURL(a.href);
   setDirty(false);
-  showToast('已下載 MyCode.html ✓');
+  showToast('已下載 MyCode_v3.html ✓');
 }
 function copySource() {
   const src = buildSource();
@@ -1152,9 +1371,10 @@ function copySource() {
   }).catch(() => showToast('複製失敗，請改用下載'));
 }
 function resetToBaked() {
+  if (!guard()) return;
   if (!confirm('清除本機所有新增與修改（含分類），恢復成網頁內建的範例？')) return;
-  localStorage.removeItem('mycode_db');
-  localStorage.removeItem('mycode_cats');
+  localStorage.removeItem('mycodev3_db');
+  localStorage.removeItem('mycodev3_cats');
   DATA = JSON.parse(JSON.stringify(SEED));
   CATS = JSON.parse(JSON.stringify(SEED_CATS));
   openFolders = new Set(CATS.map(c => c.id)); saveOpen();
@@ -1176,6 +1396,7 @@ function exportJSON() {
   showToast('已匯出 ' + DATA.length + ' 筆程式碼 ✓');
 }
 function importJSON(event) {
+  if (!guard()) { event.target.value = ''; return; }
   const file = event.target.files[0];
   if (!file) return;
   const reader = new FileReader();
@@ -1220,11 +1441,17 @@ document.addEventListener('keydown', e => {
   if (document.getElementById('settingsOverlay').classList.contains('show')) return closeSettings();
 });
 
+// ── Gate input: Enter submits ──
+document.getElementById('gateInput').addEventListener('keydown', function (e) {
+  if (e.key === 'Enter') gateSubmit();
+});
+
 // ── Init ──
 applyTheme(S.theme);
 document.documentElement.setAttribute('data-density', S.density || 'comfort');
 applyTextVars();
 setDirty(dirty);
+updateLockUI();
 render();
 </script>
 </body>
