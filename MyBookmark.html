@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" data-theme="" data-density="comfort" __gcrremoteframetoken="9b3f56658e5242730ec9cdd65552fdb0" style="--font-read: &quot;Noto Serif TC&quot;, serif; --title-size: 15px;"><head>
+<html lang="zh-Hant">
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>我的網站收藏 ✦</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;600&amp;family=Noto+Sans+TC:wght@300;400;500&amp;family=LXGW+WenKai+TC:wght@300;400;700&amp;family=Zen+Maru+Gothic:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;600&family=Noto+Sans+TC:wght@300;400;500&family=LXGW+WenKai+TC:wght@300;400;700&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 /* ── Design tokens (sync with 文庫) ── */
 :root {
@@ -74,6 +75,11 @@ header {
 }
 .btn-tool:hover { background: var(--gold); border-color: var(--gold); color: #fff; }
 .btn-tool.active { background: var(--gold); border-color: var(--gold); color: #fff; }
+
+/* ── Edit protection ── */
+[data-locked="1"] .lockable { display: none !important; }
+[data-locked="1"] #lockBtn { color: var(--gold); border-color: var(--gold); background: rgba(192,154,90,0.12); }
+.lock-note { font-size: 0.72rem; color: var(--ink-muted); line-height: 1.7; }
 
 /* ── Edit banner ── */
 .edit-banner {
@@ -153,7 +159,7 @@ header {
 .settings-hdr h3 { font-family: 'Noto Serif TC', serif; font-size: 0.95rem; font-weight: 600; color: var(--ink); }
 .settings-close { width: 26px; height: 26px; border: none; background: transparent; color: var(--ink-muted); cursor: pointer; font-size: 1rem; border-radius: 5px; display: flex; align-items: center; justify-content: center; transition: all 0.1s; }
 .settings-close:hover { background: var(--bg3); color: var(--ink); }
-.settings-body { flex: 1; overflow-y: auto; padding: 18px; }
+.settings-body { flex: 1; overflow-y: auto; padding: 18px; padding-bottom: max(40px, calc(env(safe-area-inset-bottom) + 24px)); }
 .s-section { margin-bottom: 24px; }
 .s-section-title { font-size: 0.64rem; font-weight: 600; letter-spacing: 0.12em; color: var(--ink-muted); text-transform: uppercase; margin-bottom: 12px; padding-bottom: 5px; border-bottom: 1px solid var(--border); }
 .s-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 10px; }
@@ -203,6 +209,71 @@ header {
 .emoji-btn:hover { border-color: var(--gold); background: var(--gold-pale); }
 .emoji-btn.sel { border-color: var(--gold); background: var(--gold-pale); box-shadow: 0 0 0 2px var(--gold-pale); }
 
+/* ── Login gate (view protection) · 莫蘭迪紫 / 浮動月亮 ── */
+.gate {
+  /* 自帶莫蘭迪紫色系，獨立於頁面佈景主題 */
+  --g-bg:#f4f1f7; --g-bg2:#faf8fc; --g-card:#fffdff;
+  --g-plum:#6f6386; --g-plum-soft:#9b8eb3; --g-lav:#c3b6d8; --g-lav-soft:#ddd3ec;
+  --g-pale:#ece5f4; --g-text:#5d5468; --g-muted:#9a8fa8;
+  position: fixed; inset: 0; z-index: 500; display: none; overflow: hidden;
+  align-items: center; justify-content: center; text-align: center;
+  background: linear-gradient(160deg, var(--g-bg) 0%, var(--g-bg2) 100%);
+  padding: 28px; padding-top: max(28px, env(safe-area-inset-top));
+  font-family: "Noto Serif TC", "Microsoft JhengHei", serif;
+}
+html[data-gate="1"] .gate { display: flex; }
+html[data-gate="1"] header, html[data-gate="1"] .wrap { display: none !important; }
+/* 背景柔和裝飾圓 */
+.gate-deco { position: absolute; border-radius: 50%; filter: blur(2px); opacity: .5; z-index: 0; pointer-events: none; }
+.gate-deco.a { width: 160px; height: 160px; background: var(--g-lav-soft); top: -40px; left: -40px; }
+.gate-deco.b { width: 220px; height: 220px; background: var(--g-pale); bottom: -70px; right: -60px; }
+.gate-deco.c { width: 90px; height: 90px; background: var(--g-plum-soft); bottom: 60px; left: 20px; opacity: .25; }
+.gate-box {
+  position: relative; z-index: 1; width: min(92vw, 360px);
+  background: var(--g-card); border-radius: 30px; padding: 44px 32px 36px;
+  box-shadow: 0 18px 50px rgba(111,99,134,.16);
+}
+.gate-emoji {
+  font-size: 64px; display: inline-block;
+  animation: gateFloat 3.6s ease-in-out infinite;
+  filter: drop-shadow(0 6px 10px rgba(111,99,134,.2));
+}
+@keyframes gateFloat {
+  0%,100% { transform: translateY(0) rotate(-3deg); }
+  50%     { transform: translateY(-12px) rotate(3deg); }
+}
+.gate-logo { font-size: 1.55rem; font-weight: 700; letter-spacing: 2px; color: var(--g-plum); margin: 18px 0 6px; }
+.gate-sub { font-size: 0.82rem; letter-spacing: 0.12em; color: var(--g-muted); margin-bottom: 24px; line-height: 1.8; }
+.gate-input {
+  width: 100%; font-size: 1rem; padding: 13px 16px; border-radius: 14px;
+  border: 1.5px solid var(--g-lav-soft); background: var(--g-bg2); color: var(--g-text);
+  outline: none; text-align: center; letter-spacing: 0.12em; transition: border-color 0.2s, box-shadow 0.2s;
+  font-family: "Noto Serif TC", "Microsoft JhengHei", serif;
+}
+.gate-input::placeholder { color: var(--g-lav); }
+.gate-input:focus { border-color: var(--g-lav); box-shadow: 0 0 0 3px rgba(195,182,216,.28); }
+.gate-btn {
+  width: 100%; margin-top: 12px; font-size: 0.96rem; letter-spacing: 0.1em; padding: 13px;
+  border-radius: 14px; border: none; cursor: pointer; color: #fff;
+  background: linear-gradient(135deg, var(--g-plum-soft), var(--g-plum));
+  box-shadow: 0 8px 20px rgba(111,99,134,.28); transition: filter 0.15s, transform 0.1s;
+  font-family: "Noto Serif TC", "Microsoft JhengHei", serif;
+}
+.gate-btn:hover { filter: brightness(1.06); }
+.gate-btn:active { transform: translateY(1px); }
+.gate-err { color: #b06a8a; font-size: 0.78rem; min-height: 18px; margin-top: 14px; letter-spacing: 0.05em; }
+.gate-dots { display: flex; justify-content: center; gap: 8px; margin-top: 24px; }
+.gate-dots span { width: 11px; height: 11px; border-radius: 50%; animation: gateBlink 1.6s ease-in-out infinite; }
+.gate-dots span:nth-child(1){ background: var(--g-plum);     animation-delay: 0s; }
+.gate-dots span:nth-child(2){ background: var(--g-plum-soft);animation-delay: .2s; }
+.gate-dots span:nth-child(3){ background: var(--g-lav);      animation-delay: .4s; }
+.gate-dots span:nth-child(4){ background: var(--g-lav-soft); animation-delay: .6s; }
+.gate-dots span:nth-child(5){ background: var(--g-pale);     animation-delay: .8s; }
+@keyframes gateBlink {
+  0%,100% { opacity: .35; transform: translateY(0); }
+  50%     { opacity: 1;   transform: translateY(-4px); }
+}
+
 /* ── Toast ── */
 .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(16px); background: var(--ink); color: var(--gold); font-size: 0.78rem; padding: 8px 18px; border-radius: 18px; z-index: 400; opacity: 0; transition: all 0.28s; pointer-events: none; white-space: nowrap; box-shadow: 0 4px 16px var(--shadow-md); }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -214,26 +285,41 @@ header {
   .wrap { padding: 14px 12px 50px; }
 }
 </style>
+<script>
+/* 早期閘門判斷：在畫面繪製前決定是否要上鎖，避免內容閃現 */
+(function () {
+  try {
+    var BAKED = /*<LOCK0>*/null/*</LOCK0>*/;
+    var raw = null; try { raw = localStorage.getItem('bookmark_lock'); } catch (e) {}
+    var lock = (raw !== null) ? JSON.parse(raw) : BAKED;
+    var unlocked = false; try { unlocked = localStorage.getItem('bookmark_unlocked') === '1'; } catch (e) {}
+    if (lock && lock.hash && lock.mode === 'view' && !unlocked) {
+      document.documentElement.setAttribute('data-gate', '1');
+    }
+  } catch (e) {}
+})();
+</script>
 </head>
-<body data-__gcrweb-annotatedpagecontent-processed="0BE9896AF654E4A4279233C4181C4CC2">
+<body>
 
 <header>
-  <div class="logo">我的網站收藏 <span class="logo-sub">My Bookmark ☁</span></div>
+  <div class="logo">我的網站收藏 <span class="logo-sub">My Bookmark ☁ · 🔐</span></div>
   <div class="header-right">
-    <button class="btn-hdr" onclick="openExport()">↧ 原始碼 <span id="dirtyDot" class="dot" style="display: none;">●</span></button>
+    <button class="btn-hdr" id="lockBtn" onclick="headerLockClick()" title="編輯保護">🔓</button>
+    <button class="btn-hdr" onclick="openExport()">↧ 原始碼 <span id="dirtyDot" class="dot" style="display:none">●</span></button>
     <button class="btn-hdr" onclick="openSettings()">⚙</button>
   </div>
 </header>
 
 <div class="wrap">
   <div class="toolbar">
-    <input class="search-box" id="searchBox" placeholder="搜尋書籤…" oninput="render()" __gcruniqueid="1">
-    <button class="btn-tool" onclick="openAddModal()">＋ 新增</button>
-    <button class="btn-tool" id="editModeBtn" onclick="toggleEditMode()">✎ 編輯</button>
+    <input class="search-box" id="searchBox" placeholder="搜尋書籤…" oninput="render()">
+    <button class="btn-tool lockable" onclick="openAddModal()">＋ 新增</button>
+    <button class="btn-tool lockable" id="editModeBtn" onclick="toggleEditMode()">✎ 編輯</button>
     <button class="btn-tool" id="toggleAllBtn" onclick="toggleAll()">全部展開</button>
   </div>
 
-  <div class="edit-banner" id="editBanner" style="display: none;">
+  <div class="edit-banner" id="editBanner" style="display:none">
     <span><b>編輯模式</b>：點任一書籤可修改，按 ✕ 可刪除。</span>
     <button onclick="toggleEditMode()">完成</button>
   </div>
@@ -276,7 +362,7 @@ header {
         <div class="s-section-title">文字設定</div>
         <div class="s-row">
           <span class="s-label">標題字型</span>
-          <select class="s-select" id="sfontFamily" onchange="applySettings()" __gcruniqueid="2">
+          <select class="s-select" id="sfontFamily" onchange="applySettings()">
             <option value="'Noto Serif TC', serif">思源宋體</option>
             <option value="'Noto Sans TC', sans-serif">思源黑體</option>
             <option value="'LXGW WenKai TC', cursive">霞鶩文楷</option>
@@ -291,6 +377,23 @@ header {
           <div class="slider-wrap"><input type="range" class="s-slider" id="sfontSize" min="13" max="20" step="1" oninput="applySettings()"><span class="s-val" id="sfontSizeVal">15px</span></div>
         </div>
       </div>
+      <div class="s-section">
+        <div class="s-section-title">編輯保護</div>
+        <p class="lock-note" id="lockStatus">尚未設定密碼</p>
+        <div style="display:flex; flex-direction:column; gap:8px; margin-top:4px">
+          <button class="btn-act wide" id="lockToggleBtn" onclick="headerLockClick()" style="display:none">🔓 解鎖以編輯</button>
+          <button class="btn-act wide" id="lockSetBtn" onclick="setPassword()">設定密碼</button>
+          <button class="btn-act wide" id="lockRemoveBtn" onclick="removePassword()" style="display:none">移除密碼保護</button>
+        </div>
+        <div class="s-row" id="lockModeRow" style="display:none; margin-top:14px">
+          <span class="s-label">保護範圍</span>
+          <div class="seg">
+            <button class="seg-btn" id="lockModeEdit" onclick="setLockMode('edit')">僅編輯</button>
+            <button class="seg-btn" id="lockModeView" onclick="setLockMode('view')">連瀏覽</button>
+          </div>
+        </div>
+        <p class="lock-note" style="margin-top:10px"><b>僅編輯</b>：任何人都能瀏覽，編輯才需密碼。<br><b>連瀏覽</b>：整站上鎖，沒密碼連看都看不到（會跳出登入畫面）。<br>密碼只存雜湊值並烤進檔案，設定／變更後記得從「↧ 原始碼」重新下載上傳 GitHub。<br>※ 純前端保護，僅防一般訪客，無法阻止懂技術者繞過。<b>若選「連瀏覽」又忘記密碼，自己也會進不去</b>，需改原始碼把 LOCK 改回 null。</p>
+      </div>
       <button class="s-reset" onclick="resetSettings()">↺ 恢復版面預設值</button>
     </div>
   </div>
@@ -301,15 +404,15 @@ header {
   <div class="modal">
     <h3 id="bmModalTitle">新增書籤</h3>
     <div class="m-label">標題</div>
-    <input class="m-input" id="bmTitle" placeholder="例如：哈比人模擬器" maxlength="80" __gcruniqueid="3">
+    <input class="m-input" id="bmTitle" placeholder="例如：哈比人模擬器" maxlength="80">
     <div class="m-label">網址</div>
-    <input class="m-input" id="bmUrl" placeholder="https://…" __gcruniqueid="4">
+    <input class="m-input" id="bmUrl" placeholder="https://…">
     <div class="m-label">備註（可留空）</div>
-    <input class="m-input" id="bmNote" placeholder="一句話說明…" maxlength="60" __gcruniqueid="5">
+    <input class="m-input" id="bmNote" placeholder="一句話說明…" maxlength="60">
     <div class="m-label">分類</div>
-    <select class="m-select" id="bmCat" __gcruniqueid="6"><option value="c1781671678054" selected="">☁ 生活工具</option><option value="c1781671678055">🔮 模擬器</option><option value="c1781671678056">✨ 產生器</option><option value="c1781671678057">🎮 小小樂園</option><option value="c1781671678058">🫧 暫存工事中</option><option value="c1781671678059">💰 煉金術</option></select>
+    <select class="m-select" id="bmCat"></select>
     <div class="m-label">圖示</div>
-    <div class="emoji-row" id="bmEmoji"><button class="emoji-btn sel" onclick="pickEmoji('☁')">☁</button><button class="emoji-btn " onclick="pickEmoji('🔮')">🔮</button><button class="emoji-btn " onclick="pickEmoji('✨')">✨</button><button class="emoji-btn " onclick="pickEmoji('🎮')">🎮</button><button class="emoji-btn " onclick="pickEmoji('🫧')">🫧</button><button class="emoji-btn " onclick="pickEmoji('💰')">💰</button><button class="emoji-btn " onclick="pickEmoji('📖')">📖</button><button class="emoji-btn " onclick="pickEmoji('🌙')">🌙</button><button class="emoji-btn " onclick="pickEmoji('🌿')">🌿</button><button class="emoji-btn " onclick="pickEmoji('💌')">💌</button><button class="emoji-btn " onclick="pickEmoji('🏮')">🏮</button><button class="emoji-btn " onclick="pickEmoji('🐸')">🐸</button><button class="emoji-btn " onclick="pickEmoji('🌸')">🌸</button><button class="emoji-btn " onclick="pickEmoji('⚗️')">⚗️</button><button class="emoji-btn " onclick="pickEmoji('🦋')">🦋</button><button class="emoji-btn " onclick="pickEmoji('🌟')">🌟</button><button class="emoji-btn " onclick="pickEmoji('🍵')">🍵</button><button class="emoji-btn " onclick="pickEmoji('🪐')">🪐</button></div>
+    <div class="emoji-row" id="bmEmoji"></div>
     <div class="m-actions">
       <button class="btn-act" onclick="closeModal('bmModal')">取消</button>
       <button class="btn-act primary" id="bmConfirm" onclick="confirmBm()">建立</button>
@@ -333,12 +436,27 @@ header {
     <p class="m-desc">把書籤存成 JSON 檔保管，或在另一台裝置／瀏覽器還原。還原採合併方式，已存在的網址會自動略過。</p>
     <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px">
       <button class="btn-act wide" onclick="exportJSON()">⬇ 匯出 JSON 備份</button>
-      <button class="btn-act wide" onclick="document.getElementById('jsonFile').click()">⬆ 匯入 JSON 還原</button>
+      <button class="btn-act wide lockable" onclick="document.getElementById('jsonFile').click()">⬆ 匯入 JSON 還原</button>
       <input type="file" id="jsonFile" accept=".json,application/json" style="display:none" onchange="importJSON(event)">
     </div>
 
     <div class="m-divider"></div>
-    <button class="btn-reset-line" onclick="resetToBaked()">↺ 重設為網頁內建書籤（清除本機新增與修改）</button>
+    <button class="btn-reset-line lockable" onclick="resetToBaked()">↺ 重設為網頁內建書籤（清除本機新增與修改）</button>
+  </div>
+</div>
+
+<div class="gate" id="gate">
+  <div class="gate-deco a"></div>
+  <div class="gate-deco b"></div>
+  <div class="gate-deco c"></div>
+  <div class="gate-box">
+    <div class="gate-emoji">🌙</div>
+    <div class="gate-logo">這裡需要鑰匙喔～</div>
+    <div class="gate-sub">此頁面已上鎖，請輸入密碼進入</div>
+    <input type="password" class="gate-input" id="gateInput" placeholder="密碼" autocomplete="current-password">
+    <button class="gate-btn" onclick="gateSubmit()">進入</button>
+    <div class="gate-err" id="gateErr"></div>
+    <div class="gate-dots"><span></span><span></span><span></span><span></span><span></span></div>
   </div>
 </div>
 
@@ -348,11 +466,14 @@ header {
 // ════════ 書籤資料（匯出時會自動更新這一段） ════════
 const BMS = /*<BMS>*/[{"url":"https://tofudouce.github.io/schedule-app/cloudcream/love.html","title":"哈比人模擬器","note":"","cat":"c1781671678055","icon":"🔮"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/Hp.html","title":"霍格華茲模擬器","note":"","cat":"c1781671678055","icon":"🔮"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/Hunter.html","title":"HUNTER × HUNTER 模擬器","note":"","cat":"c1781671678055","icon":"🔮"},{"url":"https://tofudouce.github.io/schedule-app/Bookmark.html","title":"書籤網站產生器","note":"","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/MakeMake.html","title":"風格轉換器","note":"","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/workspace/workshop.html","title":"Portal 生成器","note":"診所首頁快速建立工具","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/Daily%20soft.html","title":"今天的小任務","note":"","cat":"c1781671678054","icon":"☁"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/DollyBaby.html","title":"我的娃娃養成觀測站","note":"","cat":"c1781671678057","icon":"🎮"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/Sorry.html","title":"自動道歉機","note":"","cat":"c1781671678058","icon":"🫧"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/Test.html","title":"星語娃娃觀測站","note":"","cat":"c1781671678058","icon":"🫧"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/WheelOrder.html","title":"一起吃太極鰲車輪餅","note":"","cat":"c1781671678054","icon":"☁"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/catreplyoffice.html","title":"貓咪客服中心","note":"","cat":"c1781671678058","icon":"🫧"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/frogiveness.html","title":"原諒修行中心","note":"","cat":"c1781671678057","icon":"🎮"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/gametest.html","title":"魔法植物溫室","note":"","cat":"c1781671678058","icon":"🫧"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/if0050.html","title":"ALL IN ETF","note":"","cat":"c1781671678059","icon":"💰"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/witchymilk.html","title":"魔女鍊金工房","note":"","cat":"c1781671678058","icon":"🫧"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/Mart.html","title":"深夜便利商店","note":"","cat":"c1781671678057","icon":"🎮"},{"url":"https://tofudouce.github.io/schedule-app/nexus/if0050_moon.html","title":"如果當初買0050","note":"(星空版)","cat":"c1781671678059","icon":"💰"},{"url":"https://tofudouce.github.io/schedule-app/nexus/fee_calculator_moon.html","title":"交易成本計算機","note":"(星空版)","cat":"c1781671678059","icon":"💰"},{"url":"https://tofudouce.github.io/schedule-app/nexus/wealth_ledger.html","title":"每月資產動態記帳本","note":"(星空版)","cat":"c1781671678059","icon":"💰"},{"url":"https://tofudouce.github.io/schedule-app/nexus/IDrift_no1.html","title":"ID產生器","note":"","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/nexus/IDrift_no2.html","title":"DreamID產生器","note":"(星空版)","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/nexus/ShiftPic.html","title":"班表產生器","note":"快速建立每月的班表圖片","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/nexus/archive/ShiftPic_IOS.html","title":"班表產生器IOS","note":"","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/nexus/PFPMaker.html","title":"LINE 風格頭像","note":"PFPMaker","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/nexus/chaos_GuildCard.html","title":"阿毛的萬象名片","note":"","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/nexus/chaos_Whispering.html","title":"群星低語占卜站","note":"","cat":"c1781671678054","icon":"☁"},{"url":"https://tofudouce.github.io/schedule-app/nexus/","title":"抓取資料夾中網站","note":"","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/nexus/chaos_cat-witch.html","title":"貓巫醫的垃圾桶 ✦ 負能量黑洞宣洩口","note":"","cat":"c1781671678057","icon":"🎮"},{"url":"https://tofudouce.github.io/schedule-app/nexus/fee_calculator.html","title":" 台股交易成本計算","note":"","cat":"c1781671678059","icon":"💰"},{"url":"https://tofudouce.github.io/schedule-app/nexus/frog.html","title":"綠色是原諒的顏色🐸","note":"","cat":"c1781671678057","icon":"🎮"},{"url":"https://tofudouce.github.io/schedule-app/nexus/template_mystic.html","title":"✦ 星星模板","note":"","cat":"c1781671678058","icon":"🫧"},{"url":"https://tofudouce.github.io/schedule-app/textvaule.html","title":"我的文庫收藏","note":"textvaule","cat":"c1781671678054","icon":"☁"},{"url":"https://tofudouce.github.io/schedule-app/muse-forge.html","title":"萌想引擎v5","note":"","cat":"c1781671678055","icon":"🔮"},{"url":"https://tofudouce.github.io/schedule-app/MyBookmark.html","title":"我的網站收藏","note":"MyBookmark","cat":"c1781671678054","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/CodeVaule.html","title":"我的程式碼收藏","note":"CodeVaule","cat":"c1781671678054","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/Vault.html","title":"程式碼小金庫","note":"Vault","cat":"c1781671678054","icon":"☁"}]/*</BMS>*/;
 const CATS=[{"id":"c1781671678054","name":"生活工具","icon":"☁"},{"id":"c1781671678055","name":"模擬器","icon":"🔮"},{"id":"c1781671678056","name":"產生器","icon":"✨"},{"id":"c1781671678057","name":"小小樂園","icon":"🎮"},{"id":"c1781671678058","name":"暫存工事中","icon":"🫧"},{"id":"c1781671678059","name":"煉金術","icon":"💰"}];
+const SEED_LOCK = /*<LOCK>*/null/*</LOCK>*/;
 const EMOJIS = ['☁','🔮','✨','🎮','🫧','💰','📖','🌙','🌿','💌','🏮','🐸','🌸','⚗️','🦋','🌟','🍵','🪐'];
 
 // ── State ──
 let DATA = JSON.parse(localStorage.getItem('bookmark_data') || 'null');
 if (!DATA || !Array.isArray(DATA)) DATA = JSON.parse(JSON.stringify(BMS));
+let LOCK; { const st = localStorage.getItem('bookmark_lock'); LOCK = (st !== null) ? JSON.parse(st) : SEED_LOCK; }
+let unlocked = !(LOCK && LOCK.hash) ? true : (localStorage.getItem('bookmark_unlocked') === '1');
 let dirty = localStorage.getItem('bookmark_dirty') === '1';
 
 const DEFAULTS = { theme: 'light', density: 'comfort', fontFamily: "'Noto Serif TC', serif", fontSize: 15 };
@@ -369,6 +490,7 @@ let selectedIcon = '✨';
 
 // ── Persist ──
 function saveData() { localStorage.setItem('bookmark_data', JSON.stringify(DATA)); }
+function saveLock() { localStorage.setItem('bookmark_lock', LOCK ? JSON.stringify(LOCK) : 'null'); }
 function saveSettings() { localStorage.setItem('bookmark_settings', JSON.stringify(S)); }
 function saveOpen() { localStorage.setItem('bookmark_open', JSON.stringify([...openFolders])); }
 function setDirty(v) {
@@ -396,7 +518,6 @@ function render() {
     return;
   }
 
-  // group by category, keep DATA index
   const groups = {};
   DATA.forEach((b, i) => { (groups[b.cat] = groups[b.cat] || []).push({ b, i }); });
 
@@ -420,7 +541,6 @@ function render() {
       </div>`;
   });
 
-  // leftover (categories no longer in CATS)
   const known = new Set(CATS.map(c => c.id));
   const leftover = [];
   DATA.forEach((b, i) => { if (!known.has(b.cat)) leftover.push({ b, i }); });
@@ -477,6 +597,7 @@ function updateToggleAllBtn() {
 
 // ── Edit mode ──
 function toggleEditMode() {
+  if (!editMode && !guard()) return;
   editMode = !editMode;
   document.getElementById('editModeBtn').classList.toggle('active', editMode);
   document.getElementById('editBanner').style.display = editMode ? 'flex' : 'none';
@@ -494,6 +615,7 @@ function fillCatSelect(selId) {
     `<option value="${c.id}" ${c.id === selId ? 'selected' : ''}>${c.icon} ${escHtml(c.name)}</option>`).join('');
 }
 function openAddModal() {
+  if (!guard()) return;
   modalMode = 'add'; editIndex = -1;
   document.getElementById('bmModalTitle').textContent = '新增書籤';
   document.getElementById('bmConfirm').textContent = '建立';
@@ -507,6 +629,7 @@ function openAddModal() {
   setTimeout(() => document.getElementById('bmTitle').focus(), 80);
 }
 function openEditModal(i) {
+  if (!guard()) return;
   const b = DATA[i]; if (!b) return;
   modalMode = 'edit'; editIndex = i;
   document.getElementById('bmModalTitle').textContent = '編輯書籤';
@@ -521,6 +644,7 @@ function openEditModal(i) {
   setTimeout(() => document.getElementById('bmTitle').focus(), 80);
 }
 function confirmBm() {
+  if (!guard()) return;
   const title = document.getElementById('bmTitle').value.trim();
   let url = document.getElementById('bmUrl').value.trim();
   const note = document.getElementById('bmNote').value.trim();
@@ -546,6 +670,166 @@ function deleteBookmark(i) {
   DATA.splice(i, 1);
   saveData(); setDirty(true); render();
   showToast('已刪除');
+}
+
+// ── Edit protection (lock) ──
+function sha256hex(ascii) {
+  function rr(v, a) { return (v >>> a) | (v << (32 - a)); }
+  var mp = Math.pow, maxWord = mp(2, 32), result = '';
+  var words = [], bitLen = ascii.length * 8, hash = [], k = [], pc = 0, comp = {};
+  for (var cand = 2; pc < 64; cand++) {
+    if (!comp[cand]) {
+      for (var i = 0; i < 313; i += cand) comp[i] = cand;
+      hash[pc] = (mp(cand, 0.5) * maxWord) | 0;
+      k[pc++] = (mp(cand, 1 / 3) * maxWord) | 0;
+    }
+  }
+  ascii += '\x80';
+  while (ascii.length % 64 - 56) ascii += '\x00';
+  for (var i = 0; i < ascii.length; i++) {
+    var j = ascii.charCodeAt(i);
+    if (j >> 8) return '';
+    words[i >> 2] |= j << ((3 - i) % 4) * 8;
+  }
+  words[words.length] = ((bitLen / maxWord) | 0);
+  words[words.length] = (bitLen);
+  for (var j = 0; j < words.length;) {
+    var w = words.slice(j, j += 16), oldHash = hash;
+    hash = hash.slice(0, 8);
+    for (var i = 0; i < 64; i++) {
+      var w15 = w[i - 15], w2 = w[i - 2], a = hash[0], e = hash[4];
+      var t1 = hash[7] + (rr(e, 6) ^ rr(e, 11) ^ rr(e, 25)) + ((e & hash[5]) ^ ((~e) & hash[6])) + k[i]
+        + (w[i] = i < 16 ? w[i] : (w[i - 16] + (rr(w15, 7) ^ rr(w15, 18) ^ (w15 >>> 3)) + w[i - 7] + (rr(w2, 17) ^ rr(w2, 19) ^ (w2 >>> 10))) | 0);
+      var t2 = (rr(a, 2) ^ rr(a, 13) ^ rr(a, 22)) + ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]));
+      hash = [(t1 + t2) | 0].concat(hash);
+      hash[4] = (hash[4] + t1) | 0;
+    }
+    for (var i = 0; i < 8; i++) hash[i] = (hash[i] + oldHash[i]) | 0;
+  }
+  for (var i = 0; i < 8; i++) for (var j = 3; j + 1; j--) { var b = (hash[i] >> (j * 8)) & 255; result += ((b < 16) ? 0 : '') + b.toString(16); }
+  return result;
+}
+function utf8s(s) { return unescape(encodeURIComponent(s)); }
+function randHex(bytes) {
+  var a = new Uint8Array(bytes);
+  if (window.crypto && crypto.getRandomValues) crypto.getRandomValues(a);
+  else for (var i = 0; i < bytes; i++) a[i] = Math.floor(Math.random() * 256);
+  var s = ''; for (var i = 0; i < a.length; i++) s += ('0' + a[i].toString(16)).slice(-2);
+  return s;
+}
+function isProtected() { return !!(LOCK && LOCK.hash); }
+function canEdit() { return !isProtected() || unlocked; }
+function hashPass(salt, pass) { return sha256hex(utf8s(salt + '|' + pass)); }
+function guard() { if (canEdit()) return true; promptUnlock(); return false; }
+
+function promptUnlock() {
+  if (!isProtected()) return;
+  const p = prompt('輸入編輯密碼以解鎖：');
+  if (p === null) return;
+  if (hashPass(LOCK.salt, p) === LOCK.hash) {
+    unlocked = true; localStorage.setItem('bookmark_unlocked', '1');
+    updateLockUI(); render(); showToast('已解鎖，可以編輯 ✓');
+  } else showToast('密碼錯誤');
+}
+function lockNow() {
+  unlocked = false; localStorage.removeItem('bookmark_unlocked');
+  if (editMode) toggleEditMode();
+  updateLockUI(); render(); showToast('已鎖定（唯讀）');
+}
+function headerLockClick() {
+  if (!isProtected()) { setPassword(); return; }
+  if (unlocked) lockNow(); else promptUnlock();
+}
+function setPassword() {
+  if (isProtected() && !unlocked) { promptUnlock(); return; }
+  if (isProtected()) {
+    const cur = prompt('輸入目前的密碼：'); if (cur === null) return;
+    if (hashPass(LOCK.salt, cur) !== LOCK.hash) { showToast('目前密碼錯誤'); return; }
+  }
+  let np = prompt('設定新的編輯密碼（至少 4 個字）：'); if (np === null) return;
+  np = np.trim(); if (np.length < 4) { showToast('密碼至少 4 個字'); return; }
+  const np2 = prompt('再輸入一次新密碼：'); if (np2 === null) return;
+  if (np !== np2) { showToast('兩次輸入不一致'); return; }
+  const salt = randHex(8);
+  const mode = (LOCK && LOCK.mode) ? LOCK.mode : 'edit';
+  LOCK = { salt: salt, hash: hashPass(salt, np), mode: mode };
+  saveLock(); unlocked = true; localStorage.setItem('bookmark_unlocked', '1');
+  setDirty(true); updateLockUI(); render();
+  showToast('已設定密碼 ✓ 記得重新下載原始碼上傳 GitHub');
+}
+function removePassword() {
+  if (!isProtected()) { showToast('目前沒有設定密碼'); return; }
+  const cur = prompt('輸入目前的密碼以移除保護：'); if (cur === null) return;
+  if (hashPass(LOCK.salt, cur) !== LOCK.hash) { showToast('密碼錯誤'); return; }
+  LOCK = null; saveLock(); unlocked = true; localStorage.removeItem('bookmark_unlocked');
+  setDirty(true); updateLockUI(); render();
+  showToast('已移除密碼保護 · 記得重新下載原始碼');
+}
+function updateLockUI() {
+  const protectedNow = isProtected();
+  const locked = protectedNow && !unlocked;
+  document.documentElement.setAttribute('data-locked', locked ? '1' : '0');
+  const btn = document.getElementById('lockBtn');
+  if (btn) {
+    if (!protectedNow) { btn.textContent = '🔓'; btn.title = '設定編輯密碼'; }
+    else if (unlocked) { btn.textContent = '🔓'; btn.title = '目前已解鎖，點此鎖定'; }
+    else { btn.textContent = '🔒'; btn.title = '已鎖定，點此輸入密碼解鎖'; }
+  }
+  const st = document.getElementById('lockStatus');
+  if (st) {
+    st.textContent = !protectedNow ? '尚未設定密碼（目前任何人都能編輯）'
+      : unlocked ? '已設定密碼 · 目前已解鎖' : '已設定密碼 · 目前鎖定（唯讀）';
+  }
+  const setBtn = document.getElementById('lockSetBtn');
+  const rmBtn = document.getElementById('lockRemoveBtn');
+  const lockToggleBtn = document.getElementById('lockToggleBtn');
+  if (setBtn) setBtn.textContent = protectedNow ? '變更密碼' : '設定密碼';
+  if (rmBtn) rmBtn.style.display = protectedNow ? 'block' : 'none';
+  if (lockToggleBtn) {
+    lockToggleBtn.style.display = protectedNow ? 'block' : 'none';
+    const viewMode = protectedNow && LOCK.mode === 'view';
+    lockToggleBtn.textContent = unlocked ? (viewMode ? '🔒 立即鎖定（需登入）' : '🔒 立即鎖定（唯讀）') : '🔓 解鎖以編輯';
+  }
+  const modeRow = document.getElementById('lockModeRow');
+  if (modeRow) modeRow.style.display = protectedNow ? 'flex' : 'none';
+  const me = document.getElementById('lockModeEdit'), mv = document.getElementById('lockModeView');
+  if (me && mv) {
+    const mode = (LOCK && LOCK.mode) || 'edit';
+    me.classList.toggle('active', mode === 'edit');
+    mv.classList.toggle('active', mode === 'view');
+  }
+  applyGate();
+}
+
+// ── Login gate (view protection) ──
+function viewGated() { return isProtected() && LOCK.mode === 'view' && !unlocked; }
+function applyGate() {
+  const g = document.getElementById('gate');
+  if (!g) return;
+  if (viewGated()) {
+    document.documentElement.setAttribute('data-gate', '1');
+    document.getElementById('gateErr').textContent = '';
+    const gi = document.getElementById('gateInput'); gi.value = '';
+    setTimeout(() => { try { gi.focus(); } catch (e) {} }, 80);
+  } else {
+    document.documentElement.setAttribute('data-gate', '0');
+  }
+}
+function gateSubmit() {
+  const gi = document.getElementById('gateInput');
+  if (!isProtected()) return;
+  if (hashPass(LOCK.salt, gi.value) === LOCK.hash) {
+    unlocked = true; localStorage.setItem('bookmark_unlocked', '1');
+    updateLockUI(); render(); showToast('歡迎回來 ✓');
+  } else {
+    document.getElementById('gateErr').textContent = '密碼錯誤，請再試一次';
+    gi.value = ''; gi.focus();
+  }
+}
+function setLockMode(mode) {
+  if (!isProtected()) return;
+  LOCK.mode = mode; saveLock(); setDirty(true); updateLockUI();
+  showToast(mode === 'view' ? '已設為：連瀏覽也要密碼 🔐' : '已設為：僅編輯需要密碼');
 }
 
 // ── Settings ──
@@ -580,7 +864,7 @@ function resetSettings() {
   applyTheme(S.theme); document.documentElement.setAttribute('data-density', S.density);
   applyTextVars(); syncSettingsUI(); showToast('已恢復版面預設值');
 }
-function openSettings() { syncSettingsUI(); document.getElementById('settingsOverlay').classList.add('show'); }
+function openSettings() { syncSettingsUI(); updateLockUI(); document.getElementById('settingsOverlay').classList.add('show'); }
 function closeSettings() { document.getElementById('settingsOverlay').classList.remove('show'); }
 function closeSettingsBg(e) { if (e.target === document.getElementById('settingsOverlay')) closeSettings(); }
 function closeModal(id) { document.getElementById(id).classList.remove('show'); }
@@ -593,20 +877,27 @@ function buildSource() {
   const sb = document.getElementById('searchBox'); const sv = sb.value; sb.value = '';
   const prevTheme = root.getAttribute('data-theme'); root.setAttribute('data-theme', '');
   const prevDens = root.getAttribute('data-density'); root.setAttribute('data-density', 'comfort');
+  const prevLock = root.getAttribute('data-locked'); root.setAttribute('data-locked', '0');
+  const prevGate = root.getAttribute('data-gate'); root.setAttribute('data-gate', '0');
   const shown = document.querySelectorAll('.settings-overlay.show, .modal-overlay.show');
   shown.forEach(o => o.classList.remove('show'));
 
   const dataStr = JSON.stringify(DATA).replace(/<\//g, '<\\/');
-  const M1 = '/*' + '<BMS>' + '*/';
-  const M2 = '/*' + '</BMS>' + '*/';
-  const re = new RegExp('/\\*<BMS>\\*/[\\s\\S]*?/\\*<\\/BMS>\\*/');
+  const lockStr = JSON.stringify(LOCK).replace(/<\//g, '<\\/');
+  const reD = new RegExp('/\\*<BMS>\\*/[\\s\\S]*?/\\*<\\/BMS>\\*/');
+  const reL = new RegExp('/\\*<LOCK>\\*/[\\s\\S]*?/\\*<\\/LOCK>\\*/');
+  const reL0 = new RegExp('/\\*<LOCK0>\\*/[\\s\\S]*?/\\*<\\/LOCK0>\\*/');
   let src = '<!DOCTYPE html>\n' + root.outerHTML;
-  src = src.replace(re, M1 + dataStr + M2);
+  src = src.replace(reD, ('/*' + '<BMS>' + '*/') + dataStr + ('/*' + '</BMS>' + '*/'));
+  src = src.replace(reL, ('/*' + '<LOCK>' + '*/') + lockStr + ('/*' + '</LOCK>' + '*/'));
+  src = src.replace(reL0, ('/*' + '<LOCK0>' + '*/') + lockStr + ('/*' + '</LOCK0>' + '*/'));
 
   // restore live DOM
   list.innerHTML = listHtml; sb.value = sv;
   if (prevTheme !== null) root.setAttribute('data-theme', prevTheme);
   if (prevDens !== null) root.setAttribute('data-density', prevDens);
+  if (prevLock !== null) root.setAttribute('data-locked', prevLock);
+  if (prevGate !== null) root.setAttribute('data-gate', prevGate);
   shown.forEach(o => o.classList.add('show'));
   return src;
 }
@@ -629,6 +920,7 @@ function copySource() {
   }).catch(() => showToast('複製失敗，請改用下載'));
 }
 function resetToBaked() {
+  if (!guard()) return;
   if (!confirm('清除本機所有新增與修改，恢復成網頁內建的書籤？')) return;
   localStorage.removeItem('bookmark_data');
   DATA = JSON.parse(JSON.stringify(BMS));
@@ -650,6 +942,7 @@ function exportJSON() {
   showToast('已匯出 ' + DATA.length + ' 筆書籤 ✓');
 }
 function importJSON(event) {
+  if (!guard()) { event.target.value = ''; return; }
   const file = event.target.files[0];
   if (!file) return;
   const reader = new FileReader();
@@ -678,13 +971,24 @@ function showToast(msg) {
   clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 2200);
 }
 
+// ── Esc closes top-most overlay · Gate Enter submits ──
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (document.getElementById('bmModal').classList.contains('show')) return closeModal('bmModal');
+  if (document.getElementById('exportModal').classList.contains('show')) return closeModal('exportModal');
+  if (document.getElementById('settingsOverlay').classList.contains('show')) return closeSettings();
+});
+document.getElementById('gateInput').addEventListener('keydown', function (e) {
+  if (e.key === 'Enter') gateSubmit();
+});
+
 // ── Init ──
 applyTheme(S.theme);
 document.documentElement.setAttribute('data-density', S.density || 'comfort');
 applyTextVars();
 setDirty(dirty);
+updateLockUI();
 render();
 </script>
-
-
-</body></html>
+</body>
+</html>
