@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" data-theme="" data-density="comfort" data-locked="0" data-gate="0" style="--font-read: 'Zen Maru Gothic', sans-serif; --title-size: 15px;"><head>
+<html lang="zh-Hant">
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>我的網站收藏 ✦</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;600&amp;family=Noto+Sans+TC:wght@300;400;500&amp;family=LXGW+WenKai+TC:wght@300;400;700&amp;family=Zen+Maru+Gothic:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;600&family=Noto+Sans+TC:wght@300;400;500&family=LXGW+WenKai+TC:wght@300;400;700&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 /* ── Design tokens (sync with 文庫) ── */
 :root {
@@ -288,7 +289,7 @@ html[data-gate="1"] header, html[data-gate="1"] .wrap { display: none !important
 /* 早期閘門判斷：在畫面繪製前決定是否要上鎖，避免內容閃現 */
 (function () {
   try {
-    var BAKED = /*<LOCK0>*/{"salt":"2cde0aa118c4c75f","hash":"5d45fc43aa2d1458f536f723b270f5d0984475380da80abe54642ba176a7c9f2","mode":"edit"}/*</LOCK0>*/;
+    var BAKED = /*<LOCK0>*/null/*</LOCK0>*/;
     var raw = null; try { raw = localStorage.getItem('bookmark_lock'); } catch (e) {}
     var lock = (raw !== null) ? JSON.parse(raw) : BAKED;
     var unlocked = false; try { unlocked = localStorage.getItem('bookmark_unlocked') === '1'; } catch (e) {}
@@ -304,8 +305,8 @@ html[data-gate="1"] header, html[data-gate="1"] .wrap { display: none !important
 <header>
   <div class="logo">我的網站收藏 <span class="logo-sub">My Bookmark ☁ · 🔐</span></div>
   <div class="header-right">
-    <button class="btn-hdr" id="lockBtn" onclick="headerLockClick()" title="目前已解鎖，點此鎖定">🔓</button>
-    <button class="btn-hdr" onclick="openExport()">↧ 原始碼 <span id="dirtyDot" class="dot" style="display: inline;">●</span></button>
+    <button class="btn-hdr" id="lockBtn" onclick="headerLockClick()" title="編輯保護">🔓</button>
+    <button class="btn-hdr" onclick="openExport()">↧ 原始碼 <span id="dirtyDot" class="dot" style="display:none">●</span></button>
     <button class="btn-hdr" onclick="openSettings()">⚙</button>
   </div>
 </header>
@@ -315,7 +316,7 @@ html[data-gate="1"] header, html[data-gate="1"] .wrap { display: none !important
     <input class="search-box" id="searchBox" placeholder="搜尋書籤…" oninput="render()">
     <button class="btn-tool lockable" onclick="openAddModal()">＋ 新增</button>
     <button class="btn-tool lockable" id="editModeBtn" onclick="toggleEditMode()">✎ 編輯</button>
-    <button class="btn-tool" id="toggleAllBtn" onclick="toggleAll()">全部收合</button>
+    <button class="btn-tool" id="toggleAllBtn" onclick="toggleAll()">全部展開</button>
   </div>
 
   <div class="edit-banner" id="editBanner" style="display:none">
@@ -373,21 +374,21 @@ html[data-gate="1"] header, html[data-gate="1"] .wrap { display: none !important
         <div class="s-preview"><span class="bm-ico">🔮</span><span class="bm-title" id="fontPreview">哈比人模擬器</span></div>
         <div class="s-row" style="margin-top:12px">
           <span class="s-label">字體大小</span>
-          <div class="slider-wrap"><input type="range" class="s-slider" id="sfontSize" min="13" max="20" step="1" oninput="applySettings()"><span class="s-val" id="sfontSizeVal">15px</span></div>
+          <div class="slider-wrap"><input type="range" class="s-slider" id="sfontSize" min="13" max="32" step="1" oninput="applySettings()"><span class="s-val" id="sfontSizeVal">15px</span></div>
         </div>
       </div>
       <div class="s-section">
         <div class="s-section-title">編輯保護</div>
-        <p class="lock-note" id="lockStatus">已設定密碼 · 目前已解鎖</p>
+        <p class="lock-note" id="lockStatus">尚未設定密碼</p>
         <div style="display:flex; flex-direction:column; gap:8px; margin-top:4px">
-          <button class="btn-act wide" id="lockToggleBtn" onclick="headerLockClick()" style="display: block;">🔒 立即鎖定（唯讀）</button>
-          <button class="btn-act wide" id="lockSetBtn" onclick="setPassword()">變更密碼</button>
-          <button class="btn-act wide" id="lockRemoveBtn" onclick="removePassword()" style="display: block;">移除密碼保護</button>
+          <button class="btn-act wide" id="lockToggleBtn" onclick="headerLockClick()" style="display:none">🔓 解鎖以編輯</button>
+          <button class="btn-act wide" id="lockSetBtn" onclick="setPassword()">設定密碼</button>
+          <button class="btn-act wide" id="lockRemoveBtn" onclick="removePassword()" style="display:none">移除密碼保護</button>
         </div>
-        <div class="s-row" id="lockModeRow" style="display: flex; margin-top: 14px;">
+        <div class="s-row" id="lockModeRow" style="display:none; margin-top:14px">
           <span class="s-label">保護範圍</span>
           <div class="seg">
-            <button class="seg-btn active" id="lockModeEdit" onclick="setLockMode('edit')">僅編輯</button>
+            <button class="seg-btn" id="lockModeEdit" onclick="setLockMode('edit')">僅編輯</button>
             <button class="seg-btn" id="lockModeView" onclick="setLockMode('view')">連瀏覽</button>
           </div>
         </div>
@@ -459,13 +460,13 @@ html[data-gate="1"] header, html[data-gate="1"] .wrap { display: none !important
   </div>
 </div>
 
-<div class="toast" id="toast">已設定密碼 ✓ 記得重新下載原始碼上傳 GitHub</div>
+<div class="toast" id="toast">原始碼已複製 ✓ 可貼進 GitHub</div>
 
 <script>
 // ════════ 書籤資料（匯出時會自動更新這一段） ════════
 const BMS = /*<BMS>*/[{"url":"https://tofudouce.github.io/schedule-app/cloudcream/love.html","title":"哈比人模擬器","note":"","cat":"c1781671678055","icon":"🔮"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/Hp.html","title":"霍格華茲模擬器","note":"","cat":"c1781671678055","icon":"🔮"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/Hunter.html","title":"HUNTER × HUNTER 模擬器","note":"","cat":"c1781671678055","icon":"🔮"},{"url":"https://tofudouce.github.io/schedule-app/Bookmark.html","title":"書籤網站產生器","note":"","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/MakeMake.html","title":"風格轉換器","note":"","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/workspace/workshop.html","title":"Portal 生成器","note":"診所首頁快速建立工具","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/Daily%20soft.html","title":"今天的小任務","note":"","cat":"c1781671678054","icon":"☁"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/DollyBaby.html","title":"我的娃娃養成觀測站","note":"","cat":"c1781671678057","icon":"🎮"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/Sorry.html","title":"自動道歉機","note":"","cat":"c1781671678058","icon":"🫧"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/Test.html","title":"星語娃娃觀測站","note":"","cat":"c1781671678058","icon":"🫧"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/WheelOrder.html","title":"一起吃太極鰲車輪餅","note":"","cat":"c1781671678054","icon":"☁"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/catreplyoffice.html","title":"貓咪客服中心","note":"","cat":"c1781671678058","icon":"🫧"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/frogiveness.html","title":"原諒修行中心","note":"","cat":"c1781671678057","icon":"🎮"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/gametest.html","title":"魔法植物溫室","note":"","cat":"c1781671678058","icon":"🫧"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/if0050.html","title":"ALL IN ETF","note":"","cat":"c1781671678059","icon":"💰"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/witchymilk.html","title":"魔女鍊金工房","note":"","cat":"c1781671678058","icon":"🫧"},{"url":"https://tofudouce.github.io/schedule-app/cloudcream/Mart.html","title":"深夜便利商店","note":"","cat":"c1781671678057","icon":"🎮"},{"url":"https://tofudouce.github.io/schedule-app/nexus/if0050_moon.html","title":"如果當初買0050","note":"(星空版)","cat":"c1781671678059","icon":"💰"},{"url":"https://tofudouce.github.io/schedule-app/nexus/fee_calculator_moon.html","title":"交易成本計算機","note":"(星空版)","cat":"c1781671678059","icon":"💰"},{"url":"https://tofudouce.github.io/schedule-app/nexus/wealth_ledger.html","title":"每月資產動態記帳本","note":"(星空版)","cat":"c1781671678059","icon":"💰"},{"url":"https://tofudouce.github.io/schedule-app/nexus/IDrift_no1.html","title":"ID產生器","note":"","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/nexus/IDrift_no2.html","title":"DreamID產生器","note":"(星空版)","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/nexus/ShiftPic.html","title":"班表產生器","note":"快速建立每月的班表圖片","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/nexus/archive/ShiftPic_IOS.html","title":"班表產生器IOS","note":"","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/nexus/PFPMaker.html","title":"LINE 風格頭像","note":"PFPMaker","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/nexus/chaos_GuildCard.html","title":"阿毛的萬象名片","note":"","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/nexus/chaos_Whispering.html","title":"群星低語占卜站","note":"","cat":"c1781671678054","icon":"☁"},{"url":"https://tofudouce.github.io/schedule-app/nexus/","title":"抓取資料夾中網站","note":"","cat":"c1781671678056","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/nexus/chaos_cat-witch.html","title":"貓巫醫的垃圾桶 ✦ 負能量黑洞宣洩口","note":"","cat":"c1781671678057","icon":"🎮"},{"url":"https://tofudouce.github.io/schedule-app/nexus/fee_calculator.html","title":" 台股交易成本計算","note":"","cat":"c1781671678059","icon":"💰"},{"url":"https://tofudouce.github.io/schedule-app/nexus/frog.html","title":"綠色是原諒的顏色🐸","note":"","cat":"c1781671678057","icon":"🎮"},{"url":"https://tofudouce.github.io/schedule-app/nexus/template_mystic.html","title":"✦ 星星模板","note":"","cat":"c1781671678058","icon":"🫧"},{"url":"https://tofudouce.github.io/schedule-app/textvaule.html","title":"我的文庫收藏","note":"textvaule","cat":"c1781671678054","icon":"☁"},{"url":"https://tofudouce.github.io/schedule-app/muse-forge.html","title":"萌想引擎v5","note":"","cat":"c1781671678055","icon":"🔮"},{"url":"https://tofudouce.github.io/schedule-app/MyBookmark.html","title":"我的網站收藏","note":"MyBookmark","cat":"c1781671678054","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/CodeVaule.html","title":"我的程式碼收藏","note":"CodeVaule","cat":"c1781671678054","icon":"✨"},{"url":"https://tofudouce.github.io/schedule-app/Vault.html","title":"程式碼小金庫","note":"Vault","cat":"c1781671678054","icon":"☁"}]/*</BMS>*/;
 const CATS=[{"id":"c1781671678054","name":"生活工具","icon":"☁"},{"id":"c1781671678055","name":"模擬器","icon":"🔮"},{"id":"c1781671678056","name":"產生器","icon":"✨"},{"id":"c1781671678057","name":"小小樂園","icon":"🎮"},{"id":"c1781671678058","name":"暫存工事中","icon":"🫧"},{"id":"c1781671678059","name":"煉金術","icon":"💰"}];
-const SEED_LOCK = /*<LOCK>*/{"salt":"2cde0aa118c4c75f","hash":"5d45fc43aa2d1458f536f723b270f5d0984475380da80abe54642ba176a7c9f2","mode":"edit"}/*</LOCK>*/;
+const SEED_LOCK = /*<LOCK>*/null/*</LOCK>*/;
 const EMOJIS = ['☁','🔮','✨','🎮','🫧','💰','📖','🌙','🌿','💌','🏮','🐸','🌸','⚗️','🦋','🌟','🍵','🪐'];
 
 // ── State ──
@@ -989,6 +990,5 @@ setDirty(dirty);
 updateLockUI();
 render();
 </script>
-
-
-</body></html>
+</body>
+</html>
