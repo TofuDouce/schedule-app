@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>原始碼編輯器 — 文庫風</title>
+<style>
+/* ───────── 文庫 設計變數（三主題） ───────── */
+:root {
+  --bg:#F9F6F0; --bg2:#F1EBE0; --bg3:#E8DFD0; --surface:#FDFAF5;
+  --ink:#2A1F14; --ink-soft:#5C4A35; --ink-muted:#9A8470;
+  --accent:#7B6A52; --accent-soft:#A08C70;
+  --gold:#C09A5A; --gold-pale:#F5EDD8;
+  --border:#DDD5C5; --shadow:rgba(42,31,20,.08); --shadow-md:rgba(42,31,20,.16);
+  --code-bg:#FDFAF5; --code-ink:#2A1F14;
+  --pill-line:#A8BACD; --pill-ink:#7F90A6; --pill-fill:#8A9CB5; --set-label:#3F4651; --set-bg:#F4F3F1;
+}
+[data-theme="night"] {
+  --bg:#1D1A14; --bg2:#26221B; --bg3:#322B22; --surface:#211D16;
+  --ink:#E8DCC8; --ink-soft:#BCAC8C; --ink-muted:#7C6C5A;
+  --accent:#C09A5A; --accent-soft:#D4B07A;
+  --gold:#C7A263; --gold-pale:#271F14;
+  --border:#3A3128; --shadow:rgba(0,0,0,.3); --shadow-md:rgba(0,0,0,.5);
+  --code-bg:#211D16; --code-ink:#E8DCC8;
+  --pill-line:#4B5666; --pill-ink:#9AA7BA; --pill-fill:#7E8EA3; --set-label:#CBD2DC; --set-bg:#1D1A14;
+}
+[data-theme="antique"] {
+  --bg:#ECE1C8; --bg2:#E4D6B2; --bg3:#DACBA0; --surface:#F4ECD6;
+  --ink:#2C1F0A; --ink-soft:#5A3E18; --ink-muted:#8C6E3C;
+  --accent:#8B5E2A; --accent-soft:#A87840;
+  --gold:#A07030; --gold-pale:#EFDFA6;
+  --border:#C8B888; --shadow:rgba(44,31,10,.12); --shadow-md:rgba(44,31,10,.22);
+  --code-bg:#F4ECD6; --code-ink:#2C1F0A;
+  --pill-line:#CAB487; --pill-ink:#9C8350; --pill-fill:#AA8640; --set-label:#5A3E18; --set-bg:#F4ECD6;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
+  background:var(--bg); color:var(--ink);
+  display:flex; flex-direction:column; overflow:hidden;
+  transition:background .3s,color .3s;
+}
+.serif{font-family:"Noto Serif TC","Songti TC","Times New Roman",serif}
+.mono{font-family:"SF Mono",Monaco,"Cascadia Code","Roboto Mono",Consolas,monospace}
+
+/* ───────── Header ───────── */
+header{
+  flex:0 0 auto; background:var(--ink); height:52px;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 22px; box-shadow:0 2px 16px var(--shadow-md); z-index:30;
+}
+.logo{
+  font-family:"Noto Serif TC","Songti TC",serif; font-weight:600; font-size:1.1rem;
+  color:var(--gold); letter-spacing:.12em; display:flex; align-items:center; gap:10px;
+}
+.logo .mk{font-family:"SF Mono",monospace; font-size:.95rem; opacity:.8}
+.logo-sub{font-weight:300; font-size:.74rem; color:var(--ink-muted); letter-spacing:.05em}
+.hdr-gear{
+  width:34px;height:34px;border-radius:9px;border:1px solid rgba(255,255,255,.15);
+  background:transparent;color:rgba(240,228,200,.8);cursor:pointer;font-size:1rem;
+  display:flex;align-items:center;justify-content:center;transition:all .2s;
+}
+.hdr-gear:hover{background:rgba(255,255,255,.1);color:var(--gold);border-color:var(--gold)}
+
+/* ───────── Toolbar ───────── */
+.toolbar{
+  flex:0 0 auto; display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  padding:9px 16px; background:var(--bg2); border-bottom:1px solid var(--border);
+  transition:background .3s;
+}
+.fname{font-size:.8rem; color:var(--ink-muted); max-width:220px; overflow:hidden;
+  text-overflow:ellipsis; white-space:nowrap; margin-right:auto}
+.btn,label.btn{
+  font-family:inherit; font-size:.9rem; padding:7px 14px; border-radius:8px;
+  border:1px solid var(--border); background:var(--surface); color:var(--ink-soft);
+  cursor:pointer; white-space:nowrap; transition:all .15s;
+  display:inline-flex; align-items:center; gap:7px;
+}
+.btn:hover{background:var(--bg3); color:var(--ink)}
+.btn:disabled{opacity:.45; cursor:not-allowed}
+.btn.gold{background:var(--gold); border-color:var(--gold); color:#fff; font-weight:500}
+.btn.gold:hover{background:var(--accent-soft); border-color:var(--accent-soft)}
+.btn svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2}
+input[type=file]{display:none}
+
+/* ───────── Workspace ───────── */
+.workspace{flex:1 1 auto; display:flex; min-height:0}
+.pane{display:flex; flex-direction:column; min-width:0; min-height:0}
+.pane.code{flex:1 1 56%}
+.pane.prev{flex:1 1 44%}
+.pane-head{
+  flex:0 0 auto; display:flex; align-items:center; justify-content:space-between;
+  padding:8px 15px; background:var(--bg2); border-bottom:1px solid var(--border);
+}
+.pane-head .label{
+  font-family:"Noto Serif TC","Songti TC",serif; font-size:.82rem; font-weight:600;
+  letter-spacing:.1em; color:var(--ink-soft);
+}
+.pane-head .mini{
+  font:inherit; font-size:.76rem; color:var(--ink-muted); background:none; border:none;
+  cursor:pointer; display:inline-flex; align-items:center; gap:5px; padding:3px 7px; border-radius:6px;
+}
+.pane-head .mini:hover{background:var(--bg3); color:var(--ink)}
+.pane-head .mini svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2}
+
+/* code editor */
+.code-body{flex:1 1 auto; display:flex; min-height:0; background:var(--code-bg); transition:background .3s}
+.gutter{
+  flex:0 0 auto; padding:16px 8px 16px 16px; text-align:right;
+  color:var(--ink-muted); opacity:.55; background:var(--code-bg); user-select:none; overflow:hidden;
+}
+.gutter span{display:block}
+#src{
+  flex:1 1 auto; resize:none; border:none; outline:none; background:transparent;
+  color:var(--code-ink); padding:16px 18px 16px 8px; tab-size:2;
+  white-space:pre; overflow:auto; caret-color:var(--gold);
+}
+.gutter, #src{font-family:"SF Mono",Monaco,"Cascadia Code","Roboto Mono",Consolas,monospace;
+  font-size:13px; line-height:1.6}
+#src.wrap{white-space:pre-wrap; word-break:break-word}
+#src::placeholder{color:var(--ink-muted)}
+
+/* divider */
+.divider{flex:0 0 6px; cursor:col-resize; background:var(--border); position:relative; transition:background .15s}
+.divider:hover,.divider.drag{background:var(--gold)}
+.divider::after{content:"";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:2px;height:26px;border-radius:2px;background:var(--ink-muted);opacity:.5}
+
+/* preview */
+.prev-wrap{flex:1 1 auto; background:#fff; min-height:0; position:relative}
+#out{width:100%;height:100%;border:none;display:block;background:#fff}
+.prev-empty{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center;
+  justify-content:center; gap:10px; color:var(--ink-muted); background:var(--surface); text-align:center; padding:20px}
+.prev-empty .pi{font-size:2rem; opacity:.3}
+.prev-empty p{font-size:.82rem; line-height:1.9}
+
+/* ───────── Settings panel（文庫膠囊風） ───────── */
+.set-overlay{position:fixed; inset:0; background:rgba(0,0,0,.3); z-index:200;
+  opacity:0; pointer-events:none; transition:opacity .25s}
+.set-overlay.show{opacity:1; pointer-events:all}
+.set-panel{
+  position:fixed; top:0; right:0; width:min(380px,94vw); height:100%;
+  background:var(--set-bg); border-left:1px solid var(--border);
+  box-shadow:-6px 0 32px var(--shadow-md); display:flex; flex-direction:column;
+  transform:translateX(100%); transition:transform .28s cubic-bezier(.4,0,.2,1); z-index:201; overflow:hidden;
+}
+.set-overlay.show .set-panel{transform:translateX(0)}
+.set-hdr{padding:16px 22px; border-bottom:1px solid var(--border); display:flex;
+  align-items:center; justify-content:space-between}
+.set-hdr h3{font-family:"Noto Serif TC","Songti TC",serif; font-size:1rem; font-weight:600;
+  color:var(--ink); letter-spacing:.04em}
+.set-close{width:28px;height:28px;border:none;background:transparent;color:var(--ink-muted);
+  cursor:pointer;font-size:1.05rem;border-radius:6px;display:flex;align-items:center;justify-content:center}
+.set-close:hover{background:var(--bg3);color:var(--ink)}
+.set-body{flex:1; overflow-y:auto; padding:6px 22px 22px}
+
+.set-row{display:flex; align-items:center; justify-content:space-between; gap:16px;
+  padding:18px 2px; border-bottom:1px solid var(--border)}
+.set-row:last-of-type{border-bottom:none}
+.set-label{font-size:1.05rem; font-weight:500; letter-spacing:.04em; color:var(--set-label); white-space:nowrap}
+.set-pills{display:flex; gap:12px; flex:1; justify-content:flex-end}
+.set-pills.three{gap:9px}
+.pill{
+  flex:1; max-width:142px; font-family:inherit; font-size:1rem; padding:13px 12px;
+  border-radius:999px; border:1.5px solid var(--pill-line); background:transparent; color:var(--pill-ink);
+  cursor:pointer; transition:all .18s; display:inline-flex; align-items:center; justify-content:center; gap:7px;
+  white-space:nowrap; -webkit-tap-highlight-color:transparent;
+}
+.pill:hover{border-color:var(--pill-fill); color:var(--pill-fill)}
+.pill:active{transform:scale(.97)}
+.pill.on{background:var(--pill-fill); border-color:var(--pill-fill); color:#fff}
+.pill .pic{font-size:.92em; opacity:.9; line-height:1}
+.pill .pic.sm{font-size:.72em}
+.pill .pic.lg{font-size:1.18em}
+.set-pills.three .pill{max-width:none; padding:13px 6px}
+.theme-pill{font-weight:500}
+.theme-pill.t-light{background:#fff;color:#2A2A2A;border-color:#E0E0E0}
+.theme-pill.t-night{background:#1A1714;color:#EFE6D6;border-color:#1A1714}
+.theme-pill.t-antique{background:#ECE0C6;color:#6B5230;border-color:#D8C79E}
+.theme-pill.on{box-shadow:0 0 0 2.5px var(--pill-fill); border-color:var(--pill-fill)}
+.s-reset{font-family:inherit; font-size:.84rem; padding:13px 0; border-radius:12px;
+  border:1px solid var(--border); background:transparent; color:var(--ink-muted);
+  cursor:pointer; width:100%; margin-top:22px; transition:all .15s}
+.s-reset:hover{background:var(--bg3); color:var(--ink)}
+
+/* ───────── Toast ───────── */
+.toast{position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(16px);
+  background:var(--ink); color:var(--gold); font-size:.8rem; padding:9px 18px; border-radius:18px;
+  z-index:400; opacity:0; transition:all .28s; pointer-events:none; white-space:nowrap;
+  box-shadow:0 4px 16px var(--shadow-md)}
+.toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+
+@media (max-width:680px){
+  header{padding:0 14px; height:46px}
+  .logo-sub{display:none}
+  .btn span.txt{display:none}
+  .btn{padding:8px 10px}
+  .fname{max-width:110px}
+  .workspace{flex-direction:column}
+  .divider{flex:0 0 6px; width:100%; cursor:row-resize}
+  .divider::after{width:26px;height:2px}
+  .pane.code,.pane.prev{flex:1 1 50%}
+  .set-label{font-size:1rem}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><span class="mk">⟨/⟩</span> 原始碼編輯器 <span class="logo-sub">文庫風 · 離線版</span></div>
+  <button class="hdr-gear" onclick="openSettings()" title="版面設定">⚙</button>
+</header>
+
+<div class="toolbar">
+  <span class="fname" id="fname">尚未開啟檔案</span>
+  <label class="btn gold">
+    <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+    <span class="txt">開啟檔案</span>
+    <input type="file" id="file" accept=".html,.htm,.xml,.svg,.css,.js,.txt,text/*">
+  </label>
+  <button class="btn" id="btnFormat">
+    <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg>
+    <span class="txt">格式化</span>
+  </button>
+  <button class="btn" id="btnCopy">
+    <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+    <span class="txt">複製</span>
+  </button>
+  <button class="btn" id="btnOpenTab">
+    <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg>
+    <span class="txt">在新分頁開啟</span>
+  </button>
+</div>
+
+<div class="workspace" id="workspace">
+  <section class="pane code" id="paneCode">
+    <div class="pane-head">
+      <span class="label">原始碼</span>
+      <span class="mini" id="charCount" style="cursor:default">0 字元</span>
+    </div>
+    <div class="code-body">
+      <div class="gutter mono" id="gutter"><span>1</span></div>
+      <textarea id="src" class="mono" spellcheck="false" placeholder="貼上 HTML 原始碼，或點上方「開啟檔案」載入一個 .html 檔…"></textarea>
+    </div>
+  </section>
+
+  <div class="divider" id="divider"></div>
+
+  <section class="pane prev" id="panePrev">
+    <div class="pane-head">
+      <span class="label">預覽 · 執行畫面</span>
+      <span class="mini" id="btnReload">
+        <svg viewBox="0 0 24 24"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        重新整理
+      </span>
+    </div>
+    <div class="prev-wrap">
+      <iframe id="out" sandbox="allow-scripts allow-modals allow-popups allow-forms"></iframe>
+    </div>
+  </section>
+</div>
+
+<!-- 設定面板 -->
+<div class="set-overlay" id="setOverlay" onclick="closeSettingsBg(event)">
+  <div class="set-panel">
+    <div class="set-hdr">
+      <h3>版面設定</h3>
+      <button class="set-close" onclick="closeSettings()">✕</button>
+    </div>
+    <div class="set-body">
+      <div class="set-row">
+        <span class="set-label">字體大小</span>
+        <div class="set-pills">
+          <button class="pill" onclick="adjustFontSize(-1)"><span class="pic sm">A</span> 縮小</button>
+          <button class="pill" onclick="adjustFontSize(1)"><span class="pic lg">A</span> 放大</button>
+        </div>
+      </div>
+      <div class="set-row">
+        <span class="set-label">行高</span>
+        <div class="set-pills">
+          <button class="pill" onclick="adjustLineHeight(-1)"><span class="pic">≡</span> 縮小</button>
+          <button class="pill" onclick="adjustLineHeight(1)"><span class="pic">≣</span> 放大</button>
+        </div>
+      </div>
+      <div class="set-row">
+        <span class="set-label">自動換行</span>
+        <div class="set-pills">
+          <button class="pill" id="wrapOff" onclick="setWrap(false)">關閉</button>
+          <button class="pill" id="wrapOn" onclick="setWrap(true)">開啟</button>
+        </div>
+      </div>
+      <div class="set-row">
+        <span class="set-label">佈景主題</span>
+        <div class="set-pills three">
+          <button class="pill theme-pill t-light" data-t="light" onclick="setTheme('light')">明亮</button>
+          <button class="pill theme-pill t-night" data-t="night" onclick="setTheme('night')">夜間</button>
+          <button class="pill theme-pill t-antique" data-t="antique" onclick="setTheme('antique')">仿舊</button>
+        </div>
+      </div>
+      <button class="s-reset" onclick="resetSettings()">↺ 恢復預設值</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+
+/* ── 安全儲存：本機用 localStorage，沙箱預覽自動退回記憶體 ── */
+const LS = (function(){
+  try { const t='__t'; localStorage.setItem(t,t); localStorage.removeItem(t); return localStorage; }
+  catch(e){ const m={}; return { getItem:k=>k in m?m[k]:null, setItem:(k,v)=>{m[k]=String(v)}, removeItem:k=>{delete m[k]} }; }
+})();
+
+/* ── 設定 ── */
+const DEFAULTS = { theme:'light', fontSize:13, lineHeight:1.6, wrap:false };
+const FS_MIN=10, FS_MAX=24, LH_MIN=1.2, LH_MAX=2.6;
+let S = Object.assign({}, DEFAULTS, JSON.parse(LS.getItem('sce_settings')||'null')||{});
+function saveSettings(){ LS.setItem('sce_settings', JSON.stringify(S)); }
+
+const src = $('src'), out = $('out'), gutter = $('gutter');
+
+/* ── 預覽 ── */
+let rt;
+function render(){ out.srcdoc = src.value; }
+function scheduleRender(){ clearTimeout(rt); rt = setTimeout(render, 250); }
+
+/* ── 行號 / 字數 ── */
+function updateGutter(){
+  const n = src.value.split('\n').length || 1;
+  let g=''; for(let i=1;i<=n;i++) g+='<span>'+i+'</span>';
+  gutter.innerHTML = g;
+  gutter.scrollTop = src.scrollTop;
+  $('charCount').textContent = src.value.length.toLocaleString() + ' 字元';
+}
+src.addEventListener('input', ()=>{ updateGutter(); scheduleRender(); });
+src.addEventListener('scroll', ()=>{ gutter.scrollTop = src.scrollTop; });
+src.addEventListener('keydown', e=>{
+  if(e.key==='Tab'){ e.preventDefault();
+    const s=src.selectionStart, en=src.selectionEnd;
+    src.value = src.value.slice(0,s)+'  '+src.value.slice(en);
+    src.selectionStart = src.selectionEnd = s+2; updateGutter();
+  }
+});
+
+/* ── 開啟檔案 ── */
+$('file').addEventListener('change', e=>{
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = ()=>{ src.value = r.result; $('fname').textContent = f.name; updateGutter(); render(); showToast('已載入 '+f.name); };
+  r.onerror = ()=> showToast('讀取失敗');
+  r.readAsText(f);
+});
+
+/* ── 格式化（離線、自製） ── */
+function formatHTML(html){
+  const blocks=[];
+  html = html.replace(/<(pre|script|style|textarea)([^>]*)>([\s\S]*?)<\/\1>/gi, m=>{ blocks.push(m); return '\u0000'+(blocks.length-1)+'\u0000'; });
+  html = html.replace(/>\s*</g,'>\n<');
+  const voids=new Set(['area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr']);
+  let indent=0; const out=[]; const pad=n=>'  '.repeat(Math.max(0,n));
+  html.split('\n').forEach(raw=>{
+    const line=raw.trim(); if(!line) return;
+    if(/^<\//.test(line)){ indent=Math.max(0,indent-1); out.push(pad(indent)+line); return; }
+    const m=line.match(/^<([a-zA-Z][\w-]*)/);
+    if(m && !line.startsWith('<!')){
+      const tag=m[1].toLowerCase(); out.push(pad(indent)+line);
+      const self=/\/>\s*$/.test(line); const closed=new RegExp('</'+tag+'>\\s*$','i').test(line);
+      if(!voids.has(tag)&&!self&&!closed) indent++; return;
+    }
+    out.push(pad(indent)+line);
+  });
+  return out.join('\n').replace(/\u0000(\d+)\u0000/g,(m,i)=>blocks[+i]);
+}
+$('btnFormat').onclick = ()=>{
+  if(!src.value.trim()) return;
+  src.value = formatHTML(src.value); updateGutter(); render(); showToast('已整理縮排 ✓');
+};
+
+/* ── 複製 / 重新整理 / 開新分頁 ── */
+$('btnCopy').onclick = async ()=>{
+  try{ await navigator.clipboard.writeText(src.value); showToast('已複製 ✓'); }
+  catch{ src.select(); document.execCommand('copy'); showToast('已複製 ✓'); }
+};
+$('btnReload').onclick = render;
+$('btnOpenTab').onclick = ()=>{
+  if(!src.value.trim()){ showToast('沒有內容可預覽'); return; }
+  const blob = new Blob([src.value], {type:'text/html'});
+  const url = URL.createObjectURL(blob);
+  const w = window.open(url, '_blank');
+  if(!w) showToast('瀏覽器擋住彈出視窗，請允許後再試');
+  setTimeout(()=>URL.revokeObjectURL(url), 60000);
+};
+
+/* ── 設定：主題 / 字級 / 行高 / 換行 ── */
+function applyTheme(t){ document.documentElement.setAttribute('data-theme', t==='light'?'':t); }
+function setTheme(t){
+  S.theme=t; applyTheme(t); saveSettings();
+  document.querySelectorAll('.theme-pill').forEach(d=>d.classList.toggle('on', d.dataset.t===t));
+}
+function applyEditorStyles(){
+  src.style.fontSize = S.fontSize+'px'; gutter.style.fontSize = S.fontSize+'px';
+  src.style.lineHeight = S.lineHeight; gutter.style.lineHeight = S.lineHeight;
+  src.classList.toggle('wrap', !!S.wrap);
+}
+function adjustFontSize(d){
+  S.fontSize = Math.max(FS_MIN, Math.min(FS_MAX, S.fontSize + d));
+  saveSettings(); applyEditorStyles(); updateGutter(); showToast('字級：'+S.fontSize+'px');
+}
+function adjustLineHeight(d){
+  let v = Math.round((S.lineHeight + d*0.1)*10)/10;
+  S.lineHeight = Math.max(LH_MIN, Math.min(LH_MAX, v));
+  saveSettings(); applyEditorStyles(); showToast('行高：'+S.lineHeight.toFixed(1));
+}
+function setWrap(on){
+  S.wrap = on; saveSettings(); applyEditorStyles();
+  $('wrapOn').classList.toggle('on', on); $('wrapOff').classList.toggle('on', !on);
+  showToast('自動換行：'+(on?'開':'關'));
+}
+function syncSettingsUI(){
+  document.querySelectorAll('.theme-pill').forEach(d=>d.classList.toggle('on', d.dataset.t===(S.theme||'light')));
+  $('wrapOn').classList.toggle('on', !!S.wrap); $('wrapOff').classList.toggle('on', !S.wrap);
+}
+function resetSettings(){
+  S = Object.assign({}, DEFAULTS); saveSettings();
+  applyTheme(S.theme); applyEditorStyles(); updateGutter(); syncSettingsUI(); showToast('已恢復預設值');
+}
+function openSettings(){ syncSettingsUI(); $('setOverlay').classList.add('show'); }
+function closeSettings(){ $('setOverlay').classList.remove('show'); }
+function closeSettingsBg(e){ if(e.target===$('setOverlay')) closeSettings(); }
+
+/* ── 可拖拉分隔 ── */
+const divider=$('divider'), ws=$('workspace'), pc=$('paneCode'), pp=$('panePrev');
+let dragging=false;
+divider.addEventListener('mousedown', e=>{ dragging=true; divider.classList.add('drag'); e.preventDefault(); });
+window.addEventListener('mouseup', ()=>{ dragging=false; divider.classList.remove('drag'); });
+window.addEventListener('mousemove', e=>{
+  if(!dragging) return;
+  const vertical = window.innerWidth<=680;
+  const r = ws.getBoundingClientRect();
+  const pct = vertical ? ((e.clientY-r.top)/r.height)*100 : ((e.clientX-r.left)/r.width)*100;
+  const c = Math.min(85, Math.max(15, pct));
+  pc.style.flex='1 1 '+c+'%'; pp.style.flex='1 1 '+(100-c)+'%';
+});
+
+/* ── Toast ── */
+let tT; function showToast(m){ const t=$('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(tT); tT=setTimeout(()=>t.classList.remove('show'),1900); }
+
+/* ── 範例（壓縮成一行，按「格式化」即可還原） ── */
+const sample = '<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><title>範例</title><style>body{font-family:serif;display:grid;place-items:center;height:100vh;margin:0;background:#F9F6F0;color:#2A1F14}.card{text-align:center;padding:2rem 3rem;border-radius:16px;background:#FDFAF5;box-shadow:0 10px 40px rgba(42,31,20,.12)}h1{margin:0 0 .5rem;color:#C09A5A}button{margin-top:1rem;padding:.6rem 1.4rem;border:none;border-radius:999px;background:#C09A5A;color:#fff;cursor:pointer}</style></head><body><div class="card"><h1>文庫風範例</h1><p>左邊是原始碼，右邊是執行畫面。</p><button onclick="this.textContent=\'點了 \'+(++c)+\' 次\'">點我</button></div><script>let c=0;<\/script></body></html>';
+
+/* ── 初始化 ── */
+applyTheme(S.theme);
+applyEditorStyles();
+src.value = sample;
+updateGutter();
+render();
+</script>
+</body>
+</html>
