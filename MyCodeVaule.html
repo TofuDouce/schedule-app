@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>我的程式碼收藏 v3 ✦</title>
+<title>我的程式碼收藏 v3（登入版） ✦</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;600&family=Noto+Sans+TC:wght@300;400;500&family=LXGW+WenKai+TC:wght@300;400;700&family=Zen+Maru+Gothic:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 /* ── Design tokens (sync with 文庫 / 書籤) ── */
@@ -211,6 +211,13 @@ header {
 .modal-overlay { position: fixed; left: 0; right: 0; top: 0; height: 100vh; height: 100svh; background: rgba(42,31,20,0.45); display: flex; align-items: center; justify-content: center; z-index: 250; opacity: 0; pointer-events: none; transition: opacity 0.2s; padding: 16px; padding-top: max(16px, env(safe-area-inset-top)); padding-bottom: max(16px, env(safe-area-inset-bottom)); }
 .modal-overlay.show { opacity: 1; pointer-events: all; }
 .modal { background: var(--surface); border-radius: 14px; padding: 22px 24px; width: min(94vw, 560px); max-height: 100%; overflow-y: auto; box-shadow: 0 8px 40px var(--shadow-md); transform: translateY(8px); transition: transform 0.2s; border: 1px solid var(--border); }
+.modal.export-modal { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+.modal-bar { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.modal-bar h3 { margin: 0; }
+.modal-x { width: 32px; height: 32px; border: 1px solid var(--border); background: var(--surface); color: var(--ink-muted); border-radius: 9px; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.12s; }
+.modal-x:hover { background: var(--bg3); color: var(--ink); }
+.modal-x:active { transform: scale(0.92); }
+.modal-scroll { overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 18px 22px; padding-bottom: max(22px, env(safe-area-inset-bottom)); }
 .modal-overlay.show .modal { transform: translateY(0); }
 .modal h3 { font-family: 'Noto Serif TC', serif; font-size: 1rem; margin-bottom: 6px; color: var(--ink); }
 .m-desc { font-size: 0.78rem; color: var(--ink-muted); line-height: 1.7; }
@@ -479,8 +486,9 @@ html[data-gate="1"] header, html[data-gate="1"] .wrap, html[data-gate="1"] .selb
 
 <!-- Export source -->
 <div class="modal-overlay" id="exportModal" onclick="bgClose(event,'exportModal')">
-  <div class="modal">
-    <h3>資料與部署</h3>
+  <div class="modal export-modal">
+    <div class="modal-bar"><h3>資料與部署</h3><button class="modal-x" onclick="closeModal('exportModal')" aria-label="關閉">✕</button></div>
+    <div class="modal-scroll">
 
     <div class="s-section-title" style="margin-top:14px">更新線上網站</div>
     <p class="m-desc">把目前全部程式碼打包進原始碼，上傳到 GitHub 取代舊的 <b>MyCode.html</b>，線上網站就更新了。（所有程式碼會一起內嵌進檔案）</p>
@@ -503,8 +511,10 @@ html[data-gate="1"] header, html[data-gate="1"] .wrap, html[data-gate="1"] .selb
       <button class="btn-act wide" onclick="downloadAllZip()">🗜 下載全部為 ZIP</button>
     </div>
 
+    <button class="btn-act wide lockable" id="undoResetBtn" style="display:none; margin-top:10px" onclick="restoreUndo()">↩ 復原上次重設</button>
     <div class="m-divider"></div>
     <button class="btn-reset-line lockable" onclick="resetToBaked()">↺ 重設為網頁內建範例（清除本機新增與修改）</button>
+    </div>
   </div>
 </div>
 
@@ -1393,7 +1403,10 @@ function copySource() {
 }
 function resetToBaked() {
   if (!guard()) return;
-  if (!confirm('清除本機所有新增與修改（含分類），恢復成網頁內建的範例？')) return;
+  const _ok = prompt('⚠ 這會清除本機目前所有程式碼與分類，恢復成網頁內建範例。\n重設前會自動留一份可復原的備份。\n\n確定的話，請輸入「清除」兩個字：');
+  if (_ok === null) return;
+  if (_ok.trim() !== '清除') { showToast('已取消（未輸入「清除」）'); return; }
+  try { localStorage.setItem('mycodev3_undo', JSON.stringify({ data: DATA, cats: CATS, at: Date.now() })); } catch (e) {}
   localStorage.removeItem('mycodev3_db');
   localStorage.removeItem('mycodev3_cats');
   DATA = JSON.parse(JSON.stringify(SEED));
@@ -1401,9 +1414,29 @@ function resetToBaked() {
   openFolders = new Set(CATS.map(c => c.id)); saveOpen();
   setDirty(false); render();
   closeModal('exportModal');
-  showToast('已重設為網頁內建範例');
+  refreshUndoBtn();
+  showToast('已重設 · 可按「↩ 復原上次重設」還原');
 }
-function openExport() { document.getElementById('exportModal').classList.add('show'); }
+function restoreUndo() {
+  let raw = null; try { raw = localStorage.getItem('mycodev3_undo'); } catch (e) {}
+  if (!raw) { showToast('沒有可復原的備份'); return; }
+  if (!confirm('要還原「上次重設前」的程式碼與分類嗎？目前內容會被取代。')) return;
+  try {
+    const u = JSON.parse(raw);
+    if (Array.isArray(u.data)) { DATA = u.data; saveData(); }
+    if (Array.isArray(u.cats)) { CATS = u.cats; saveCats(); }
+    openFolders = new Set(CATS.map(c => c.id)); saveOpen();
+    setDirty(true); render(); refreshUndoBtn();
+    showToast('已復原 ✓');
+  } catch (e) { showToast('復原失敗：備份毀損'); }
+}
+function refreshUndoBtn() {
+  const b = document.getElementById('undoResetBtn');
+  if (!b) return;
+  let has = false; try { has = !!localStorage.getItem('mycodev3_undo'); } catch (e) {}
+  b.style.display = has ? 'block' : 'none';
+}
+function openExport() { refreshUndoBtn(); document.getElementById('exportModal').classList.add('show'); }
 
 // ── JSON backup / restore ──
 function exportJSON() {
