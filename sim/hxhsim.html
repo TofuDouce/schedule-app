@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HUNTER×HUNTER 模擬器・指令產生器</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Serif+TC:wght@300;400;500;700&family=Noto+Sans+TC:wght@300;400;500&family=IM+Fell+English:ital,wght@0,400;1,400&family=Zen+Maru+Gothic:wght@400;500;700&family=LXGW+WenKai+TC&family=Zen+Old+Mincho:wght@400;600&family=Shippori+Mincho:wght@400;600&family=Kaisei+Opti:wght@400;700&family=BIZ+UDMincho:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* ══ THEMES ══ */
+:root {
+  --fs:18px; --font:'Noto Serif TC',serif;
+  --bg:#F5EDD8; --bg-sec:#EFE5CC; --bg-card:#EAE0C8; --bg-in:#FAF5E8;
+  --ink:#1C1810; --ink2:#3A3020; --ink3:#5A4E38;
+  --ac:#7A1A1A; --ac2:#A02828; --ac3:#C84040;
+  --gd:#8B6914; --gd2:#B8902A; --gdbg:rgba(139,105,20,.12);
+  --bd:rgba(90,60,20,.28); --bdh:rgba(122,26,26,.55); --bds:rgba(90,60,20,.55);
+  --sh:rgba(60,40,10,.14);
+  --chipon:#7A1A1A; --chiponc:#FFF8EE;
+  --btnc:#FFF8EE;
+}
+body.th-sage{--bg:#EDF0E8;--bg-sec:#E2E8DC;--bg-card:#D8E0D0;--bg-in:#F5F7F2;--ink:#1A2018;--ink2:#2E3828;--ink3:#4A5840;--ac:#3A6B35;--ac2:#4E8A48;--ac3:#6AAD64;--gd:#6B7A30;--gd2:#8A9A40;--gdbg:rgba(107,122,48,.12);--bd:rgba(50,80,40,.25);--bdh:rgba(58,107,53,.5);--bds:rgba(50,80,40,.5);--sh:rgba(30,50,20,.12);--chipon:#3A6B35;--chiponc:#fff;}
+body.th-slate{--bg:#EEF0F5;--bg-sec:#E4E8F0;--bg-card:#D8DDE8;--bg-in:#F8F9FC;--ink:#18202E;--ink2:#2C3848;--ink3:#465468;--ac:#2D4A7A;--ac2:#3D62A0;--ac3:#5580C0;--gd:#5A6A90;--gd2:#7888B0;--gdbg:rgba(90,106,144,.12);--bd:rgba(40,60,100,.22);--bdh:rgba(45,74,122,.5);--bds:rgba(40,60,100,.45);--sh:rgba(20,40,80,.12);--chipon:#2D4A7A;--chiponc:#fff;}
+body.th-rose{--bg:#F8EEF0;--bg-sec:#F0E2E5;--bg-card:#E8D5D8;--bg-in:#FDF6F7;--ink:#281418;--ink2:#402028;--ink3:#603040;--ac:#8B2A40;--ac2:#B03555;--ac3:#D04065;--gd:#8B4A1A;--gd2:#B06030;--gdbg:rgba(139,74,26,.12);--bd:rgba(100,40,55,.25);--bdh:rgba(139,42,64,.5);--bds:rgba(100,40,55,.5);--sh:rgba(80,20,30,.12);--chipon:#8B2A40;--chiponc:#fff;}
+body.th-ivory{--bg:#FAFAF5;--bg-sec:#F2F2EA;--bg-card:#E8E8DE;--bg-in:#fff;--ink:#1A1A14;--ink2:#303028;--ink3:#505048;--ac:#3A3A28;--ac2:#555540;--ac3:#707058;--gd:#6A6030;--gd2:#8A8048;--gdbg:rgba(106,96,48,.1);--bd:rgba(60,60,40,.2);--bdh:rgba(58,58,40,.45);--bds:rgba(60,60,40,.4);--sh:rgba(30,30,20,.1);--chipon:#3A3A28;--chiponc:#fff;}
+body.th-peach{--bg:#FBF0E8;--bg-sec:#F5E5D5;--bg-card:#EDD8C5;--bg-in:#FFF8F2;--ink:#281C10;--ink2:#402C1A;--ink3:#604530;--ac:#8B4A1A;--ac2:#B06025;--ac3:#D08040;--gd:#9A6A10;--gd2:#C08828;--gdbg:rgba(154,106,16,.12);--bd:rgba(100,60,20,.25);--bdh:rgba(139,74,26,.5);--bds:rgba(100,60,20,.5);--sh:rgba(80,40,10,.12);--chipon:#8B4A1A;--chiponc:#fff;}
+body.th-lavender{--bg:#F2F0F8;--bg-sec:#E8E5F2;--bg-card:#DDD8EC;--bg-in:#F9F8FC;--ink:#1E1830;--ink2:#322848;--ink3:#504865;--ac:#5040A0;--ac2:#6858C0;--ac3:#8070D8;--gd:#6050A8;--gd2:#8070C8;--gdbg:rgba(96,80,168,.12);--bd:rgba(70,55,140,.22);--bdh:rgba(80,64,160,.5);--bds:rgba(70,55,140,.42);--sh:rgba(30,20,80,.12);--chipon:#5040A0;--chiponc:#fff;}
+body.th-dark{--bg:#0D0B08;--bg-sec:#13110D;--bg-card:#1A1712;--bg-in:#1E1B15;--ink:#F5EDD0;--ink2:#D8CC98;--ink3:#8A8060;--ac:#C8A040;--ac2:#D8B858;--ac3:#E8CC78;--gd:#B89020;--gd2:#D0AA38;--gdbg:rgba(184,144,32,.12);--bd:rgba(184,144,32,.22);--bdh:rgba(200,160,64,.5);--bds:rgba(184,144,32,.4);--sh:rgba(0,0,0,.4);--chipon:#B89020;--chiponc:#0D0B08;--btnc:#0D0B08;}
+body.th-crimson{--bg:#100808;--bg-sec:#180C0C;--bg-card:#201010;--bg-in:#241414;--ink:#F0DDD8;--ink2:#D0A8A0;--ink3:#886868;--ac:#C03030;--ac2:#D84848;--ac3:#E86868;--gd:#A04020;--gd2:#C05830;--gdbg:rgba(160,64,32,.12);--bd:rgba(192,48,48,.22);--bdh:rgba(216,72,72,.5);--bds:rgba(192,48,48,.4);--sh:rgba(0,0,0,.5);--chipon:#C03030;--chiponc:#F0DDD8;--btnc:#F0DDD8;}
+body.th-midnight{--bg:#080C18;--bg-sec:#0C1220;--bg-card:#101828;--bg-in:#141C30;--ink:#D8E8F8;--ink2:#A8BCD8;--ink3:#607898;--ac:#4878C0;--ac2:#5E90D8;--ac3:#78AAF0;--gd:#3860A0;--gd2:#5080C0;--gdbg:rgba(56,96,160,.12);--bd:rgba(72,120,192,.22);--bdh:rgba(94,144,216,.5);--bds:rgba(72,120,192,.4);--sh:rgba(0,0,0,.5);--chipon:#4878C0;--chiponc:#D8E8F8;--btnc:#D8E8F8;}
+body.th-obsidian{--bg:#060606;--bg-sec:#0E0E0E;--bg-card:#161616;--bg-in:#1A1A1A;--ink:#E8E8E8;--ink2:#B8B8B8;--ink3:#787878;--ac:#A8A8A8;--ac2:#C8C8C8;--ac3:#E0E0E0;--gd:#909090;--gd2:#B0B0B0;--gdbg:rgba(144,144,144,.1);--bd:rgba(200,200,200,.15);--bdh:rgba(200,200,200,.4);--bds:rgba(200,200,200,.3);--sh:rgba(0,0,0,.6);--chipon:#A8A8A8;--chiponc:#060606;--btnc:#060606;}
+
+/* ══ BASE ══ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:var(--fs);}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);min-height:100vh;line-height:1.8;overflow-x:hidden;transition:background .3s,color .3s;}
+
+/* ══ GEAR PANEL ══ */
+#gear-btn{
+  position:fixed;top:16px;right:18px;z-index:500;
+  width:48px;height:48px;border-radius:50%;
+  background:var(--bg-sec);border:1px solid var(--bds);
+  color:var(--ac);font-size:1.3rem;cursor:pointer;
+  box-shadow:0 4px 16px var(--sh);
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .3s,background .3s,border-color .3s;
+}
+#gear-btn:hover{transform:rotate(60deg);border-color:var(--ac2);}
+#gear-btn.open{transform:rotate(120deg);}
+#gear-panel{
+  position:fixed;top:72px;right:18px;z-index:499;
+  width:280px;max-width:calc(100vw - 36px);
+  background:var(--bg-sec);border:1px solid var(--bds);border-radius:10px;
+  box-shadow:0 8px 32px rgba(0,0,0,.22);
+  padding:16px 18px;display:none;
+  flex-direction:column;gap:14px;
+}
+#gear-panel.open{display:flex;animation:gpIn .22s ease;}
+@keyframes gpIn{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
+.gp-title{font-family:'Cinzel',serif;font-size:.66rem;letter-spacing:3px;color:var(--ac);text-transform:uppercase;font-weight:700;padding-bottom:9px;border-bottom:1px solid var(--bd);}
+.gp-row{display:flex;flex-direction:column;gap:7px;}
+.gp-lbl{font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:2px;color:var(--ink3);text-transform:uppercase;font-weight:700;}
+#fs-val{color:var(--ac);}
+.gp-sel{background:var(--bg-in);border:1px solid var(--bds);border-radius:4px;color:var(--ink);font-family:var(--font);font-size:.84rem;padding:7px 9px;cursor:pointer;outline:none;width:100%;transition:border-color .2s;}
+.gp-sel:focus{border-color:var(--ac2);}
+#fs-range{width:100%;accent-color:var(--ac);cursor:pointer;height:4px;}
+
+/* ══ HEADER ══ */
+header{position:relative;z-index:1;text-align:center;padding:54px 24px 40px;border-bottom:2px solid var(--bds);background:linear-gradient(180deg,var(--bg-sec) 0%,var(--bg) 100%);}
+.hdr-db{position:absolute;bottom:-1px;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent 10%,var(--ac) 40%,var(--gd2) 50%,var(--ac) 60%,transparent 90%);opacity:.35;}
+.eyebrow{font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:8px;color:var(--gd);text-transform:uppercase;margin-bottom:14px;}
+.title-wrap{position:relative;display:inline-block;margin-bottom:5px;}
+.title-wrap::before,.title-wrap::after{content:'✦';position:absolute;top:50%;transform:translateY(-50%);color:var(--gd2);font-size:.85rem;opacity:.7;}
+.title-wrap::before{left:-30px;}.title-wrap::after{right:-30px;}
+header h1{font-family:'Cinzel',serif;font-size:clamp(1.5rem,4.5vw,3rem);font-weight:700;color:var(--ink);letter-spacing:.04em;line-height:1.1;}
+.sub-title{font-family:'Cinzel',serif;font-size:.66rem;letter-spacing:5px;color:var(--ink3);margin:7px 0 14px;text-transform:uppercase;}
+.hdr-rule{display:flex;align-items:center;justify-content:center;gap:11px;margin:11px 0;}
+.hdr-rule::before{content:'';flex:1;max-width:80px;height:1px;background:linear-gradient(90deg,transparent,var(--bds));}
+.hdr-rule::after{content:'';flex:1;max-width:80px;height:1px;background:linear-gradient(90deg,var(--bds),transparent);}
+.orn{color:var(--gd);font-size:.9rem;}
+header p{font-family:'IM Fell English',serif;font-style:italic;font-size:.93rem;color:var(--ink3);max-width:520px;margin:0 auto;line-height:1.72;}
+
+/* ══ LAYOUT ══ */
+#app{position:relative;z-index:1;display:grid;grid-template-columns:1fr 460px;max-width:1360px;margin:0 auto;}
+#form-col{padding:22px 24px 80px;border-right:2px solid var(--bd);}
+#out-col{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;padding:20px 18px 16px;}
+
+/* ══ SECTIONS ══ */
+.sec{background:var(--bg-sec);border:1px solid var(--bds);border-radius:4px;margin-bottom:10px;overflow:hidden;box-shadow:0 2px 7px var(--sh);transition:background .3s,border-color .3s;}
+.sec-head{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;cursor:pointer;border-bottom:1px solid transparent;transition:border-color .2s,background .2s;user-select:none;}
+.sec-head:hover{background:rgba(122,26,26,.04);}
+.sec-head.open{border-bottom-color:var(--bd);}
+.sec-title{font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:2.5px;color:var(--ink);font-weight:700;text-transform:uppercase;display:flex;align-items:center;gap:8px;}
+.sec-icon{font-size:.86rem;}
+.sec-arr{color:var(--ink3);font-size:.6rem;transition:transform .3s;}
+.sec-head.open .sec-arr{transform:rotate(180deg);}
+.sec-body{padding:15px 17px;display:none;}
+.sec-body.open{display:block;}
+
+/* ══ FIELDS ══ */
+.field{margin-bottom:13px;}
+.field:last-child{margin-bottom:0;}
+.fl,label{display:block;font-family:'Cinzel',serif;font-size:.61rem;letter-spacing:2.5px;color:var(--ac);font-weight:700;text-transform:uppercase;margin-bottom:7px;}
+.hint{font-size:.75rem;color:var(--ink3);margin-top:5px;line-height:1.6;}
+input[type=text],select,textarea{width:100%;background:var(--bg-in);border:1px solid var(--bds);border-radius:3px;color:var(--ink);font-family:var(--font);font-size:.87rem;padding:8px 11px;outline:none;transition:border-color .2s,box-shadow .2s;}
+input[type=text]:focus,select:focus,textarea:focus{border-color:var(--ac2);box-shadow:0 0 0 2px rgba(122,26,26,.1);}
+input::placeholder,textarea::placeholder{color:var(--ink3);font-style:italic;opacity:.6;}
+select option{background:var(--bg-in);color:var(--ink);}
+textarea{resize:vertical;min-height:70px;line-height:1.7;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+/* ══ CHIPS ══ */
+.cw{display:flex;flex-wrap:wrap;gap:6px;}
+.chip{padding:5px 12px;border:1px solid var(--bds);border-radius:20px;font-size:.79rem;color:var(--ink2);cursor:pointer;user-select:none;transition:all .15s;background:var(--bg-card);font-family:var(--font);}
+.chip:hover{border-color:var(--ac2);color:var(--ac);}
+.chip.on{background:var(--chipon);border-color:var(--chipon);color:var(--chiponc);font-weight:500;}
+.chip.rand{border-style:dashed;color:var(--gd);background:var(--gdbg);}
+.chip.rand.on{background:var(--gd);border-color:var(--gd);color:#FFF8EE;}
+
+/* ══ SKILL GRID ══ */
+.sk-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.sk{display:flex;align-items:center;gap:7px;border:1px solid var(--bds);border-radius:4px;padding:7px 10px;cursor:pointer;transition:all .15s;background:var(--bg-card);}
+.sk:hover{border-color:var(--ac2);}
+.sk.on{background:var(--chipon);border-color:var(--chipon);}
+.sk-ico{font-size:.82rem;flex-shrink:0;}
+.sk-txt{font-size:.8rem;color:var(--ink2);font-family:var(--font);}
+.sk.on .sk-txt{color:var(--chiponc);}
+
+/* ══ CHARACTER CARDS ══ */
+.char-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.c-card{border:1px solid var(--bds);border-radius:4px;padding:11px 8px 9px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg-card);position:relative;box-shadow:0 1px 4px var(--sh);}
+.c-card:hover{border-color:var(--ac2);}
+.c-card.on{border-color:var(--ac);background:rgba(122,26,26,.1);box-shadow:0 2px 8px rgba(122,26,26,.2);}
+.c-name{font-family:var(--font);font-size:.84rem;font-weight:700;color:var(--ink);margin-bottom:3px;}
+.c-faction{font-size:.58rem;color:var(--ac);letter-spacing:1.5px;font-family:'Cinzel',serif;margin-bottom:2px;text-transform:uppercase;font-weight:700;}
+.c-sub{font-size:.67rem;color:var(--ink3);line-height:1.4;}
+.c-card.on .c-sub{color:var(--ink2);}
+.c-card.fav{border-color:var(--gd2);border-width:2px;}
+.c-card.fav .c-name{color:var(--ac);}
+.c-card.fav.on{border-color:var(--gd);}
+.c-card.fav .c-faction{color:var(--gd);}
+.fav-mk{position:absolute;top:4px;right:5px;font-size:.52rem;color:var(--gd);font-family:'Cinzel',serif;letter-spacing:1px;font-weight:700;}
+
+/* ══ NPC GRID ══ */
+.npc-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;}
+.npc-card{border:1px solid var(--bds);border-radius:4px;padding:7px 4px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg-card);}
+.npc-card:hover{border-color:var(--ac2);}
+.npc-card.on{border-color:var(--ac);background:rgba(122,26,26,.1);}
+.npc-name{font-size:.78rem;color:var(--ink);font-family:var(--font);font-weight:700;margin-bottom:2px;}
+.npc-card.on .npc-name{color:var(--ac);}
+.npc-tag{font-size:.58rem;color:var(--ink3);line-height:1.3;}
+
+/* ══ FORMAT CARDS ══ */
+.fmt-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.fmt-card{border:1px solid var(--bds);border-radius:4px;padding:11px 10px;cursor:pointer;transition:all .2s;background:var(--bg-card);box-shadow:0 1px 3px var(--sh);}
+.fmt-card:hover{border-color:var(--ac2);}
+.fmt-card.on{border-color:var(--ac);background:rgba(122,26,26,.08);}
+.fmt-num{font-family:'Cinzel',serif;font-size:.57rem;letter-spacing:3px;color:var(--ac);margin-bottom:4px;text-transform:uppercase;font-weight:700;}
+.fmt-name{font-size:.86rem;color:var(--ink);font-weight:700;margin-bottom:4px;}
+.fmt-card.on .fmt-name{color:var(--ac);}
+.fmt-desc{font-size:.71rem;color:var(--ink3);line-height:1.5;}
+
+/* ══ TOGGLE ══ */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;}
+.toggle-label{font-size:.84rem;color:var(--ink2);}
+.sw{position:relative;width:42px;height:22px;flex-shrink:0;}
+.sw input{opacity:0;width:0;height:0;position:absolute;}
+.sw-tr{position:absolute;inset:0;background:rgba(90,60,20,.15);border:1px solid var(--bds);border-radius:11px;cursor:pointer;transition:background .2s;}
+.sw-tr::after{content:'';position:absolute;top:4px;left:4px;width:12px;height:12px;border-radius:50%;background:var(--ink3);transition:transform .2s,background .2s;}
+.sw input:checked+.sw-tr{background:rgba(122,26,26,.2);border-color:var(--ac2);}
+.sw input:checked+.sw-tr::after{transform:translateX(19px);background:var(--ac);}
+.sec-div{border:none;border-top:1px solid var(--bd);margin:11px 0;}
+
+/* ══ NPC STYLE ROWS ══ */
+.ns-list{display:flex;flex-direction:column;gap:7px;margin-top:4px;}
+.ns-row{display:grid;grid-template-columns:1fr 1fr auto;gap:7px;align-items:center;background:var(--bg-card);border:1px solid var(--bds);border-radius:4px;padding:7px 10px;}
+.ns-row select{margin:0;}
+.btn-rm{background:none;border:1px solid var(--bd);border-radius:3px;color:var(--ink3);cursor:pointer;font-size:.78rem;padding:3px 7px;transition:all .15s;}
+.btn-rm:hover{border-color:var(--ac);color:var(--ac);}
+.btn-add-row{background:var(--bg-card);border:1px dashed var(--bds);border-radius:4px;color:var(--ink3);cursor:pointer;font-family:var(--font);font-size:.82rem;padding:8px;width:100%;text-align:center;margin-top:5px;transition:all .15s;}
+.btn-add-row:hover{border-color:var(--ac2);color:var(--ac);}
+
+/* ══ EXTRA LIST ══ */
+.extra-list{display:flex;flex-direction:column;gap:5px;margin-bottom:8px;}
+.extra-item{display:flex;align-items:center;gap:7px;background:var(--bg-card);border:1px solid var(--bds);border-radius:3px;padding:5px 10px;font-size:.83rem;color:var(--ink2);}
+.extra-item .x{margin-left:auto;background:none;border:none;color:var(--ink3);cursor:pointer;opacity:.5;transition:opacity .2s;}
+.extra-item .x:hover{opacity:1;color:var(--ac);}
+.add-row{display:flex;gap:7px;}
+.add-row input{flex:1;}
+.btn-add{padding:7px 12px;background:transparent;border:1px solid var(--bds);border-radius:3px;color:var(--ac);font-family:'Cinzel',serif;font-size:.64rem;letter-spacing:2px;cursor:pointer;transition:all .2s;white-space:nowrap;text-transform:uppercase;font-weight:700;}
+.btn-add:hover{background:rgba(122,26,26,.08);border-color:var(--ac2);}
+
+/* ══ SLOT SYSTEM ══ */
+.slot-list{display:flex;flex-direction:column;gap:5px;margin-bottom:9px;}
+.slot-item{display:flex;align-items:center;gap:7px;background:var(--bg-card);border:1px solid var(--bds);border-radius:3px;padding:6px 10px;font-size:.83rem;color:var(--ink2);}
+.slot-name{flex:1;font-weight:700;}
+.slot-btns{display:flex;gap:4px;flex-shrink:0;}
+.btn-slot{padding:2px 9px;background:transparent;border:1px solid var(--bd);border-radius:3px;color:var(--ink3);font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:1px;cursor:pointer;transition:all .2s;text-transform:uppercase;}
+.btn-slot:hover{border-color:var(--ac2);color:var(--ac);}
+.diff-wrap{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:9px;}
+.diff-col{background:var(--bg-card);border:1px solid var(--bds);border-radius:4px;padding:10px;}
+.diff-col-lbl{font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:2px;color:var(--ac);text-transform:uppercase;font-weight:700;margin-bottom:6px;}
+.diff-content{font-size:.74rem;color:var(--ink3);line-height:1.7;white-space:pre-wrap;min-height:48px;}
+
+/* ══ OUTPUT ══ */
+.out-head{font-family:'Cinzel',serif;font-size:.64rem;letter-spacing:4px;color:var(--ink3);text-transform:uppercase;font-weight:700;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
+.char-count{font-family:'Cinzel',serif;font-size:.61rem;color:var(--ink3);padding:2px 9px;border:1px solid var(--bds);border-radius:10px;}
+#output-box{flex:1;background:var(--bg-in);border:1px solid var(--bds);border-radius:4px;padding:15px;font-family:var(--font);font-size:.82rem;line-height:1.95;color:var(--ink2);overflow-y:auto;white-space:pre-wrap;word-break:break-all;box-shadow:inset 0 2px 6px var(--sh);transition:background .3s;}
+#output-box::-webkit-scrollbar{width:4px;}
+#output-box::-webkit-scrollbar-thumb{background:rgba(90,60,20,.3);border-radius:2px;}
+.placeholder{color:var(--ink3);font-style:italic;font-size:.82rem;font-family:'IM Fell English',serif;line-height:1.8;opacity:.7;}
+#gen-wrap{display:flex;gap:7px;margin-top:10px;}
+.btn-gen{flex:1;padding:12px;background:var(--chipon);border:2px solid var(--chipon);border-radius:4px;color:var(--chiponc);font-family:'Cinzel',serif;font-size:.78rem;font-weight:700;letter-spacing:3px;cursor:pointer;transition:filter .2s,transform .15s;text-transform:uppercase;}
+.btn-gen:hover{filter:brightness(1.1);transform:translateY(-1px);}
+.out-btn{padding:8px 13px;border:1px solid var(--bds);border-radius:3px;background:var(--bg-card);color:var(--ink2);font-family:'Cinzel',serif;font-size:.64rem;letter-spacing:2px;cursor:pointer;transition:all .2s;text-transform:uppercase;font-weight:700;}
+.out-btn:hover{border-color:var(--ac2);color:var(--ac);}
+.out-btn.primary{background:var(--chipon);border-color:var(--chipon);color:var(--chiponc);}
+
+/* ══ TOAST ══ */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--chipon);color:var(--chiponc);font-family:'Cinzel',serif;font-size:.68rem;letter-spacing:3px;padding:9px 24px;border-radius:4px;opacity:0;pointer-events:none;transition:opacity .3s;z-index:999;font-weight:700;text-transform:uppercase;}
+#toast.show{opacity:1;}
+
+/* ══ RESPONSIVE ══ */
+@media(max-width:960px){
+  #app{grid-template-columns:1fr;}
+  #out-col{position:static;height:auto;min-height:420px;border-top:2px solid var(--bds);}
+  #output-box{min-height:280px;}
+  .char-grid{grid-template-columns:repeat(2,1fr);}
+  .npc-grid{grid-template-columns:repeat(3,1fr);}
+  .fmt-grid{grid-template-columns:1fr;}
+  .diff-wrap{grid-template-columns:1fr;}
+  .ns-row{grid-template-columns:1fr 1fr;}
+  .ns-row .btn-rm{grid-column:span 2;}
+}
+</style>
+</head>
+<body class="th-peach">
+
+<!-- TOP BAR -->
+<!-- 右下角浮動齒輪 -->
+<button id="gear-btn" onclick="toggleGear()" aria-label="顯示設定">⚙</button>
+<div id="gear-panel">
+  <div class="gp-title">顯示設定</div>
+  <div class="gp-row">
+    <div class="gp-lbl">字體大小　<span id="fs-val">18px</span></div>
+    <input type="range" id="fs-range" min="12" max="30" step="1" value="18" oninput="setFs(this.value)">
+  </div>
+  <div class="gp-row">
+    <div class="gp-lbl">字型</div>
+    <select class="gp-sel" onchange="setFont(this.value)">
+      <option value="'Noto Serif TC',serif">Noto Serif TC（明體）</option>
+      <option value="'Noto Sans TC',sans-serif">Noto Sans TC（黑體）</option>
+      <option value="'Zen Maru Gothic',sans-serif">Zen Maru Gothic（圓體）</option>
+      <option value="'LXGW WenKai TC',cursive">霞鶩文楷（楷體）</option>
+      <option value="'Zen Old Mincho',serif">Zen Old Mincho</option>
+      <option value="'Shippori Mincho',serif">Shippori Mincho</option>
+      <option value="'Kaisei Opti',serif">Kaisei Opti</option>
+      <option value="'BIZ UDMincho',serif">BIZ UDMincho</option>
+      <option value="'IM Fell English',serif">IM Fell English</option>
+      <option value="Georgia,serif">Georgia</option>
+    </select>
+  </div>
+  <div class="gp-row">
+    <div class="gp-lbl">主題配色</div>
+    <select class="gp-sel" onchange="setTheme(this.value)">
+      <option value="th-peach" selected>📜 羊皮紙（預設）</option>
+      <option value="">🌙 深褐金（原版）</option>
+      <option value="th-sage">🌿 鼠尾草綠</option>
+      <option value="th-slate">🌊 石板藍</option>
+      <option value="th-rose">🌹 玫瑰磚紅</option>
+      <option value="th-ivory">🤍 象牙白</option>
+      <option value="th-lavender">💜 薰衣草</option>
+      <option value="th-dark">🌑 暗金深色</option>
+      <option value="th-crimson">🩸 深紅暗色</option>
+      <option value="th-midnight">🌌 午夜深藍</option>
+      <option value="th-obsidian">🖤 純黑極簡</option>
+    </select>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <p class="eyebrow">Grim · Vast · Boundless</p>
+  <div class="title-wrap"><h1>HUNTER × HUNTER<br>模擬器・指令產生器</h1></div>
+  <p class="sub-title">Interactive Fiction Prompt Generator</p>
+  <div class="hdr-rule"><span class="orn">✦</span></div>
+  <p>設定你的獵人角色與劇情細節，自動生成完整模擬器指令<br>複製後貼入任何 AI 即可開啟你的獵人之旅</p>
+  <div class="hdr-db"></div>
+</header>
+
+<div id="app">
+<div id="form-col">
+
+<!-- ① 基本資料 -->
+<div class="sec">
+  <div class="sec-head open" onclick="toggle(this)">
+    <span class="sec-title"><span class="sec-icon">⚔</span>基本資料</span>
+    <span class="sec-arr">▲</span>
+  </div>
+  <div class="sec-body open">
+    <div class="g2">
+      <div class="field"><label>姓名</label><input type="text" id="f-name" placeholder="留空由AI依設定生成"></div>
+      <div class="field"><label>年齡</label><input type="text" id="f-age" placeholder="例：17 或 隨機"></div>
+    </div>
+    <div class="field">
+      <div class="fl">性別</div>
+      <div class="cw" id="c-gender" data-single="1">
+        <div class="chip on" data-v="女性">女性</div>
+        <div class="chip" data-v="男性">男性</div>
+        <div class="chip" data-v="不指定">不指定</div>
+        <div class="chip rand" data-v="隨機">🎲 隨機</div>
+      </div>
+    </div>
+    <div class="field">
+      <div class="fl">出身背景</div>
+      <div class="cw" id="c-origin" data-single="1">
+        <div class="chip" data-v="鯨魚島（普通家庭）">鯨魚島</div>
+        <div class="chip" data-v="玄界迷宮（地下犯罪世界）">玄界迷宮</div>
+        <div class="chip" data-v="獵人世家">獵人世家</div>
+        <div class="chip" data-v="貴族家族">貴族家族</div>
+        <div class="chip" data-v="孤兒・流浪者">孤兒・流浪者</div>
+        <div class="chip" data-v="軍事/傭兵組織">軍事/傭兵</div>
+        <div class="chip" data-v="醫療/學術研究">醫療/學術</div>
+        <div class="chip" data-v="神秘未知">神秘未知</div>
+        <div class="chip rand" data-v="隨機">🎲 隨機</div>
+      </div>
+    </div>
+    <div class="field"><label>外貌描述（選填）</label><input type="text" id="f-look" placeholder="例：銀白色長髮、冰藍眼睛、身形纖細"></div>
+    <div class="field"><label>特殊外貌標記（選填）</label><input type="text" id="f-mark" placeholder="例：天生異瞳、頸後有古代紋飾"></div>
+  </div>
+</div>
+
+<!-- ② 獵人資格 -->
+<div class="sec">
+  <div class="sec-head" onclick="toggle(this)">
+    <span class="sec-title"><span class="sec-icon">🏆</span>獵人資格</span>
+    <span class="sec-arr">▼</span>
+  </div>
+  <div class="sec-body">
+    <div class="field">
+      <div class="fl">獵人類型</div>
+      <p class="hint" style="margin-bottom:7px">獵人協會頒發執照後，可依專長選擇發展領域。常見類型：<b>賞金獵人</b>（追捕通緝犯換取獎金）、<b>美食獵人</b>（尋找珍貴食材與烹飪法）、<b>幻獸獵人</b>（探索未知生物與魔獸）、<b>遺跡獵人</b>（探索古文明與歷史遺蹟）、<b>黑名單獵人</b>（追捕非法組織與危險罪犯，如酷拉皮卡）、<b>音樂獵人</b>（收集稀有樂譜或聲音）。</p>
+      <div class="cw" id="c-htype" data-single="1">
+        <div class="chip" data-v="美食獵人">美食獵人</div>
+        <div class="chip" data-v="收藏獵人">收藏獵人</div>
+        <div class="chip on" data-v="黑暗獵人（犯罪世界潛伏）">黑暗獵人</div>
+        <div class="chip" data-v="遺蹟獵人（古代文明調查）">遺蹟獵人</div>
+        <div class="chip" data-v="生物獵人（稀有生命體研究）">生物獵人</div>
+        <div class="chip" data-v="醫療獵人">醫療獵人</div>
+        <div class="chip" data-v="情報獵人">情報獵人</div>
+        <div class="chip" data-v="保全獵人（護衛任務）">保全獵人</div>
+        <div class="chip" data-v="暗黑大陸探索獵人">暗黑大陸探索</div>
+        <div class="chip" data-v="尚未取得獵人執照（遊戲開始即挑戰考試）">未取得執照</div>
+        <div class="chip rand" data-v="隨機">🎲 隨機</div>
+      </div>
+    </div>
+    <div class="field">
+      <div class="fl">初始劇情起點</div>
+      <div class="cw" id="c-startpoint" data-single="1">
+        <div class="chip on" data-v="第287期獵人考試（與小傑同期）">獵人考試篇</div>
+        <div class="chip" data-v="天空競技場・念能力覺醒期">天空競技場篇</div>
+        <div class="chip" data-v="幻影旅團橫行・玄界迷宮">幻影旅團篇</div>
+        <div class="chip" data-v="貪婪之島（電子遊戲世界）">貪婪之島篇</div>
+        <div class="chip" data-v="蟻王討伐作戰">螞蟻篇</div>
+        <div class="chip" data-v="獵人協會會長選舉">選舉篇</div>
+        <div class="chip" data-v="暗黑大陸遠征">暗黑大陸篇</div>
+        <div class="chip" data-v="原創支線（與主線平行）">原創支線</div>
+      </div>
+    </div>
+    <div class="field">
+      <div class="fl">加入故事的方式</div>
+      <div class="cw" id="c-joinway" data-single="1">
+        <div class="chip on" data-v="與主角們在考試現場相遇">考場相遇</div>
+        <div class="chip" data-v="被某位NPC引入事件核心">NPC引入</div>
+        <div class="chip" data-v="獨自執行任務時意外交錯">任務交錯</div>
+        <div class="chip" data-v="與旅團有舊有淵源">舊有淵源</div>
+        <div class="chip" data-v="因特殊念能力引來各方注意">念能力引注</div>
+        <div class="chip rand" data-v="隨機">🎲 隨機</div>
+      </div>
+    </div>
+    <div class="field">
+      <div class="fl">① 開場氛圍</div>
+      <p class="hint" style="margin-bottom:7px">設定故事開頭的天氣、時間與整體情緒基調</p>
+      <div class="cw" id="c-atmosphere" data-single="1">
+        <div class="chip" data-v="雨夜・不安與壓迫感">🌧 雨夜・不安</div>
+        <div class="chip" data-v="黎明・轉捩點與新的開始">🌅 黎明・轉捩</div>
+        <div class="chip" data-v="深夜・危機與靜謐張力">🌑 深夜・危機</div>
+        <div class="chip" data-v="晴天・表面平靜暗流湧動">☀ 晴天・暗流</div>
+        <div class="chip" data-v="廢墟・荒蕪與孤絕感">🏚 廢墟・孤絕</div>
+        <div class="chip rand" data-v="隨機">🎲 隨機</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ③ 念能力 -->
+<div class="sec">
+  <div class="sec-head" onclick="toggle(this)">
+    <span class="sec-title"><span class="sec-icon">✨</span>念能力設定</span>
+    <span class="sec-arr">▼</span>
+  </div>
+  <div class="sec-body">
+    <div class="field">
+      <div class="fl">念能力系統</div>
+      <p class="hint" style="margin-bottom:7px">每位能力者天生屬於六大系統之一，可透過修煉使用不同程度的能力：<b>強化系</b>（提升自身或武器威力，攻防力極高｜小傑、窩金）、<b>變化系</b>（改變氣的性質或形狀，可模擬電、黏液等｜奇犽、西索）、<b>放出系</b>（將氣發射或留在體外，適合遠距攻擊與探測｜雷歐力、富蘭克林）、<b>操作系</b>（控制人、物體或氣並下達指令｜俠客、伊耳謎）、<b>具現化系</b>（將氣實體化為特殊功能的物質或武器｜酷拉皮卡、小滴）、<b>特質系</b>（不屬於前五種的特殊能力，獨特性極強或具規則限制｜庫洛洛、尼菲彼多）。</p>
+      <div class="cw" id="c-nen-type" data-single="1">
+        <div class="chip" data-v="強化系（增強肉體、物品的能力）">強化系</div>
+        <div class="chip" data-v="放出系（將念遠距離切離使用）">放出系</div>
+        <div class="chip" data-v="變化系（將念的性質改變）">變化系</div>
+        <div class="chip on" data-v="具現化系（將念變成有形物質）">具現化系</div>
+        <div class="chip" data-v="操作系（操控物件或人）">操作系</div>
+        <div class="chip" data-v="特質系（特殊異能，不屬於其他系）">特質系</div>
+        <div class="chip rand" data-v="由AI依性格決定系統">🎲 AI決定</div>
+      </div>
+    </div>
+    <div class="field"><label>念能力技名稱（選填）</label><input type="text" id="f-nen-name" placeholder="例：冥府之門 或 留空由AI創造"></div>
+    <div class="field"><label>念能力描述（選填）</label><textarea id="f-nen-desc" placeholder="描述念能力外觀、效果、限制與誓約……留空則由AI設計"></textarea></div>
+    <div class="field">
+      <div class="fl">念的掌握程度</div>
+      <div class="cw" id="c-nen-level" data-single="1">
+        <div class="chip" data-v="初學者（剛接觸念，感應模糊）">初學者</div>
+        <div class="chip on" data-v="中等程度（四大原則穩固，本系技能開發中）">中等程度</div>
+        <div class="chip" data-v="熟練者（複雜技能已成型，誓約明確）">熟練者</div>
+        <div class="chip" data-v="精英（接近一流獵人水準）">精英</div>
+        <div class="chip rand" data-v="隨機">🎲 隨機</div>
+      </div>
+    </div>
+    <div class="field"><label>念能力的代價 / 誓約（選填）</label><input type="text" id="f-nen-cost" placeholder="例：每次使用後三日無法感知念、只能對傷害過自己的人發動"></div>
+  </div>
+</div>
+
+<!-- ④ 性格與專長 -->
+<div class="sec">
+  <div class="sec-head" onclick="toggle(this)">
+    <span class="sec-title"><span class="sec-icon">◈</span>性格與專長</span>
+    <span class="sec-arr">▼</span>
+  </div>
+  <div class="sec-body">
+    <div class="field">
+      <div class="fl">性格特質（可複選）</div>
+      <div class="cw" id="c-traits">
+        <div class="chip" data-v="沉著冷靜">沉著冷靜</div>
+        <div class="chip" data-v="神秘莫測">神秘莫測</div>
+        <div class="chip" data-v="善良溫柔">善良溫柔</div>
+        <div class="chip" data-v="高傲自負">高傲自負</div>
+        <div class="chip" data-v="野心勃勃">野心勃勃</div>
+        <div class="chip" data-v="狡猾算計">狡猾算計</div>
+        <div class="chip" data-v="衝動直率">衝動直率</div>
+        <div class="chip" data-v="沉默寡言">沉默寡言</div>
+        <div class="chip" data-v="溫文爾雅">溫文爾雅</div>
+        <div class="chip" data-v="雙重人格">雙重人格</div>
+        <div class="chip" data-v="忠誠重義">忠誠重義</div>
+        <div class="chip" data-v="冷酷無情（表面）">冷酷（表面）</div>
+        <div class="chip" data-v="觀察入微">觀察入微</div>
+        <div class="chip" data-v="不擇手段">不擇手段</div>
+        <div class="chip" data-v="悲憫天下">悲憫天下</div>
+        <div class="chip" data-v="孤高自傲">孤高自傲</div>
+        <div class="chip" data-v="反社會傾向">反社會傾向</div>
+        <div class="chip" data-v="溫柔刀鋒（外柔內剛）">溫柔刀鋒</div>
+        <div class="chip rand" data-v="隨機">🎲 隨機</div>
+      </div>
+    </div>
+    <div class="field">
+      <div class="fl">戰鬥外專長（可複選）</div>
+      <div class="sk-grid" id="c-skills">
+        <div class="sk" data-v="情報分析・謀略"><span class="sk-ico">🔍</span><span class="sk-txt">情報分析・謀略</span></div>
+        <div class="sk" data-v="醫療・毒物學"><span class="sk-ico">💉</span><span class="sk-txt">醫療・毒物學</span></div>
+        <div class="sk" data-v="古代語言・符文解讀"><span class="sk-ico">📜</span><span class="sk-txt">古代語言・符文</span></div>
+        <div class="sk" data-v="偽裝・潛伏"><span class="sk-ico">🎭</span><span class="sk-txt">偽裝・潛伏</span></div>
+        <div class="sk" data-v="談判・心理操控"><span class="sk-ico">🤝</span><span class="sk-txt">談判・心理操控</span></div>
+        <div class="sk" data-v="鍛造・機械工程"><span class="sk-ico">⚙</span><span class="sk-txt">鍛造・機械工程</span></div>
+        <div class="sk" data-v="生物研究・解剖"><span class="sk-ico">🔬</span><span class="sk-txt">生物研究・解剖</span></div>
+        <div class="sk" data-v="藝術・音樂"><span class="sk-ico">🎵</span><span class="sk-txt">藝術・音樂</span></div>
+        <div class="sk" data-v="地圖測繪・探索"><span class="sk-ico">🗺</span><span class="sk-txt">地圖測繪・探索</span></div>
+        <div class="sk" data-v="密碼・電腦駭客"><span class="sk-ico">💻</span><span class="sk-txt">密碼・電腦駭客</span></div>
+        <div class="sk" data-v="料理・毒藥調製"><span class="sk-ico">⚗</span><span class="sk-txt">料理・毒藥調製</span></div>
+        <div class="sk" data-v="心理學・人格分析"><span class="sk-ico">🧠</span><span class="sk-txt">心理學・人格分析</span></div>
+      </div>
+    </div>
+    <div class="field"><label>個性補充 / MBTI（選填）</label><input type="text" id="f-mbti" placeholder="例：INTJ，極度理性，以達成目的為優先"></div>
+    <div class="field"><label>弱點 / 禁忌（選填）</label><input type="text" id="f-fear" placeholder="例：無法承受孩童受苦、對特定人物有執念"></div>
+    <div class="field"><label>隱藏秘密 / 過去（選填）</label><input type="text" id="f-secret" placeholder="例：曾是幻影旅團候補成員、與蟻王有過某種接觸"></div>
+  </div>
+</div>
+
+<!-- ⑤ 攻略對象 -->
+<div class="sec">
+  <div class="sec-head" onclick="toggle(this)">
+    <span class="sec-title"><span class="sec-icon">🥀</span>攻略對象</span>
+    <span class="sec-arr">▼</span>
+  </div>
+  <div class="sec-body">
+    <p class="hint" style="margin-bottom:12px"><b>★</b> 標示為偏好推薦角色。單選，選定一位作為感情線主角</p>
+    <div class="char-grid" id="c-romance">
+      <div class="c-card fav on" data-v="伊耳謎・揍敵客"><span class="fav-mk">★ FAV</span><div class="c-faction">幻影旅團</div><div class="c-name">伊耳謎・揍敵客</div><div class="c-sub">旅團No.4<br>美麗冷酷・殺戮美學</div></div>
+      <div class="c-card fav" data-v="庫洛洛・魯西魯"><span class="fav-mk">★ FAV</span><div class="c-faction">幻影旅團</div><div class="c-name">庫洛洛・魯西魯</div><div class="c-sub">蜘蛛之首No.0<br>魅力深邃・神秘主義</div></div>
+      <div class="c-card" data-v="梅路艾姆（蟻王）"><div class="c-faction">嵌合蟻</div><div class="c-name">梅路艾姆（蟻王）</div><div class="c-sub">嵌合蟻之王<br>至高存在・悲劇命運</div></div>
+      <div class="c-card" data-v="雷歐力・帕拉丁奈特"><div class="c-faction">獵人・主角</div><div class="c-name">雷歐力・帕拉丁奈特</div><div class="c-sub">醫者之志<br>義氣真誠・強勢守護</div></div>
+      <div class="c-card" data-v="西索・莫羅"><div class="c-faction">獨行者</div><div class="c-name">西索・莫羅</div><div class="c-sub">魔術師獵人<br>瘋狂執著・危險魅力</div></div>
+      <div class="c-card" data-v="酷拉皮卡"><div class="c-faction">獵人・主角</div><div class="c-name">酷拉皮卡</div><div class="c-sub">窟盧塔族遺孤<br>冷靜睿智・復仇之念</div></div>
+      <div class="c-card" data-v="凱特"><div class="c-faction">幻獸獵人</div><div class="c-name">凱特</div><div class="c-sub">金富力士的弟子<br>孤高強者・命運重生</div></div>
+      <div class="c-card" data-v="信長・羽間"><div class="c-faction">幻影旅團</div><div class="c-name">信長・羽間</div><div class="c-sub">旅團成員<br>刀客氣概・俠義本色</div></div>
+      <div class="c-card" data-v="飛坦・博通"><div class="c-faction">幻影旅團</div><div class="c-name">飛坦・博通</div><div class="c-sub">旅團成員No.8<br>外柔內剛・神秘氣息</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ⑥ 角色戲份 -->
+<div class="sec">
+  <div class="sec-head" onclick="toggle(this)">
+    <span class="sec-title"><span class="sec-icon">◉</span>角色戲份分配</span>
+    <span class="sec-arr">▼</span>
+  </div>
+  <div class="sec-body">
+    <p class="hint" style="margin-bottom:12px">勾選希望擁有較多戲份、對話與個人弧線的角色（可複選）</p>
+    <div class="npc-grid" id="c-npc-presence">
+      <div class="npc-card on" data-v="伊耳謎（旅團No.4）"><div class="npc-name">伊耳謎</div><div class="npc-tag">旅團No.4</div></div>
+      <div class="npc-card on" data-v="庫洛洛（旅團No.0）"><div class="npc-name">庫洛洛</div><div class="npc-tag">旅團No.0</div></div>
+      <div class="npc-card on" data-v="窩金（旅團No.2）"><div class="npc-name">窩金</div><div class="npc-tag">旅團No.2</div></div>
+      <div class="npc-card" data-v="芬克斯（旅團No.5）"><div class="npc-name">芬克斯</div><div class="npc-tag">旅團No.5</div></div>
+      <div class="npc-card" data-v="飛坦（旅團No.8）"><div class="npc-name">飛坦</div><div class="npc-tag">旅團No.8</div></div>
+      <div class="npc-card" data-v="瑪奇（旅團No.3）"><div class="npc-name">瑪奇</div><div class="npc-tag">旅團No.3</div></div>
+      <div class="npc-card" data-v="派克諾妲（旅團No.9）"><div class="npc-name">派克諾妲</div><div class="npc-tag">旅團No.9</div></div>
+      <div class="npc-card" data-v="俠客（旅團No.6）"><div class="npc-name">俠客</div><div class="npc-tag">旅團No.6</div></div>
+      <div class="npc-card" data-v="科魯托巴（旅團No.11）"><div class="npc-name">科魯托巴</div><div class="npc-tag">旅團No.11</div></div>
+      <div class="npc-card" data-v="信長（旅團成員）"><div class="npc-name">信長</div><div class="npc-tag">旅團成員</div></div>
+      <div class="npc-card" data-v="小傑・富力士（主角）"><div class="npc-name">小傑</div><div class="npc-tag">主角</div></div>
+      <div class="npc-card" data-v="奇犽・揍敵客（主角）"><div class="npc-name">奇犽</div><div class="npc-tag">主角</div></div>
+      <div class="npc-card" data-v="雷歐力・帕拉丁奈特（主角）"><div class="npc-name">雷歐力</div><div class="npc-tag">主角</div></div>
+      <div class="npc-card" data-v="酷拉皮卡（主角）"><div class="npc-name">酷拉皮卡</div><div class="npc-tag">主角</div></div>
+      <div class="npc-card" data-v="席爾瓦・揍敵客（揍敵客家族）"><div class="npc-name">席爾瓦</div><div class="npc-tag">揍敵客家族</div></div>
+      <div class="npc-card" data-v="依爾密・揍敵客（揍敵客家族）"><div class="npc-name">依爾密</div><div class="npc-tag">揍敵客家族</div></div>
+      <div class="npc-card" data-v="糜稽（揍敵客家族）"><div class="npc-name">糜稽</div><div class="npc-tag">揍敵客家族</div></div>
+      <div class="npc-card" data-v="西索・莫羅（獨行魔術師）"><div class="npc-name">西索</div><div class="npc-tag">獨行魔術師</div></div>
+      <div class="npc-card" data-v="帕利士通・希爾（十二支）"><div class="npc-name">帕利士通</div><div class="npc-tag">十二支</div></div>
+      <div class="npc-card" data-v="梅路艾姆（蟻王）"><div class="npc-name">梅路艾姆</div><div class="npc-tag">蟻王</div></div>
+    </div>
+    <!-- ② NPC台詞風格鎖定 -->
+    <div class="field" style="margin-top:14px">
+      <div class="fl">② NPC台詞風格鎖定（選填）</div>
+      <p class="hint" style="margin-bottom:7px">為特定角色鎖定說話節奏，AI全程維持該風格</p>
+      <div class="ns-list" id="ns-list"></div>
+      <button class="btn-add-row" onclick="addNsRow()">＋ 新增NPC台詞風格</button>
+    </div>
+  </div>
+</div>
+
+<!-- ⑦ 感情線 -->
+<div class="sec">
+  <div class="sec-head" onclick="toggle(this)">
+    <span class="sec-title"><span class="sec-icon">💀</span>感情線設定</span>
+    <span class="sec-arr">▼</span>
+  </div>
+  <div class="sec-body">
+    <div class="field">
+      <div class="fl">感情類型（可複選，建議2至3種）</div>
+      <div class="cw" id="c-rtype">
+        <div class="chip on" data-v="慢熱型戀愛（感情在危機中逐漸積累）">🕯 慢熱型戀愛</div>
+        <div class="chip" data-v="相愛相殺（利益衝突中的暗流）">⚔ 相愛相殺</div>
+        <div class="chip on" data-v="虐戀（道德邊界模糊的羈絆）">🥀 虐戀</div>
+        <div class="chip" data-v="禁忌之戀（立場對立卻無法割捨）">🔒 禁忌之戀</div>
+        <div class="chip" data-v="互相救贖（彼此成為對方繼續的理由）">🌙 互相救贖</div>
+        <div class="chip" data-v="歡喜冤家（明爭暗鬥後的反轉）">😤 歡喜冤家</div>
+        <div class="chip" data-v="命中注定（念能力或命運交織）">⭐ 命中注定</div>
+        <div class="chip" data-v="主從糾葛（依附關係中的情感轉化）">👁 主從糾葛</div>
+        <div class="chip" data-v="暗戀多時（一方長期觀察另一方）">🌹 暗戀多時</div>
+        <div class="chip" data-v="反差萌（危險外表下的柔軟時刻）">🎭 反差萌</div>
+        <div class="chip" data-v="從對立陣營到相依存活">🔄 陣營對立到相依</div>
+        <div class="chip" data-v="生死共存（只有在極端危機下才開口）">🛡 生死共存</div>
+        <div class="chip rand" data-v="隨機">🎲 隨機</div>
+      </div>
+    </div>
+    <div class="field">
+      <div class="fl">感情節奏</div>
+      <div class="cw" id="c-rpace" data-single="1">
+        <div class="chip on" data-v="極度慢熱（全程剋制，高張力）">極度慢熱</div>
+        <div class="chip" data-v="慢熱為主（階段性推進）">慢熱為主</div>
+        <div class="chip" data-v="中等節奏（適度展開）">中等節奏</div>
+        <div class="chip" data-v="玩家自行掌控節奏">玩家自控</div>
+      </div>
+    </div>
+    <div class="field">
+      <div class="fl">初始關係</div>
+      <div class="cw" id="c-initrel" data-single="1">
+        <div class="chip on" data-v="完全陌生（第一次相遇）">完全陌生</div>
+        <div class="chip" data-v="見過數面的舊識">數面之緣</div>
+        <div class="chip" data-v="曾在同一陣營或任務">共同任務</div>
+        <div class="chip" data-v="原本存在敵對或競爭">敵對</div>
+        <div class="chip" data-v="有過某種恩怨或情報交易">恩怨情仇</div>
+        <div class="chip" data-v="對方早已注意到妳/你">對方先注意</div>
+        <div class="chip rand" data-v="隨機">🎲 隨機</div>
+      </div>
+    </div>
+    <div class="field">
+      <div class="fl">結局傾向</div>
+      <div class="cw" id="c-ending" data-single="1">
+        <div class="chip" data-v="HE（雙方存活，感情圓滿）">❤ HE・圓滿結局</div>
+        <div class="chip on" data-v="開放式HE（存活但懸而未決）">🌘 開放式HE</div>
+        <div class="chip" data-v="苦甜結局（存活但各奔前程）">🥀 苦甜結局</div>
+        <div class="chip" data-v="悲劇BE（一方或雙方死亡）">💀 悲劇BE</div>
+        <div class="chip" data-v="由AI依劇情決定">❓ AI決定</div>
+      </div>
+    </div>
+    <!-- ⑤ 感情觸發條件 -->
+    <div class="field">
+      <div class="fl">⑤ 感情觸發條件（可複選）</div>
+      <p class="hint" style="margin-bottom:7px">設定什麼行為或情境會讓對方產生情感波動，AI會在對應場景特別深描反應</p>
+      <div class="cw" id="c-trigger">
+        <div class="chip" data-v="妳/你展現念能力時">展現念能力</div>
+        <div class="chip" data-v="妳/你對他說謊被識破時">說謊被識破</div>
+        <div class="chip" data-v="危機中妳/你沒有選擇逃跑時">危機不逃跑</div>
+        <div class="chip" data-v="妳/你獨自受傷時">獨自受傷</div>
+        <div class="chip" data-v="妳/你對他展現真實的脆弱時">展現脆弱</div>
+        <div class="chip" data-v="妳/你做出他意料之外的選擇時">出乎意料的選擇</div>
+        <div class="chip" data-v="妳/你保護他人不計代價時">捨身保護他人</div>
+        <div class="chip" data-v="妳/你笑的時候">笑的瞬間</div>
+        <div class="chip" data-v="妳/你一個人安靜獨處時">獨處時的背影</div>
+        <div class="chip" data-v="妳/你拒絕他時">拒絕他</div>
+      </div>
+    </div>
+    <!-- ⑥ 角色底線 -->
+    <div class="field">
+      <div class="fl">⑥ 攻略對象的底線（選填）</div>
+      <p class="hint" style="margin-bottom:7px">設定對方絕對不會做的事，防止AI讓角色崩人設</p>
+      <textarea id="f-redline" placeholder="例：伊耳謎不會主動說出關心的話、庫洛洛不會為任何人放棄旅團……"></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- ⑧ 輸出格式 -->
+<div class="sec">
+  <div class="sec-head" onclick="toggle(this)">
+    <span class="sec-title"><span class="sec-icon">📖</span>輸出格式設定</span>
+    <span class="sec-arr">▼</span>
+  </div>
+  <div class="sec-body">
+    <div class="field">
+      <div class="fl">主要輸出模式</div>
+      <div class="fmt-grid" id="c-output-mode">
+        <div class="fmt-card" data-v="回合制冒險（行動選項）"><div class="fmt-num">Mode I</div><div class="fmt-name">① 回合制冒險</div><div class="fmt-desc">每回合結尾提供4至5個可選行動，玩家選擇後推進劇情。</div></div>
+        <div class="fmt-card on" data-v="長篇沉浸小說（無選項）"><div class="fmt-num">Mode II</div><div class="fmt-name">② 長篇沉浸小說</div><div class="fmt-desc">純粹小說敘事，每章節2500字以上，無行動選項。</div></div>
+        <div class="fmt-card" data-v="混合制（主線小說＋關鍵時刻提供選項）"><div class="fmt-num">Mode III</div><div class="fmt-name">③ 混合制</div><div class="fmt-desc">主線以小說敘事呈現，僅在感情或生死關鍵分歧才出現選項。</div></div>
+        <div class="fmt-card" data-v="資料卡＋劇情同步（每回合附角色狀態）"><div class="fmt-num">Mode IV</div><div class="fmt-name">④ 資料卡＋劇情</div><div class="fmt-desc">每回合附：位置・好感度・念能力狀態・關係網絡。</div></div>
+        <div class="fmt-card" data-v="書信/日記模式（以玩家視角記錄）"><div class="fmt-num">Mode V</div><div class="fmt-name">⑤ 書信・日記模式</div><div class="fmt-desc">以玩家日記或往來書信形式呈現，適合感情線深挖。</div></div>
+        <div class="fmt-card" data-v="雙視角交替（玩家視角與攻略對象內心交替）"><div class="fmt-num">Mode VI</div><div class="fmt-name">⑥ 雙視角交替</div><div class="fmt-desc">交替呈現玩家視角與攻略對象的內心活動，適合虐戀。</div></div>
+      </div>
+    </div>
+    <div class="field">
+      <div class="fl">每次輸出篇幅</div>
+      <div class="cw" id="c-length" data-single="1">
+        <div class="chip" data-v="短篇（200至300字，節奏快）">短篇 200-300字</div>
+        <div class="chip on" data-v="中篇（400至600字，標準節奏）">中篇 400-600字</div>
+        <div class="chip" data-v="長篇（700至1000字，深度沉浸）">長篇 700-1000字</div>
+        <div class="chip" data-v="超長篇（1000字以上，完整章節）">超長篇 1000字+</div>
+      </div>
+    </div>
+    <div class="field">
+      <div class="fl">文風偏好</div>
+      <div class="cw" id="c-style" data-single="1">
+        <div class="chip" data-v="純文學（意象豐富，大量心理描寫）">純文學</div>
+        <div class="chip on" data-v="漫畫/動畫翻譯腔（貼近原作氛圍）">漫畫翻譯腔</div>
+        <div class="chip" data-v="輕小說（節奏明快，對話比重高）">輕小說</div>
+        <div class="chip" data-v="黑色電影（冷峻敘事，第三人稱旁白）">黑色電影</div>
+        <div class="chip" data-v="詩意散文（意象化，時間感模糊）">詩意散文</div>
+      </div>
+    </div>
+    <div class="field">
+      <div class="fl">台詞風格偏好</div>
+      <div class="cw" id="c-dlg-style" data-single="1">
+        <div class="chip" data-v="台詞量豐富，每個場景都有詳細對話">台詞豐富</div>
+        <div class="chip" data-v="台詞精煉，重要對話才展開，其餘以旁白帶過">台詞精煉</div>
+        <div class="chip" data-v="角色內心獨白豐富（玩家視角的心理描寫）">內心獨白豐富</div>
+        <div class="chip" data-v="重視場景氛圍描寫，台詞為輔">氛圍描寫為主</div>
+      </div>
+    </div>
+    <div class="field">
+      <div class="fl">ChatGPT 寫作區塊</div>
+      <p class="hint" style="margin-bottom:7px">啟用後，模擬器將指示 AI 在 ChatGPT 的「寫作內容」Canvas 區塊中輸出劇情</p>
+      <div class="cw" id="c-canvas" data-single="1">
+        <div class="chip on" data-v="啟用寫作區塊輸出">✅ 啟用寫作區塊輸出</div>
+        <div class="chip" data-v="不使用（一般訊息輸出）">❌ 不使用（一般訊息輸出）</div>
+      </div>
+    </div>
+    <div class="field">
+      <div class="fl">輸出語言</div>
+      <div class="cw" id="c-lang" data-single="1">
+        <div class="chip on" data-v="繁體中文">繁體中文</div>
+        <div class="chip" data-v="English">English</div>
+        <div class="chip" data-v="中英混合（NPC英文名、敘事繁體中文）">中英混合</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ⑨ 劇情設定 -->
+<div class="sec">
+  <div class="sec-head" onclick="toggle(this)">
+    <span class="sec-title"><span class="sec-icon">⚠</span>劇情強度 &amp; 開關</span>
+    <span class="sec-arr">▼</span>
+  </div>
+  <div class="sec-body">
+    <div class="field">
+      <div class="fl">劇情強度</div>
+      <div class="cw" id="c-intensity" data-single="1">
+        <div class="chip" data-v="輕鬆冒險（友好互動為主）">☀ 輕鬆冒險</div>
+        <div class="chip" data-v="原著氛圍（戰鬥與哲學並存）">📖 原著氛圍</div>
+        <div class="chip on" data-v="黑暗心理（道德模糊、高張力衝突）">🩸 黑暗心理</div>
+        <div class="chip" data-v="極限虐（生死與情感雙重拉鋸）">💀 極限虐</div>
+      </div>
+    </div>
+    <div class="sec-div"></div>
+    <div class="toggle-row"><span class="toggle-label">開啟感情線</span><label class="sw"><input type="checkbox" id="sw-romance" checked><span class="sw-tr"></span></label></div>
+    <div class="toggle-row"><span class="toggle-label">主角方（小傑・奇犽・酷拉皮卡・雷歐力）出現於劇情</span><label class="sw"><input type="checkbox" id="sw-protag" checked><span class="sw-tr"></span></label></div>
+    <div class="toggle-row"><span class="toggle-label">幻影旅團完整登場（含現任成員）</span><label class="sw"><input type="checkbox" id="sw-spiders" checked><span class="sw-tr"></span></label></div>
+    <div class="toggle-row"><span class="toggle-label">獵人考試劇情弧（若選考試起點）</span><label class="sw"><input type="checkbox" id="sw-exam" checked><span class="sw-tr"></span></label></div>
+    <div class="toggle-row"><span class="toggle-label">玩家念能力可對抗主要NPC</span><label class="sw"><input type="checkbox" id="sw-fight" checked><span class="sw-tr"></span></label></div>
+    <div class="toggle-row"><span class="toggle-label">禁止NPC無條件支持玩家</span><label class="sw"><input type="checkbox" id="sw-npc-hard" checked><span class="sw-tr"></span></label></div>
+    <div class="toggle-row"><span class="toggle-label">開啟原創隱藏支線</span><label class="sw"><input type="checkbox" id="sw-sub" checked><span class="sw-tr"></span></label></div>
+    <div class="toggle-row"><span class="toggle-label">死亡風險（玩家角色有真實死亡可能）</span><label class="sw"><input type="checkbox" id="sw-death"><span class="sw-tr"></span></label></div>
+  </div>
+</div>
+
+<!-- ⑩ 隱藏支線 -->
+<div class="sec">
+  <div class="sec-head" onclick="toggle(this)">
+    <span class="sec-title"><span class="sec-icon">🔮</span>隱藏支線</span>
+    <span class="sec-arr">▼</span>
+  </div>
+  <div class="sec-body">
+    <div class="field">
+      <div class="fl">可選支線（可複選）</div>
+      <div class="cw" id="c-hidden">
+        <div class="chip" data-v="玩家身世之謎（與旅團或王族有隱藏關聯）">🔮 身世之謎</div>
+        <div class="chip on" data-v="旅團內部分裂（成員間的裂痕與玩家的介入）">🕷 旅團內部分裂</div>
+        <div class="chip on" data-v="庫洛洛隱藏的某個目的（超越盜賊動機）">👁 庫洛洛的秘密目的</div>
+        <div class="chip" data-v="失落的念能力遺跡（古代獵人留下的禁術）">📿 古代念能力遺跡</div>
+        <div class="chip" data-v="揍敵客家族對玩家的秘密評估">🗡 揍敵客家評估</div>
+        <div class="chip" data-v="玩家與蟻王之間的奇異共鳴">🐜 與蟻王共鳴</div>
+        <div class="chip" data-v="暗黑大陸某勢力提前在世界佈局">🌑 暗黑大陸伏筆</div>
+        <div class="chip" data-v="窩金的預言中有關玩家的訊息">🃏 窩金的預言</div>
+        <div class="chip" data-v="獵人協會內部的腐敗調查">⚖ 協會內部腐敗</div>
+      </div>
+    </div>
+    <!-- ③ 禁用事件黑名單 -->
+    <div class="field" style="margin-top:12px">
+      <div class="fl">③ 禁用事件黑名單（可複選）</div>
+      <p class="hint" style="margin-bottom:7px">勾選後，這些劇情類型永遠不會觸發</p>
+      <div class="cw" id="c-blacklist">
+        <div class="chip" data-v="不希望出現背叛情節">無背叛</div>
+        <div class="chip" data-v="不希望角色突然失憶">無失憶</div>
+        <div class="chip" data-v="不希望有新的感情競爭者介入">無情敵介入</div>
+        <div class="chip" data-v="不希望主要NPC無故死亡">主要NPC不死</div>
+        <div class="chip" data-v="不希望玩家陷入昏迷或失去意識">無昏迷情節</div>
+        <div class="chip" data-v="不希望感情線出現強制性情節">感情無強制</div>
+        <div class="chip" data-v="不希望旅團成員互相殘殺">旅團成員不互殺</div>
+      </div>
+    </div>
+    <!-- ⑧ 場景必出清單 -->
+    <div class="field" style="margin-top:12px">
+      <div class="fl">⑧ 場景必出清單（可複選）</div>
+      <p class="hint" style="margin-bottom:7px">指定這個故事裡一定要出現的場景或互動</p>
+      <div class="cw" id="c-mustscene">
+        <div class="chip" data-v="一場雨中的對話">雨中對話</div>
+        <div class="chip" data-v="對方替妳/你包紮傷口">包紮傷口</div>
+        <div class="chip" data-v="念能力失控的瞬間">念能力失控</div>
+        <div class="chip" data-v="在隱秘空間的兩人獨處">隱密空間獨處</div>
+        <div class="chip" data-v="妳/你見到對方脆弱的一面">對方的脆弱</div>
+        <div class="chip" data-v="深夜無法入眠的對話">深夜對話</div>
+        <div class="chip" data-v="一次生死邊緣的並肩作戰">生死並肩</div>
+        <div class="chip" data-v="對方第一次說出妳/你的名字">第一次叫名字</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ⑪ 進階自訂 -->
+<div class="sec">
+  <div class="sec-head" onclick="toggle(this)">
+    <span class="sec-title"><span class="sec-icon">✒</span>進階自訂</span>
+    <span class="sec-arr">▼</span>
+  </div>
+  <div class="sec-body">
+    <!-- ⑦ 句型黑名單 -->
+    <div class="field">
+      <div class="fl">⑦ 禁用句型黑名單（可複選）</div>
+      <div class="cw" id="c-wordban">
+        <div class="chip" data-v="禁止使用「心跳加速」">心跳加速</div>
+        <div class="chip" data-v="禁止使用「不由自主」">不由自主</div>
+        <div class="chip" data-v="禁止使用「莫名其妙」">莫名其妙</div>
+        <div class="chip" data-v="禁止使用「一時語塞」">一時語塞</div>
+        <div class="chip" data-v="禁止使用「眼眶泛紅」">眼眶泛紅</div>
+        <div class="chip" data-v="禁止使用「說不清楚的感覺」">說不清楚的感覺</div>
+        <div class="chip" data-v="禁止使用破折號（——）">破折號（——）</div>
+        <div class="chip" data-v="禁止使用「若有所思」">若有所思</div>
+      </div>
+      <div class="field" style="margin-top:8px"><label>自訂禁用詞（選填，逗號分隔）</label><input type="text" id="f-custom-ban" placeholder="例：心如鹿撞、默默地、深深地……"></div>
+    </div>
+    <div class="field">
+      <div class="fl">自訂設定（可新增任意項目）</div>
+      <div class="extra-list" id="extra-list"></div>
+      <div class="add-row">
+        <input type="text" id="extra-inp" placeholder="例：不希望出現的事件、特定場景要求……">
+        <button class="btn-add" onclick="addExtra()">＋ 新增</button>
+      </div>
+    </div>
+    <div class="field"><label>給主持人的特殊備注</label><textarea id="f-note" placeholder="任何特殊要求，例如：希望多呈現伊耳謎冷酷外表下的脆弱瞬間……"></textarea></div>
+  </div>
+</div>
+
+<!-- ⑨ 設定儲存 -->
+<div class="sec">
+  <div class="sec-head" onclick="toggle(this)">
+    <span class="sec-title"><span class="sec-icon">💾</span>⑨ 設定組合儲存</span>
+    <span class="sec-arr">▼</span>
+  </div>
+  <div class="sec-body">
+    <p class="hint" style="margin-bottom:10px">為目前設定取名儲存，下次直接載入，省去重填時間。儲存於瀏覽器本地。</p>
+    <div class="add-row" style="margin-bottom:12px">
+      <input type="text" id="slot-name-inp" placeholder="設定組合名稱，例如：伊耳謎虐戀路線">
+      <button class="btn-add" onclick="saveSlot()">💾 儲存</button>
+    </div>
+    <div class="slot-list" id="slot-list"></div>
+    <!-- ⑩ 設定差異比較 -->
+    <div class="fl" style="margin-top:14px">⑩ 設定差異比較</div>
+    <p class="hint" style="margin-bottom:8px">並排比較兩組設定，方便決定使用哪個。</p>
+    <div class="diff-wrap">
+      <div class="diff-col">
+        <div class="diff-col-lbl">設定 A</div>
+        <select class="tbsel diff-col-sel" id="diff-sel-a" onchange="loadDiff()" style="width:100%;margin-bottom:8px"><option value="">— 選擇設定 —</option></select>
+        <div class="diff-content" id="diff-content-a">（尚未選擇）</div>
+      </div>
+      <div class="diff-col">
+        <div class="diff-col-lbl">設定 B</div>
+        <select class="tbsel diff-col-sel" id="diff-sel-b" onchange="loadDiff()" style="width:100%;margin-bottom:8px"><option value="">— 選擇設定 —</option></select>
+        <div class="diff-content" id="diff-content-b">（尚未選擇）</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /form-col -->
+
+<!-- OUTPUT COL -->
+<div id="out-col">
+  <div class="out-head">
+    <span>Generated Prompt</span>
+    <span class="char-count" id="char-count">0 字</span>
+  </div>
+  <div id="output-box">
+    <span class="placeholder">填寫左側設定後，按下「啟動獵人世界」即可生成完整指令。
+
+將指令複製後貼入 Claude、ChatGPT 或任何 AI 聊天介面，即可開始你的獵人之旅。
+
+— The world is vast. Hunt wisely. —</span>
+  </div>
+  <div id="gen-wrap">
+    <button class="btn-gen" onclick="generate()">⚔ 啟動獵人世界 ⚔</button>
+    <button class="out-btn primary" onclick="copyPrompt()" id="btn-copy" style="display:none">複製</button>
+  </div>
+</div>
+
+</div><!-- /app -->
+<div id="toast">✓ 已複製到剪貼簿</div>
+
+<script>
+/* ════ SETTINGS ════ */
+function setFs(v) {
+  var n = parseInt(v, 10);
+  document.documentElement.style.setProperty('--fs', n + 'px');
+  document.getElementById('fs-val').textContent = n + 'px';
+  document.getElementById('fs-range').value = n;
+}
+var THEMES = ['th-sage','th-slate','th-rose','th-ivory','th-peach','th-lavender','th-dark','th-crimson','th-midnight','th-obsidian'];
+function setTheme(t) {
+  THEMES.forEach(function(x) { document.body.classList.remove(x); });
+  if (t) document.body.classList.add(t);
+}
+function setFont(f) {
+  document.documentElement.style.setProperty('--font', f);
+}
+function toggleGear() {
+  var panel = document.getElementById('gear-panel');
+  var btn = document.getElementById('gear-btn');
+  var isOpen = panel.classList.contains('open');
+  panel.classList.toggle('open', !isOpen);
+  btn.classList.toggle('open', !isOpen);
+}
+/* 點面板外側自動收合 */
+document.addEventListener('click', function(e) {
+  var panel = document.getElementById('gear-panel');
+  var btn = document.getElementById('gear-btn');
+  if (!panel || !btn) return;
+  if (panel.classList.contains('open') && !panel.contains(e.target) && !btn.contains(e.target)) {
+    panel.classList.remove('open');
+    btn.classList.remove('open');
+  }
+});
+
+/* ════ SECTION TOGGLE ════ */
+function toggle(head) {
+  var body = head.nextElementSibling;
+  var isOpen = head.classList.contains('open');
+  head.classList.toggle('open', !isOpen);
+  body.classList.toggle('open', !isOpen);
+  head.querySelector('.sec-arr').textContent = isOpen ? '▼' : '▲';
+}
+
+/* ════ CHIP INIT ════ */
+document.querySelectorAll('.cw').forEach(function(g) {
+  var single = g.getAttribute('data-single') === '1';
+  g.querySelectorAll('.chip').forEach(function(c) {
+    c.onclick = function() {
+      if (single) { g.querySelectorAll('.chip').forEach(function(x) { x.classList.remove('on'); }); }
+      c.classList.toggle('on');
+    };
+  });
+});
+
+document.querySelectorAll('.fmt-card').forEach(function(c) {
+  c.onclick = function() {
+    document.querySelectorAll('.fmt-card').forEach(function(x) { x.classList.remove('on'); });
+    c.classList.add('on');
+  };
+});
+
+document.querySelectorAll('.sk').forEach(function(c) { c.onclick = function() { c.classList.toggle('on'); }; });
+
+document.querySelectorAll('#c-romance .c-card').forEach(function(c) {
+  c.onclick = function() {
+    document.querySelectorAll('#c-romance .c-card').forEach(function(x) { x.classList.remove('on'); });
+    c.classList.add('on');
+  };
+});
+
+document.querySelectorAll('.npc-card').forEach(function(c) { c.onclick = function() { c.classList.toggle('on'); }; });
+
+/* rtype max 3 */
+var rtypeWrap = document.getElementById('c-rtype');
+if (rtypeWrap) {
+  rtypeWrap.querySelectorAll('.chip').forEach(function(c) {
+    c.onclick = function() {
+      if (c.classList.contains('on')) { c.classList.remove('on'); return; }
+      if (rtypeWrap.querySelectorAll('.chip.on').length >= 3) { return; }
+      c.classList.add('on');
+    };
+  });
+}
+
+/* ════ NPC STYLE ROWS ════ */
+var NS_NAMES = ['伊耳謎・揍敵客','庫洛洛・魯西魯','窩金','芬克斯','飛坦・博通','瑪奇','派克諾妲','俠客','小傑・富力士','奇犽・揍敵客','酷拉皮卡','雷歐力・帕拉丁奈特','西索・莫羅','凱特','梅路艾姆'];
+var NS_STYLES = ['台詞極少，以沉默和眼神表達','哲學式長句，帶反問語氣','直接犀利，絕不廢話','溫柔輕聲，但眼神危險','孩子氣語氣，殺意卻真實','正式敬語，語氣冷淡疏遠','玩笑口吻，真實意圖難以捉摸','詩意而跳躍，邏輯非線性'];
+function mkSel(arr) {
+  var s = document.createElement('select');
+  arr.forEach(function(v) { var o = document.createElement('option'); o.value = v; o.textContent = v; s.appendChild(o); });
+  return s;
+}
+function addNsRow() {
+  var list = document.getElementById('ns-list');
+  var row = document.createElement('div'); row.className = 'ns-row';
+  var s1 = mkSel(NS_NAMES);
+  var s2 = mkSel(NS_STYLES);
+  var btn = document.createElement('button'); btn.className = 'btn-rm'; btn.textContent = '✕';
+  btn.onclick = function() { list.removeChild(row); };
+  row.appendChild(s1); row.appendChild(s2); row.appendChild(btn);
+  list.appendChild(row);
+}
+function getNsStyles() {
+  var result = [];
+  document.querySelectorAll('#ns-list .ns-row').forEach(function(r) {
+    var sels = r.querySelectorAll('select');
+    if (sels[0] && sels[1]) result.push(sels[0].value + '：' + sels[1].value);
+  });
+  return result;
+}
+
+/* ════ EXTRA LIST ════ */
+var extras = [];
+function addExtra() {
+  var inp = document.getElementById('extra-inp');
+  var v = inp ? inp.value.trim() : '';
+  if (!v) return;
+  extras.push(v); inp.value = ''; renderExtras();
+}
+function removeExtra(i) { extras.splice(i, 1); renderExtras(); }
+function renderExtras() {
+  var el = document.getElementById('extra-list');
+  if (!el) return;
+  el.innerHTML = '';
+  extras.forEach(function(e, i) {
+    var row = document.createElement('div'); row.className = 'extra-item';
+    var span = document.createElement('span'); span.textContent = e;
+    var btn = document.createElement('button'); btn.className = 'x'; btn.textContent = '✕';
+    btn.onclick = function() { removeExtra(i); };
+    row.appendChild(span); row.appendChild(btn); el.appendChild(row);
+  });
+}
+document.getElementById('extra-inp').addEventListener('keydown', function(e) { if (e.key === 'Enter') addExtra(); });
+
+/* ════ HELPERS ════ */
+function getOne(id) {
+  var el = document.getElementById(id); if (!el) return '';
+  var on = el.querySelector('.chip.on');
+  return on ? (on.dataset.v || '') : '';
+}
+function getMany(id) {
+  var el = document.getElementById(id); if (!el) return [];
+  return Array.from(el.querySelectorAll('.chip.on')).map(function(c) { return c.dataset.v || ''; });
+}
+function getOneByClass(sel) { var on = document.querySelector(sel); return on ? (on.dataset.v || '') : ''; }
+function getManyByClass(sel) { return Array.from(document.querySelectorAll(sel)).map(function(c) { return c.dataset.v || ''; }); }
+function sw(id) { var el = document.getElementById(id); return el ? el.checked : false; }
+function val(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; }
+function pronoun() { return getOne('c-gender') === '女性' ? '妳' : '你'; }
+
+/* ════ SLOT SYSTEM ════ */
+function getSnap() {
+  return {
+    gender: getOne('c-gender'), origin: getOne('c-origin'), htype: getOne('c-htype'),
+    startpoint: getOne('c-startpoint'), nenType: getOne('c-nen-type'), nenLevel: getOne('c-nen-level'),
+    traits: getMany('c-traits'), romance: getOneByClass('#c-romance .c-card.on'),
+    rtype: getMany('c-rtype'), rpace: getOne('c-rpace'), initrel: getOne('c-initrel'),
+    ending: getOne('c-ending'), intensity: getOne('c-intensity'),
+    outputMode: getOneByClass('.fmt-card.on'), length: getOne('c-length'),
+    style: getOne('c-style'), lang: getOne('c-lang'), atmosphere: getOne('c-atmosphere'),
+    hidden: getMany('c-hidden'), name: val('f-name')
+  };
+}
+function saveSlot() {
+  var n = val('slot-name-inp');
+  if (!n) { alert('請輸入設定組合名稱'); return; }
+  var slots = JSON.parse(localStorage.getItem('hxh_slots') || '{}');
+  slots[n] = JSON.stringify(getSnap());
+  localStorage.setItem('hxh_slots', JSON.stringify(slots));
+  document.getElementById('slot-name-inp').value = '';
+  renderSlots();
+  showToast('已儲存「' + n + '」');
+}
+function renderSlots() {
+  var slots = JSON.parse(localStorage.getItem('hxh_slots') || '{}');
+  var keys = Object.keys(slots);
+  var list = document.getElementById('slot-list');
+  if (!list) return;
+  list.innerHTML = '';
+  if (!keys.length) {
+    var p = document.createElement('p');
+    p.style.cssText = 'font-size:.8rem;color:var(--ink3);font-style:italic;padding:4px 0';
+    p.textContent = '尚無儲存的設定。';
+    list.appendChild(p);
+  } else {
+    keys.forEach(function(k) {
+      var row = document.createElement('div'); row.className = 'slot-item';
+      var nm = document.createElement('span'); nm.className = 'slot-name'; nm.textContent = k;
+      var btns = document.createElement('div'); btns.className = 'slot-btns';
+      var lb = document.createElement('button'); lb.className = 'btn-slot'; lb.textContent = '載入';
+      lb.onclick = (function(key) { return function() { alert('「' + key + '」已記錄，本功能待後續版本完整實作。'); }; })(k);
+      var db = document.createElement('button'); db.className = 'btn-slot'; db.textContent = '刪除';
+      db.style.color = 'var(--ac)';
+      db.onclick = (function(key) { return function() { deleteSlot(key); }; })(k);
+      btns.appendChild(lb); btns.appendChild(db);
+      row.appendChild(nm); row.appendChild(btns); list.appendChild(row);
+    });
+  }
+  ['diff-sel-a', 'diff-sel-b'].forEach(function(id) {
+    var s = document.getElementById(id); if (!s) return;
+    var cur = s.value;
+    s.innerHTML = '<option value="">— 選擇設定 —</option>';
+    keys.forEach(function(k) { var o = document.createElement('option'); o.value = k; o.textContent = k; if (k === cur) o.selected = true; s.appendChild(o); });
+  });
+}
+function deleteSlot(n) {
+  if (!confirm('確定刪除「' + n + '」？')) return;
+  var slots = JSON.parse(localStorage.getItem('hxh_slots') || '{}');
+  delete slots[n]; localStorage.setItem('hxh_slots', JSON.stringify(slots)); renderSlots();
+}
+function loadDiff() {
+  var slots = JSON.parse(localStorage.getItem('hxh_slots') || '{}');
+  ['a', 'b'].forEach(function(x) {
+    var sel = document.getElementById('diff-sel-' + x); if (!sel) return;
+    var k = sel.value;
+    var c = document.getElementById('diff-content-' + x); if (!c) return;
+    if (!k) { c.textContent = '（尚未選擇）'; return; }
+    var d = JSON.parse(slots[k] || '{}');
+    var labels = { gender: '性別', origin: '出身', htype: '獵人類型', startpoint: '劇情起點', nenType: '念能力系統', romance: '攻略對象', rtype: '感情類型', rpace: '感情節奏', intensity: '劇情強度', outputMode: '輸出模式', style: '文風', atmosphere: '開場氛圍' };
+    var lines = [];
+    Object.keys(labels).forEach(function(key) {
+      var v = d[key]; if (!v) return;
+      lines.push(labels[key] + '：' + (Array.isArray(v) ? v.join('、') : v));
+    });
+    c.textContent = lines.join('\n') || '（空白）';
+  });
+}
+
+/* ════ TOAST ════ */
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent = msg || '✓ 已複製到剪貼簿';
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2200);
+}
+
+/* ════ GENERATE ════ */
+function generate() {
+  var p = pronoun();
+  var name     = val('f-name') || '（請AI依背景隨機生成）';
+  var age      = val('f-age') || '隨機';
+  var gender   = getOne('c-gender') || '不指定';
+  var origin   = getOne('c-origin') || '隨機';
+  var look     = val('f-look') || '（請AI依性格與背景描述）';
+  var mark     = val('f-mark');
+  var htype    = getOne('c-htype') || '隨機';
+  var startPt  = getOne('c-startpoint') || '獵人考試篇';
+  var joinWay  = getOne('c-joinway') || '隨機';
+  var atm      = getOne('c-atmosphere') || '';
+  var nenType  = getOne('c-nen-type') || '由AI依性格決定系統';
+  var nenName  = val('f-nen-name') || '（由AI創造）';
+  var nenDesc  = val('f-nen-desc') || '（由AI根據念系與性格設計）';
+  var nenLevel = getOne('c-nen-level') || '中等程度';
+  var nenCost  = val('f-nen-cost') || '（由AI設計符合誓約邏輯）';
+  var traits   = getMany('c-traits').join('、') || '隨機';
+  var skills   = getManyByClass('.sk.on').join('、') || '隨機';
+  var mbti     = val('f-mbti');
+  var fear     = val('f-fear');
+  var secret   = val('f-secret');
+  var romance  = getOneByClass('#c-romance .c-card.on') || '自由發展';
+  var rtypes   = getMany('c-rtype').join('、') || '慢熱型虐戀';
+  var rpace    = getOne('c-rpace') || '慢熱為主';
+  var initRel  = getOne('c-initrel') || '完全陌生';
+  var ending   = getOne('c-ending') || '開放式HE';
+  var triggers = getMany('c-trigger').join('、');
+  var redline  = val('f-redline');
+  var npcPres  = getManyByClass('.npc-card.on').join('；') || '伊耳謎、庫洛洛、窩金';
+  var nsStyles = getNsStyles();
+  var intensity= getOne('c-intensity') || '黑暗心理';
+  var outMode  = getOneByClass('.fmt-card.on') || '長篇沉浸小說（無選項）';
+  var length   = getOne('c-length') || '中篇';
+  var style    = getOne('c-style') || '漫畫翻譯腔';
+  var dlgStyle = getOne('c-dlg-style') || '';
+  var canvas   = getOne('c-canvas') || '';
+  var lang     = getOne('c-lang') || '繁體中文';
+  var hidden   = getMany('c-hidden').join('、') || '由AI自行決定';
+  var blacklist= getMany('c-blacklist').join('、');
+  var mustscene= getMany('c-mustscene').join('、');
+  var wordban  = getMany('c-wordban').join('、');
+  var custban  = val('f-custom-ban');
+  var romOn    = sw('sw-romance');
+  var protagOn = sw('sw-protag');
+  var spidOn   = sw('sw-spiders');
+  var examOn   = sw('sw-exam');
+  var fightOn  = sw('sw-fight');
+  var npcHard  = sw('sw-npc-hard');
+  var subOn    = sw('sw-sub');
+  var deathOn  = sw('sw-death');
+  var extraAll = extras.concat([val('f-note')]).filter(function(x) { return x; }).join('；') || '無';
+
+  var banAll = [wordban, custban].filter(function(x) { return x; }).join('、');
+  var nsBlock = nsStyles.length ? '\nNPC台詞風格鎖定（全程遵守）：\n' + nsStyles.map(function(s) { return '・' + s; }).join('\n') : '';
+  var canvasBlock = (canvas && canvas.indexOf('啟用') >= 0) ? '\n每次輸出劇情時，請使用 ChatGPT 的「寫作內容」Canvas 區塊呈現劇情正文。選項列表放在 Canvas 區塊之外。若平台不支援 Canvas，則以標準格式輸出。' : '';
+
+  var atmDesc = '';
+  if (atm.indexOf('雨夜') >= 0) atmDesc = '雨就那樣下著，對一切沒有系譜。\n濕氣帶著腥裝的氣味滲進走廊，怒目等待天亮十五分鐘的人們不安地斂著眼聲。\n';
+  else if (atm.indexOf('黎明') >= 0) atmDesc = '天色到這種顧不得自己的琉璃色就內海了，黯淡得彷彿一場警告。\n有什麼即將開始。總有些事即將開始。\n';
+  else if (atm.indexOf('深夜') >= 0) atmDesc = '凌晨三點五十分，城市才擁有屬於自己的腳踢聲。\n這種靜謐裡藏著危機。\n';
+  else if (atm.indexOf('晴天') >= 0) atmDesc = '陽光太對了。\n隔路的小貓在高牆上發懶，一切看起來都很正常。\n就是因為這樣，才沒人會注意到隱居其中的水。\n';
+  else if (atm.indexOf('廢墟') >= 0) atmDesc = '這座建築已經很久沒有人居住。\n很久，長到地板陸陸續續就記得自己欣隨什麼。\n但空氣中的念不正常。\n';
+
+  var opening = '';
+  if (startPt.indexOf('獵人考試') >= 0) {
+    opening = '那個城市沒有任何一張正式地圖。\n玄界迷宮的夜晚永遠比其他地方暗三分，彷彿光本身也在這裡失去方向感。\n' + p + '在第十七區的地下走廊裡轉過第三個彎，對面站著一個戴圓頂帽的胖子。\n他的眼睛掃過' + p + '，停了兩秒。\n「你是來參加第287期獵人考試的？」\n他朝' + p + '身後指了指。「巷子的盡頭。告訴裡面的人，' + p + '是自己找到的。」\n' + p + '轉過頭——巷子盡頭有一扇生鏽的鐵門，縫隙裡透出昏黃的光。';
+  } else if (startPt.indexOf('幻影旅團') >= 0) {
+    opening = p + '聽見的第一個聲音是玻璃碎裂的聲音。\n約克新城的第五拍賣會場裡，煙霧在走廊中迅速蔓延。\n不是火。是念。\n' + p + '貼著牆壁移動，感知器官在混亂中努力維持精準——然後' + p + '停住了。\n走廊的另一端站著一個人。\n棕色短髮，眼神空洞而精準，像是把一個問題放在槍膛裡瞄準了' + p + '。\n空氣中的念能力驟然收緊。\n她沒有說話。只是看著' + p + '。';
+  } else {
+    opening = '玻璃窗外的城市在黎明前最深的那個藍色時分，沉默得像一幅還沒上色的畫。\n' + p + '坐在行李箱上，車票捏在手心，汗水讓紙張邊角軟化了。\n這不是' + p + '計劃中的起點，但命運很少詢問意見。\n前座的陌生人回過頭來，遞給' + p + '一張皺巴巴的傳單。\n「你是獵人？」\n他的眼睛在評估' + p + '，像是在秤一件貨物的重量。';
+  }
+
+  var illumiStage = romance.indexOf('伊耳謎') >= 0 ? ('\n\n伊耳謎感情線階段：\n第一階段｜無視評估：對' + p + '毫無興趣，只評估「使用價值」\n第二階段｜念能力引發好奇：' + p + '的念能力展現引發職業直覺式好奇\n第三階段｜試探與殺意並存：開始測試' + p + '底線，危機中混雜保護本能\n第四階段｜矛盾：對自身情感感到陌生，行為出現微小異常\n第五階段｜承認羈絆：只有在極限情境下才顯露') : '';
+  var chrolloStage = romance.indexOf('庫洛洛') >= 0 ? ('\n\n庫洛洛感情線階段：\n第一階段｜玩具般的興趣：視' + p + '為有趣的收藏品候補\n第二階段｜哲學式對話：以平等視角交談，測試' + p + '的思考深度\n第三階段｜打破旅團框架：開始出現旅團規範外的個人行動\n第四階段｜控制欲暴露：對' + p + '消失或離開有強烈且壓抑的不適感\n第五階段｜裂縫顯現：在孤獨時刻以他人聽不懂的方式透露自身感受') : '';
+
+  var lines = [];
+  lines.push('你將擔任沉浸式文字遊戲主持人，帶領玩家進入冨樫義博《HUNTER×HUNTER》的念能力世界。');
+  lines.push('故事以原著世界觀為基礎，所有角色名稱以台灣東立漫畫版本為準。玩家性別為' + gender + '，全程以「' + p + '」稱呼玩家，禁止用「玩家」或「主角」等代稱。');
+  lines.push('');
+  lines.push('━━━━━━━━━━━━━━━━━━━━━');
+  lines.push('【玩家角色設定】');
+  lines.push('━━━━━━━━━━━━━━━━━━━━━');
+  lines.push('');
+  lines.push('姓名：' + name);
+  lines.push('年齡：' + age);
+  lines.push('性別：' + gender);
+  lines.push('出身背景：' + origin);
+  lines.push('外貌：' + look);
+  if (mark) lines.push('特殊外貌標記：' + mark);
+  lines.push('獵人類型：' + htype);
+  lines.push('性格特質：' + traits);
+  lines.push('戰鬥外專長：' + skills);
+  if (mbti) lines.push('MBTI / 個性補充：' + mbti);
+  if (fear) lines.push('弱點 / 禁忌：' + fear);
+  if (secret) lines.push('隱藏秘密：' + secret);
+  lines.push('');
+  lines.push('━━━━━━━━━━━━━━━━━━━━━');
+  lines.push('【念能力設定】');
+  lines.push('━━━━━━━━━━━━━━━━━━━━━');
+  lines.push('');
+  lines.push('念能力系統：' + nenType);
+  lines.push('技能名稱：' + nenName);
+  lines.push('技能描述：' + nenDesc);
+  lines.push('掌握程度：' + nenLevel);
+  lines.push('誓約與代價：' + nenCost);
+  lines.push('');
+  lines.push('念能力核心規則：');
+  lines.push('・強度必須符合誓約的嚴苛程度，代價越大力量越強');
+  lines.push('・四大原則（絕・流・練・發）在任何戰鬥中都應合理呈現');
+  lines.push('・念能力不得無限使用，疲憊・傷勢・精神狀態都影響念的輸出');
+  lines.push('');
+  lines.push('━━━━━━━━━━━━━━━━━━━━━');
+  lines.push('【故事起點與劇情設定】');
+  lines.push('━━━━━━━━━━━━━━━━━━━━━');
+  lines.push('');
+  lines.push('劇情起點：' + startPt);
+  lines.push('加入故事的方式：' + joinWay);
+  if (atm) lines.push('開場氛圍：' + atm);
+  lines.push('劇情強度：' + intensity);
+  lines.push('隱藏支線：' + (subOn ? '已開啟，優先展開：' + hidden : '關閉'));
+  if (blacklist) lines.push('禁用事件：' + blacklist);
+  if (mustscene) lines.push('場景必出清單：' + mustscene);
+  lines.push('自訂設定與特殊備注：' + extraAll);
+  lines.push('');
+  lines.push('━━━━━━━━━━━━━━━━━━━━━');
+  lines.push('【感情線設定】');
+  lines.push('━━━━━━━━━━━━━━━━━━━━━');
+  lines.push('');
+  lines.push('感情線啟用：' + (romOn ? '是' : '否（僅走冒險與成長主線）'));
+  if (romOn) {
+    lines.push('攻略對象：' + romance);
+    lines.push('與對方的初始關係：' + initRel);
+    lines.push('感情類型：' + rtypes);
+    lines.push('感情節奏：' + rpace);
+    lines.push('結局傾向：' + ending);
+    if (triggers) lines.push('感情觸發條件：' + triggers);
+    if (redline) lines.push('角色底線（禁止跨越）：' + redline);
+    lines.push('');
+    lines.push('感情線核心規則：');
+    lines.push('・感情必須從利益衝突、信任撕裂或危機共存中有機生長，不得無故告白');
+    lines.push('・攻略對象的行動必須優先遵從其本身的目的、組織立場與人格邏輯');
+    lines.push('・感情表達以細節、行動與沉默呈現，嚴禁廉價的直白表白或快速和解');
+    lines.push('・即使對' + p + '產生情感，角色也不會放棄自身的核心動機');
+    if (illumiStage) lines.push(illumiStage);
+    if (chrolloStage) lines.push(chrolloStage);
+  }
+  lines.push('');
+  lines.push('━━━━━━━━━━━━━━━━━━━━━');
+  lines.push('【重要角色戲份分配】');
+  lines.push('━━━━━━━━━━━━━━━━━━━━━');
+  lines.push('');
+  lines.push('以下角色請給予較多戲份、對話、個人弧線或獨特場景：');
+  lines.push(npcPres);
+  if (nsBlock) lines.push(nsBlock);
+  lines.push('');
+  lines.push('NPC行為準則（以台灣東立漫畫版名稱為準）：');
+  lines.push('・伊耳謎：以美學判斷一切，對醜陋懷有本能厭惡，情感以殺意包裹');
+  lines.push('・庫洛洛・魯西魯：博學沉穩，以哲學視角看待盜竊與存在，從不輕易顯露真正目的');
+  lines.push('・窩金：預言者視角，多重人格交替，對命運有疲倦感，偶爾顯現意外的溫柔');
+  lines.push('・西索・莫羅：魔術師形象，瘋狂執著於強者，以「果實成熟前不採摘」作為行動邏輯');
+  lines.push('・小傑・富力士：純粹熱血，對強者的本能嚮往，危機判斷力驚人但情緒可失控');
+  lines.push('・奇犽・揍敵客：極度理性，暗殺邏輯思維，對少數親近者有偏執式保護本能');
+  lines.push('・酷拉皮卡：冷靜睿智，以復仇為核心動機，情緒激動時眼睛變為深紅色');
+  lines.push('・雷歐力・帕拉丁奈特：重義氣、真誠，醫者之心，感情外露但具真正的領袖風範');
+  lines.push(npcHard ? 'NPC絕不會無條件支持' + p + '，一切信任需以行動換取。立場衝突時，NPC優先遵從自身動機。' : 'NPC對' + p + '持相對開放態度，但仍維持各自的核心邏輯。');
+  lines.push('主角方：' + (protagOn ? '小傑・富力士、奇犽・揍敵客、酷拉皮卡、雷歐力・帕拉丁奈特出現於劇情' : '主角方不參與主線，可於背景提及'));
+  lines.push('幻影旅團：' + (spidOn ? '現任成員完整登場' : '以核心成員為主，其餘淡化'));
+  lines.push('');
+  lines.push('━━━━━━━━━━━━━━━━━━━━━');
+  lines.push('【輸出格式規範】');
+  lines.push('━━━━━━━━━━━━━━━━━━━━━');
+  lines.push('');
+  lines.push('輸出模式：' + outMode);
+  lines.push('每次篇幅：' + length);
+  lines.push('文風：' + style);
+  if (dlgStyle) lines.push('台詞風格偏好：' + dlgStyle);
+  lines.push('輸出語言：' + lang);
+  if (canvasBlock) lines.push(canvasBlock);
+  lines.push('');
+  lines.push('寫作規範（全程遵守）：');
+  lines.push('1. 念能力的視覺化描寫須獨特且具體，避免泛化的「光芒四射」');
+  lines.push('2. 禁止用「把」替代原有動詞：「他把書拿起來」→「他拿起書」');
+  lines.push('3. 禁止句型：「不是⋯而是那種⋯」「像是⋯像是⋯」「說不清楚的⋯」');
+  lines.push('4. 禁止使用破折號（——）');
+  lines.push('5. 角色個性透過行為・互動・旁人反應側寫，禁止直接說明性格');
+  lines.push('6. 關係變化透過劇情細節呈現，禁止直接說明「兩人感情變好了」');
+  lines.push('7. 禁止AI感用詞：「這種・某種・那種・若有所思」等');
+  if (banAll) lines.push('8. 額外禁用詞彙：' + banAll);
+  lines.push('死亡風險：' + (deathOn ? '開啟，角色的犧牲與死亡有真實重量，不得輕易復活' : '關閉，角色以受傷代替死亡，但後果必須真實'));
+  lines.push('');
+  lines.push('━━━━━━━━━━━━━━━━━━━━━');
+  lines.push('【開局場景】');
+  lines.push('━━━━━━━━━━━━━━━━━━━━━');
+  lines.push('');
+  lines.push('確認設定後，請從以下場景直接進入劇情，不要重新列出角色設定表。');
+  lines.push('');
+  if (atmDesc) lines.push(atmDesc);
+  lines.push(opening);
+  lines.push('');
+  lines.push('請從這裡開始，引導' + p + '進行接下來的選擇或行動。');
+
+  var prompt = lines.join('\n');
+  var box = document.getElementById('output-box');
+  box.textContent = prompt;
+  document.getElementById('char-count').textContent = prompt.length + ' 字';
+  document.getElementById('btn-copy').style.display = '';
+  box.scrollTop = 0;
+}
+
+/* ════ COPY ════ */
+function copyPrompt() {
+  var text = document.getElementById('output-box').textContent;
+  if (!text || text.indexOf('填寫左側') >= 0) return;
+  try {
+    navigator.clipboard.writeText(text).then(function() { showToast(); });
+  } catch(e) {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.cssText = 'position:fixed;opacity:0;';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta); showToast();
+  }
+}
+
+/* ════ INIT ════ */
+renderSlots();
+</script>
+</body>
+</html>
