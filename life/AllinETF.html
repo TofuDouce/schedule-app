@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>✨ All In ETF ✨</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:wght@400;500;600&family=Noto+Serif+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- ============================================================
+     ★ 五種柔和主題 ★ 每次載入隨機抽一種(沿用你的色系)
+     ============================================================ -->
+<script>
+const THEMES = [
+  {
+    name:"莫蘭迪紫", emoji:"🌙",
+    bg:"#f4f1f7", bg2:"#faf8fc", card:"#fffdffee",
+    text:"#5d5468", muted:"#9a8fa8", title:"#6f6386",
+    accent:"#6f6386", accent2:"#9b8eb3", soft:"#ece5f4",
+    border:"rgba(111,99,134,.30)", sparkle:"#b9a4d8",
+    ramp:["#6f6386","#9b8eb3","#c3b6d8","#ddd3ec","#ece5f4"]
+  },
+  {
+    name:"奶椰可可", emoji:"🥥",
+    bg:"#f6f1e9", bg2:"#fbf8f3", card:"#fffdf9ee",
+    text:"#5a4a40", muted:"#a08d7f", title:"#6e5346",
+    accent:"#6e5346", accent2:"#9c8273", soft:"#efe6d8",
+    border:"rgba(110,83,70,.28)", sparkle:"#c9a36f",
+    ramp:["#6e5346","#9c8273","#d8c3a8","#c7b69d","#8f9f78"]
+  },
+  {
+    name:"蜜桃奶霜", emoji:"🍑",
+    bg:"#fbf2ee", bg2:"#fef9f6", card:"#fffdfbee",
+    text:"#6b5048", muted:"#b59287", title:"#c97b63",
+    accent:"#c97b63", accent2:"#e0a890", soft:"#fceae0",
+    border:"rgba(201,123,99,.30)", sparkle:"#e8a06f",
+    ramp:["#c97b63","#e0a890","#f0c4ad","#f7d9c8","#fceae0"]
+  },
+  {
+    name:"薄荷海鹽", emoji:"🍃",
+    bg:"#eef5f2", bg2:"#f8fcfa", card:"#fcfffeee",
+    text:"#46584f", muted:"#8aa79b", title:"#5b8a76",
+    accent:"#5b8a76", accent2:"#7faf9a", soft:"#e3f0ea",
+    border:"rgba(91,138,118,.28)", sparkle:"#7ab39a",
+    ramp:["#5b8a76","#7faf9a","#a8cdbf","#c8e0d6","#e3f0ea"]
+  },
+  {
+    name:"霧藍天空", emoji:"☁️",
+    bg:"#eef2f6", bg2:"#f8fafc", card:"#fcfdffee",
+    text:"#4c5663", muted:"#8f9eb0", title:"#5f7693",
+    accent:"#5f7693", accent2:"#86a0bb", soft:"#e6eef5",
+    border:"rgba(95,118,147,.30)", sparkle:"#8aa3c2",
+    ramp:["#5f7693","#86a0bb","#aec5db","#cdddea","#e6eef5"]
+  }
+];
+</script>
+<!-- ============================================================ -->
+
+<style>
+*{ margin:0; padding:0; box-sizing:border-box; }
+
+body{
+  min-height:100vh;
+  overflow-x:hidden;
+  background:
+    radial-gradient(circle at top, var(--soft), transparent 28%),
+    linear-gradient(160deg, var(--bg) 0%, var(--bg2) 100%);
+  color:var(--text);
+  padding:28px;
+  font-family:"Cormorant Garamond","Noto Serif TC",serif;
+  position:relative;
+}
+
+/* 柔色星空(取代深色白點) */
+body::before{
+  content:"";
+  position:fixed; inset:0;
+  background-image:radial-gradient(var(--sparkle) 1px, transparent 1px);
+  background-size:46px 46px;
+  opacity:.14;
+  pointer-events:none;
+  z-index:-2;
+}
+
+/* 雙層塔羅外框 */
+.frame{
+  position:fixed; inset:14px;
+  border:1.5px solid var(--border);
+  border-radius:34px;
+  pointer-events:none; z-index:999;
+}
+.frame::before{
+  content:""; position:absolute; inset:12px;
+  border:1px solid var(--border);
+  border-radius:28px;
+  opacity:.6;
+}
+.corner{
+  position:fixed; width:78px; height:78px;
+  border:1px solid var(--border);
+  z-index:1000; pointer-events:none;
+}
+.tl{ top:26px; left:26px; border-right:none; border-bottom:none; border-top-left-radius:28px; }
+.tr{ top:26px; right:26px; border-left:none; border-bottom:none; border-top-right-radius:28px; }
+.bl{ bottom:26px; left:26px; border-right:none; border-top:none; border-bottom-left-radius:28px; }
+.br{ bottom:26px; right:26px; border-left:none; border-top:none; border-bottom-right-radius:28px; }
+
+.container{ max-width:760px; margin:auto; position:relative; z-index:1; }
+
+.title{ text-align:center; margin-top:18px; margin-bottom:30px; }
+.title h1{
+  font-size:54px; font-family:"Cinzel",serif; font-weight:700;
+  color:var(--title); letter-spacing:2px;
+  text-shadow:0 2px 14px var(--soft);
+}
+.subtitle{
+  margin-top:16px; line-height:1.9; color:var(--muted);
+  font-size:21px; letter-spacing:1px;
+}
+
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  backdrop-filter:blur(8px);
+  border-radius:30px;
+  padding:30px;
+  box-shadow:0 14px 40px rgba(80,70,90,.12);
+  margin-bottom:22px; position:relative; overflow:hidden;
+}
+.card::before{
+  content:"✦"; position:absolute; top:16px; right:20px;
+  color:var(--sparkle); opacity:.55; font-size:40px;
+}
+
+.label{
+  display:block; margin-bottom:10px;
+  color:var(--title); font-size:18px; letter-spacing:1px;
+}
+.input{
+  width:100%; height:64px; border-radius:20px;
+  background:var(--soft);
+  color:var(--text); padding:0 20px; outline:none;
+  font-size:23px; margin-bottom:18px;
+  border:1px solid var(--border);
+  font-family:inherit;
+  transition:.2s;
+}
+.input::placeholder{ color:var(--muted); opacity:.7; }
+.input:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 4px var(--soft);
+}
+.manual-row{ display:none; }
+
+button{
+  width:100%; height:70px; border:none; border-radius:24px;
+  cursor:pointer; font-size:23px;
+  font-family:"Cinzel",serif; color:#fff;
+  background:linear-gradient(90deg, var(--accent), var(--accent2), var(--accent));
+  text-shadow:0 1px 4px rgba(0,0,0,.18);
+  box-shadow:0 10px 26px var(--border);
+  transition:.25s;
+}
+button:hover{ transform:translateY(-2px) scale(1.01); filter:brightness(1.04); }
+button:active{ transform:translateY(0); }
+
+.loading{ display:none; text-align:center; margin-top:18px; color:var(--muted); font-size:18px; }
+
+.result{ display:none; animation:fade .45s ease; }
+@keyframes fade{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
+
+/* 命運揭曉 hero */
+.hero{
+  background:linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius:30px; padding:36px; text-align:center;
+  margin-bottom:20px; border:1px solid var(--border);
+  color:#fff; position:relative; overflow:hidden;
+  box-shadow:0 14px 36px var(--border);
+}
+.hero::after{
+  content:"✦ ✧ ✦"; position:absolute; top:14px; left:0; right:0;
+  text-align:center; color:rgba(255,255,255,.45); font-size:16px; letter-spacing:8px;
+}
+.hero small{ color:rgba(255,255,255,.9); font-size:18px; }
+.big{
+  font-size:62px; margin:14px 0; font-family:"Cinzel",serif; color:#fff;
+  text-shadow:0 2px 10px rgba(0,0,0,.2);
+}
+.stock{ margin-top:10px; color:rgba(255,255,255,.92); font-size:20px; }
+
+.grid{ display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:20px; }
+.box{
+  background:var(--card);
+  border-radius:24px; padding:26px;
+  border:1px solid var(--border);
+  position:relative;
+}
+.box::before{
+  content:""; position:absolute; inset:8px;
+  border:1px solid var(--border); border-radius:18px;
+  opacity:.4; pointer-events:none;
+}
+.box h3{ color:var(--title); margin-bottom:12px; font-size:20px; }
+.value{ font-size:40px; font-family:"Cinzel",serif; color:var(--accent); margin-bottom:8px; }
+.gain{ color:var(--accent2); font-size:18px; }
+
+.ai{
+  background:var(--card);
+  border-radius:24px; padding:30px;
+  line-height:2; font-size:21px; color:var(--text);
+  border:1px solid var(--border);
+}
+
+.footer{ text-align:center; margin-top:36px; margin-bottom:70px; }
+.footer-line{
+  width:120px; height:1px; margin:0 auto 20px;
+  background:linear-gradient(90deg, transparent, var(--border), transparent);
+}
+.footer-inner{ display:flex; align-items:center; justify-content:center; gap:18px; }
+.sparkle{ color:var(--sparkle); font-size:22px; }
+.dream{ font-family:"Cinzel",serif; font-size:32px; letter-spacing:4px; color:var(--title); }
+.creator{ margin-top:10px; font-size:15px; color:var(--muted); letter-spacing:2px; font-style:italic; }
+
+@media(max-width:640px){
+  .title h1{ font-size:38px; }
+  .subtitle{ font-size:18px; }
+  .grid{ grid-template-columns:1fr; }
+  .big{ font-size:46px; }
+  .frame{ inset:10px; }
+  .corner{ width:60px; height:60px; }
+}
+@media(prefers-reduced-motion:reduce){
+  *{ animation:none !important; transition:none !important; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="frame"></div>
+<div class="corner tl"></div>
+<div class="corner tr"></div>
+<div class="corner bl"></div>
+<div class="corner br"></div>
+
+<div class="container">
+
+  <div class="title">
+    <h1>✨ All In ETF ✨</h1>
+    <p class="subtitle">在衝動消費之前<br>先看看這筆錢的另一種未來 ✨</p>
+  </div>
+
+  <div class="card">
+    <label class="label">✦ 商品價格</label>
+    <input id="price" class="input" type="number" placeholder="例如 47508">
+
+    <label class="label">✦ ETF 代號</label>
+    <input id="stockCode" class="input" value="0050">
+
+    <div class="manual-row" id="manualRow">
+      <label class="label">✦ 目前股價(手動)</label>
+      <input id="manualPrice" class="input" type="number" placeholder="抓不到即時股價時,手動填這裡">
+    </div>
+
+    <button onclick="calculate()">✨ Reveal Destiny ✨</button>
+    <div class="loading" id="loading">正在窺探未來命運...</div>
+  </div>
+
+  <div class="result" id="result">
+
+    <div class="hero">
+      <small>這筆錢可以買進</small>
+      <div class="big" id="shares">0 股</div>
+      <div class="stock">ETF：<span id="stockName"></span></div>
+      <div class="stock">現在價格：NT$ <span id="currentPrice"></span></div>
+      <div class="stock">歷史平均年化：<span id="annualText"></span></div>
+    </div>
+
+    <div class="grid">
+      <div class="box">
+        <h3>✦ 3 個月後</h3>
+        <div class="value" id="future3m"></div>
+        <div class="gain" id="gain3m"></div>
+      </div>
+      <div class="box">
+        <h3>✦ 1 年後</h3>
+        <div class="value" id="future1y"></div>
+        <div class="gain" id="gain1y"></div>
+      </div>
+    </div>
+
+    <div class="ai" id="aiText"></div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-line"></div>
+    <div class="footer-inner">
+      <span class="sparkle">✦</span>
+      <span class="dream">Lazy Dream</span>
+      <span class="sparkle">✦</span>
+    </div>
+    <div class="creator">Crafted with moonlight &amp; ETF magic</div>
+  </div>
+
+</div>
+
+<script>
+/* ---------- 套用隨機主題 ---------- */
+const t = THEMES[Math.floor(Math.random() * THEMES.length)];
+const r = document.documentElement.style;
+r.setProperty("--bg",      t.bg);
+r.setProperty("--bg2",     t.bg2);
+r.setProperty("--card",    t.card);
+r.setProperty("--text",    t.text);
+r.setProperty("--muted",   t.muted);
+r.setProperty("--title",   t.title);
+r.setProperty("--accent",  t.accent);
+r.setProperty("--accent2", t.accent2);
+r.setProperty("--soft",    t.soft);
+r.setProperty("--border",  t.border);
+r.setProperty("--sparkle", t.sparkle);
+
+/* ---------- 工具 ---------- */
+function format(num){
+  return Number(num).toLocaleString("zh-TW", { maximumFractionDigits:0 });
+}
+
+const annualReturnMap = {
+  "0050":12,"006208":11,"0056":9,"00878":8,"00919":10,
+  "QQQ":15,"VOO":12,"SPY":11
+};
+
+async function getETFPrice(code){
+  try{
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth()+1).padStart(2,"0");
+    const url = `https://www.twse.com.tw/exchangeReport/STOCK_DAY?response=json&date=${yyyy}${mm}01&stockNo=${code}`;
+    const response = await fetch(url);
+    const data = await response.json();
+    if(!data.data) return null;
+    const prices = data.data
+      .map(item => Number(item[6].replace(/,/g,"")))
+      .filter(v => !isNaN(v));
+    const currentPrice = prices[prices.length - 1];
+    if(!currentPrice) return null;
+    return { currentPrice, annualReturn: annualReturnMap[code] || 10 };
+  }catch(err){
+    return null;
+  }
+}
+
+const quotes = [
+  `✨ "Do not save what is left after spending, but spend what is left after saving."<br><br>「不要把剩下的錢拿去儲蓄,而是把儲蓄後剩下的錢拿去花。」<br><br>— Warren Buffett`,
+  `🌙 "The stock market is a device for transferring money from the impatient to the patient."<br><br>「股市是把錢從沒耐心的人,轉移到有耐心的人手上的地方。」<br><br>— Warren Buffett`,
+  `💜 "An investment in knowledge pays the best interest."<br><br>「投資自己,永遠是報酬率最高的投資。」<br><br>— Benjamin Franklin`,
+  `✨ "Beware of little expenses. A small leak will sink a great ship."<br><br>「小小的支出,最終可能讓大船沉沒。」<br><br>— Benjamin Franklin`,
+  `🌌 "Someone is sitting in the shade today because someone planted a tree a long time ago."<br><br>「今天有人能在樹蔭下休息,是因為很久以前有人種了樹。」<br><br>— Warren Buffett`
+];
+function aiMessage(){ return quotes[Math.floor(Math.random() * quotes.length)]; }
+
+/* ---------- 主計算 ---------- */
+async function calculate(){
+  const price = Number(document.getElementById("price").value);
+  const code  = document.getElementById("stockCode").value.trim();
+  if(!price){ alert("請先輸入商品價格 ✨"); return; }
+
+  document.getElementById("loading").style.display = "block";
+  let data = await getETFPrice(code);
+  document.getElementById("loading").style.display = "none";
+
+  // 自動抓不到時,改用手動股價
+  const manual = Number(document.getElementById("manualPrice").value);
+  if((!data || !data.currentPrice) && manual){
+    data = { currentPrice: manual, annualReturn: annualReturnMap[code] || 10 };
+  }
+  if(!data || !data.currentPrice){
+    document.getElementById("manualRow").style.display = "block";
+    alert("暫時抓不到即時股價 😢\n可以在下方手動輸入目前股價,再按一次 ✨");
+    return;
+  }
+
+  const shares     = price / data.currentPrice;
+  const annualRate = data.annualReturn / 100;
+  const future3m   = price * Math.pow(1 + annualRate, 0.25);
+  const future1y   = price * (1 + annualRate);
+  const gain3m     = ((future3m - price) / price * 100).toFixed(1);
+  const gain1y     = ((future1y - price) / price * 100).toFixed(1);
+
+  document.getElementById("shares").innerText       = shares.toFixed(2) + " 股";
+  document.getElementById("stockName").innerText    = code;
+  document.getElementById("currentPrice").innerText = data.currentPrice;
+  document.getElementById("annualText").innerText   = data.annualReturn + "%";
+  document.getElementById("future3m").innerText     = "NT$ " + format(future3m);
+  document.getElementById("future1y").innerText     = "NT$ " + format(future1y);
+  document.getElementById("gain3m").innerText       = "+" + gain3m + "%";
+  document.getElementById("gain1y").innerText       = "+" + gain1y + "%";
+  document.getElementById("aiText").innerHTML       = aiMessage();
+  document.getElementById("result").style.display   = "block";
+}
+</script>
+
+</body>
+</html>
