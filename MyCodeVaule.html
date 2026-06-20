@@ -1105,7 +1105,7 @@ function openDetail(i) {
   document.getElementById('sourceView').innerHTML = hl(b.code || '');
   document.getElementById('previewFrame').srcdoc = b.code || '<!doctype html><body style="font-family:sans-serif;color:#999;padding:40px">（這筆還沒有程式碼）';
   switchTab('preview');
-  document.getElementById('detailOverlay').classList.add('show');
+  document.getElementById('detailOverlay').classList.add('show'); syncScrollLock();
 }
 function switchTab(t) {
   const isP = t === 'preview';
@@ -1115,7 +1115,7 @@ function switchTab(t) {
   document.getElementById('paneSource').classList.toggle('active', !isP);
 }
 function closeDetail() {
-  document.getElementById('detailOverlay').classList.remove('show');
+  document.getElementById('detailOverlay').classList.remove('show'); syncScrollLock();
   document.getElementById('previewFrame').srcdoc = '';
 }
 function bgCloseDetail(e) { if (e.target === document.getElementById('detailOverlay')) closeDetail(); }
@@ -1179,7 +1179,7 @@ function openAddModal() {
   document.getElementById('bmSub').value = '';
   selectedIcon = CATS[0].icon;
   buildEmojiPicker(); updateCodeCount();
-  document.getElementById('bmModal').classList.add('show');
+  document.getElementById('bmModal').classList.add('show'); syncScrollLock();
   setTimeout(() => document.getElementById('bmTitle').focus(), 80);
 }
 function openEditModal(i) {
@@ -1195,7 +1195,7 @@ function openEditModal(i) {
   document.getElementById('bmSub').value = b.sub || '';
   selectedIcon = b.icon || '🧩';
   buildEmojiPicker(); updateCodeCount();
-  document.getElementById('bmModal').classList.add('show');
+  document.getElementById('bmModal').classList.add('show'); syncScrollLock();
   setTimeout(() => document.getElementById('bmTitle').focus(), 80);
 }
 function confirmBm() {
@@ -1241,7 +1241,7 @@ document.getElementById('bmCode').addEventListener('keydown', function (e) {
 
 // ── Category manager ──
 function genCatId() { return 'c' + Date.now() + Math.floor(Math.random() * 1000); }
-function openCatManager() { if (!guard()) return; renderCatList(); document.getElementById('catModal').classList.add('show'); }
+function openCatManager() { if (!guard()) return; renderCatList(); document.getElementById('catModal').classList.add('show'); syncScrollLock(); }
 function renderCatList() {
   document.getElementById('catList').innerHTML = CATS.map((c, idx) => {
     const count = DATA.filter(b => b.cat === c.id).length;
@@ -1294,7 +1294,7 @@ function openCatEmoji(id) {
   catEmojiId = id;
   document.getElementById('catEmojiGrid').innerHTML = CAT_EMOJIS.map(em =>
     `<button class="emoji-btn" onclick="setCatIcon('${em}')">${em}</button>`).join('');
-  document.getElementById('catEmojiModal').classList.add('show');
+  document.getElementById('catEmojiModal').classList.add('show'); syncScrollLock();
 }
 function setCatIcon(em) {
   const c = catById(catEmojiId); if (c) c.icon = em;
@@ -1338,10 +1338,25 @@ function resetSettings() {
   applyTheme(S.theme); document.documentElement.setAttribute('data-density', S.density);
   applyTextVars(); syncSettingsUI(); showToast('已恢復版面預設值');
 }
-function openSettings() { syncSettingsUI(); document.getElementById('settingsOverlay').classList.add('show'); }
-function closeSettings() { document.getElementById('settingsOverlay').classList.remove('show'); }
+let _scrollY = 0, _scrollLocked = false;
+function anyOverlayOpen() { return !!document.querySelector('.settings-overlay.show, .modal-overlay.show, .detail-overlay.show'); }
+function syncScrollLock() {
+  const need = anyOverlayOpen();
+  const b = document.body.style;
+  if (need && !_scrollLocked) {
+    _scrollY = window.scrollY || window.pageYOffset || 0;
+    b.position = 'fixed'; b.top = (-_scrollY) + 'px'; b.left = '0'; b.right = '0'; b.width = '100%';
+    _scrollLocked = true;
+  } else if (!need && _scrollLocked) {
+    b.position = ''; b.top = ''; b.left = ''; b.right = ''; b.width = '';
+    _scrollLocked = false;
+    window.scrollTo(0, _scrollY);
+  }
+}
+function openSettings() { syncSettingsUI(); document.getElementById('settingsOverlay').classList.add('show'); syncScrollLock(); }
+function closeSettings() { document.getElementById('settingsOverlay').classList.remove('show'); syncScrollLock(); }
 function closeSettingsBg(e) { if (e.target === document.getElementById('settingsOverlay')) closeSettings(); }
-function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); syncScrollLock(); }
 function bgClose(e, id) { if (e.target === document.getElementById(id)) closeModal(id); }
 
 // ── Export source code (self-rebaking) ──
@@ -1367,7 +1382,9 @@ function buildSource() {
   const reC = new RegExp('/\\*<CATS>\\*/[\\s\\S]*?/\\*<\\/CATS>\\*/');
   const reL = new RegExp('/\\*<LOCK>\\*/[\\s\\S]*?/\\*<\\/LOCK>\\*/');
   const reL0 = new RegExp('/\\*<LOCK0>\\*/[\\s\\S]*?/\\*<\\/LOCK0>\\*/');
+  const _pbs = document.body.getAttribute('style'); document.body.removeAttribute('style');
   let src = '<!DOCTYPE html>\n' + root.outerHTML;
+  if (_pbs !== null) document.body.setAttribute('style', _pbs); else document.body.removeAttribute('style');
   src = src.replace(reD, ('/*' + '<DB>' + '*/') + dataStr + ('/*' + '</DB>' + '*/'));
   src = src.replace(reC, ('/*' + '<CATS>' + '*/') + catStr + ('/*' + '</CATS>' + '*/'));
   src = src.replace(reL, ('/*' + '<LOCK>' + '*/') + lockStr + ('/*' + '</LOCK>' + '*/'));
@@ -1436,7 +1453,7 @@ function refreshUndoBtn() {
   let has = false; try { has = !!localStorage.getItem('mycodev3_undo'); } catch (e) {}
   b.style.display = has ? 'block' : 'none';
 }
-function openExport() { refreshUndoBtn(); document.getElementById('exportModal').classList.add('show'); }
+function openExport() { refreshUndoBtn(); document.getElementById('exportModal').classList.add('show'); syncScrollLock(); }
 
 // ── JSON backup / restore ──
 function exportJSON() {
