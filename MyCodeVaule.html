@@ -1407,10 +1407,12 @@ function buildSource() {
   const reL = new RegExp('/\\*<LOCK>\\*/[\\s\\S]*?/\\*<\\/LOCK>\\*/');
   const reL0 = new RegExp('/\\*<LOCK0>\\*/[\\s\\S]*?/\\*<\\/LOCK0>\\*/');
   let src = '<!DOCTYPE html>\n' + root.outerHTML;
-  src = src.replace(reD, ('/*' + '<DB>' + '*/') + dataStr + ('/*' + '</DB>' + '*/'));
-  src = src.replace(reC, ('/*' + '<CATS>' + '*/') + catStr + ('/*' + '</CATS>' + '*/'));
-  src = src.replace(reL, ('/*' + '<LOCK>' + '*/') + lockStr + ('/*' + '</LOCK>' + '*/'));
-  src = src.replace(reL0, ('/*' + '<LOCK0>' + '*/') + lockStr + ('/*' + '</LOCK0>' + '*/'));
+  // ★ 修正：用「函式形式」的 replacement，避免程式碼資料裡的 $（例如 $&、$'、$` 、$1）
+  //   被 String.replace 當成特殊替換符號，導致內嵌資料被竄改、JSON 損毀、整份原始碼變亂碼。
+  src = src.replace(reD, function () { return '/*' + '<DB>' + '*/' + dataStr + '/*' + '</DB>' + '*/'; });
+  src = src.replace(reC, function () { return '/*' + '<CATS>' + '*/' + catStr + '/*' + '</CATS>' + '*/'; });
+  src = src.replace(reL, function () { return '/*' + '<LOCK>' + '*/' + lockStr + '/*' + '</LOCK>' + '*/'; });
+  src = src.replace(reL0, function () { return '/*' + '<LOCK0>' + '*/' + lockStr + '/*' + '</LOCK0>' + '*/'; });
 
   // restore live DOM
   list.innerHTML = listHtml; sb.value = sv;
