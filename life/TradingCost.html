@@ -98,8 +98,9 @@ body::before{
 .sec-label{ display:block; margin-bottom:9px; color:var(--title); font-size:16px; letter-spacing:1px; }
 .field{ margin-bottom:18px; }
 
-/* 買進 / 賣出 切換 */
+/* 切換按鈕(買賣 / 稅率共用) */
 .seg{ display:flex; gap:12px; }
+.seg.seg3{ gap:8px; }
 .seg-btn{
   flex:1; height:54px; border:1px solid var(--border); border-radius:18px;
   background:var(--soft); color:var(--muted); cursor:pointer;
@@ -107,12 +108,26 @@ body::before{
   transition:.22s;
 }
 .seg-btn:hover{ filter:brightness(.99); }
+.seg-btn b{ display:block; font-size:15px; letter-spacing:1px; }
+.seg-btn i{ display:block; font-size:11.5px; font-style:normal; opacity:.78; margin-top:2px; letter-spacing:.5px; }
+
+/* 稅率三段:選中用主題色 */
 .seg-btn.active{
   background:linear-gradient(135deg, var(--accent), var(--accent2));
   color:#fff; border-color:transparent;
   text-shadow:0 1px 3px rgba(0,0,0,.18);
   box-shadow:0 8px 20px var(--border);
 }
+/* 買進=綠、賣出=紅(柔色版,蓋過主題色) */
+.seg-btn.buy.active{
+  background:linear-gradient(135deg, #6ba98c, #8ec7aa);
+  box-shadow:0 8px 20px rgba(107,169,140,.30);
+}
+.seg-btn.sell.active{
+  background:linear-gradient(135deg, #c9818a, #e0a3a8);
+  box-shadow:0 8px 20px rgba(201,129,138,.30);
+}
+.seg-hint{ margin-top:7px; font-size:11.5px; color:var(--muted); letter-spacing:.5px; }
 
 /* 金額輸入 */
 .amount-wrap{ position:relative; }
@@ -168,6 +183,12 @@ details[open] summary .chev{ transform:rotate(180deg); }
 .tbl tbody tr:nth-child(even){ background:rgba(0,0,0,.015); }
 .tbl .fee-cell{ text-align:center; color:var(--accent); font-weight:700; }
 .tbl .range-cell{ color:var(--text); }
+/* 目前金額落在的那一階 */
+.tbl tbody tr.hot td{
+  background:color-mix(in srgb, var(--accent) 15%, transparent);
+  color:var(--accent); font-weight:700;
+}
+.tbl tbody tr.hot td:first-child{ box-shadow:inset 3px 0 0 var(--accent); }
 .ref .foot{ margin-top:12px; font-size:11.5px; color:var(--muted); text-align:center; line-height:1.6; }
 
 /* 頁尾 */
@@ -211,9 +232,19 @@ details[open] summary .chev{ transform:rotate(180deg); }
       <div class="field">
         <span class="sec-label">✦ 交易類別</span>
         <div class="seg">
-          <button type="button" class="seg-btn active" id="btnBuy"  onclick="setType('buy')">買進</button>
-          <button type="button" class="seg-btn"        id="btnSell" onclick="setType('sell')">賣出</button>
+          <button type="button" class="seg-btn buy active" id="btnBuy"  onclick="setType('buy')">買進</button>
+          <button type="button" class="seg-btn sell"       id="btnSell" onclick="setType('sell')">賣出</button>
         </div>
+      </div>
+
+      <div class="field">
+        <span class="sec-label">✦ 證交稅率</span>
+        <div class="seg seg3">
+          <button type="button" class="seg-btn tax active" id="taxStock" onclick="setTax('stock')"><b>個股</b><i>0.3%</i></button>
+          <button type="button" class="seg-btn tax"        id="taxEtf"   onclick="setTax('etf')"><b>ETF</b><i>0.1%</i></button>
+          <button type="button" class="seg-btn tax"        id="taxDay"   onclick="setTax('day')"><b>當沖</b><i>0.15%</i></button>
+        </div>
+        <div class="seg-hint">證交稅僅在賣出時計入</div>
       </div>
 
       <div class="field">
@@ -259,13 +290,13 @@ details[open] summary .chev{ transform:rotate(180deg); }
           <tr><th class="c">手續費</th><th>成交價金區間</th></tr>
         </thead>
         <tbody>
-          <tr><td class="fee-cell">1 元</td><td class="range-cell">1 ~ 2,339 元</td></tr>
-          <tr><td class="fee-cell">2 元</td><td class="range-cell">2,340 ~ 3,508 元</td></tr>
-          <tr><td class="fee-cell">3 元</td><td class="range-cell">3,509 ~ 4,678 元</td></tr>
-          <tr><td class="fee-cell">4 元</td><td class="range-cell">4,679 ~ 5,847 元</td></tr>
-          <tr><td class="fee-cell">5 元</td><td class="range-cell">5,848 ~ 7,017 元</td></tr>
-          <tr><td class="fee-cell">6 元</td><td class="range-cell">7,018 ~ 8,187 元</td></tr>
-          <tr><td class="fee-cell">7 元</td><td class="range-cell">8,188 ~ 9,356 元</td></tr>
+          <tr data-min="1"    data-max="2339"><td class="fee-cell">1 元</td><td class="range-cell">1 ~ 2,339 元</td></tr>
+          <tr data-min="2340" data-max="3508"><td class="fee-cell">2 元</td><td class="range-cell">2,340 ~ 3,508 元</td></tr>
+          <tr data-min="3509" data-max="4678"><td class="fee-cell">3 元</td><td class="range-cell">3,509 ~ 4,678 元</td></tr>
+          <tr data-min="4679" data-max="5847"><td class="fee-cell">4 元</td><td class="range-cell">4,679 ~ 5,847 元</td></tr>
+          <tr data-min="5848" data-max="7017"><td class="fee-cell">5 元</td><td class="range-cell">5,848 ~ 7,017 元</td></tr>
+          <tr data-min="7018" data-max="8187"><td class="fee-cell">6 元</td><td class="range-cell">7,018 ~ 8,187 元</td></tr>
+          <tr data-min="8188" data-max="9356"><td class="fee-cell">7 元</td><td class="range-cell">8,188 ~ 9,356 元</td></tr>
         </tbody>
       </table>
 
@@ -302,7 +333,30 @@ function setType(type){
   calculate();
 }
 
-/* ---------- 計算(邏輯與原版完全一致) ---------- */
+/* ---------- 證交稅率 ---------- */
+let taxType = "stock";
+const TAX = {
+  stock: { rate:0.003,  pct:"0.3%"  },
+  etf:   { rate:0.001,  pct:"0.1%"  },
+  day:   { rate:0.0015, pct:"0.15%" }
+};
+function setTax(type){
+  taxType = type;
+  document.getElementById("taxStock").classList.toggle("active", type === "stock");
+  document.getElementById("taxEtf").classList.toggle("active",   type === "etf");
+  document.getElementById("taxDay").classList.toggle("active",   type === "day");
+  calculate();
+}
+
+/* ---------- 高亮目前金額落在的級距 ---------- */
+function highlightTier(amount){
+  document.querySelectorAll(".tbl tbody tr").forEach(tr => {
+    const min = Number(tr.dataset.min), max = Number(tr.dataset.max);
+    tr.classList.toggle("hot", amount >= min && amount <= max);
+  });
+}
+
+/* ---------- 計算 ---------- */
 function calculate(){
   const amount   = parseFloat(document.getElementById("amount").value)   || 0;
   const discount = parseFloat(document.getElementById("discount").value) || 6;
@@ -312,12 +366,15 @@ function calculate(){
   let fee = Math.floor(amount * 0.001425 * (discount / 10));
   if (amount > 0 && fee < minFee) fee = minFee;   // 低消保護
 
-  // 證券交易稅(賣出 0.3%,無條件捨去)
+  // 證券交易稅(依所選類別,賣出才計入,無條件捨去)
   let tax = 0;
   const taxRow = document.getElementById("taxRow");
+  const taxLabel = document.getElementById("taxLabel");
   const totalLabel = document.getElementById("totalLabel");
+  const rate = TAX[taxType].rate;
+  taxLabel.innerText = "證券交易稅(" + TAX[taxType].pct + ")";
   if (tradeType === "sell"){
-    tax = Math.floor(amount * 0.003);
+    tax = Math.floor(amount * rate);
     taxRow.classList.remove("hidden");
     totalLabel.innerText = "總計應收款項";
   } else {
@@ -331,6 +388,8 @@ function calculate(){
   document.getElementById("resFee").innerText    = "$" + fee.toLocaleString();
   document.getElementById("resTax").innerText    = "$" + tax.toLocaleString();
   document.getElementById("resTotal").innerText  = "$" + total.toLocaleString();
+
+  highlightTier(amount);
 }
 
 calculate();
