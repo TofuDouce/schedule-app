@@ -101,13 +101,15 @@
   }
   .badge.on{ background:var(--gold-soft); color:#3a2f1e; }
 
-  .countdown{
-    font-family:"Noto Serif TC",serif;
-    font-size:2.3rem; font-weight:700; letter-spacing:1px;
-    color:var(--text); margin:14px 0 4px;
-    font-variant-numeric:tabular-nums; line-height:1.1;
+  .eyebrow{ font-size:.75rem; letter-spacing:3px; color:var(--gold); margin:18px 0 8px; }
+  .when{ display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; line-height:1.05; margin-bottom:8px; }
+  .when-day{ font-family:"Noto Serif TC",serif; font-size:1.15rem; color:var(--muted); letter-spacing:1px; }
+  .when-time{
+    font-family:"Noto Serif TC",serif; font-weight:700;
+    font-size:3.2rem; letter-spacing:1px; color:var(--text);
+    font-variant-numeric:tabular-nums;
   }
-  .endline{ font-size:.92rem; color:var(--muted); letter-spacing:.5px; }
+  .sub-remain{ font-size:.9rem; color:var(--muted); letter-spacing:.5px; }
 
   .bar{ height:9px; border-radius:999px; background:var(--track); margin:18px 0 4px; overflow:hidden; }
   .bar-fill{
@@ -235,8 +237,12 @@
       <h2>當前 Session</h2>
       <span class="badge" id="sessionBadge">尚未開始</span>
     </div>
-    <div class="countdown" id="sessionCountdown">--:--:--</div>
-    <div class="endline" id="sessionEnd">送出第一則訊息後，按「現在開始」</div>
+    <div class="eyebrow" id="sessionEyebrow">下次可重新使用</div>
+    <div class="when">
+      <span class="when-day" id="sessionDay"></span>
+      <span class="when-time" id="sessionTime">--:--</span>
+    </div>
+    <div class="sub-remain" id="sessionRemain">送出第一則訊息後，按「現在開始」</div>
     <div class="bar"><div class="bar-fill" id="sessionBar"></div></div>
     <div class="actions">
       <button class="pill primary" id="sessionNow">現在開始</button>
@@ -259,8 +265,12 @@
       <h2>週用量</h2>
       <span class="badge" id="weekBadge">尚未設定</span>
     </div>
-    <div class="countdown" id="weekCountdown">--</div>
-    <div class="endline" id="weekEnd">設定重置時間後開始倒數</div>
+    <div class="eyebrow" id="weekEyebrow">額度重置時間</div>
+    <div class="when">
+      <span class="when-day" id="weekDay"></span>
+      <span class="when-time" id="weekTime">--</span>
+    </div>
+    <div class="sub-remain" id="weekEnd">設定重置時間後開始倒數</div>
     <div class="usage-row" id="usageRow" hidden>
       <span>本週用量</span><b id="usagePct">--</b>
     </div>
@@ -386,15 +396,21 @@ function fmtLong(ms){           // X 天 Y 時 ZZ 分
   return (d>0 ? d+" 天 " : "") + h+" 時 "+pad(mm)+" 分";
 }
 function fmtWhen(ts){           // 今天/明天/MM-DD HH:MM
+  const w = splitWhen(ts);
+  return w.day + " " + w.time;
+}
+function splitWhen(ts){         // 拆成 {day, time} 給大字用
   const d = new Date(ts), now = new Date();
   const hhmm = pad(d.getHours())+":"+pad(d.getMinutes());
   const day0 = new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime();
   const dd   = new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime();
   const diff = Math.round((dd-day0)/86400000);
-  if(diff===0) return "今天 "+hhmm;
-  if(diff===1) return "明天 "+hhmm;
-  if(diff===-1) return "昨天 "+hhmm;
-  return (d.getMonth()+1)+"/"+d.getDate()+" "+hhmm;
+  let day;
+  if(diff===0) day="今天";
+  else if(diff===1) day="明天";
+  else if(diff===-1) day="昨天";
+  else day=(d.getMonth()+1)+"/"+d.getDate();
+  return { day:day, time:hhmm };
 }
 
 let toastTimer;
@@ -415,21 +431,28 @@ function render(){
     const end  = state.sessionStart + span;
     const remain = end - now;
     if(remain > 0){
-      $("sessionCountdown").textContent = fmtClock(remain);
-      $("sessionEnd").textContent = "結束 · "+fmtWhen(end);
+      const w = splitWhen(end);
+      $("sessionEyebrow").textContent = "下次可重新使用";
+      $("sessionDay").textContent  = w.day;
+      $("sessionTime").textContent = w.time;
+      $("sessionRemain").textContent = "距離現在還有 "+fmtLong(remain);
       $("sessionBadge").textContent = "進行中";
       $("sessionBadge").classList.add("on");
       $("sessionBar").style.width = Math.min(100,(now-state.sessionStart)/span*100)+"%";
     }else{
-      $("sessionCountdown").textContent = "Session 已結束";
-      $("sessionEnd").textContent = "送新訊息後，按「現在開始」重新計時";
-      $("sessionBadge").textContent = "已結束";
+      $("sessionEyebrow").textContent = "目前狀態";
+      $("sessionDay").textContent  = "";
+      $("sessionTime").textContent = "現在可用";
+      $("sessionRemain").textContent = "額度已刷新，送新訊息後按「現在開始」";
+      $("sessionBadge").textContent = "已刷新";
       $("sessionBadge").classList.remove("on");
       $("sessionBar").style.width = "100%";
     }
   }else{
-    $("sessionCountdown").textContent = "--:--:--";
-    $("sessionEnd").textContent = "送出第一則訊息後，按「現在開始」";
+    $("sessionEyebrow").textContent = "下次可重新使用";
+    $("sessionDay").textContent  = "";
+    $("sessionTime").textContent = "--:--";
+    $("sessionRemain").textContent = "送出第一則訊息後，按「現在開始」";
     $("sessionBadge").textContent = "尚未開始";
     $("sessionBadge").classList.remove("on");
     $("sessionBar").style.width = "0%";
@@ -439,18 +462,25 @@ function render(){
   if(state.weekReset){
     const remain = state.weekReset - now;
     if(remain > 0){
-      $("weekCountdown").textContent = fmtLong(remain);
-      $("weekEnd").textContent = "重置 · "+fmtWhen(state.weekReset);
+      const w = splitWhen(state.weekReset);
+      $("weekEyebrow").textContent = "額度重置時間";
+      $("weekDay").textContent  = w.day;
+      $("weekTime").textContent = w.time;
+      $("weekEnd").textContent = "距離現在還有 "+fmtLong(remain);
       $("weekBadge").textContent = "倒數中";
       $("weekBadge").classList.add("on");
     }else{
-      $("weekCountdown").textContent = "已重置";
+      $("weekEyebrow").textContent = "目前狀態";
+      $("weekDay").textContent  = "";
+      $("weekTime").textContent = "現在可用";
       $("weekEnd").textContent = "額度應已恢復，可重新設定";
       $("weekBadge").textContent = "已重置";
       $("weekBadge").classList.remove("on");
     }
   }else{
-    $("weekCountdown").textContent = "--";
+    $("weekEyebrow").textContent = "額度重置時間";
+    $("weekDay").textContent  = "";
+    $("weekTime").textContent = "--";
     $("weekEnd").textContent = "設定重置時間後開始倒數";
     $("weekBadge").textContent = "尚未設定";
     $("weekBadge").classList.remove("on");
