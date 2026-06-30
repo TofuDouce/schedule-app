@@ -1,114 +1,71 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" data-theme="light" data-size="m">
+<html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>額度結算 · 慵懶夢境</title>
+<title>額度重置時間</title>
 <style>
-  /* 恢復原本完整的 CSS 樣式 */
-  :root[data-theme="light"]{ --bg:#f5efe4; --bg2:#faf6ee; --header:#2a2420; --header-text:#e9d9b6; --card:#fffdf8; --line:#ece2d0; --text:#4a4038; --muted:#9c8d7c; --gold:#b8924f; --gold-soft:#d9bd85; --fill:#c8a45c; --shadow:rgba(90,74,64,.14); }
-  :root[data-theme="night"]{ --bg:#1a1714; --bg2:#211d19; --header:#100e0c; --header-text:#d8b878; --card:#262019; --line:#3a3128; --text:#ece0cf; --muted:#9a8a76; --gold:#d4af6a; --gold-soft:#bf9c5e; --fill:#d4af6a; --shadow:rgba(0,0,0,.4); }
-  *{ box-sizing:border-box; margin:0; padding:0; }
-  body{ background:var(--bg); color:var(--text); font-family:sans-serif; padding-bottom:40px; }
-  .topbar{ display:flex; justify-content:space-between; align-items:center; background:var(--header); color:var(--header-text); padding:16px 20px; }
-  .gear{ width:42px; height:42px; border-radius:50%; background:transparent; color:inherit; border:1px solid rgba(255,255,255,.2); cursor:pointer; }
-  main{ max-width:500px; margin:20px auto; padding:0 20px; }
-  .card{ background:var(--card); border:1px solid var(--line); border-radius:20px; padding:20px; margin-bottom:20px; }
-  .card h2{ color:var(--gold); font-size:1.1rem; margin-bottom:10px; }
-  .time-display{ font-size:2rem; font-weight:bold; margin:10px 0; }
-  .pill{ padding:10px 20px; border-radius:20px; border:none; cursor:pointer; background:var(--gold); color:white; }
-  .panel{ margin-top:15px; padding:15px; background:#fbf6ec; border-radius:15px; }
-  .settings{ position:fixed; top:0; right:-300px; width:280px; height:100%; background:var(--bg2); transition:0.3s; padding:20px; border-left:1px solid var(--line); }
-  .settings.show{ right:0; }
+  body { font-family: sans-serif; background: #f5efe4; color: #4a4038; display: flex; justify-content: center; padding-top: 50px; }
+  .card { background: #fff; padding: 30px; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); text-align: center; width: 300px; }
+  .time-display { font-size: 2.5rem; font-weight: bold; color: #b8924f; margin: 20px 0; }
+  .status { margin-bottom: 20px; font-weight: bold; }
+  button { padding: 10px 20px; border-radius: 10px; border: none; cursor: pointer; background: #b8924f; color: white; width: 100%; }
+  input { width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 5px; border: 1px solid #ccc; }
 </style>
 </head>
 <body>
 
-<header class="topbar">
-  <div>額度結算</div>
-  <button class="gear" id="openSettings">⚙</button>
-</header>
-
-<main>
-  <section class="card">
-    <h2>當前 Session</h2>
-    <div class="time-display" id="sessionClock">--:--:--</div>
-    <button class="pill" id="startSession">現在開始</button>
-  </section>
-
-  <section class="card">
-    <h2>下次重置時間</h2>
-    <div class="time-display" id="weekClock">--:--</div>
-    <div id="weekStatus">尚未設定目標時間</div>
-    <div class="panel" id="weekPanel" style="display:none;">
-      <input type="datetime-local" id="weekInput">
-      <button class="pill" id="saveWeek" style="margin-top:10px;">儲存</button>
-      <button class="pill" id="clearWeek" style="background:#b5524a;">清除</button>
-    </div>
-    <button class="pill" id="toggleWeek" style="margin-top:15px; background:transparent; border:1px solid var(--gold); color:var(--gold);">設定目標時間</button>
-  </section>
-</main>
-
-<aside class="settings" id="settingsPanel">
-  <h3>設定</h3>
-  <button class="pill" id="resetAll" style="background:#b5524a; margin-top:20px;">清除所有資料</button>
-  <button id="closeSettings" style="margin-top:20px; cursor:pointer;">關閉</button>
-</aside>
+<div class="card">
+  <h2>下次重置時間</h2>
+  <div class="time-display" id="clock">--:--</div>
+  <div class="status" id="status">尚未設定</div>
+  
+  <div id="panel" style="display:none;">
+    <input type="datetime-local" id="timeInput">
+    <button onclick="saveTime()">儲存時間</button>
+  </div>
+  <button id="toggleBtn" onclick="togglePanel()">設定重置時間</button>
+</div>
 
 <script>
-  const $ = id => document.getElementById(id);
-  let state = JSON.parse(localStorage.getItem("claude_quota_v1")) || { weekReset: null, sessionStart: null };
-
-  function render() {
-    // 處理 Session
-    if (state.sessionStart) {
-      const elapsed = Date.now() - state.sessionStart;
-      const left = (5 * 3600000) - elapsed;
-      $("sessionClock").textContent = left > 0 ? new Date(left).toISOString().substr(11, 8) : "已結束";
-    }
-
-    // 處理重置時間顯示
-    if (state.weekReset) {
-      const d = new Date(state.weekReset);
-      $("weekClock").textContent = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-      $("weekStatus").textContent = Date.now() >= state.weekReset ? "時間已到，可以操作！" : `預計於 ${d.getMonth()+1}/${d.getDate()} 重置`;
+  function update() {
+    const saved = localStorage.getItem("resetTime");
+    const status = document.getElementById("status");
+    const clock = document.getElementById("clock");
+    
+    if (!saved) return;
+    
+    const resetTime = new Date(saved);
+    const now = new Date();
+    
+    clock.innerText = `${String(resetTime.getHours()).padStart(2,'0')}:${String(resetTime.getMinutes()).padStart(2,'0')}`;
+    
+    if (now >= resetTime) {
+      status.innerText = "時間已到，請去使用！";
+      status.style.color = "red";
+    } else {
+      status.innerText = `預計於 ${resetTime.getMonth()+1}/${resetTime.getDate()} 重置`;
+      status.style.color = "#4a4038";
     }
   }
 
-  // 事件綁定
-  $("openSettings").onclick = () => $("settingsPanel").classList.add("show");
-  $("closeSettings").onclick = () => $("settingsPanel").classList.remove("show");
-  $("toggleWeek").onclick = () => $("weekPanel").style.display = $("weekPanel").style.display === "none" ? "block" : "none";
-  
-  $("saveWeek").onclick = () => {
-    state.weekReset = new Date($("weekInput").value).getTime();
-    localStorage.setItem("claude_quota_v1", JSON.stringify(state));
-    $("weekPanel").style.display = "none";
-    render();
-  };
+  function togglePanel() {
+    document.getElementById("panel").style.display = "block";
+    document.getElementById("toggleBtn").style.display = "none";
+  }
 
-  $("clearWeek").onclick = () => {
-    state.weekReset = null;
-    localStorage.setItem("claude_quota_v1", JSON.stringify(state));
-    $("weekClock").textContent = "--:--";
-    $("weekStatus").textContent = "尚未設定目標時間";
-    $("weekPanel").style.display = "none";
-  };
-
-  $("startSession").onclick = () => {
-    state.sessionStart = Date.now();
-    localStorage.setItem("claude_quota_v1", JSON.stringify(state));
-  };
-
-  $("resetAll").onclick = () => {
-    if(confirm("確定清除？")) {
-      localStorage.removeItem("claude_quota_v1");
-      location.reload();
+  function saveTime() {
+    const val = document.getElementById("timeInput").value;
+    if (val) {
+      localStorage.setItem("resetTime", val);
+      document.getElementById("panel").style.display = "none";
+      document.getElementById("toggleBtn").style.display = "block";
+      update();
     }
-  };
+  }
 
-  setInterval(render, 1000);
-  render();
+  setInterval(update, 1000);
+  update();
 </script>
 </body>
 </html>
