@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-<title>門診病代速查</title>
+<title>門診病代速查 v2</title>
 
 <style>
 
@@ -21,10 +21,15 @@
   --shadow: 0 10px 32px rgba(31, 38, 135, 0.06);
   --card-shadow: 0 4px 16px rgba(2, 132, 199, 0.08);
   --backdrop: blur(12px);
+  --sticky-bg: rgba(240, 244, 248, 0.92);
 
   /* 專屬筆記區塊的質感翡翠綠變數（用於區隔） */
   --note-accent: #0d9488;
   --note-accent-light: #ccfbf1;
+
+  /* 回到最上方按鈕配色 */
+  --top-btn-a: #64748b;
+  --top-btn-b: #475569;
 }
 
 body.dark {
@@ -39,10 +44,14 @@ body.dark {
   --shadow: 0 10px 28px rgba(0, 0, 0, 0.4);
   --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   --backdrop: blur(12px);
+  --sticky-bg: rgba(15, 23, 42, 0.92);
 
   /* 專屬筆記區塊的質感翡翠綠變數（夜間） */
   --note-accent: #2dd4bf;
   --note-accent-light: #115e59;
+
+  --top-btn-a: #475569;
+  --top-btn-b: #334155;
 }
 
 * {
@@ -55,9 +64,25 @@ body {
   background-attachment: fixed;
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  padding: 24px 20px 100px;
+  padding: 0 20px 100px;
   transition: background 0.3s, color 0.3s;
   min-height: 100vh;
+}
+
+/* ===================================================
+   v2 新增：頂部吸附區塊（搜尋框 + 快速跳轉列）
+   讓醫師在下拉瀏覽時，隨時能點大字快速跳到想找的分類
+   =================================================== */
+.sticky-wrap {
+  position: sticky;
+  top: 0;
+  z-index: 600;
+  background: var(--sticky-bg);
+  backdrop-filter: var(--backdrop);
+  -webkit-backdrop-filter: var(--backdrop);
+  margin: 0 -20px;
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--border);
 }
 
 /* 頂部控制列佈局 */
@@ -66,7 +91,7 @@ body {
   justify-content: space-between;
   align-items: flex-start;
   gap: 16px;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 .title-area {
@@ -91,26 +116,6 @@ body {
   font-weight: 700; 
 }
 
-/* 頂部常用新舊代碼快捷鍵 */
-.quick-jump-btn {
-  background: linear-gradient(135deg, var(--note-accent), #0f766e);
-  color: white;
-  border: none;
-  padding: 12px 20px;
-  border-radius: 16px;
-  font-size: 15px;
-  font-weight: 800;
-  cursor: pointer;
-  box-shadow: 0 4px 14px rgba(13, 148, 136, 0.3);
-  transition: transform 0.2s, box-shadow 0.2s;
-  white-space: nowrap;
-}
-
-.quick-jump-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(13, 148, 136, 0.4);
-}
-
 /* 搜尋框優化 */
 .search {
   width: 100%;
@@ -124,7 +129,6 @@ body {
   font-size: 17px;
   font-weight: 700; 
   outline: none;
-  margin-bottom: 28px;
   box-shadow: var(--shadow);
   transition: all 0.25s ease;
 }
@@ -135,8 +139,55 @@ body {
   box-shadow: 0 8px 24px rgba(2, 132, 199, 0.2);
 }
 
+/* v2 新增：快速跳轉大字按鈕列 */
+.quicknav-label {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--sub);
+  margin: 14px 0 8px 4px;
+}
+
+.quicknav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.quicknav-btn {
+  background: var(--card);
+  border: 2px solid var(--accent);
+  color: var(--accent);
+  font-size: 20px;
+  font-weight: 900;
+  padding: 10px 20px;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease;
+  box-shadow: var(--card-shadow);
+  white-space: nowrap;
+}
+
+.quicknav-btn:hover,
+.quicknav-btn:active {
+  background: var(--accent);
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+.quicknav-btn.quicknav-special {
+  border-color: var(--note-accent);
+  color: var(--note-accent);
+}
+
+.quicknav-btn.quicknav-special:hover,
+.quicknav-btn.quicknav-special:active {
+  background: var(--note-accent);
+  color: #fff;
+}
+
 .section {
   margin-bottom: 32px;
+  scroll-margin-top: 210px; /* 讓跳轉定位時不被吸附列擋住 */
 }
 
 /* 分類大標題 */
@@ -298,6 +349,40 @@ body.dark .small-note {
   transform: rotate(45deg) scale(1.05);
 }
 
+/* v2 新增：左下角「回到最上方」按鈕，滾動一段距離後才出現 */
+.back-to-top-btn {
+  position: fixed;
+  left: 24px;
+  bottom: 24px;
+  width: 60px;
+  height: 60px;
+  border: none;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--top-btn-a), var(--top-btn-b));
+  color: white;
+  font-size: 26px;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(71, 85, 105, 0.4);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px);
+  transition: opacity 0.25s, transform 0.25s;
+}
+
+.back-to-top-btn.show {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.back-to-top-btn:hover {
+  transform: translateY(-3px) scale(1.05);
+}
+
 /* 控制面板 */
 .settings-panel {
   position: fixed;
@@ -357,6 +442,10 @@ body.dark .small-note {
   opacity: 0.9;
 }
 
+.container-wrap {
+  padding-top: 20px;
+}
+
 .footer-space {
   height: 80px;
 }
@@ -366,26 +455,34 @@ body.dark .small-note {
 
 <body>
 
-<div class="header-row">
-  <div class="title-area">
-    <div class="title">門診病代速查</div>
-    <div class="subtitle">👍 點擊卡片即可快速複製病代</div>
+<div class="sticky-wrap">
+  <div class="header-row">
+    <div class="title-area">
+      <div class="title">門診病代速查</div>
+      <div class="subtitle">👍 點擊卡片即可快速複製病代</div>
+    </div>
   </div>
-  <button class="quick-jump-btn" id="quickJumpBtn">常用新舊代碼📝</button>
+
+  <input
+    type="text"
+    class="search"
+    id="searchInput"
+    placeholder="輸入疾病名稱或 ICD 代碼搜尋..."
+  />
+
+  <div class="quicknav-label">⚡ 快速跳轉（點大字直接找）</div>
+  <div class="quicknav" id="quickNav"></div>
 </div>
 
-<input
-  type="text"
-  class="search"
-  id="searchInput"
-  placeholder="輸入疾病名稱或 ICD 代碼搜尋..."
-/>
-
-<div id="container"></div>
+<div class="container-wrap">
+  <div id="container"></div>
+</div>
 
 <div class="toast" id="toast">
 已複製病代
 </div>
+
+<button class="back-to-top-btn" id="backToTopBtn" title="回到最上方">⬆️</button>
 
 <button class="settings-btn" id="settingsBtn">⚙️</button>
 
@@ -577,13 +674,39 @@ const data = {
 
 };
 
+/* ===================================================
+   v2 新增：快速跳轉設定
+   label：按鈕上顯示的大字
+   match：用來比對 data 分類標題的關鍵字
+   special：是否套用「常用代碼」專屬配色
+   =================================================== */
+const quickNavConfig = [
+  { label: "肩", match: "肩部" },
+  { label: "肘", match: "肘部" },
+  { label: "腕", match: "腕部" },
+  { label: "髖", match: "髖部" },
+  { label: "膝", match: "膝部" },
+  { label: "踝足", match: "踝部" },
+  { label: "手", match: "M08" },
+  { label: "指", match: "M09" },
+  { label: "臂", match: "M10" },
+  { label: "腿", match: "M11" },
+  { label: "足趾", match: "M12" },
+  { label: "肌痛", match: "M07" },
+  { label: "症狀", match: "R 症狀" },
+  { label: "皮膚", match: "L 皮膚" },
+  { label: "呼吸", match: "J 呼吸道" },
+  { label: "⭐常用代碼", match: "常用新舊代碼", special: true }
+];
+
 const container = document.getElementById("container");
 const fontSlider = document.getElementById("fontSlider");
+const sectionKeys = Object.keys(data);
 
 function render(keyword=""){
   container.innerHTML = "";
 
-  Object.keys(data).forEach(section => {
+  sectionKeys.forEach((section, idx) => {
     const filtered = data[section].filter(item => {
       return (
         item[0].toLowerCase().includes(keyword.toLowerCase()) ||
@@ -594,9 +717,9 @@ function render(keyword=""){
     if (filtered.length === 0) return;
 
     const sec = document.createElement("div");
+    sec.id = "sec-" + idx;
     if (section.includes("常用新舊代碼")) {
       sec.className = "section note-section";
-      sec.id = "targetNoteSection";
     } else {
       sec.className = "section";
     }
@@ -669,17 +792,54 @@ document.getElementById("searchInput").addEventListener("input", (e) => {
   render(e.target.value);
 });
 
-document.getElementById("quickJumpBtn").addEventListener("click", () => {
-  const noteEl = document.getElementById("targetNoteSection");
-  if (noteEl) {
-    noteEl.scrollIntoView({ behavior: "smooth", block: "start" });
-  } else {
-    document.getElementById("searchInput").value = "";
+/* ===================================================
+   v2 新增：建立頂部快速跳轉大字按鈕列
+   點擊後會先清空搜尋框（確保該分類一定存在），
+   再平滑捲動到對應分類頂部
+   =================================================== */
+function buildQuickNav(){
+  const nav = document.getElementById("quickNav");
+  nav.innerHTML = "";
+
+  quickNavConfig.forEach(cfg => {
+    const idx = sectionKeys.findIndex(k => k.includes(cfg.match));
+    if (idx === -1) return;
+
+    const btn = document.createElement("button");
+    btn.className = "quicknav-btn" + (cfg.special ? " quicknav-special" : "");
+    btn.innerText = cfg.label;
+    btn.onclick = () => jumpToSection(idx);
+    nav.appendChild(btn);
+  });
+}
+
+function jumpToSection(idx){
+  const searchInput = document.getElementById("searchInput");
+  if (searchInput.value) {
+    searchInput.value = "";
     render();
-    setTimeout(() => {
-      document.getElementById("targetNoteSection").scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 100);
   }
+  setTimeout(() => {
+    const el = document.getElementById("sec-" + idx);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, 60);
+}
+
+/* ===================================================
+   v2 新增：回到最上方按鈕，往下滑超過一定距離才顯示
+   =================================================== */
+const backToTopBtn = document.getElementById("backToTopBtn");
+
+window.addEventListener("scroll", () => {
+  if (window.scrollY > 400) {
+    backToTopBtn.classList.add("show");
+  } else {
+    backToTopBtn.classList.remove("show");
+  }
+});
+
+backToTopBtn.addEventListener("click", () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
 });
 
 const settingsBtn = document.getElementById("settingsBtn");
@@ -718,6 +878,7 @@ modeBtn.addEventListener("click", () => {
   }
 });
 
+buildQuickNav();
 render();
 
 </script>
