@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-<title>門診病代速查 v2</title>
+<title>中正診所 門診病代速查 v2</title>
 
 <style>
 
@@ -70,8 +70,9 @@ body {
 }
 
 /* ===================================================
-   v2 新增：頂部吸附區塊（搜尋框 + 快速跳轉列）
-   讓醫師在下拉瀏覽時，隨時能點大字快速跳到想找的分類
+   v3 新增：頂部吸附區塊，現在只放「快速跳轉列」
+   搜尋框移出吸附流程，改成右上角浮動搜尋，
+   大幅減少固定佔用的可視高度
    =================================================== */
 .sticky-wrap {
   position: sticky;
@@ -81,17 +82,19 @@ body {
   backdrop-filter: var(--backdrop);
   -webkit-backdrop-filter: var(--backdrop);
   margin: 0 -20px;
-  padding: 20px 20px 16px;
+  padding: 14px 20px 14px;
   border-bottom: 1px solid var(--border);
 }
 
-/* 頂部控制列佈局 */
+/* 頂部控制列佈局（不吸附，往下捲就自然滑走） */
 .header-row {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 16px;
   margin-bottom: 16px;
+  padding-top: 24px;
+  padding-right: 70px; /* 預留右上角浮動搜尋按鈕的空間，避免文字被壓到 */
 }
 
 .title-area {
@@ -116,12 +119,61 @@ body {
   font-weight: 700; 
 }
 
-/* 搜尋框優化 */
+/* ===================================================
+   v3 新增：右上角浮動搜尋按鈕 + 展開式半透明搜尋面板
+   平常收起來不佔空間，需要搜尋時再點開
+   =================================================== */
+.search-toggle-btn {
+  position: fixed;
+  top: 20px;
+  right: 24px;
+  width: 54px;
+  height: 54px;
+  border: none;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), #0284c7);
+  color: white;
+  font-size: 22px;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(2, 132, 199, 0.35);
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.search-toggle-btn:hover {
+  transform: scale(1.08);
+}
+
+.search-toggle-btn.active {
+  box-shadow: 0 0 0 4px var(--accent-light), 0 8px 20px rgba(2, 132, 199, 0.35);
+}
+
+.search-float-panel {
+  position: fixed;
+  top: 20px;
+  right: 88px;
+  width: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: width 0.25s ease, opacity 0.2s ease;
+  z-index: 1090;
+}
+
+.search-float-panel.show {
+  width: min(440px, calc(100vw - 130px));
+  opacity: 1;
+  pointer-events: auto;
+}
+
 .search {
   width: 100%;
-  padding: 16px 20px;
-  border: 2px solid var(--border); 
-  border-radius: 20px;
+  padding: 14px 20px;
+  border: 2px solid var(--accent);
+  border-radius: 18px;
   background: var(--card);
   backdrop-filter: var(--backdrop);
   -webkit-backdrop-filter: var(--backdrop);
@@ -134,9 +186,8 @@ body {
 }
 
 .search:focus {
-  border-color: var(--accent);
   background: var(--card-hover);
-  box-shadow: 0 8px 24px rgba(2, 132, 199, 0.2);
+  box-shadow: 0 8px 24px rgba(2, 132, 199, 0.25);
 }
 
 /* v2 新增：快速跳轉大字按鈕列 */
@@ -157,8 +208,10 @@ body {
   background: var(--card);
   border: 2px solid var(--accent);
   color: var(--accent);
-  font-size: 20px;
+  font-size: 21px;
   font-weight: 900;
+  font-family: -apple-system, "PingFang TC", "Heiti TC", "Microsoft JhengHei", BlinkMacSystemFont, sans-serif;
+  -webkit-text-stroke: 0.4px currentColor; /* 中文字型 900 有時看起來不夠粗，用描邊補足視覺粗度 */
   padding: 10px 20px;
   border-radius: 14px;
   cursor: pointer;
@@ -455,21 +508,24 @@ body.dark .small-note {
 
 <body>
 
-<div class="sticky-wrap">
-  <div class="header-row">
-    <div class="title-area">
-      <div class="title">門診病代速查</div>
-      <div class="subtitle">👍 點擊卡片即可快速複製病代</div>
-    </div>
+<div class="header-row">
+  <div class="title-area">
+    <div class="title">門診病代速查</div>
+    <div class="subtitle">👍 點擊卡片即可快速複製病代</div>
   </div>
+</div>
 
+<button class="search-toggle-btn" id="searchToggleBtn" title="搜尋">🔍</button>
+<div class="search-float-panel" id="searchFloatPanel">
   <input
     type="text"
     class="search"
     id="searchInput"
     placeholder="輸入疾病名稱或 ICD 代碼搜尋..."
   />
+</div>
 
+<div class="sticky-wrap">
   <div class="quicknav-label">⚡ 快速跳轉（點大字直接找）</div>
   <div class="quicknav" id="quickNav"></div>
 </div>
@@ -681,6 +737,7 @@ const data = {
    special：是否套用「常用代碼」專屬配色
    =================================================== */
 const quickNavConfig = [
+  { label: "一般", match: "M00" },
   { label: "肩", match: "肩部" },
   { label: "肘", match: "肘部" },
   { label: "腕", match: "腕部" },
@@ -819,9 +876,16 @@ function jumpToSection(idx){
     searchInput.value = "";
     render();
   }
+  closeSearchPanel();
   setTimeout(() => {
     const el = document.getElementById("sec-" + idx);
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (!el) return;
+    // v3 修正：用「目前」吸附列的實際高度即時計算，
+    // 不再用寫死的數字，避免按鈕換行造成高度不準、跳過頭
+    const stickyEl = document.querySelector(".sticky-wrap");
+    const offset = (stickyEl ? stickyEl.offsetHeight : 0) + 16;
+    const targetY = window.pageYOffset + el.getBoundingClientRect().top - offset;
+    window.scrollTo({ top: Math.max(targetY, 0), behavior: "smooth" });
   }, 60);
 }
 
@@ -840,6 +904,45 @@ window.addEventListener("scroll", () => {
 
 backToTopBtn.addEventListener("click", () => {
   window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+/* ===================================================
+   v3 新增：右上角浮動搜尋按鈕開關
+   點擊展開半透明搜尋框並自動聚焦，
+   點擊外部或再點一次按鈕則收合
+   =================================================== */
+const searchToggleBtn = document.getElementById("searchToggleBtn");
+const searchFloatPanel = document.getElementById("searchFloatPanel");
+const searchInputEl = document.getElementById("searchInput");
+
+function openSearchPanel(){
+  searchFloatPanel.classList.add("show");
+  searchToggleBtn.classList.add("active");
+  setTimeout(() => searchInputEl.focus(), 150);
+}
+
+function closeSearchPanel(){
+  searchFloatPanel.classList.remove("show");
+  searchToggleBtn.classList.remove("active");
+}
+
+searchToggleBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
+  if (searchFloatPanel.classList.contains("show")) {
+    closeSearchPanel();
+  } else {
+    openSearchPanel();
+  }
+});
+
+searchFloatPanel.addEventListener("click", (e) => e.stopPropagation());
+
+document.addEventListener("click", () => {
+  closeSearchPanel();
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeSearchPanel();
 });
 
 const settingsBtn = document.getElementById("settingsBtn");
