@@ -528,31 +528,40 @@ body::after {
 
 .task-note { font-size:15px; font-weight:600; color:var(--muted); line-height:1.6; margin-bottom:9px; }
 
-/* 大型狀態標籤 — 一眼判別 */
-.task-status {
-  display:inline-flex; align-items:center; gap:6px;
-  font-size:17.5px; font-weight:900; padding:9px 20px; border-radius:999px;
-  margin-top:2px; letter-spacing:.5px;
+/* 時間軸色塊（本期 → 下一期） — 一眼判別本期是否完成 */
+.task-timeline {
+  display:flex; align-items:center; gap:9px; flex-wrap:wrap;
+  margin-top:4px;
 }
-.task-status.done    { background:#DCFCE7; color:#15803D; }
-.task-status.overdue { background:#FEE2E2; color:#C0392B; }
-.task-status.soon,
-.task-status.today   { background:#FEF3C7; color:#92400E; }
-.task-status.todo    { background:#E2ECF7; color:#2C5F8A; }
+.tl-chip {
+  display:inline-flex; align-items:center; gap:6px;
+  font-size:16.5px; font-weight:900; padding:9px 18px; border-radius:999px;
+  letter-spacing:.3px; white-space:nowrap;
+}
+.tl-arrow { font-size:18px; font-weight:900; color:var(--muted); flex-shrink:0; }
 
-:root[data-theme="dark"] .task-status.done    { background:#052E16; color:#4ADE80; }
-:root[data-theme="dark"] .task-status.overdue { background:#3A0F0F; color:#F87171; }
-:root[data-theme="dark"] .task-status.soon,
-:root[data-theme="dark"] .task-status.today   { background:#332600; color:#FCD34D; }
-:root[data-theme="dark"] .task-status.todo    { background:#13283E; color:#7BBCEE; }
+.tl-chip.done    { background:#DCFCE7; color:#15803D; }
+.tl-chip.overdue { background:#FEE2E2; color:#C0392B; }
+.tl-chip.soon,
+.tl-chip.today   { background:#FEF3C7; color:#92400E; }
+.tl-chip.todo    { background:#E2ECF7; color:#2C5F8A; }
+.tl-chip.pending { background:var(--surf2); color:var(--muted); border:1.5px dashed var(--border); }
 
-:root[data-theme="antique"] .task-status.done    { background:#DCEBC8; color:#3A6B2E; }
-:root[data-theme="antique"] .task-status.overdue { background:#F2D2C8; color:#B23A2E; }
-:root[data-theme="antique"] .task-status.soon,
-:root[data-theme="antique"] .task-status.today   { background:#F1E2BE; color:#8A5A1E; }
-:root[data-theme="antique"] .task-status.todo    { background:#EBDFC4; color:#8B5E34; }
+:root[data-theme="dark"] .tl-chip.done    { background:#052E16; color:#4ADE80; }
+:root[data-theme="dark"] .tl-chip.overdue { background:#3A0F0F; color:#F87171; }
+:root[data-theme="dark"] .tl-chip.soon,
+:root[data-theme="dark"] .tl-chip.today   { background:#332600; color:#FCD34D; }
+:root[data-theme="dark"] .tl-chip.todo    { background:#13283E; color:#7BBCEE; }
+:root[data-theme="dark"] .tl-chip.pending { background:var(--surf2); color:var(--muted); border-color:var(--border); }
 
-.task-substatus { font-size:14px; font-weight:700; color:var(--muted); margin-top:7px; }
+:root[data-theme="antique"] .tl-chip.done    { background:#DCEBC8; color:#3A6B2E; }
+:root[data-theme="antique"] .tl-chip.overdue { background:#F2D2C8; color:#B23A2E; }
+:root[data-theme="antique"] .tl-chip.soon,
+:root[data-theme="antique"] .tl-chip.today   { background:#F1E2BE; color:#8A5A1E; }
+:root[data-theme="antique"] .tl-chip.todo    { background:#EBDFC4; color:#8B5E34; }
+:root[data-theme="antique"] .tl-chip.pending { background:var(--surf2); color:var(--muted); border-color:var(--border); }
+
+.task-substatus { font-size:14px; font-weight:700; color:var(--muted); margin-top:8px; }
 
 .task-edit-link {
   font-size:13.5px; font-weight:700; color:var(--A);
@@ -1384,6 +1393,12 @@ function parseDate(str) {
   return null;
 }
 
+/* 從日期字串取出「X月」標籤，用來標示這是哪一期 */
+function monthLabel(dateStr) {
+  const d = parseDate(dateStr);
+  return d ? `${d.getMonth() + 1}月` : '本期';
+}
+
 /* ────────────────────────────────────────────────
    本期狀態判別（v8：改用「本期完成」人工標記）
    為什麼不再用日期猜？
@@ -1404,25 +1419,22 @@ function cycleStatus(task) {
   const due    = parseDate(task.dueDate);
   const marked = !!task.doneFlag;
   const daysLeft = due ? Math.ceil((due - today) / 86400000) : null;
+  const month = monthLabel(task.dueDate);
 
   // 人工標記本期完成，且尚未過到期日 → 已完成
   if (marked && due && today.getTime() <= due.getTime()) {
-    return {
-      state:'done', daysLeft, sortKey:4,
-      label:'✅ 本期已完成',
-      sub: daysLeft >= 0 ? `下次到期 ${task.dueDate}（還有 ${daysLeft} 天）` : ''
-    };
+    return { state:'done', daysLeft, sortKey:4, month, label:`✅ ${month}已完成` };
   }
   if (marked && !due) {
-    return { state:'done', daysLeft:9999, sortKey:4, label:'✅ 本期已完成', sub:'' };
+    return { state:'done', daysLeft:9999, sortKey:4, month, label:'✅ 本期已完成' };
   }
 
   // 未標記，或已過到期日（週期滾動）→ 依日期提示
-  if (!due) return { state:'todo', daysLeft:9999, sortKey:3, label:'🔵 待完成', sub:'' };
-  if (daysLeft < 0)   return { state:'overdue', daysLeft, sortKey:0, label:`🔴 逾期 ${Math.abs(daysLeft)} 天`, sub:'' };
-  if (daysLeft === 0) return { state:'today',   daysLeft, sortKey:1, label:'🟠 今天到期！',               sub:'' };
-  if (daysLeft <= 3)  return { state:'soon',    daysLeft, sortKey:2, label:`🟠 即將到期・還剩 ${daysLeft} 天`, sub:'' };
-  return                     { state:'todo',    daysLeft, sortKey:3, label:`🔵 待完成・還剩 ${daysLeft} 天`,  sub:'' };
+  if (!due) return { state:'todo', daysLeft:9999, sortKey:3, month, label:'🔵 待完成' };
+  if (daysLeft < 0)   return { state:'overdue', daysLeft, sortKey:0, month, label:`🔴 ${month}已逾期 ${Math.abs(daysLeft)} 天` };
+  if (daysLeft === 0) return { state:'today',   daysLeft, sortKey:1, month, label:`🟠 ${month}今天到期！` };
+  if (daysLeft <= 3)  return { state:'soon',    daysLeft, sortKey:2, month, label:`🟠 ${month}還剩 ${daysLeft} 天` };
+  return                     { state:'todo',    daysLeft, sortKey:3, month, label:`🔵 ${month}還剩 ${daysLeft} 天` };
 }
 
 function renderTasks() {
@@ -1443,6 +1455,19 @@ function renderTasks() {
   withStatus.forEach(({ t, st }) => {
     if (st.state === 'overdue') overdueCount++;
 
+    // 時間軸：已完成 → 顯示「本期已完成」+「下一期・待設定」雙色塊
+    //         未完成 → 只顯示單一色塊（逾期／即將到期／待完成）
+    const timeline = st.state === 'done'
+      ? `<div class="task-timeline">
+           <div class="tl-chip done">${st.label}</div>
+           <div class="tl-arrow">→</div>
+           <div class="tl-chip pending">⏳ 下一期・待設定到期日</div>
+         </div>
+         ${t.lastDone ? `<div class="task-substatus">完成於 ${t.lastDone}</div>` : ''}`
+      : `<div class="task-timeline">
+           <div class="tl-chip ${st.state}">${st.label}</div>
+         </div>`;
+
     out += `
     <div class="task-item ${st.state}">
       <div class="task-icon">${t.icon}</div>
@@ -1454,8 +1479,7 @@ function renderTasks() {
           ${t.lastDone ? `<div class="dlabel">完成：</div><div class="dval">${t.lastDone}</div>` : ''}
         </div>
         ${t.note ? `<div class="task-note">💬 ${t.note}</div>` : ''}
-        <div class="task-status ${st.state}">${st.label}</div>
-        ${st.sub ? `<div class="task-substatus">${st.sub}</div>` : ''}
+        ${timeline}
         <a class="task-edit-link" href="${TASK_EDIT_URL}" target="_blank" rel="noopener">
           → 至 Sheet 更新完成日期
         </a>
