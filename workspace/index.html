@@ -723,10 +723,10 @@ body::after {
     <div class="tp-loading">載入中…</div>
   </div>
   <div class="tp-footer">
-    完成任務後請至
+    完成後請至
     <a href="https://docs.google.com/spreadsheets/d/1uYBA_CncbEAydmzNC1SRnsKJdswNgQh3zg1x6TKo0UU/edit#gid=646869954"
        target="_blank" rel="noopener">Google Sheet</a>
-    更新完成日期
+    更新完成日期，並在 G 欄「本期完成」打 ✓
   </div>
 </div>
 
@@ -1322,6 +1322,7 @@ window.addEventListener('DOMContentLoaded', () => {
    TASK SYSTEM — 讀取 Google Sheet 任務分頁
    Sheet 欄位（第2列起）：
    A=任務名稱  B=圖示  C=頻率說明  D=到期日(yyyy/MM/dd)  E=最近完成日期  F=備註
+   G=本期完成（做完打✓；空白代表尚未完成）
 ═══════════════════════════════════════════════ */
 
 const TASK_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1uYBA_CncbEAydmzNC1SRnsKJdswNgQh3zg1x6TKo0UU/export?format=csv&gid=646869954';
@@ -1342,6 +1343,8 @@ function parseTaskRow(row) {
     }
     return v;
   };
+  // G 欄「本期完成」：非空且不是明確的「否」即視為已勾選
+  const truthy = (v) => !!v && !/^(0|false|no|否|x|✗|✕|-|無|未|待)$/i.test(v.trim());
   return {
     name:     cols[0] || '',
     icon:     cols[1] || '📋',
@@ -1349,6 +1352,7 @@ function parseTaskRow(row) {
     dueDate:  pcd(cols[3]),
     lastDone: pcd(cols[4]),
     note:     cols[5] || '',
+    doneFlag: truthy(cols[6]),   // G 欄：本期完成勾選
   };
 }
 
@@ -1381,41 +1385,40 @@ function parseDate(str) {
 }
 
 /* ────────────────────────────────────────────────
-   本期狀態判別
-   「本期已完成」邏輯：
-     ‧ 完成日 ≥ 到期日           → 已完成（在到期日當天/之後才做）
-     ‧ 否則取「完成日 → 到期日」的中點：
-         今天還沒過中點          → 本期已完成（剛做完、距下次到期還很久）
-         今天已過中點            → 轉為「待完成」，提醒該再做了
-   這樣：剛完成的任務一眼是綠色「✅ 本期已完成」；
-        快到下次期限時自動翻回待辦，不會被誤判成已完成。
+   本期狀態判別（v8：改用「本期完成」人工標記）
+   為什麼不再用日期猜？
+     例：到期 7/05、完成 6/30。無法只憑日期分辨這是
+        「7 月提早做完」還是「6 月拖到月底才補做」，
+        只有你本人知道。所以改由你在 Sheet 的 G 欄
+        「本期完成」打勾來宣告。
+   判定：
+     ‧ G 欄有勾  且 今天 ≤ 到期日  → ✅ 本期已完成（綠）
+     ‧ G 欄有勾  但 今天 > 到期日  → 週期已滾動，視為要再做
+                                     （自動回到提醒，不用手動清勾）
+     ‧ G 欄沒勾                    → 依到期日提示逾期／即將到期／待完成
+   → 做完新的一期時，只要更新「到期日」到下次期限、並確認
+      G 欄有勾，就會自動接續顯示已完成。
 ──────────────────────────────────────────────── */
 function cycleStatus(task) {
-  const today = new Date(); today.setHours(0,0,0,0);
-  const due  = parseDate(task.dueDate);
-  const done = parseDate(task.lastDone);
+  const today  = new Date(); today.setHours(0,0,0,0);
+  const due    = parseDate(task.dueDate);
+  const marked = !!task.doneFlag;
+  const daysLeft = due ? Math.ceil((due - today) / 86400000) : null;
 
-  if (!due) return { state:'todo', daysLeft:9999, sortKey:3, label:'🔵 待完成', sub:'' };
-
-  const daysLeft = Math.ceil((due - today) / 86400000);
-
-  let doneThisCycle = false;
-  if (done) {
-    if (done.getTime() >= due.getTime()) {
-      doneThisCycle = true;
-    } else {
-      const midpoint = done.getTime() + (due.getTime() - done.getTime()) / 2;
-      doneThisCycle = today.getTime() < midpoint;
-    }
-  }
-
-  if (doneThisCycle) {
+  // 人工標記本期完成，且尚未過到期日 → 已完成
+  if (marked && due && today.getTime() <= due.getTime()) {
     return {
       state:'done', daysLeft, sortKey:4,
       label:'✅ 本期已完成',
-      sub: daysLeft >= 0 ? `下次到期還有 ${daysLeft} 天` : ''
+      sub: daysLeft >= 0 ? `下次到期 ${task.dueDate}（還有 ${daysLeft} 天）` : ''
     };
   }
+  if (marked && !due) {
+    return { state:'done', daysLeft:9999, sortKey:4, label:'✅ 本期已完成', sub:'' };
+  }
+
+  // 未標記，或已過到期日（週期滾動）→ 依日期提示
+  if (!due) return { state:'todo', daysLeft:9999, sortKey:3, label:'🔵 待完成', sub:'' };
   if (daysLeft < 0)   return { state:'overdue', daysLeft, sortKey:0, label:`🔴 逾期 ${Math.abs(daysLeft)} 天`, sub:'' };
   if (daysLeft === 0) return { state:'today',   daysLeft, sortKey:1, label:'🟠 今天到期！',               sub:'' };
   if (daysLeft <= 3)  return { state:'soon',    daysLeft, sortKey:2, label:`🟠 即將到期・還剩 ${daysLeft} 天`, sub:'' };
