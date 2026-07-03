@@ -1,0 +1,1523 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>阿毛之塔｜9999層的鮮茶道之約</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chiron+Gorund+TC:wght@400;700;900&family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Serif+TC:ital,wght@0,700;0,900;1,700;1,900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#17171F;
+  --ink-2:#1D1D27;
+  --panel:#252530;
+  --panel-2:#2C2C3A;
+  --line:#3A3A48;
+  --sage:#A8BFA0;
+  --sage-deep:#7E9A79;
+  --blush:#E3B8C9;
+  --blush-deep:#C98FA6;
+  --dust:#9FB0C4;
+  --honey:#EFC372;
+  --honey-deep:#D89C3F;
+  --ivory:#EDEAE2;
+  --muted:#8D8D9B;
+  --danger:#D98787;
+  --header-h:76px;
+  --footer-h:150px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;font-family:"Zen Maru Gothic","PingFang TC","Microsoft JhengHei",sans-serif;}
+html,body{background:var(--ink);color:var(--ivory);}
+body{
+  height:100vh;height:100dvh;width:100vw;overflow:hidden;
+  display:flex;flex-direction:column;
+  padding-top:env(safe-area-inset-top);
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.serif{font-family:"Noto Serif TC",serif;}
+.display{font-family:"Chiron Gorund TC","Zen Maru Gothic",sans-serif;}
+
+/* ---------- Header ---------- */
+#app-header{
+  height:var(--header-h);flex-shrink:0;
+  background:var(--ink-2);border-bottom:1px solid var(--line);
+  display:flex;flex-direction:column;justify-content:center;gap:6px;
+  padding:8px 16px;
+}
+.status-row{display:flex;justify-content:space-between;align-items:center;font-size:0.78em;color:var(--muted);}
+.status-chip{display:flex;align-items:center;gap:5px;font-weight:700;color:var(--ivory);}
+.status-chip .ico{font-size:1.15em;}
+#hp-chip.low{color:var(--danger);}
+.title-row{display:flex;align-items:center;justify-content:space-between;}
+.game-title{display:flex;flex-direction:column;line-height:1.1;}
+.game-title .zh{font-size:1.1em;font-weight:900;letter-spacing:2px;color:var(--honey);}
+.game-title .en{font-size:0.62em;letter-spacing:3px;color:var(--muted);text-transform:uppercase;}
+#gear-btn{width:34px;height:34px;border-radius:10px;background:var(--panel);display:flex;align-items:center;justify-content:center;font-size:1.05em;cursor:pointer;border:1px solid var(--line);}
+#gear-btn:active{background:var(--panel-2);}
+
+/* ---------- Scroll stage ---------- */
+#scroll-area{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;}
+::-webkit-scrollbar{width:0;}
+
+#stage-wrap{flex-shrink:0;background:var(--ink);border-bottom:1px solid var(--line);box-shadow:0 6px 14px -8px rgba(0,0,0,0.4);position:relative;z-index:5;}
+
+#stage{
+  position:relative;height:232px;flex-shrink:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+  background:
+    radial-gradient(ellipse at 50% 20%, rgba(168,191,160,0.10), transparent 60%),
+    linear-gradient(180deg, var(--ink) 0%, var(--ink-2) 100%);
+  overflow:hidden;
+}
+.floor-mark{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-54%);
+  font-family:"Noto Serif TC",serif;font-weight:900;font-style:italic;
+  font-size:5.6em;color:rgba(237,234,226,0.045);letter-spacing:2px;z-index:0;
+  white-space:nowrap;
+}
+.amao-sprite{font-size:74px;z-index:2;filter:drop-shadow(0 10px 14px rgba(0,0,0,0.55));transition:transform .25s cubic-bezier(.34,1.56,.64,1);cursor:pointer;}
+.amao-label{
+  z-index:2;background:var(--honey);color:#2A2115;font-weight:900;font-size:0.86em;
+  padding:5px 16px;border-radius:20px;box-shadow:0 3px 0 var(--honey-deep);letter-spacing:1px;
+}
+.progress-hint{z-index:2;font-size:0.72em;color:var(--dust);display:flex;align-items:center;gap:6px;}
+.progress-bar-mini{width:120px;height:5px;border-radius:3px;background:var(--panel-2);overflow:hidden;}
+.progress-bar-mini i{display:block;height:100%;background:var(--sage);border-radius:3px;transition:width .3s;}
+
+#idle-view{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:2;}
+
+#battle-arena{
+  display:flex;align-items:center;justify-content:center;gap:18px;z-index:2;width:100%;padding:0 10px;
+}
+.fighter{display:flex;flex-direction:column;align-items:center;gap:8px;width:96px;}
+.fighter-ico{font-size:74px;filter:drop-shadow(0 10px 14px rgba(0,0,0,0.55));display:block;}
+.fighter-hpbar{width:88px;height:7px;border-radius:4px;background:var(--panel-2);overflow:hidden;border:1px solid var(--line);}
+.fighter-hpbar i{display:block;height:100%;border-radius:4px;transition:width .35s;}
+#fighter-amao-hp{background:var(--sage);}
+#fighter-monster-hp{background:var(--danger);}
+.vs-mark{font-family:"Noto Serif TC",serif;font-weight:900;font-style:italic;color:var(--muted);font-size:1.3em;}
+.fighter-left.clash .fighter-ico{animation:clashLeft .32s cubic-bezier(.34,1.56,.64,1);}
+.fighter-right.clash .fighter-ico{animation:clashRight .32s cubic-bezier(.34,1.56,.64,1);}
+@keyframes clashLeft{0%{transform:translateX(0) rotate(0);}45%{transform:translateX(22px) rotate(-8deg);}100%{transform:translateX(0) rotate(0);}}
+@keyframes clashRight{0%{transform:translateX(0) rotate(0);}45%{transform:translateX(-22px) rotate(8deg);}100%{transform:translateX(0) rotate(0);}}
+
+.buff-row{display:flex;gap:6px;padding:8px 16px;flex-wrap:wrap;background:var(--ink-2);}
+.buff-chip{font-size:0.66em;background:var(--panel);border:1px solid var(--line);color:var(--sage);padding:3px 9px;border-radius:12px;font-weight:700;}
+
+#log-list{padding:14px 14px 24px;display:flex;flex-direction:column;gap:10px;}
+.log-entry{
+  background:var(--panel);border-radius:12px;padding:12px 14px;
+  border-left:4px solid var(--dust);display:flex;gap:10px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.25);animation:slideIn .35s ease-out;font-size:0.86em;line-height:1.5;
+}
+.log-entry.battle{border-left-color:var(--danger);}
+.log-entry.loot{border-left-color:var(--sage);}
+.log-entry.gold{border-left-color:var(--honey);}
+.log-entry.milestone{border-left-color:var(--blush);background:linear-gradient(90deg, rgba(227,184,201,0.10), var(--panel) 40%);}
+.log-entry.mood{border-left-color:var(--line);opacity:0.85;font-style:italic;}
+@keyframes slideIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.log-ico{font-size:1.15em;flex-shrink:0;}
+.hl{color:var(--honey);font-weight:900;}
+.hl-sage{color:var(--sage);font-weight:900;}
+.hl-blush{color:var(--blush);font-weight:900;}
+
+/* ---------- Footer ---------- */
+#app-footer{
+  height:var(--footer-h);flex-shrink:0;background:var(--ink-2);border-top:1px solid var(--line);
+  display:flex;flex-direction:column;padding:12px 16px 14px;gap:12px;
+}
+#dice-btn{
+  width:100%;height:60px;border:none;border-radius:16px;cursor:pointer;
+  background:linear-gradient(180deg, var(--honey), var(--honey-deep));
+  color:#2A2115;font-weight:900;font-size:1.12em;letter-spacing:2px;
+  box-shadow:0 5px 0 #9E7126;display:flex;align-items:center;justify-content:center;gap:10px;
+  transition:transform .08s;
+}
+#dice-btn:active{transform:translateY(4px);box-shadow:0 1px 0 #9E7126;}
+#dice-btn:disabled{opacity:0.55;box-shadow:0 5px 0 #6b6b78;background:linear-gradient(180deg,#8a8a97,#6b6b78);}
+.nav-row{display:flex;gap:10px;}
+.nav-btn{
+  flex:1;background:var(--panel);border:1px solid var(--line);border-radius:13px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  padding:8px 0;cursor:pointer;position:relative;
+}
+.nav-btn:active{background:var(--panel-2);}
+.nav-btn .ico{font-size:1.35em;}
+.nav-btn .lbl{font-size:0.62em;color:var(--muted);font-weight:700;}
+.nav-badge{
+  position:absolute;top:-4px;right:6px;background:var(--blush-deep);color:#2A1620;
+  font-size:0.6em;font-weight:900;padding:1px 6px;border-radius:10px;
+}
+
+/* ---------- Modal ---------- */
+#modal-mask{
+  position:fixed;inset:0;background:rgba(10,10,14,0.72);z-index:300;display:none;
+  align-items:flex-end;justify-content:center;
+}
+#modal-mask.show{display:flex;}
+#modal-sheet{
+  width:100%;max-width:520px;max-height:86vh;background:var(--ink-2);
+  border-radius:22px 22px 0 0;border-top:1px solid var(--line);
+  display:flex;flex-direction:column;animation:sheetUp .28s cubic-bezier(.22,1,.36,1);
+  padding-bottom:env(safe-area-inset-bottom);
+}
+@keyframes sheetUp{from{transform:translateY(30px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+#modal-head{
+  display:flex;align-items:center;justify-content:space-between;padding:18px 18px 12px;
+  border-bottom:1px solid var(--line);
+}
+#modal-head h2{font-size:1.05em;font-weight:900;color:var(--ivory);}
+#modal-close{width:32px;height:32px;border-radius:9px;background:var(--panel);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1em;color:var(--muted);}
+#modal-body{flex:1;overflow-y:auto;padding:16px 18px 26px;}
+
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.dex-slot{
+  aspect-ratio:1;background:var(--panel);border-radius:12px;border:1px solid var(--line);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  font-size:0.66em;color:var(--muted);cursor:pointer;position:relative;text-align:center;padding:4px;
+}
+.dex-slot.found{background:var(--panel-2);border-color:var(--sage-deep);color:var(--ivory);}
+.dex-slot .ico{font-size:1.5em;}
+.dex-slot .count{position:absolute;top:-4px;right:-4px;background:var(--honey);color:#2A2115;font-size:0.7em;font-weight:900;padding:1px 5px;border-radius:8px;}
+.dex-slot.active-title{border-color:var(--blush);box-shadow:0 0 0 2px rgba(227,184,201,0.35) inset;}
+.dex-slot.locked{opacity:0.45;}
+
+.empty-hint{grid-column:span 4;text-align:center;padding:36px 10px;color:var(--muted);font-size:0.85em;line-height:1.7;}
+
+.food-tabs{display:flex;gap:8px;margin-bottom:14px;}
+.food-tab-btn{
+  flex:1;padding:10px 0;text-align:center;border-radius:11px;border:1px solid var(--line);
+  background:var(--panel);color:var(--muted);font-weight:700;font-size:0.82em;cursor:pointer;
+}
+.food-tab-btn.active{background:var(--sage);color:#1A2318;border-color:var(--sage);}
+
+/* shop */
+.merchant-card{
+  background:var(--panel);border-radius:16px;padding:16px;margin-bottom:14px;
+  border-left:5px solid var(--dust);
+}
+.merchant-top{display:flex;align-items:center;gap:12px;}
+.merchant-top .ico{font-size:2.6em;filter:drop-shadow(2px 2px 0 rgba(0,0,0,0.25));}
+.merchant-name{font-weight:900;font-size:0.98em;}
+.merchant-tag{font-size:0.66em;color:var(--muted);}
+.merchant-line{font-size:0.8em;line-height:1.5;margin-top:9px;min-height:38px;color:var(--ivory);}
+.shop-items{display:flex;flex-direction:column;gap:8px;margin-top:6px;}
+.shop-item{
+  display:flex;align-items:center;gap:12px;background:var(--panel-2);border-radius:12px;padding:10px 12px;cursor:pointer;
+  border:1px solid transparent;
+}
+.shop-item:active{border-color:var(--sage-deep);}
+.shop-item .ico{font-size:1.7em;flex-shrink:0;}
+.shop-item .info{flex:1;}
+.shop-item .name{font-weight:700;font-size:0.86em;}
+.shop-item .desc{font-size:0.68em;color:var(--muted);margin-top:2px;}
+.shop-item .price{font-size:0.78em;font-weight:900;color:var(--honey);white-space:nowrap;}
+.shop-item.afford-no .price{color:var(--danger);}
+
+/* food detail card */
+.food-detail{
+  display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:8px 4px 4px;
+}
+.food-detail .ico{font-size:3em;}
+.tag-line{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;}
+.tag-pill{font-size:0.68em;padding:3px 10px;border-radius:10px;font-weight:700;}
+.tag-q{background:rgba(239,195,114,0.18);color:var(--honey);}
+.tag-a{background:rgba(168,191,160,0.18);color:var(--sage);}
+.tag-b{background:rgba(159,176,196,0.18);color:var(--dust);}
+.food-effect{font-size:0.82em;color:var(--ivory);background:var(--panel);border-radius:10px;padding:10px 14px;line-height:1.6;width:100%;}
+.eat-btn{
+  width:100%;padding:12px;border-radius:12px;border:none;background:var(--sage);color:#1A2318;
+  font-weight:900;cursor:pointer;font-size:0.9em;margin-top:4px;
+}
+.eat-btn:disabled{background:var(--panel-2);color:var(--muted);}
+
+/* title detail confirm */
+.title-detail{padding:6px 2px;}
+.title-detail .name{font-size:1.15em;font-weight:900;color:var(--blush);margin-bottom:6px;}
+.title-detail .desc{font-size:0.82em;color:var(--ivory);line-height:1.6;margin-bottom:10px;}
+.stat-line{display:flex;justify-content:space-between;font-size:0.78em;color:var(--muted);padding:4px 0;border-bottom:1px dashed var(--line);}
+.wear-btn{width:100%;padding:12px;border-radius:12px;border:none;background:var(--blush);color:#2A1620;font-weight:900;cursor:pointer;margin-top:12px;font-size:0.9em;}
+.wear-btn:disabled{background:var(--panel-2);color:var(--muted);}
+
+/* ---------- Toast ticket ---------- */
+#toast-zone{position:fixed;top:calc(var(--header-h) + 10px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:400;display:flex;flex-direction:column;gap:8px;pointer-events:none;width:88%;max-width:400px;}
+.ticket{
+  background:var(--ivory);color:#2C2C22;border-radius:8px;padding:10px 14px;
+  font-size:0.78em;font-weight:700;box-shadow:0 8px 20px rgba(0,0,0,0.35);
+  display:flex;align-items:center;gap:10px;
+  border:1px dashed #B9B29A;
+  animation:ticketIn .45s cubic-bezier(.22,1,.36,1), ticketOut .4s ease-in 2.6s forwards;
+}
+.ticket .ico{font-size:1.4em;}
+.ticket b{color:var(--sage-deep);}
+@keyframes ticketIn{from{opacity:0;transform:translateY(-16px) scale(.94);}to{opacity:1;transform:translateY(0) scale(1);}}
+@keyframes ticketOut{to{opacity:0;transform:translateY(-10px) scale(.96);}}
+
+/* ---------- Ending / Daily overlay ---------- */
+#ending-mask{position:fixed;inset:0;background:rgba(10,10,14,0.9);z-index:500;display:none;align-items:center;justify-content:center;padding:26px;}
+#ending-mask.show{display:flex;}
+#daily-mask{position:fixed;inset:0;background:rgba(10,10,14,0.9);z-index:500;display:none;align-items:center;justify-content:center;padding:26px;}
+#daily-mask.show{display:flex;}
+.ending-card{background:var(--ink-2);border:1px solid var(--blush-deep);border-radius:20px;padding:32px 24px;text-align:center;max-width:380px;}
+.ending-card .big-ico{font-size:3.2em;margin-bottom:10px;}
+.ending-card h2{font-family:"Noto Serif TC",serif;font-size:1.3em;color:var(--blush);margin-bottom:10px;}
+.ending-card p{font-size:0.86em;line-height:1.8;color:var(--ivory);margin-bottom:18px;}
+.ending-card button{width:100%;padding:13px;border-radius:12px;border:none;background:var(--sage);color:#1A2318;font-weight:900;cursor:pointer;}
+
+/* ---------- Minigame overlay ---------- */
+#minigame-mask{
+  position:fixed;inset:0;background:rgba(10,10,14,0.82);z-index:600;display:none;
+  align-items:center;justify-content:center;padding:20px;
+}
+#minigame-mask.show{display:flex;}
+#minigame-sheet{
+  width:100%;max-width:420px;max-height:88vh;background:var(--ink-2);border:1px solid var(--line);
+  border-radius:20px;display:flex;flex-direction:column;overflow:hidden;
+}
+#minigame-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line);}
+#minigame-head h2{font-size:1em;font-weight:900;}
+#minigame-close{width:30px;height:30px;border-radius:9px;background:var(--panel);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);}
+#minigame-body{padding:18px;overflow-y:auto;}
+
+.mg-info{font-size:0.78em;color:var(--muted);text-align:center;margin-bottom:14px;display:flex;justify-content:center;gap:14px;}
+.mg-info b{color:var(--honey);}
+
+.mg-card-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
+.mg-card{
+  aspect-ratio:1;background:var(--panel);border-radius:10px;border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;font-size:1.6em;cursor:pointer;
+  transition:transform .15s;
+}
+.mg-card.flipped{background:var(--panel-2);border-color:var(--sage-deep);}
+.mg-card.matched{background:rgba(168,191,160,0.18);border-color:var(--sage);opacity:0.75;cursor:default;}
+
+.mg-slide-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px;aspect-ratio:1;}
+.mg-tile{
+  background:var(--sage);color:#1A2318;border-radius:9px;display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:1.3em;cursor:pointer;transition:transform .12s;
+}
+.mg-tile.blank{background:var(--ink);cursor:default;}
+
+.mg-result{text-align:center;padding:20px 6px;}
+.mg-result .big{font-size:2.4em;margin-bottom:8px;}
+.mg-result .reward{font-size:1.1em;font-weight:900;color:var(--honey);margin:10px 0;}
+.mg-result button{width:100%;padding:12px;border-radius:12px;border:none;background:var(--sage);color:#1A2318;font-weight:900;cursor:pointer;margin-top:8px;}
+
+/* ---------- Loot detail (reuse food-detail layout) ---------- */
+.loot-detail{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:8px 4px 4px;}
+.loot-detail .ico{font-size:3em;}
+.loot-detail .desc{font-size:0.82em;color:var(--ivory);background:var(--panel);border-radius:10px;padding:12px 14px;line-height:1.6;width:100%;}
+
+/* particles */
+.particle{position:fixed;top:-40px;pointer-events:none;z-index:999;animation:fall linear forwards;}
+@keyframes fall{0%{transform:translateY(0) rotate(0deg);opacity:1;}100%{transform:translateY(100vh) rotate(340deg);opacity:0;}}
+</style>
+</head>
+<body>
+
+<header id="app-header">
+  <div class="title-row">
+    <div class="game-title">
+      <span class="zh">阿毛之塔</span>
+      <span class="en">Amao's Endless Tower</span>
+    </div>
+    <div id="gear-btn" onclick="UI.openModal('system')">⚙️</div>
+  </div>
+  <div class="status-row">
+    <span class="status-chip" id="hp-chip"><span class="ico">⚡</span><span id="hp-text">100</span></span>
+    <span class="status-chip"><span class="ico">💰</span><span id="gold-text">500</span></span>
+    <span class="status-chip"><span class="ico">🏅</span><span id="title-text">新手爬塔狗</span></span>
+  </div>
+</header>
+
+<div id="stage-wrap">
+  <div id="stage">
+    <div class="floor-mark" id="floor-mark">0001</div>
+
+    <div id="idle-view">
+      <div class="amao-sprite" id="amao-sprite">🐶</div>
+      <div class="amao-label" id="amao-label">第 1 層</div>
+      <div class="progress-hint">
+        <span id="progress-text">距離下個里程碑還有 9 層</span>
+        <div class="progress-bar-mini"><i id="progress-bar" style="width:10%"></i></div>
+      </div>
+    </div>
+
+    <div id="battle-arena" style="display:none;">
+      <div class="fighter fighter-left" id="fighter-amao">
+        <span class="fighter-ico">🐶</span>
+        <div class="fighter-hpbar"><i id="fighter-amao-hp" style="width:100%"></i></div>
+      </div>
+      <div class="vs-mark">VS</div>
+      <div class="fighter fighter-right" id="fighter-monster">
+        <span class="fighter-ico" id="fighter-monster-ico">🧟</span>
+        <div class="fighter-hpbar"><i id="fighter-monster-hp" style="width:100%"></i></div>
+      </div>
+    </div>
+  </div>
+  <div class="buff-row" id="buff-row"></div>
+</div>
+
+<div id="scroll-area">
+  <div id="log-list"></div>
+</div>
+
+<footer id="app-footer">
+  <button id="dice-btn" onclick="Game.roll()"><span>🎲</span><span>投擲命運之骰</span></button>
+  <div class="nav-row">
+    <div class="nav-btn" onclick="UI.openModal('food')">
+      <span class="ico">🍱</span><span class="lbl">美食</span>
+      <span class="nav-badge" id="bag-badge" style="display:none;"></span>
+    </div>
+    <div class="nav-btn" onclick="UI.openModal('loot')">
+      <span class="ico">🎒</span><span class="lbl">戰利品</span>
+      <span class="nav-badge" id="loot-badge" style="display:none;"></span>
+    </div>
+    <div class="nav-btn" onclick="UI.openModal('titles')">
+      <span class="ico">🏅</span><span class="lbl">稱號</span>
+    </div>
+    <div class="nav-btn" onclick="UI.openModal('shop')">
+      <span class="ico">🛒</span><span class="lbl">商店</span>
+    </div>
+  </div>
+</footer>
+
+<div id="modal-mask" onclick="if(event.target===this)UI.closeModal()">
+  <div id="modal-sheet">
+    <div id="modal-head"><h2 id="modal-title">選單</h2><div id="modal-close" onclick="UI.closeModal()">✕</div></div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<div id="toast-zone"></div>
+
+<div id="ending-mask">
+  <div class="ending-card">
+    <div class="big-ico">🧋</div>
+    <h2>塔頂的鮮茶道</h2>
+    <p>阿毛推開了第 9999 層的門，風鈴輕響。<br>那間一直傳說中的飲料店，真的在這裡——<br>店員遞來一杯冰涼的招牌茶，笑著說：「歡迎回家，阿毛。」</p>
+    <button onclick="UI.closeEnding()">繼續在塔裡散步</button>
+  </div>
+</div>
+
+<div id="daily-mask">
+  <div class="ending-card">
+    <div class="big-ico">📅</div>
+    <h2 id="daily-title">每日簽到</h2>
+    <p id="daily-desc"></p>
+    <button onclick="UI.closeDailyCheckIn()">開始今天的冒險</button>
+  </div>
+</div>
+
+<div id="minigame-mask">
+  <div id="minigame-sheet">
+    <div id="minigame-head"><h2 id="minigame-title">小遊戲</h2><div id="minigame-close" onclick="MiniGame.close()">✕</div></div>
+    <div id="minigame-body"></div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   阿毛之塔 — 核心資料表
+   ========================================================= */
+var QUALITY = [
+  {name:"平價的", tier:1, w:30},
+  {name:"家常的", tier:1, w:26},
+  {name:"美味的", tier:2, w:20},
+  {name:"講究的", tier:2, w:15},
+  {name:"絕品的", tier:3, w:7},
+  {name:"傳說的", tier:3, w:2}
+];
+var AROMA = [
+  {name:"蜂蜜香氣", stat:"heal", label:"回復"},
+  {name:"薄荷香氣", stat:"def",  label:"防禦"},
+  {name:"焦糖香氣", stat:"atk",  label:"攻擊"},
+  {name:"奶香",     stat:"luck", label:"幸運"},
+  {name:"花香",     stat:"gold", label:"招財"},
+  {name:"辛香",     stat:"crit", label:"爆擊"}
+];
+var BASE = [
+  {name:"牛排", ico:"🥩"}, {name:"鮮奶茶", ico:"🥤"}, {name:"牛肉麵", ico:"🍜"},
+  {name:"水餃", ico:"🥟"}, {name:"布丁", ico:"🍮"}, {name:"烤雞腿", ico:"🍗"},
+  {name:"關東煮", ico:"🍢"}, {name:"可頌", ico:"🥐"}, {name:"珍珠奶茶", ico:"🧋"},
+  {name:"滷肉飯", ico:"🍚"}, {name:"蛋糕捲", ico:"🍰"}, {name:"三明治", ico:"🥪"},
+  {name:"豆花", ico:"🍧"}, {name:"拉麵", ico:"🍥"}
+];
+var STAT_META = {
+  heal:{ico:"💗",label:"回復"}, def:{ico:"🛡️",label:"防禦"}, atk:{ico:"⚔️",label:"攻擊"},
+  luck:{ico:"🍀",label:"幸運"}, gold:{ico:"💰",label:"招財"}, crit:{ico:"✨",label:"爆擊"}
+};
+
+var TITLES = [
+  {floor:0,    name:"新手爬塔狗",     desc:"最基礎的狀態，充滿好奇心。",       hpMax:100, atk:8,  def:0,  goldRate:1.00, luck:0.00, crit:0.05},
+  {floor:50,   name:"50層開拓者",    desc:"已經適應了塔內的高度。",           hpMax:130, atk:11, def:2,  goldRate:1.05, luck:0.02, crit:0.06},
+  {floor:100,  name:"百層見習生",     desc:"開始懂得怎麼跟怪物打交道。",       hpMax:160, atk:14, def:4,  goldRate:1.10, luck:0.04, crit:0.07},
+  {floor:300,  name:"三百階夢遊者",   desc:"走著走著就走出了節奏感。",         hpMax:200, atk:18, def:6,  goldRate:1.15, luck:0.06, crit:0.09},
+  {floor:500,  name:"美食獵人",      desc:"阿毛的胃已經是這座塔的傳說。",     hpMax:240, atk:22, def:8,  goldRate:1.25, luck:0.10, crit:0.10},
+  {floor:1000, name:"千層行者",      desc:"塔內的怪物看到都會繞道走。",       hpMax:300, atk:28, def:11, goldRate:1.35, luck:0.13, crit:0.12},
+  {floor:3000, name:"莫蘭迪美學家",   desc:"連戰鬥都要打得優雅。",             hpMax:340, atk:32, def:13, goldRate:1.45, luck:0.15, crit:0.14},
+  {floor:9999, name:"鮮茶道貴賓",     desc:"傳說中飲料店的座上賓，僅此一位。", hpMax:400, atk:40, def:16, goldRate:1.60, luck:0.20, crit:0.18}
+];
+
+var MONSTER_PREFIX = ["兇猛的","中二的","閃閃發光的","莫蘭迪色的","來自深淵的","忘記吃早餐的","看起來很香的","透明的","脾氣暴躁的"];
+var MONSTER_LIST = [
+  {name:"殭屍", ico:"🧟"}, {name:"加班小精靈", ico:"🧚"}, {name:"香菜惡魔", ico:"🌿"},
+  {name:"低飽和史萊姆", ico:"🟢"}, {name:"腳步聲怪客", ico:"👣"}, {name:"咖啡因怪獸", ico:"☕"},
+  {name:"壞掉的販賣機", ico:"🥤"}, {name:"巨大骨頭", ico:"🦴"}, {name:"打呵欠的守衛", ico:"😪"}
+];
+
+var MERCHANTS = [
+  { id:"pumpkin", name:"南瓜老闆", ico:"🎃", tag:"熱血肌肉派", color:"#E39B6B",
+    welcome:["哈！今天的二頭肌也在尖叫嗎，阿毛！","流汗吧！這是通往肌肉殿堂的門票！","哈！雖然我是南瓜，但我有一顆肉食的心。","阿毛，你的四肢太纖細了，快吃點東西！","哈！今天也打算爬到肌肉斷裂為止嗎？","來，這塊肉能讓你的深蹲多重五公斤！","哈！別看滷滷米達那副冷冰冰的樣子，她推舉推不動五公斤。","鮪魚堡蓋這座塔的時候，居然沒留一間健身房！","哈！我彷彿已經看到你的戰鬥力在膨脹了！"],
+    buy:["哈！正確的投資，這會變成你的肌肉！","識貨！這裡充滿了燃燒的鬥魂！","很好，這才是阿毛之塔該有的氣勢！","哈！吃吧、喝吧，然後去把這座塔拆了！","很好，我彷彿看到你的戰鬥力在膨脹！"],
+    poor:["哈……沒錢買肉？去操場跑五十圈再來！","這點錢連啞鈴的灰塵都買不起。","肌肉不騙人，但你的錢包在騙人。","哈！你是來參觀我完美的肌肉，還是來買東西的？","窮則思變，變則深蹲，快去賺錢！"] },
+  { id:"lulumida", name:"滷滷米達", ico:"🐶", tag:"冷靜理智派", color:"#8CA0B3",
+    welcome:["（推眼鏡）戰損率 15%，還在磨蹭什麼？","這件裝備結構嚴密，希望你能理解它。","中二？這叫『漆黑的意志』，你懂什麼。","阿毛，如果你被打敗了，我會把你做成數據標本。","這座塔的邏輯漏洞很多，比如我為什麼要在這裡賣東西。","別把你那沾滿口水的肉球碰到我的附魔台。","嘖，南瓜老闆的汗水味飄過來了，真是不理智。","羊的稿子又斷更了，我考慮用代碼強行催稿。","鮪魚堡，你這座塔的對齊方式簡直是視覺災難。"],
+    buy:["明智的選擇，雖然花光了你微薄的存款。","（標記中）交易完成，別讓它在你手裡哭泣。","數據顯示，這會提升你 0.5% 的生存機率。","哼，既然你誠心誠意地買了，我就稍微期待一下吧。","這件物品的性能，剛好能彌補你那拙劣的技術。"],
+    poor:["預算不足，這是典型的理財失敗案例。","你的餘額讓我的分析引擎感到悲哀。","窮困並不可怕，可怕的是你還想買奢侈品。","金幣不夠的話，就請退到黃線以後，別擋路。","你知道金幣是通往塔頂的唯一邏輯嗎？你沒有。"] },
+  { id:"sheep", name:"神秘的羊", ico:"🐑", tag:"怯弱友善創作者", color:"#C9A6C4",
+    welcome:["啊……阿毛……今天也有在努力嗎？","這是我畫圖畫到一半想出來的料理……應該能吃吧？","對不起，我又斷更了，這份道具算你便宜一點。","如果你爬到塔頂，能幫我看看那裡的風景嗎？","滷滷米達的眼神好可怕，阿毛救救我……","那個……你喜歡看我畫的小狗冒險故事嗎？","鮪魚堡說要幫我蓋專屬工作室，但她看起來在騙我……","南瓜老闆，請不要再叫我一起去做臥推了，我會斷掉。","百合花開的地方，就是我的天堂……啊，被你聽到了。"],
+    buy:["謝謝你支持我的創作，這對我真的很重要。","阿毛人真好，這個特製包裝就送你吧。","嗚嗚，終於有第一筆收入了，今晚可以加菜了。","希望這個道具能保護你，我也會幫你祈禱的。","那個……如果好用的話，下次再來喔。"],
+    poor:["對不起……雖然我想送你，但我會被大家罵的。","那個……金幣好像不太夠，我也很為難呢。","嗚……沒關係，等你賺夠錢再來，我會一直都在的。","錢不夠嗎？那、那你看一眼我的草稿當作補償？","抱歉……這份素材的成本真的很貴……"] },
+  { id:"tuna", name:"鮪魚堡", ico:"🍔", tag:"建造者／腹黑開朗", color:"#9FB08A",
+    welcome:["Welcome！歡迎來到我親手蓋的塔！","今天的塔也運作得很混亂呢，太令人開心了。","我是這座塔的造物主，也是你最大的陰影喔。","如果你卡在牆裡，那一定是你的錯，不是 BUG。","你想通關？別傻了，我還沒寫完結局呢！","這裡的所有邏輯都是我亂編的，你居然玩得下去？","你想要更強大的力量嗎？去跟滷滷米達撒嬌看看？","羊，你再不更新，我就把下一關的怪物全改成羊喔。","南瓜老闆，你的肌肉太佔記憶體了，快縮小一點！"],
+    buy:["成交！這道具是我昨晚喝醉時寫的，祝你好運！","恭喜你成為這個實驗品的第一個使用者！","拿去吧，這是我特意留給阿毛的『後門』道具。","金幣入帳！我又可以去買新的低飽和度油漆了。","哈哈，你居然花錢買這個？真是太可愛了！"],
+    poor:["沒錢？那就去挑戰隱藏關卡賺錢啊！","金幣不足？這一定是平衡性做得太完美了。","哎呀，我看你的財務報表跟我的心情一樣不樂觀呢。","沒錢就退下吧，我正忙著在 100 樓放岩漿呢。","窮是暫時的，但沒錢是買不到我的怪東西的。"] }
+];
+
+var SHOP_ITEMS = [
+  {id:"whey",   name:"超濃縮乳清", ico:"🥛", price:280, desc:"體力上限 +20（永久）", owner:"pumpkin",  apply:function(s){s.bonusHpMax+=20;}},
+  {id:"armband",name:"巨人腕力帶", ico:"🦾", price:450, desc:"攻擊力 +3（永久）",     owner:"pumpkin",  apply:function(s){s.bonusAtk+=3;}},
+  {id:"core",   name:"理智處理器", ico:"⚙️", price:680, desc:"金幣獲得 +10%（永久）", owner:"lulumida", apply:function(s){s.bonusGoldRate+=0.10;}},
+  {id:"ledger", name:"精算手冊",   ico:"📊", price:520, desc:"幸運 +3%（永久）",      owner:"lulumida", apply:function(s){s.bonusLuck+=0.03;}},
+  {id:"prayer", name:"斷更者的祈禱", ico:"📑", price:420, desc:"幸運 +4%（永久）",    owner:"sheep",    apply:function(s){s.bonusLuck+=0.04;}},
+  {id:"blanket",name:"羊毛毯",     ico:"🧣", price:300, desc:"體力上限 +10（永久）",  owner:"sheep",    apply:function(s){s.bonusHpMax+=10;}},
+  {id:"shield", name:"代碼防護罩", ico:"🛡️", price:520, desc:"防禦 +5%（永久）",      owner:"tuna",     apply:function(s){s.bonusDef+=0.05;}},
+  {id:"warp",   name:"塔的傳送後門", ico:"🎫", price:900, desc:"立即前進 20 層",      owner:"tuna",     apply:function(s){Game.state.floor+=20;}},
+  {id:"bug",    name:"系統漏洞包", ico:"🐛", price:600, desc:"立即獲得 300 金幣",     owner:"tuna",     apply:function(s){s.gold+=300;}}
+];
+
+var MOOD_LINES = [
+  "阿毛想起南瓜老闆剛才偷偷在吃炸雞。",
+  "阿毛感覺鮪魚堡正在背後對著程式碼壞笑。",
+  "羊似乎又躲起來畫圖了，空氣裡有墨水味。",
+  "滷滷米達擦了一下眼鏡，那是嫌棄的眼神嗎？",
+  "阿毛發現這層樓的莫蘭迪粉色特別飽滿。",
+  "塔身微微震動……難道是南瓜老闆在地下室做硬舉？",
+  "風從樓梯間灌上來，帶著一點點茶香。"
+];
+
+/* ---- 戰利品：一般雜物（純flavor，無數值效果）---- */
+var JUNK_ITEMS = [
+  {id:"note",    name:"皺皺的紙條",   ico:"📄", w:20, desc:"攤開來看，上面只寫著一個看不懂的塗鴉。"},
+  {id:"sock",    name:"爸爸的舊襪子", ico:"🧦", w:20, desc:"不知道為什麼會出現在塔裡，洗過還是有點味道。"},
+  {id:"key",     name:"生鏽的鑰匙",   ico:"🗝️", w:18, desc:"開不了任何一扇門，但拿在手上很有安全感。"},
+  {id:"dice",    name:"缺角的骰子",   ico:"🎲", w:18, desc:"永遠擲不出那個缺角的那一面。"},
+  {id:"seed",    name:"不知名的種子", ico:"🌰", w:18, desc:"種下去會長出什麼，阿毛也很好奇。"},
+  {id:"ticket",  name:"褪色的車票",   ico:"🎫", w:16, desc:"目的地欄位已經看不清楚了。"},
+  {id:"button",  name:"半顆鈕扣",     ico:"🔘", w:16, desc:"另外半顆不知道掉在塔的哪一層。"},
+  {id:"feather", name:"一根羽毛",     ico:"🪶", w:18, desc:"輕飄飄的，摸起來很舒服。"},
+  {id:"yarn",    name:"打結的毛線球", ico:"🧶", w:16, desc:"打結打得很有藝術感，捨不得解開。"},
+  {id:"candybox",name:"空的糖果盒",   ico:"🍬", w:16, desc:"搖一搖還是有沙沙的聲音，裡面只剩糖粉。"},
+  {id:"glove",   name:"沾泥的手套",   ico:"🧤", w:14, desc:"左右手好像不是同一雙的。"},
+  {id:"mapscrap",name:"破損的地圖碎片", ico:"🗺️", w:14, desc:"只看得出一小段路，通往未知的方向。"},
+  {id:"cookie",  name:"發霉的餅乾",   ico:"🍪", w:12, desc:"千萬不要撿起來吃，純粹留作紀念。"},
+  {id:"watch",   name:"沒有指針的錶", ico:"⌚", w:14, desc:"時間永遠停在某一刻，說不定剛剛好。"},
+  {id:"earring", name:"單邊的耳環",   ico:"💎", w:12, desc:"閃閃發光，但不知道是誰遺落的。"},
+  {id:"coupon",  name:"過期的優惠券", ico:"🧾", w:16, desc:"上面寫著「鮮茶道　買一送一」，可惜已經過期。"},
+  {id:"photo",   name:"半張全家福",   ico:"🖼️", w:10, desc:"畫面被撕去了一半，剩下的那半笑得很開心。"}
+];
+
+/* ---- 戰利品：稀有小遊戲道具（消耗型，破關拿金幣）---- */
+var MINIGAME_ITEMS = [
+  {id:"cards",     name:"神秘的紙牌",   ico:"🃏", w:3, type:"match", desc:"攤開是一疊圖案卡片，翻牌配對，翻越少次獎勵越高。"},
+  {id:"slidepuzzle",name:"老舊的推盤玩具", ico:"🧩", w:3, type:"slide", desc:"滑動小方塊拼回順序，步數越少獎勵越高。"}
+];
+var JUNK_POOL = JUNK_ITEMS.concat(MINIGAME_ITEMS);
+
+/* =========================================================
+   狀態管理（單一事實來源）
+   ========================================================= */
+var Game = {
+  state: null,
+
+  defaultState: function(){
+    return {
+      floor: 1,
+      gold: 500,
+      hp: 100,
+      titleIdx: 0,
+      bonusHpMax: 0, bonusLuck: 0, bonusDef: 0, bonusGoldRate: 0, bonusAtk: 0,
+      buffs: [],              // {stat, magnitude, floorsLeft}
+      foodDex: {},            // key -> {count, quality, aroma, base}
+      junkDex: {},            // id -> {count}
+      shopOwned: {},          // id -> count
+      lastMilestone: 0,
+      endingSeen: false,
+      lastLoginDate: null,
+      loginStreak: 0
+    };
+  },
+
+  computed: function(){
+    var t = TITLES[this.state.titleIdx];
+    var c = {
+      hpMax: t.hpMax + this.state.bonusHpMax,
+      atk: t.atk + this.state.bonusAtk,
+      def: t.def + this.state.bonusDef,
+      goldRate: t.goldRate + this.state.bonusGoldRate,
+      luck: t.luck + this.state.bonusLuck,
+      crit: t.crit
+    };
+    this.state.buffs.forEach(function(b){
+      if(b.stat==="atk") c.atk *= (1+b.magnitude);
+      if(b.stat==="def") c.def += b.magnitude;
+      if(b.stat==="luck") c.luck += b.magnitude;
+      if(b.stat==="gold") c.goldRate += b.magnitude;
+      if(b.stat==="crit") c.crit += b.magnitude;
+    });
+    return c;
+  },
+
+  todayKey: function(){
+    var d = new Date();
+    return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
+  },
+  dayIndex: function(){
+    return Math.floor(new Date().setHours(0,0,0,0)/86400000);
+  },
+  todayMerchant: function(){
+    var idx = ((this.dayIndex() % MERCHANTS.length) + MERCHANTS.length) % MERCHANTS.length;
+    return MERCHANTS[idx];
+  },
+
+  dailyCheckIn: function(){
+    var today = this.todayKey();
+    if(this.state.lastLoginDate === today) return null;
+
+    var isConsecutive = false;
+    if(this.state.lastLoginDate){
+      var prevDay = Math.floor(new Date(this.state.lastLoginDate.replace(/-/g,"/")).setHours(0,0,0,0)/86400000);
+      isConsecutive = (this.dayIndex() - prevDay) === 1;
+    }
+    this.state.loginStreak = isConsecutive ? (this.state.loginStreak+1) : 1;
+    this.state.lastLoginDate = today;
+
+    var streak = this.state.loginStreak;
+    var bonusGold = 50 + Math.min(streak,7)*20;
+    this.state.gold += bonusGold;
+
+    var junkGift = null;
+    if(streak % 7 === 0){
+      var mg = MINIGAME_ITEMS[Math.floor(Math.random()*MINIGAME_ITEMS.length)];
+      this.addJunk(mg.id);
+      junkGift = mg;
+    }
+
+    this.save();
+    return {streak:streak, gold:bonusGold, junkGift:junkGift};
+  },
+
+  init: function(){
+    this.load();
+    UI.renderStatus();
+    UI.renderBuffs();
+    if(this.state.floor===1 && Object.keys(this.state.foodDex).length===0){
+      UI.log("mood","🔮","「阿毛之塔」的大門緩緩開啟……傳說爬到 <b class='hl-blush'>9999 層</b>，就能抵達那間傳說中的鮮茶道。");
+    } else {
+      UI.log("mood","🔮","阿毛抖了抖身上的灰塵，準備從第 "+this.state.floor+" 層繼續出發。");
+    }
+    var checkin = this.dailyCheckIn();
+    if(checkin){
+      UI.renderStatus();
+      setTimeout(function(){ UI.showDailyCheckIn(checkin); }, 500);
+    }
+  },
+
+  save: function(){
+    try{ localStorage.setItem("AmaoTowerSave_v2", JSON.stringify(this.state)); }catch(e){}
+  },
+  load: function(){
+    var raw = null;
+    try{ raw = localStorage.getItem("AmaoTowerSave_v2"); }catch(e){}
+    if(raw){
+      try{ this.state = Object.assign(this.defaultState(), JSON.parse(raw)); }
+      catch(e){ this.state = this.defaultState(); }
+    } else {
+      this.state = this.defaultState();
+    }
+  },
+  reset: function(){
+    this.state = this.defaultState();
+    this.save();
+    location.reload();
+  },
+
+  weightedPick: function(list){
+    var total = 0; list.forEach(function(i){total+=i.w||1;});
+    var r = Math.random()*total;
+    for(var i=0;i<list.length;i++){
+      r -= (list[i].w||1);
+      if(r<=0) return list[i];
+    }
+    return list[list.length-1];
+  },
+
+  rollFood: function(){
+    var q = this.weightedPick(QUALITY);
+    var a = AROMA[Math.floor(Math.random()*AROMA.length)];
+    var b = BASE[Math.floor(Math.random()*BASE.length)];
+    var key = q.name+"|"+a.name+"|"+b.name;
+    var entry = this.state.foodDex[key];
+    if(!entry){
+      entry = {count:0, quality:q.name, aroma:a.name, base:b.name, tier:q.tier, stat:a.stat, ico:b.ico};
+      this.state.foodDex[key] = entry;
+    }
+    entry.count++;
+    return {key:key, entry:entry, isNew: entry.count===1};
+  },
+
+  effectMagnitude: function(tier){
+    return tier===1?0.05:(tier===2?0.10:0.18);
+  },
+  healAmount: function(tier){
+    return tier===1?15:(tier===2?30:54);
+  },
+
+  eatFood: function(key){
+    var entry = this.state.foodDex[key];
+    if(!entry || entry.count<=0) return;
+    entry.count--;
+    var c = this.computed();
+    if(entry.stat==="heal"){
+      var amt = this.healAmount(entry.tier);
+      this.state.hp = Math.min(c.hpMax, this.state.hp+amt);
+      UI.log("loot","💗","阿毛吃下了 <b class='hl-sage'>"+entry.quality+entry.aroma+entry.base+"</b>，回復了 <b class='hl'>"+amt+"</b> 點體力。");
+    } else {
+      this.state.buffs.push({stat:entry.stat, magnitude:this.effectMagnitude(entry.tier), floorsLeft:5});
+      var meta = STAT_META[entry.stat];
+      UI.log("loot",meta.ico,"阿毛吃下了 <b class='hl-sage'>"+entry.quality+entry.aroma+entry.base+"</b>，獲得「"+meta.label+"」加成，持續 5 層。");
+    }
+    this.save();
+    UI.renderStatus();
+    UI.renderBuffs();
+  },
+
+  findJunkDef: function(id){
+    return JUNK_POOL.filter(function(j){return j.id===id;})[0];
+  },
+  addJunk: function(id){
+    var entry = this.state.junkDex[id];
+    if(!entry){ entry = {count:0}; this.state.junkDex[id] = entry; }
+    entry.count++;
+    return {entry:entry, isNew: entry.count===1};
+  },
+  rollJunk: function(){
+    var def = this.weightedPick(JUNK_POOL);
+    var r = this.addJunk(def.id);
+    return {id:def.id, def:def, entry:r.entry, isNew:r.isNew};
+  },
+  useMinigameReward: function(id, reward){
+    var entry = this.state.junkDex[id];
+    if(!entry || entry.count<=0) return;
+    entry.count--;
+    this.state.gold += reward;
+    this.save();
+    UI.renderStatus();
+  },
+
+  tickBuffs: function(){
+    this.state.buffs = this.state.buffs.filter(function(b){
+      b.floorsLeft--;
+      return b.floorsLeft>0;
+    });
+  },
+
+  checkTitleUnlock: function(){
+    for(var i=TITLES.length-1;i>=0;i--){
+      if(this.state.floor>=TITLES[i].floor && i>this.state.titleIdx){
+        this.state.titleIdx = i;
+        UI.log("milestone","🏅","阿毛的努力被看見了！解鎖新頭銜：<b class='hl-blush'>【"+TITLES[i].name+"】</b>");
+        UI.toast("🏅","解鎖頭銜","「"+TITLES[i].name+"」");
+        return true;
+      }
+    }
+    return false;
+  },
+
+  nextMilestoneFloor: function(){
+    var f = this.state.floor;
+    var next10 = Math.ceil((f+1)/10)*10;
+    var nextTitle = 9999;
+    for(var i=0;i<TITLES.length;i++){ if(TITLES[i].floor>f){nextTitle=TITLES[i].floor;break;} }
+    return Math.min(next10, nextTitle);
+  },
+
+  battle: function(onDone){
+    var self = this;
+    var c = this.computed();
+    var floor = this.state.floor;
+    var lvl = Math.max(1, Math.ceil(floor/10));
+    var mDef = MONSTER_LIST[Math.floor(Math.random()*MONSTER_LIST.length)];
+    var monster = {
+      name: MONSTER_PREFIX[Math.floor(Math.random()*MONSTER_PREFIX.length)] + mDef.name,
+      ico: mDef.ico,
+      hp: 22 + lvl*9,
+      hpMax: 22 + lvl*9,
+      atk: 4 + lvl*2
+    };
+    UI.log("battle","⚔️","遭遇了 <b class='hl-blush'>"+monster.name+"</b>！（HP "+monster.hp+"）");
+    UI.enterBattleView(monster);
+
+    var rounds = 0, maxRounds = 4, pDmgTotal = 0, mDmgTotal = 0;
+
+    function step(){
+      if(monster.hp>0 && self.state.hp>0 && rounds<maxRounds){
+        rounds++;
+        var isCrit = Math.random() < c.crit;
+        var dmg = Math.round((c.atk + Math.random()*4) * (isCrit?1.8:1));
+        monster.hp = Math.max(0, monster.hp - dmg); pDmgTotal += dmg;
+
+        if(monster.hp>0){
+          var taken = Math.max(1, Math.round(monster.atk*(1-c.def) - Math.random()*2));
+          self.state.hp -= taken; mDmgTotal += taken;
+        }
+        UI.updateFighters(monster, true);
+        setTimeout(step, 420);
+        return;
+      }
+      finish();
+    }
+
+    function finish(){
+      if(monster.hp>0 && self.state.hp>0){
+        var finalDmg = Math.round(c.atk*1.4);
+        monster.hp = Math.max(0, monster.hp - finalDmg); pDmgTotal += finalDmg;
+        UI.updateFighters(monster, true);
+      }
+      setTimeout(function(){
+        UI.exitBattleView();
+        if(self.state.hp<=0){
+          self.state.hp = Math.max(1, Math.round(c.hpMax*0.1));
+          UI.log("battle","💥","阿毛總共造成 "+pDmgTotal+" 傷害，也承受了 "+mDmgTotal+" 點反擊，體力見底……勉強撐了下來。");
+        } else if(monster.hp<=0){
+          var goldGain = Math.round((8+lvl*4) * c.goldRate);
+          self.state.gold += goldGain;
+          UI.log("battle","🏆","擊敗了 <b class='hl-blush'>"+monster.name+"</b>！造成 "+pDmgTotal+" 傷害、承受 "+mDmgTotal+" 點反擊，獲得 <b class='hl'>"+goldGain+"</b> 金幣。");
+        } else {
+          UI.log("battle","🌀","與 "+monster.name+" 打得難分難解，雙方互有損傷後，怪物先撤退了。");
+        }
+        onDone();
+      }, 460);
+    }
+
+    setTimeout(step, 320);
+  },
+
+  moodEvent: function(){
+    var line = MOOD_LINES[Math.floor(Math.random()*MOOD_LINES.length)];
+    UI.log("mood","🐾", line);
+  },
+
+  goldEvent: function(){
+    var c = this.computed();
+    var amt = Math.round((15+Math.random()*20) * c.goldRate);
+    this.state.gold += amt;
+    UI.log("gold","💰","阿毛在階梯縫隙裡撿到了 <b class='hl'>"+amt+"</b> 枚金幣。");
+  },
+
+  lootEvent: function(){
+    var r = this.rollFood();
+    var e = r.entry;
+    var meta = STAT_META[e.stat];
+    var fullName = e.quality+e.aroma+e.base;
+    UI.log("loot", e.ico, "阿毛在轉角發現了 <b class='hl-sage'>"+fullName+"</b>"+(r.isNew?"（圖鑑新紀錄！）":"")+"。");
+    UI.toast(e.ico, (r.isNew?"新發現":"獲得食材"), fullName);
+  },
+
+  junkLootEvent: function(){
+    var r = this.rollJunk();
+    var isRare = r.def.type==="match" || r.def.type==="slide";
+    UI.log("loot", r.def.ico, "阿毛翻到了 <b class='hl-sage'>"+r.def.name+"</b>"+(r.isNew?"（戰利品新紀錄！）":"")+(isRare?"　✨稀有物品！":"")+"。");
+    UI.toast(r.def.ico, (r.isNew?"新發現":"撿到雜物"), r.def.name);
+  },
+
+  busy: false,
+
+  roll: function(){
+    if(this.state.hp<=0 || this.busy) return;
+    var step = Math.floor(Math.random()*6)+1;
+    this.state.floor += step;
+    this.tickBuffs();
+
+    UI.bumpSprite();
+    UI.log("mood","🎲","阿毛前進了 "+step+" 層，來到第 <b class='hl'>"+this.state.floor+"</b> 層。");
+    UI.renderStatus();
+
+    var r = Math.random();
+    var self = this;
+    if(r < 0.28){
+      this.busy = true;
+      UI.renderStatus();
+      this.battle(function(){ self.busy = false; self.afterEvent(); });
+      return;
+    }
+    else if(r < 0.52){ this.lootEvent(); }
+    else if(r < 0.72){ this.junkLootEvent(); }
+    else if(r < 0.86){ this.goldEvent(); }
+    else if(r < 0.95){ this.moodEvent(); }
+
+    this.afterEvent();
+  },
+
+  afterEvent: function(){
+    var titleUp = this.checkTitleUnlock();
+    if(!titleUp && this.state.floor % 10 === 0 && this.state.lastMilestone !== this.state.floor){
+      this.state.lastMilestone = this.state.floor;
+      var c = this.computed();
+      var bonus = Math.round(20 * c.goldRate);
+      this.state.gold += bonus;
+      this.state.hp = Math.min(c.hpMax, this.state.hp + Math.round(c.hpMax*0.15));
+      UI.log("milestone","🎁","抵達第 "+this.state.floor+" 層的里程碑！獲得 <b class='hl'>"+bonus+"</b> 金幣與體力回復。");
+    }
+
+    if(this.state.floor>=9999 && !this.state.endingSeen){
+      this.state.endingSeen = true;
+      setTimeout(function(){ UI.showEnding(); }, 400);
+    }
+
+    this.save();
+    UI.renderStatus();
+    UI.renderBuffs();
+  },
+
+  buyItem: function(id){
+    var item = SHOP_ITEMS.filter(function(i){return i.id===id;})[0];
+    if(!item) return;
+    var cost = item.price + (this.state.shopOwned[id]||0) * Math.round(item.price*0.6);
+    if(this.state.gold < cost) return false;
+    this.state.gold -= cost;
+    this.state.shopOwned[id] = (this.state.shopOwned[id]||0)+1;
+    item.apply(this.state);
+    this.save();
+    UI.renderStatus();
+    return true;
+  }
+};
+
+/* =========================================================
+   UI 層
+   ========================================================= */
+var UI = {
+  activeModal: null,
+  activeMerchant: null,
+  foodTab: "inv",
+  lootTab: "inv",
+
+  log: function(type, ico, html){
+    var list = document.getElementById("log-list");
+    var e = document.createElement("div");
+    e.className = "log-entry "+type;
+    e.innerHTML = '<span class="log-ico">'+ico+'</span><span>'+html+'</span>';
+    list.insertBefore(e, list.firstChild);
+    while(list.children.length>60){ list.removeChild(list.lastChild); }
+  },
+
+  toast: function(ico, tag, text){
+    var zone = document.getElementById("toast-zone");
+    var t = document.createElement("div");
+    t.className = "ticket";
+    t.innerHTML = '<span class="ico">'+ico+'</span><span>'+tag+'　<b>'+text+'</b></span>';
+    zone.appendChild(t);
+    setTimeout(function(){ if(t.parentNode) t.parentNode.removeChild(t); }, 3100);
+  },
+
+  bumpSprite: function(){
+    var s = document.getElementById("amao-sprite");
+    s.style.transform = "translateY(-18px) scale(1.12)";
+    setTimeout(function(){ s.style.transform = "translateY(0) scale(1)"; }, 220);
+  },
+
+  enterBattleView: function(monster){
+    document.getElementById("idle-view").style.display = "none";
+    var arena = document.getElementById("battle-arena");
+    document.getElementById("fighter-monster-ico").innerText = monster.ico;
+    document.getElementById("fighter-monster-hp").style.width = "100%";
+    document.getElementById("fighter-amao-hp").style.width = "100%";
+    arena.style.display = "flex";
+  },
+  updateFighters: function(monster, clash){
+    var c = Game.computed();
+    var playerPct = Math.max(0, Math.round((Game.state.hp/c.hpMax)*100));
+    var monPct = Math.max(0, Math.round((monster.hp/monster.hpMax)*100));
+    document.getElementById("fighter-amao-hp").style.width = playerPct+"%";
+    document.getElementById("fighter-monster-hp").style.width = monPct+"%";
+    if(clash){
+      var left = document.getElementById("fighter-amao");
+      var right = document.getElementById("fighter-monster");
+      left.classList.remove("clash"); right.classList.remove("clash");
+      void left.offsetWidth;
+      left.classList.add("clash"); right.classList.add("clash");
+    }
+  },
+  exitBattleView: function(){
+    document.getElementById("battle-arena").style.display = "none";
+    document.getElementById("idle-view").style.display = "flex";
+  },
+
+  renderStatus: function(){
+    var st = Game.state, c = Game.computed();
+    document.getElementById("floor-mark").innerText = String(st.floor).padStart(4,"0");
+    document.getElementById("amao-label").innerText = "第 "+st.floor+" 層";
+    document.getElementById("hp-text").innerText = Math.max(0,st.hp)+" / "+c.hpMax;
+    document.getElementById("hp-chip").className = "status-chip"+(st.hp < c.hpMax*0.25 ? " low":"");
+    document.getElementById("gold-text").innerText = st.gold.toLocaleString();
+    document.getElementById("title-text").innerText = TITLES[st.titleIdx].name;
+
+    var next = Game.nextMilestoneFloor();
+    var remain = Math.max(0, next - st.floor);
+    document.getElementById("progress-text").innerText = remain<=0 ? "即將抵達里程碑！" : ("距離下個里程碑還有 "+remain+" 層");
+    var pct = Math.max(4, Math.min(100, 100 - (remain/10)*100));
+    document.getElementById("progress-bar").style.width = pct+"%";
+
+    var badge = document.getElementById("bag-badge");
+    var foodCount = 0;
+    Object.keys(st.foodDex).forEach(function(k){ foodCount += st.foodDex[k].count; });
+    if(foodCount>0){ badge.style.display="block"; badge.innerText = foodCount>99?"99+":foodCount; }
+    else { badge.style.display="none"; }
+
+    var lootBadge = document.getElementById("loot-badge");
+    var junkCount = 0;
+    Object.keys(st.junkDex).forEach(function(k){ junkCount += st.junkDex[k].count; });
+    if(junkCount>0){ lootBadge.style.display="block"; lootBadge.innerText = junkCount>99?"99+":junkCount; }
+    else { lootBadge.style.display="none"; }
+
+    var diceBtn = document.getElementById("dice-btn");
+    diceBtn.disabled = st.hp<=0 || Game.busy;
+  },
+
+  renderBuffs: function(){
+    var row = document.getElementById("buff-row");
+    row.innerHTML = "";
+    Game.state.buffs.forEach(function(b){
+      var meta = STAT_META[b.stat];
+      var chip = document.createElement("span");
+      chip.className = "buff-chip";
+      chip.innerText = meta.ico+" "+meta.label+" +"+Math.round(b.magnitude*100)+"%（"+b.floorsLeft+"層）";
+      row.appendChild(chip);
+    });
+  },
+
+  openModal: function(type){
+    this.activeModal = type;
+    if(type==="shop"){ this.activeMerchant = Game.todayMerchant(); }
+    document.getElementById("modal-mask").classList.add("show");
+    this.renderModal(type);
+  },
+  closeModal: function(){
+    document.getElementById("modal-mask").classList.remove("show");
+    this.activeModal = null;
+  },
+
+  renderModal: function(type){
+    var title = document.getElementById("modal-title");
+    var body = document.getElementById("modal-body");
+    body.innerHTML = "";
+
+    if(type==="food"){
+      title.innerText = "🍱 阿毛的美食";
+      var totalCombos = QUALITY.length*AROMA.length*BASE.length;
+      var foundCount = Object.keys(Game.state.foodDex).length;
+
+      var tabWrap = document.createElement("div");
+      tabWrap.className = "food-tabs";
+      var invBtn = document.createElement("div");
+      invBtn.className = "food-tab-btn"+(this.foodTab==="inv"?" active":"");
+      invBtn.innerText = "庫存";
+      var dexBtn = document.createElement("div");
+      dexBtn.className = "food-tab-btn"+(this.foodTab==="dex"?" active":"");
+      dexBtn.innerText = "圖鑑（"+foundCount+" / "+totalCombos+"）";
+      invBtn.onclick = function(){ UI.foodTab="inv"; UI.renderModal("food"); };
+      dexBtn.onclick = function(){ UI.foodTab="dex"; UI.renderModal("food"); };
+      tabWrap.appendChild(invBtn); tabWrap.appendChild(dexBtn);
+      body.appendChild(tabWrap);
+
+      var grid = document.createElement("div"); grid.className="grid4";
+      var keys = this.foodTab==="inv"
+        ? Object.keys(Game.state.foodDex).filter(function(k){return Game.state.foodDex[k].count>0;})
+        : Object.keys(Game.state.foodDex);
+
+      if(keys.length===0){
+        grid.innerHTML = this.foodTab==="inv"
+          ? '<div class="empty-hint">庫存空空的……<br>去爬塔試試手氣吧！</div>'
+          : '<div class="empty-hint">圖鑑還是空的，爬塔途中會隨機發現各種美食組合，共有 '+totalCombos+' 種等你收集！</div>';
+      } else {
+        keys.forEach(function(k){
+          var e = Game.state.foodDex[k];
+          var slot = document.createElement("div");
+          slot.className = "dex-slot found";
+          slot.innerHTML = '<span class="ico">'+e.ico+'</span><span>'+e.quality.slice(0,2)+e.base+'</span>'+(e.count>0?'<span class="count">x'+e.count+'</span>':'');
+          slot.onclick = function(){ UI.openFoodDetail(k); };
+          grid.appendChild(slot);
+        });
+      }
+      body.appendChild(grid);
+      return;
+    }
+
+    if(type==="loot"){
+      title.innerText = "🎒 阿毛的戰利品";
+      var totalJunk = JUNK_POOL.length;
+      var foundJunk = Object.keys(Game.state.junkDex).length;
+
+      var tabWrap2 = document.createElement("div");
+      tabWrap2.className = "food-tabs";
+      var invBtn2 = document.createElement("div");
+      invBtn2.className = "food-tab-btn"+(this.lootTab==="inv"?" active":"");
+      invBtn2.innerText = "庫存";
+      var dexBtn2 = document.createElement("div");
+      dexBtn2.className = "food-tab-btn"+(this.lootTab==="dex"?" active":"");
+      dexBtn2.innerText = "圖鑑（"+foundJunk+" / "+totalJunk+"）";
+      invBtn2.onclick = function(){ UI.lootTab="inv"; UI.renderModal("loot"); };
+      dexBtn2.onclick = function(){ UI.lootTab="dex"; UI.renderModal("loot"); };
+      tabWrap2.appendChild(invBtn2); tabWrap2.appendChild(dexBtn2);
+      body.appendChild(tabWrap2);
+
+      var grid5 = document.createElement("div"); grid5.className="grid4";
+      var jkeys = this.lootTab==="inv"
+        ? Object.keys(Game.state.junkDex).filter(function(k){return Game.state.junkDex[k].count>0;})
+        : Object.keys(Game.state.junkDex);
+
+      if(jkeys.length===0){
+        grid5.innerHTML = this.lootTab==="inv"
+          ? '<div class="empty-hint">背包空空的……<br>爬塔途中順手翻翻，說不定能撿到什麼。</div>'
+          : '<div class="empty-hint">圖鑑還是空的，塔裡到處都是小東西，共有 '+totalJunk+' 種等你發現！</div>';
+      } else {
+        jkeys.forEach(function(k){
+          var def = Game.findJunkDef(k);
+          var entry = Game.state.junkDex[k];
+          var slot = document.createElement("div");
+          slot.className = "dex-slot found";
+          slot.innerHTML = '<span class="ico">'+def.ico+'</span><span>'+def.name+'</span>'+(entry.count>0?'<span class="count">x'+entry.count+'</span>':'');
+          slot.onclick = function(){ UI.openLootDetail(k); };
+          grid5.appendChild(slot);
+        });
+      }
+      body.appendChild(grid5);
+      return;
+    }
+
+    if(type==="titles"){
+      title.innerText = "🏅 阿毛的傳奇稱號";
+      var grid3 = document.createElement("div"); grid3.className="grid4";
+      TITLES.forEach(function(t,i){
+        var unlocked = i<=Game.state.titleIdx;
+        var slot = document.createElement("div");
+        slot.className = "dex-slot"+(unlocked?" found":" locked")+(i===Game.state.titleIdx?" active-title":"");
+        slot.innerHTML = '<span class="ico">'+(unlocked?"🏅":"🔒")+'</span><span>'+(unlocked?t.name:"????")+'</span>';
+        slot.onclick = function(){ UI.openTitleDetail(i); };
+        grid3.appendChild(slot);
+      });
+      body.appendChild(grid3);
+      return;
+    }
+
+    if(type==="shop"){
+      var m = this.activeMerchant || (this.activeMerchant = Game.todayMerchant());
+      title.innerText = "🛒 "+m.name+" 的移動商店";
+
+      var card = document.createElement("div");
+      card.className = "merchant-card";
+      card.style.borderLeftColor = m.color;
+      card.innerHTML =
+        '<div class="merchant-top">'+
+          '<span class="ico">'+m.ico+'</span>'+
+          '<div><div class="merchant-name" style="color:'+m.color+'">'+m.name+'</div><div class="merchant-tag">'+m.tag+'　・　今日當班</div></div>'+
+        '</div>'+
+        '<div class="merchant-line" id="npc-line">「'+m.welcome[Math.floor(Math.random()*m.welcome.length)]+'」</div>';
+      body.appendChild(card);
+
+      var hint = document.createElement("div");
+      hint.style = "font-size:0.68em;color:var(--muted);text-align:center;margin-bottom:10px;";
+      hint.innerText = "每天輪一位老闆當班，隔天回來可能會遇到別人喔";
+      body.appendChild(hint);
+
+      var itemsWrap = document.createElement("div");
+      itemsWrap.className = "shop-items";
+      var todayItems = SHOP_ITEMS.filter(function(item){ return item.owner===m.id; });
+      todayItems.forEach(function(item){
+        var owned = Game.state.shopOwned[item.id]||0;
+        var cost = item.price + owned*Math.round(item.price*0.6);
+        var afford = Game.state.gold>=cost;
+        var row = document.createElement("div");
+        row.className = "shop-item"+(afford?"":" afford-no");
+        row.innerHTML =
+          '<span class="ico">'+item.ico+'</span>'+
+          '<div class="info"><div class="name">'+item.name+(owned?'（已購 '+owned+'）':'')+'</div><div class="desc">'+item.desc+'</div></div>'+
+          '<div class="price">💰'+cost+'</div>';
+        row.onclick = function(){
+          var line = document.getElementById("npc-line");
+          if(Game.buyItem(item.id)){
+            line.innerText = "「"+m.buy[Math.floor(Math.random()*m.buy.length)]+"」";
+            UI.log("gold","🛍️","向 "+m.name+" 購買了 <b class='hl-sage'>"+item.name+"</b>。");
+            UI.renderModal("shop");
+          } else {
+            line.innerText = "「"+m.poor[Math.floor(Math.random()*m.poor.length)]+"」";
+          }
+        };
+        itemsWrap.appendChild(row);
+      });
+      body.appendChild(itemsWrap);
+      return;
+    }
+
+    if(type==="system"){
+      title.innerText = "⚙️ 系統設定";
+      var wrap = document.createElement("div");
+      wrap.innerHTML =
+        '<div style="font-size:0.8em;color:var(--muted);line-height:1.8;margin-bottom:16px;">存檔會自動保存在此裝置的瀏覽器中。若要開始全新的冒險，可以在下方重置進度。</div>'+
+        '<div id="reset-step1">'+
+          '<button class="eat-btn" style="background:var(--danger);color:#2A1414;" id="reset-ask-btn">重置進度，重新開始</button>'+
+        '</div>'+
+        '<div id="reset-step2" style="display:none;">'+
+          '<div style="font-size:0.82em;color:var(--ivory);background:var(--panel);border-radius:10px;padding:12px 14px;margin-bottom:10px;line-height:1.6;">確定要重置所有進度嗎？樓層、金幣、圖鑑與稱號都會清空，此動作無法復原。</div>'+
+          '<div style="display:flex;gap:10px;">'+
+            '<button class="eat-btn" style="background:var(--panel-2);color:var(--ivory);flex:1;" id="reset-cancel-btn">再想想</button>'+
+            '<button class="eat-btn" style="background:var(--danger);color:#2A1414;flex:1;" id="reset-confirm-btn">確定重置</button>'+
+          '</div>'+
+        '</div>';
+      body.appendChild(wrap);
+      document.getElementById("reset-ask-btn").onclick = function(){
+        document.getElementById("reset-step1").style.display = "none";
+        document.getElementById("reset-step2").style.display = "block";
+      };
+      document.getElementById("reset-cancel-btn").onclick = function(){
+        document.getElementById("reset-step2").style.display = "none";
+        document.getElementById("reset-step1").style.display = "block";
+      };
+      document.getElementById("reset-confirm-btn").onclick = function(){
+        Game.reset();
+      };
+      return;
+    }
+  },
+
+  openFoodDetail: function(key){
+    var e = Game.state.foodDex[key];
+    var meta = STAT_META[e.stat];
+    var effectText = e.stat==="heal"
+      ? "食用後立即回復 <b class='hl'>"+Game.healAmount(e.tier)+"</b> 點體力。"
+      : "食用後獲得「"+meta.label+"」+"+Math.round(Game.effectMagnitude(e.tier)*100)+"%，持續 5 層。";
+
+    document.getElementById("modal-title").innerText = "美食詳情";
+    var body = document.getElementById("modal-body");
+    body.innerHTML =
+      '<div class="food-detail">'+
+        '<span class="ico">'+e.ico+'</span>'+
+        '<div style="font-weight:900;font-size:1.05em;">'+e.quality+e.aroma+e.base+'</div>'+
+        '<div class="tag-line">'+
+          '<span class="tag-pill tag-q">'+e.quality+'</span>'+
+          '<span class="tag-pill tag-a">'+e.aroma+'</span>'+
+          '<span class="tag-pill tag-b">'+e.base+'</span>'+
+        '</div>'+
+        '<div class="food-effect">'+meta.ico+' '+effectText+'<br><span style="color:var(--muted);">目前持有 x'+e.count+'</span></div>'+
+        '<button class="eat-btn" id="eat-btn" '+(e.count<=0?"disabled":"")+'>食用一份</button>'+
+      '</div>';
+    document.getElementById("eat-btn").onclick = function(){
+      Game.eatFood(key);
+      UI.openFoodDetail(key);
+    };
+  },
+
+  openLootDetail: function(key){
+    var def = Game.findJunkDef(key);
+    var entry = Game.state.junkDex[key];
+    var isGame = def.type==="match" || def.type==="slide";
+
+    document.getElementById("modal-title").innerText = "戰利品詳情";
+    var body = document.getElementById("modal-body");
+    body.innerHTML =
+      '<div class="loot-detail">'+
+        '<span class="ico">'+def.ico+'</span>'+
+        '<div style="font-weight:900;font-size:1.05em;">'+def.name+'</div>'+
+        '<div class="desc">'+def.desc+'<br><span style="color:var(--muted);">目前持有 x'+entry.count+'</span></div>'+
+        (isGame
+          ? '<button class="eat-btn" id="mg-start-btn" '+(entry.count<=0?"disabled":"")+'>開始挑戰</button>'
+          : '')+
+      '</div>';
+    if(isGame){
+      document.getElementById("mg-start-btn").onclick = function(){
+        UI.closeModal();
+        if(def.type==="match") MiniGame.startMatch(key);
+        else MiniGame.startSlide(key);
+      };
+    }
+  },
+
+  openTitleDetail: function(idx){
+    var t = TITLES[idx];
+    var unlocked = idx<=Game.state.titleIdx;
+    var isCurrent = idx===Game.state.titleIdx;
+    document.getElementById("modal-title").innerText = "稱號詳情";
+    var body = document.getElementById("modal-body");
+    if(!unlocked){
+      body.innerHTML = '<div class="title-detail"><div class="name">？？？</div><div class="desc">爬到第 '+t.floor+' 層即可解鎖此稱號。</div></div>';
+      return;
+    }
+    body.innerHTML =
+      '<div class="title-detail">'+
+        '<div class="name">'+t.name+'</div>'+
+        '<div class="desc">'+t.desc+'</div>'+
+        '<div class="stat-line"><span>體力上限</span><span>'+t.hpMax+'</span></div>'+
+        '<div class="stat-line"><span>攻擊力</span><span>'+t.atk+'</span></div>'+
+        '<div class="stat-line"><span>防禦</span><span>'+Math.round(t.def*100)/100+'</span></div>'+
+        '<div class="stat-line"><span>金幣加成</span><span>x'+t.goldRate+'</span></div>'+
+        '<div class="stat-line"><span>幸運</span><span>+'+Math.round(t.luck*100)+'%</span></div>'+
+        (isCurrent
+          ? '<button class="wear-btn" disabled>目前佩戴中</button>'
+          : '<div style="text-align:center;font-size:0.72em;color:var(--muted);margin-top:12px;">已解鎖・持續生效中的稱號會隨爬塔進度自動晉升</div>')+
+      '</div>';
+  },
+
+  showEnding: function(){
+    document.getElementById("ending-mask").classList.add("show");
+    var colors = ["🌸","✨","🧋"];
+    for(var i=0;i<50;i++){
+      (function(i){
+        setTimeout(function(){
+          var p = document.createElement("div");
+          p.className = "particle";
+          p.innerText = colors[Math.floor(Math.random()*colors.length)];
+          p.style.left = Math.random()*100+"vw";
+          p.style.fontSize = (Math.random()*20+14)+"px";
+          var dur = Math.random()*2.4+2.2;
+          p.style.animationDuration = dur+"s";
+          document.body.appendChild(p);
+          setTimeout(function(){ if(p.parentNode) p.parentNode.removeChild(p); }, dur*1000);
+        }, i*70);
+      })(i);
+    }
+  },
+  closeEnding: function(){
+    document.getElementById("ending-mask").classList.remove("show");
+  },
+
+  showDailyCheckIn: function(info){
+    var descHtml = "已經連續回來 <b class='hl-blush'>"+info.streak+"</b> 天了！獲得 <b class='hl'>"+info.gold+"</b> 金幣。";
+    if(info.junkGift){
+      descHtml += "<br>連續簽到滿 "+info.streak+" 天，額外獲得稀有戰利品「"+info.junkGift.name+"」！";
+    }
+    document.getElementById("daily-desc").innerHTML = descHtml;
+    document.getElementById("daily-mask").classList.add("show");
+    UI.log("milestone","📅","今日簽到！連續第 <b class='hl-blush'>"+info.streak+"</b> 天，獲得 <b class='hl'>"+info.gold+"</b> 金幣。");
+  },
+  closeDailyCheckIn: function(){
+    document.getElementById("daily-mask").classList.remove("show");
+  }
+};
+
+/* =========================================================
+   小遊戲：翻牌配對 ＋ 推盤玩具
+   ========================================================= */
+var MiniGame = {
+  currentKey: null,
+  matchState: null,
+  slideState: null,
+
+  open: function(title){
+    document.getElementById("minigame-title").innerText = title;
+    document.getElementById("minigame-mask").classList.add("show");
+  },
+  close: function(){
+    document.getElementById("minigame-mask").classList.remove("show");
+  },
+
+  /* ---- 翻牌配對 ---- */
+  startMatch: function(key){
+    this.currentKey = key;
+    var pairsCount = 6;
+    var emojiPool = ["🍎","🍊","🍋","🍇","🍓","🍑","🍒","🍉","🥝","🍍"];
+    var pool = emojiPool.slice();
+    for(var i=pool.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=pool[i]; pool[i]=pool[j]; pool[j]=t; }
+    var chosen = pool.slice(0,pairsCount);
+    var cards = chosen.concat(chosen);
+    for(i=cards.length-1;i>0;i--){ j=Math.floor(Math.random()*(i+1)); t=cards[i]; cards[i]=cards[j]; cards[j]=t; }
+
+    this.matchState = {
+      cards: cards.map(function(e){ return {emoji:e, flipped:false, matched:false}; }),
+      flippedIdx: [], tries: 0, matchedCount: 0, pairsCount: pairsCount, locked: false
+    };
+    this.open("🃏 翻牌配對");
+    this.renderMatch();
+  },
+
+  renderMatch: function(){
+    var st = this.matchState;
+    var body = document.getElementById("minigame-body");
+    var html = '<div class="mg-info">翻牌次數：<b>'+st.tries+'</b>　配對進度：<b>'+st.matchedCount+' / '+st.pairsCount+'</b></div>';
+    html += '<div class="mg-card-grid">';
+    st.cards.forEach(function(c, i){
+      var cls = "mg-card"+(c.matched?" matched":(c.flipped?" flipped":""));
+      html += '<div class="'+cls+'" data-i="'+i+'">'+((c.flipped||c.matched)?c.emoji:"❔")+'</div>';
+    });
+    html += '</div>';
+    body.innerHTML = html;
+
+    var cardsEls = body.querySelectorAll(".mg-card");
+    for(var k=0;k<cardsEls.length;k++){
+      (function(el){
+        el.onclick = function(){ MiniGame.flipCard(parseInt(el.getAttribute("data-i"),10)); };
+      })(cardsEls[k]);
+    }
+  },
+
+  flipCard: function(i){
+    var st = this.matchState;
+    if(st.locked) return;
+    var c = st.cards[i];
+    if(c.flipped || c.matched) return;
+    c.flipped = true;
+    st.flippedIdx.push(i);
+    this.renderMatch();
+
+    if(st.flippedIdx.length===2){
+      st.locked = true;
+      st.tries++;
+      var a = st.cards[st.flippedIdx[0]], b = st.cards[st.flippedIdx[1]];
+      if(a.emoji===b.emoji){
+        a.matched = true; b.matched = true;
+        st.matchedCount++;
+        st.flippedIdx = [];
+        st.locked = false;
+        this.renderMatch();
+        if(st.matchedCount>=st.pairsCount){
+          setTimeout(function(){ MiniGame.finishMatch(); }, 300);
+        }
+      } else {
+        setTimeout(function(){
+          a.flipped = false; b.flipped = false;
+          st.flippedIdx = [];
+          st.locked = false;
+          MiniGame.renderMatch();
+        }, 700);
+      }
+    }
+  },
+
+  finishMatch: function(){
+    var st = this.matchState;
+    var extra = Math.max(0, st.tries - st.pairsCount);
+    var reward = Math.min(1000, Math.max(200, 1000 - extra*80));
+    Game.useMinigameReward(this.currentKey, reward);
+    var body = document.getElementById("minigame-body");
+    body.innerHTML =
+      '<div class="mg-result">'+
+        '<div class="big">🎉</div>'+
+        '<div>全部配對成功！共翻了 '+st.tries+' 次。</div>'+
+        '<div class="reward">獲得 💰 '+reward+' 金幣</div>'+
+        '<button onclick="MiniGame.close()">收下獎勵</button>'+
+      '</div>';
+    UI.log("loot","🃏","阿毛完成了翻牌配對！翻了 "+st.tries+" 次，獲得 <b class='hl'>"+reward+"</b> 金幣。");
+  },
+
+  /* ---- 推盤玩具（用合法隨機移動洗牌，保證一定有解） ---- */
+  startSlide: function(key){
+    this.currentKey = key;
+    var size = 4;
+    var tiles = [];
+    for(var i=1;i<size*size;i++){ tiles.push(i); }
+    tiles.push(0);
+
+    var blankIdx = tiles.length-1;
+    var lastMove = -1;
+    for(var m=0;m<150;m++){
+      var neighbors = this.slideNeighbors(blankIdx, size).filter(function(n){ return n!==lastMove; });
+      var pick = neighbors[Math.floor(Math.random()*neighbors.length)];
+      tiles[blankIdx] = tiles[pick];
+      tiles[pick] = 0;
+      lastMove = blankIdx;
+      blankIdx = pick;
+    }
+
+    this.slideState = { tiles:tiles, size:size, moves:0, blankIdx:blankIdx };
+    this.open("🧩 推盤玩具");
+    this.renderSlide();
+  },
+
+  slideNeighbors: function(idx, size){
+    var arr = [];
+    var row = Math.floor(idx/size), col = idx%size;
+    if(row>0) arr.push(idx-size);
+    if(row<size-1) arr.push(idx+size);
+    if(col>0) arr.push(idx-1);
+    if(col<size-1) arr.push(idx+1);
+    return arr;
+  },
+
+  renderSlide: function(){
+    var st = this.slideState;
+    var body = document.getElementById("minigame-body");
+    var html = '<div class="mg-info">步數：<b>'+st.moves+'</b></div>';
+    html += '<div class="mg-slide-grid">';
+    st.tiles.forEach(function(v, i){
+      html += v===0 ? ('<div class="mg-tile blank" data-i="'+i+'"></div>') : ('<div class="mg-tile" data-i="'+i+'">'+v+'</div>');
+    });
+    html += '</div>';
+    body.innerHTML = html;
+
+    var tileEls = body.querySelectorAll(".mg-tile");
+    for(var k=0;k<tileEls.length;k++){
+      (function(el){
+        el.onclick = function(){ MiniGame.moveTile(parseInt(el.getAttribute("data-i"),10)); };
+      })(tileEls[k]);
+    }
+  },
+
+  moveTile: function(i){
+    var st = this.slideState;
+    if(st.tiles[i]===0) return;
+    var neighbors = this.slideNeighbors(st.blankIdx, st.size);
+    if(neighbors.indexOf(i)===-1) return;
+    st.tiles[st.blankIdx] = st.tiles[i];
+    st.tiles[i] = 0;
+    st.blankIdx = i;
+    st.moves++;
+    this.renderSlide();
+
+    var solved = true;
+    for(var k=0;k<st.tiles.length-1;k++){ if(st.tiles[k]!==k+1){ solved=false; break; } }
+    if(solved){ setTimeout(function(){ MiniGame.finishSlide(); }, 250); }
+  },
+
+  finishSlide: function(){
+    var st = this.slideState;
+    var par = 40;
+    var extra = Math.max(0, st.moves - par);
+    var reward = Math.min(1000, Math.max(200, 1000 - extra*8));
+    Game.useMinigameReward(this.currentKey, reward);
+    var body = document.getElementById("minigame-body");
+    body.innerHTML =
+      '<div class="mg-result">'+
+        '<div class="big">🎉</div>'+
+        '<div>推盤拼好了！共花了 '+st.moves+' 步。</div>'+
+        '<div class="reward">獲得 💰 '+reward+' 金幣</div>'+
+        '<button onclick="MiniGame.close()">收下獎勵</button>'+
+      '</div>';
+    UI.log("loot","🧩","阿毛完成了推盤玩具！花了 "+st.moves+" 步，獲得 <b class='hl'>"+reward+"</b> 金幣。");
+  }
+};
+
+document.getElementById("amao-sprite").addEventListener("click", function(){
+  Game.state.gold += 5;
+  UI.log("gold","🐾","阿毛開心地搖了搖尾巴，順手撿到了 <b class='hl'>5</b> 枚金幣。");
+  Game.save();
+  UI.renderStatus();
+  UI.bumpSprite();
+});
+
+Game.init();
+</script>
+</body>
+</html>
