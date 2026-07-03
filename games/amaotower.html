@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
-<title>阿毛之塔｜9999層的鮮茶道之約</title>
+<title>阿毛之塔｜🐶 </title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Chiron+Gorund+TC:wght@400;700;900&family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Serif+TC:ital,wght@0,700;0,900;1,700;1,900&display=swap" rel="stylesheet">
@@ -70,7 +70,15 @@ body{
     radial-gradient(ellipse at 50% 20%, rgba(168,191,160,0.10), transparent 60%),
     linear-gradient(180deg, var(--ink) 0%, var(--ink-2) 100%);
   overflow:hidden;
+  transition:background 1s;
 }
+#stage.tea-shop-mode{
+  background:
+    radial-gradient(ellipse at 50% 15%, rgba(239,195,114,0.20), transparent 65%),
+    linear-gradient(180deg, #241C12 0%, #2E2013 100%);
+}
+#stage.tea-shop-mode .floor-mark{ color:rgba(239,195,114,0.07); }
+#stage.tea-shop-mode .amao-label{ background:var(--blush); box-shadow:0 3px 0 var(--blush-deep); color:#2A1620; }
 .floor-mark{
   position:absolute;top:50%;left:50%;transform:translate(-50%,-54%);
   font-family:"Noto Serif TC",serif;font-weight:900;font-style:italic;
@@ -147,8 +155,8 @@ body{
 .nav-btn .ico{font-size:1.35em;}
 .nav-btn .lbl{font-size:0.62em;color:var(--muted);font-weight:700;}
 .nav-badge{
-  position:absolute;top:-4px;right:6px;background:var(--blush-deep);color:#2A1620;
-  font-size:0.6em;font-weight:900;padding:1px 6px;border-radius:10px;
+  position:absolute;top:6px;right:14px;background:var(--blush-deep);
+  width:9px;height:9px;border-radius:50%;border:2px solid var(--panel);
 }
 
 /* ---------- Modal ---------- */
@@ -260,6 +268,8 @@ body{
 #ending-mask.show{display:flex;}
 #daily-mask{position:fixed;inset:0;background:rgba(10,10,14,0.9);z-index:500;display:none;align-items:center;justify-content:center;padding:26px;}
 #daily-mask.show{display:flex;}
+#story-mask{position:fixed;inset:0;background:rgba(10,10,14,0.9);z-index:500;display:none;align-items:center;justify-content:center;padding:26px;}
+#story-mask.show{display:flex;}
 .ending-card{background:var(--ink-2);border:1px solid var(--blush-deep);border-radius:20px;padding:32px 24px;text-align:center;max-width:380px;}
 .ending-card .big-ico{font-size:3.2em;margin-bottom:10px;}
 .ending-card h2{font-family:"Noto Serif TC",serif;font-size:1.3em;color:var(--blush);margin-bottom:10px;}
@@ -329,6 +339,7 @@ body{
     <span class="status-chip" id="hp-chip"><span class="ico">⚡</span><span id="hp-text">100</span></span>
     <span class="status-chip"><span class="ico">💰</span><span id="gold-text">500</span></span>
     <span class="status-chip"><span class="ico">🏅</span><span id="title-text">新手爬塔狗</span></span>
+    <span class="status-chip" id="vip-chip" style="display:none;color:var(--honey);"><span class="ico">🧋</span><span>VIP</span></span>
   </div>
 </header>
 
@@ -397,8 +408,8 @@ body{
   <div class="ending-card">
     <div class="big-ico">🧋</div>
     <h2>塔頂的鮮茶道</h2>
-    <p>阿毛推開了第 9999 層的門，風鈴輕響。<br>那間一直傳說中的飲料店，真的在這裡——<br>店員遞來一杯冰涼的招牌茶，笑著說：「歡迎回家，阿毛。」</p>
-    <button onclick="UI.closeEnding()">繼續在塔裡散步</button>
+    <p>阿毛推開了第 9999 層的門，風鈴輕響。<br>那間一直傳說中的飲料店，真的在這裡——<br>店員遞來一杯冰涼的招牌茶，笑著說：「歡迎回家，阿毛。」<br>並遞上了一張閃閃發光的<b style="color:var(--honey);">鮮茶道VIP金卡</b>。</p>
+    <button onclick="UI.closeEnding()">收下金卡，繼續在塔裡散步</button>
   </div>
 </div>
 
@@ -408,6 +419,15 @@ body{
     <h2 id="daily-title">每日簽到</h2>
     <p id="daily-desc"></p>
     <button onclick="UI.closeDailyCheckIn()">開始今天的冒險</button>
+  </div>
+</div>
+
+<div id="story-mask">
+  <div class="ending-card">
+    <div class="big-ico" id="story-ico">🧋</div>
+    <h2 id="story-title">續攤時光</h2>
+    <p id="story-desc"></p>
+    <button onclick="UI.closeVipStory()">收下這份心意</button>
   </div>
 </div>
 
@@ -461,6 +481,53 @@ var TITLES = [
   {floor:9999, name:"鮮茶道貴賓",     desc:"傳說中飲料店的座上賓，僅此一位。", hpMax:400, atk:40, def:16, goldRate:1.60, luck:0.20, crit:0.18}
 ];
 
+/* =========================================================
+   成就徽章：純收藏、無數值效果，check(state, stats) 回傳 bool
+   ========================================================= */
+var ACHIEVEMENTS = [
+  // ---- 收集向 ----
+  {id:"first_kill",   name:"首戰告捷",   ico:"🗡️", desc:"第一次擊敗怪物。",             check:function(s,st){ return st.monsterKills>=1; }},
+  {id:"veteran",       name:"百戰老兵",   ico:"🎖️", desc:"累積擊敗100隻怪物。",           check:function(s,st){ return st.monsterKills>=100; }},
+  {id:"near_death",    name:"瀕死生還",   ico:"⚕️", desc:"戰鬥中體力見底，勉強撐過。",     check:function(s,st){ return st.nearDeathCount>=1; }},
+  {id:"food_50",       name:"食譜大全",   ico:"🍽️", desc:"美食圖鑑收集達50種。",           check:function(s,st){ return Object.keys(s.foodDex).length>=50; }},
+  {id:"food_100",      name:"老饕等級",   ico:"🍜", desc:"美食圖鑑收集達100種。",          check:function(s,st){ return Object.keys(s.foodDex).length>=100; }},
+  {id:"food_200",      name:"美食傳說",   ico:"👑", desc:"美食圖鑑收集達200種。",          check:function(s,st){ return Object.keys(s.foodDex).length>=200; }},
+  {id:"junk_complete", name:"收藏齊全",   ico:"🧺", desc:"一般雜物圖鑑全數收集齊全。",     check:function(s,st){ return Object.keys(s.junkDex).filter(function(k){return JUNK_ITEMS.some(function(j){return j.id===k;});}).length>=JUNK_ITEMS.length; }},
+  {id:"match_clear",   name:"牌桌高手",   ico:"🃏", desc:"完成一次翻牌配對。",             check:function(s,st){ return st.matchWins>=1; }},
+  {id:"slide_clear",   name:"拼圖玩家",   ico:"🧩", desc:"完成一次推盤玩具。",             check:function(s,st){ return st.slideWins>=1; }},
+  {id:"both_games",    name:"遊戲雙全",   ico:"🎮", desc:"兩個小遊戲都通關過。",           check:function(s,st){ return st.matchWins>=1 && st.slideWins>=1; }},
+  {id:"streak_7",       name:"七日之約",   ico:"📅", desc:"連續簽到7天。",                 check:function(s,st){ return s.loginStreak>=7; }},
+  {id:"streak_30",      name:"月度常客",   ico:"🗓️", desc:"連續簽到30天。",                check:function(s,st){ return s.loginStreak>=30; }},
+  {id:"all_merchants",  name:"四方來訪",   ico:"🤝", desc:"跟四位商人都買過東西。",         check:function(s,st){ var ids=["pumpkin","lulumida","sheep","tuna"]; return ids.every(function(id){return (st.merchantBuyCounts[id]||0)>=1;}); }},
+  {id:"vip_complete",   name:"VIP收藏家",  ico:"💳", desc:"購買鮮茶道無限暢飲卡。",         check:function(s,st){ return (s.shopOwned.vip_pass||0)>=1; }},
+  {id:"reached_top",    name:"鮮茶道貴賓", ico:"🧋", desc:"抵達第9999層。",                check:function(s,st){ return s.endingSeen===true; }},
+  // ---- 無厘頭向 ----
+  {id:"night_owl",      name:"夜貓子",     ico:"🌙", desc:"凌晨0點到5點之間投過骰子。",     check:function(s,st){ return st.nightRoll===true; }},
+  {id:"narcissist",     name:"自戀狗",     ico:"🐾", desc:"戳阿毛頭像超過50次。",           check:function(s,st){ return st.petClicks>=50; }},
+  {id:"clingy",         name:"太黏人了",   ico:"💕", desc:"戳阿毛頭像超過200次。",          check:function(s,st){ return st.petClicks>=200; }},
+  {id:"weird_taste",    name:"重口味",     ico:"🍪", desc:"點開「發霉的餅乾」看詳情。",     check:function(s,st){ return st.viewedMoldyCookie===true; }},
+  {id:"unfinished",     name:"時尚未完成", ico:"💍", desc:"撿到「單邊的耳環」。",           check:function(s,st){ return st.pickedEarring===true; }},
+  {id:"wasted_luck",    name:"躺著也中獎", ico:"🎰", desc:"回收5個雜物，換回自己早就有的東西。", check:function(s,st){ return st.recycleDuplicateHit===true; }},
+  {id:"caffeine",       name:"咖啡因中毒", ico:"☕", desc:"遇過咖啡因怪獸超過10次。",       check:function(s,st){ return st.coffeeEncounters>=10; }},
+  {id:"big_spender",    name:"散財童子",   ico:"💸", desc:"單日在商店花超過5000金幣。",     check:function(s,st){ return st.dailySpendMax>=5000; }},
+  {id:"brink",          name:"鬼門關前走一遭", ico:"🩹", desc:"HP只剩1還硬要投骰子。",     check:function(s,st){ return st.rolledAtHp1===true; }},
+  {id:"sock_collector", name:"襪子收藏家", ico:"🧦", desc:"「爸爸的舊襪子」持有數達10。",   check:function(s,st){ return (s.junkDex.sock && s.junkDex.sock.count>=10); }},
+  {id:"slow_pilgrim",   name:"龜速朝聖者", ico:"🐢", desc:"連續三次骰子都只走1步。",        check:function(s,st){ return st.consecutiveOneStepMax>=3; }},
+  {id:"window_shop",    name:"只逛不買",   ico:"🙈", desc:"進商店逛完，一件都沒買就關掉。", check:function(s,st){ return st.windowShopped===true; }},
+  {id:"fumbler",        name:"手滑大師",   ico:"🫠", desc:"翻牌配對連續翻錯5次以上才過關。", check:function(s,st){ return st.matchMaxWrongFlips>=5; }},
+  {id:"legendary_taste",name:"傳說中的傳說", ico:"🍵", desc:"吃到一份「傳說的」等級美食。",  check:function(s,st){ return st.ateLegendaryFood===true; }},
+  {id:"zombie_hunter",  name:"殭屍剋星",   ico:"🧟", desc:"累積擊敗殭屍20隻。",             check:function(s,st){ return st.zombieKills>=20; }},
+  {id:"sheep_fan",      name:"羊羊的忠實粉絲", ico:"🐑", desc:"跟神秘的羊買東西超過5次。",  check:function(s,st){ return (st.merchantBuyCounts.sheep||0)>=5; }},
+  {id:"underdog",       name:"以卵擊石",   ico:"🥋", desc:"HP不到10%時還打贏一場戰鬥。",   check:function(s,st){ return st.underdogWin===true; }},
+  {id:"ocd_slider",     name:"強迫症患者", ico:"🧩", desc:"推盤玩具用45步以內完成。",       check:function(s,st){ return st.bestSlideMoves!==null && st.bestSlideMoves<=45; }},
+  {id:"flawless_match", name:"零失誤",     ico:"🎯", desc:"翻牌配對一次都沒翻錯就通關。",   check:function(s,st){ return st.hasFlawlessMatch===true; }},
+  {id:"archaeologist",  name:"業餘考古學家", ico:"🗺️", desc:"同一天內撿到地圖碎片跟生鏽鑰匙。", check:function(s,st){ return st.archaeologistDone===true; }},
+  {id:"lucky_roll",     name:"手氣爆棚",   ico:"🎲", desc:"單次骰子直接走滿6步。",          check:function(s,st){ return st.rolledMax6===true; }},
+  {id:"spaced_out",     name:"邊爬邊放空", ico:"😴", desc:"連續10次骰子都沒有任何收穫。",   check:function(s,st){ return st.consecutiveNothingMax>=10; }},
+  {id:"sweet_tooth",    name:"甜到蛀牙",   ico:"🍭", desc:"一天內吃了5份美食。",            check:function(s,st){ return st.dailyFoodMax>=5; }},
+  {id:"bug_life",       name:"漏洞人生",   ico:"🐛", desc:"跟鮪魚堡買系統漏洞包買到第3次。", check:function(s,st){ return (s.shopOwned.bug||0)>=3; }},
+  {id:"broken_mirror",  name:"破鏡難圓",   ico:"🖼️", desc:"點開「半張全家福」看了3次以上。", check:function(s,st){ return st.familyPhotoViews>=3; }}
+];
 var MONSTER_PREFIX = ["兇猛的","中二的","閃閃發光的","莫蘭迪色的","來自深淵的","忘記吃早餐的","看起來很香的","透明的","脾氣暴躁的"];
 var MONSTER_LIST = [
   {name:"殭屍", ico:"🧟"}, {name:"加班小精靈", ico:"🧚"}, {name:"香菜惡魔", ico:"🌿"},
@@ -472,20 +539,32 @@ var MERCHANTS = [
   { id:"pumpkin", name:"南瓜老闆", ico:"🎃", tag:"熱血肌肉派", color:"#E39B6B",
     welcome:["哈！今天的二頭肌也在尖叫嗎，阿毛！","流汗吧！這是通往肌肉殿堂的門票！","哈！雖然我是南瓜，但我有一顆肉食的心。","阿毛，你的四肢太纖細了，快吃點東西！","哈！今天也打算爬到肌肉斷裂為止嗎？","來，這塊肉能讓你的深蹲多重五公斤！","哈！別看滷滷米達那副冷冰冰的樣子，她推舉推不動五公斤。","鮪魚堡蓋這座塔的時候，居然沒留一間健身房！","哈！我彷彿已經看到你的戰鬥力在膨脹了！"],
     buy:["哈！正確的投資，這會變成你的肌肉！","識貨！這裡充滿了燃燒的鬥魂！","很好，這才是阿毛之塔該有的氣勢！","哈！吃吧、喝吧，然後去把這座塔拆了！","很好，我彷彿看到你的戰鬥力在膨脹！"],
-    poor:["哈……沒錢買肉？去操場跑五十圈再來！","這點錢連啞鈴的灰塵都買不起。","肌肉不騙人，但你的錢包在騙人。","哈！你是來參觀我完美的肌肉，還是來買東西的？","窮則思變，變則深蹲，快去賺錢！"] },
+    poor:["哈……沒錢買肉？去操場跑五十圈再來！","這點錢連啞鈴的灰塵都買不起。","肌肉不騙人，但你的錢包在騙人。","哈！你是來參觀我完美的肌肉，還是來買東西的？","窮則思變，變則深蹲，快去賺錢！"],
+    vip:["哈！VIP金卡！你已經是能陪我一起破紀錄的等級了！","看到這張卡我都想哭了，阿毛真的爬到頂了。","哈！鮮茶道的招牌茶配蛋白粉，我試過，別學我。"] },
   { id:"lulumida", name:"滷滷米達", ico:"🐶", tag:"冷靜理智派", color:"#8CA0B3",
     welcome:["（推眼鏡）戰損率 15%，還在磨蹭什麼？","這件裝備結構嚴密，希望你能理解它。","中二？這叫『漆黑的意志』，你懂什麼。","阿毛，如果你被打敗了，我會把你做成數據標本。","這座塔的邏輯漏洞很多，比如我為什麼要在這裡賣東西。","別把你那沾滿口水的肉球碰到我的附魔台。","嘖，南瓜老闆的汗水味飄過來了，真是不理智。","羊的稿子又斷更了，我考慮用代碼強行催稿。","鮪魚堡，你這座塔的對齊方式簡直是視覺災難。"],
     buy:["明智的選擇，雖然花光了你微薄的存款。","（標記中）交易完成，別讓它在你手裡哭泣。","數據顯示，這會提升你 0.5% 的生存機率。","哼，既然你誠心誠意地買了，我就稍微期待一下吧。","這件物品的性能，剛好能彌補你那拙劣的技術。"],
-    poor:["預算不足，這是典型的理財失敗案例。","你的餘額讓我的分析引擎感到悲哀。","窮困並不可怕，可怕的是你還想買奢侈品。","金幣不夠的話，就請退到黃線以後，別擋路。","你知道金幣是通往塔頂的唯一邏輯嗎？你沒有。"] },
+    poor:["預算不足，這是典型的理財失敗案例。","你的餘額讓我的分析引擎感到悲哀。","窮困並不可怕，可怕的是你還想買奢侈品。","金幣不夠的話，就請退到黃線以後，別擋路。","你知道金幣是通往塔頂的唯一邏輯嗎？你沒有。"],
+    vip:["（罕見地微笑）數據顯示，你是唯一抵達終點的樣本。","VIP卡的加密等級比我的附魔台還高，有點意思。","恭喜，這是我少數願意主動說出口的兩個字。"] },
   { id:"sheep", name:"神秘的羊", ico:"🐑", tag:"怯弱友善創作者", color:"#C9A6C4",
     welcome:["啊……阿毛……今天也有在努力嗎？","這是我畫圖畫到一半想出來的料理……應該能吃吧？","對不起，我又斷更了，這份道具算你便宜一點。","如果你爬到塔頂，能幫我看看那裡的風景嗎？","滷滷米達的眼神好可怕，阿毛救救我……","那個……你喜歡看我畫的小狗冒險故事嗎？","鮪魚堡說要幫我蓋專屬工作室，但她看起來在騙我……","南瓜老闆，請不要再叫我一起去做臥推了，我會斷掉。","百合花開的地方，就是我的天堂……啊，被你聽到了。"],
     buy:["謝謝你支持我的創作，這對我真的很重要。","阿毛人真好，這個特製包裝就送你吧。","嗚嗚，終於有第一筆收入了，今晚可以加菜了。","希望這個道具能保護你，我也會幫你祈禱的。","那個……如果好用的話，下次再來喔。"],
-    poor:["對不起……雖然我想送你，但我會被大家罵的。","那個……金幣好像不太夠，我也很為難呢。","嗚……沒關係，等你賺夠錢再來，我會一直都在的。","錢不夠嗎？那、那你看一眼我的草稿當作補償？","抱歉……這份素材的成本真的很貴……"] },
+    poor:["對不起……雖然我想送你，但我會被大家罵的。","那個……金幣好像不太夠，我也很為難呢。","嗚……沒關係，等你賺夠錢再來，我會一直都在的。","錢不夠嗎？那、那你看一眼我的草稿當作補償？","抱歉……這份素材的成本真的很貴……"],
+    vip:["阿毛你真的到了塔頂……我畫的結局是對的呢，嗚嗚。","VIP金卡……可以借我畫一張嗎？當作紀念。","那個，我把你畫進了故事的最後一頁，謝謝你陪我走到這裡。"] },
   { id:"tuna", name:"鮪魚堡", ico:"🍔", tag:"建造者／腹黑開朗", color:"#9FB08A",
     welcome:["Welcome！歡迎來到我親手蓋的塔！","今天的塔也運作得很混亂呢，太令人開心了。","我是這座塔的造物主，也是你最大的陰影喔。","如果你卡在牆裡，那一定是你的錯，不是 BUG。","你想通關？別傻了，我還沒寫完結局呢！","這裡的所有邏輯都是我亂編的，你居然玩得下去？","你想要更強大的力量嗎？去跟滷滷米達撒嬌看看？","羊，你再不更新，我就把下一關的怪物全改成羊喔。","南瓜老闆，你的肌肉太佔記憶體了，快縮小一點！"],
     buy:["成交！這道具是我昨晚喝醉時寫的，祝你好運！","恭喜你成為這個實驗品的第一個使用者！","拿去吧，這是我特意留給阿毛的『後門』道具。","金幣入帳！我又可以去買新的低飽和度油漆了。","哈哈，你居然花錢買這個？真是太可愛了！"],
-    poor:["沒錢？那就去挑戰隱藏關卡賺錢啊！","金幣不足？這一定是平衡性做得太完美了。","哎呀，我看你的財務報表跟我的心情一樣不樂觀呢。","沒錢就退下吧，我正忙著在 100 樓放岩漿呢。","窮是暫時的，但沒錢是買不到我的怪東西的。"] }
+    poor:["沒錢？那就去挑戰隱藏關卡賺錢啊！","金幣不足？這一定是平衡性做得太完美了。","哎呀，我看你的財務報表跟我的心情一樣不樂觀呢。","沒錢就退下吧，我正忙著在 100 樓放岩漿呢。","窮是暫時的，但沒錢是買不到我的怪東西的。"],
+    vip:["你居然真的走到結局了！我原本以為那只是個彩蛋。","VIP卡是真的喔，不是我惡搞塞進去的道具。","歡迎回來，這次我保證鮮茶道那邊沒有 BUG。"] }
 ];
+
+/* ---- VIP限定：跟商人續攤的短篇小故事（每位限一次）---- */
+var VIP_STORIES = {
+  pumpkin: "南瓜老闆看到VIP卡整個燃起來，硬拉著阿毛去續攤——結果只是拖去隔壁健身房多做了兩組深蹲，阿毛全身痠痛地喝完了那杯茶。",
+  lulumida: "滷滷米達難得露出一絲微笑，遞給阿毛一份「數據分析過的推薦菜單」，附註寫著：招牌茶的甜度誤差值最小，建議正常糖。",
+  sheep: "羊小心翼翼地拿出一張自己畫的「鮮茶道貴賓限定」小卡當作贈品，畫裡的阿毛比本人可愛了三倍。",
+  tuna: "鮪魚堡直接把VIP卡拿去測試系統漏洞，卡片閃了兩下，吐出一杯免費的茶——鮪魚堡說這是「彩蛋」，不是 BUG。"
+};
 
 var SHOP_ITEMS = [
   {id:"whey",   name:"超濃縮乳清", ico:"🥛", price:280, desc:"體力上限 +20（永久）", owner:"pumpkin",  apply:function(s){s.bonusHpMax+=20;}},
@@ -495,8 +574,9 @@ var SHOP_ITEMS = [
   {id:"prayer", name:"斷更者的祈禱", ico:"📑", price:420, desc:"幸運 +4%（永久）",    owner:"sheep",    apply:function(s){s.bonusLuck+=0.04;}},
   {id:"blanket",name:"羊毛毯",     ico:"🧣", price:300, desc:"體力上限 +10（永久）",  owner:"sheep",    apply:function(s){s.bonusHpMax+=10;}},
   {id:"shield", name:"代碼防護罩", ico:"🛡️", price:520, desc:"防禦 +5%（永久）",      owner:"tuna",     apply:function(s){s.bonusDef+=0.05;}},
-  {id:"warp",   name:"塔的傳送後門", ico:"🎫", price:900, desc:"立即前進 20 層",      owner:"tuna",     apply:function(s){Game.state.floor+=20;}},
-  {id:"bug",    name:"系統漏洞包", ico:"🐛", price:600, desc:"立即獲得 300 金幣",     owner:"tuna",     apply:function(s){s.gold+=300;}}
+  {id:"warp",   name:"塔的傳送後門", ico:"🎫", price:900, desc:"立即前進 20 層",      owner:"tuna",     apply:function(s){Game.state.floor=Math.min(9999,Game.state.floor+20); Game.state.maxFloorReached=Math.max(Game.state.maxFloorReached,Game.state.floor);}},
+  {id:"bug",    name:"系統漏洞包", ico:"🐛", price:600, desc:"立即獲得 300 金幣",     owner:"tuna",     apply:function(s){s.gold+=300;}},
+  {id:"vip_pass",name:"鮮茶道無限暢飲卡", ico:"🧋", price:2000, desc:"傳說中的隱藏菜單，喝過的人都說讚。幸運+2%、金幣獲得+5%（永久）", owner:"vip", apply:function(s){s.bonusLuck+=0.02; s.bonusGoldRate+=0.05;}}
 ];
 
 var MOOD_LINES = [
@@ -527,15 +607,31 @@ var JUNK_ITEMS = [
   {id:"watch",   name:"沒有指針的錶", ico:"⌚", w:14, desc:"時間永遠停在某一刻，說不定剛剛好。"},
   {id:"earring", name:"單邊的耳環",   ico:"💎", w:12, desc:"閃閃發光，但不知道是誰遺落的。"},
   {id:"coupon",  name:"過期的優惠券", ico:"🧾", w:16, desc:"上面寫著「鮮茶道　買一送一」，可惜已經過期。"},
-  {id:"photo",   name:"半張全家福",   ico:"🖼️", w:10, desc:"畫面被撕去了一半，剩下的那半笑得很開心。"}
+  {id:"photo",   name:"半張全家福",   ico:"🖼️", w:10, desc:"畫面被撕去了一半，剩下的那半笑得很開心。"},
+  {id:"umbrella",name:"骨架彎掉的傘", ico:"☂️", w:14, desc:"下雨天撐開來，雨還是會滴到頭上。"},
+  {id:"marble",  name:"一顆彈珠",     ico:"🔮", w:16, desc:"透明的裡面藏著一小圈彩色漩渦。"},
+  {id:"badge",   name:"不知名的徽章", ico:"🎖️", w:12, desc:"上面的圖案已經磨到看不清楚了。"},
+  {id:"compass", name:"壞掉的指南針", ico:"🧭", w:12, desc:"指針轉呀轉，永遠指不出北方。"},
+  {id:"harmonica",name:"生鏽的口琴",  ico:"🎵", w:12, desc:"吹起來的音色有種懷舊的走音感。"},
+  {id:"envelope",name:"沒寄出的信",   ico:"✉️", w:12, desc:"信封上連收件人都沒寫。"},
+  {id:"bell",    name:"叮噹作響的鈴鐺", ico:"🔔", w:14, desc:"搖一搖，聲音清脆得讓人心情變好。"},
+  {id:"crayon",  name:"斷掉的蠟筆",   ico:"🖍️", w:16, desc:"只剩下一半長度，顏色是很難形容的莫蘭迪色。"},
+  {id:"stamp",   name:"稀有的郵票",   ico:"📮", w:10, desc:"看起來有點年份，說不定值點錢。"},
+  {id:"shell",   name:"一枚貝殼",     ico:"🐚", w:14, desc:"貼近耳朵，好像能聽到海浪聲。"},
+  {id:"lantern", name:"熄滅的小燈籠", ico:"🏮", w:12, desc:"點不亮了，但擺在窗邊還是很有氣氛。"},
+  {id:"ribbon",  name:"掉色的緞帶",   ico:"🎀", w:14, desc:"原本應該是很鮮豔的顏色。"},
+  {id:"cardgame",name:"缺一張的撲克牌", ico:"🂠", w:12, desc:"少了那張鬼牌，這副牌永遠湊不齊了。"},
+  {id:"umbrella2",name:"迷你紙傘",    ico:"🌂", w:10, desc:"裝飾用的，小到擋不住半滴雨。"},
+  {id:"medal",   name:"生鏽的小獎章", ico:"🏅", w:10, desc:"不知道是哪一年、哪一場比賽留下來的。"}
 ];
 
 /* ---- 戰利品：稀有小遊戲道具（消耗型，破關拿金幣）---- */
 var MINIGAME_ITEMS = [
-  {id:"cards",     name:"神秘的紙牌",   ico:"🃏", w:3, type:"match", desc:"攤開是一疊圖案卡片，翻牌配對，翻越少次獎勵越高。"},
-  {id:"slidepuzzle",name:"老舊的推盤玩具", ico:"🧩", w:3, type:"slide", desc:"滑動小方塊拼回順序，步數越少獎勵越高。"}
+  {id:"cards",     name:"神秘的紙牌",   ico:"🃏", type:"match", desc:"攤開是一疊圖案卡片，翻牌配對，翻越少次獎勵越高。"},
+  {id:"slidepuzzle",name:"老舊的推盤玩具", ico:"🧩", type:"slide", desc:"滑動小方塊拼回順序，步數越少獎勵越高。"}
 ];
 var JUNK_POOL = JUNK_ITEMS.concat(MINIGAME_ITEMS);
+var MINIGAME_CHANCE = 0.09; // 每次觸發「戰利品事件」時，獨立判定是否為小遊戲道具（不受JUNK_ITEMS數量影響）
 
 /* =========================================================
    狀態管理（單一事實來源）
@@ -557,7 +653,33 @@ var Game = {
       lastMilestone: 0,
       endingSeen: false,
       lastLoginDate: null,
-      loginStreak: 0
+      loginStreak: 0,
+      maxFloorReached: 1,
+      vipCard: false,
+      vipStorySeen: {},       // merchantId -> true
+      lastFreeTeaDate: null,
+      unseenFood: false,
+      unseenLoot: false,
+      achievements: {},       // id -> true
+      stats: {
+        monsterKills: 0, nearDeathCount: 0,
+        matchWins: 0, slideWins: 0,
+        merchantBuyCounts: {},
+        petClicks: 0,
+        nightRoll: false, viewedMoldyCookie: false, pickedEarring: false,
+        recycleDuplicateHit: false, coffeeEncounters: 0,
+        dailySpendToday: 0, dailySpendDate: null, dailySpendMax: 0,
+        rolledAtHp1: false,
+        consecutiveOneStep: 0, consecutiveOneStepMax: 0,
+        windowShopped: false, matchMaxWrongFlips: 0,
+        ateLegendaryFood: false, zombieKills: 0, underdogWin: false,
+        bestSlideMoves: null, hasFlawlessMatch: false,
+        archaeoDate: null, archaeoHasMap: false, archaeoHasKey: false, archaeologistDone: false,
+        rolledMax6: false,
+        consecutiveNothing: 0, consecutiveNothingMax: 0,
+        dailyFoodToday: 0, dailyFoodDate: null, dailyFoodMax: 0,
+        familyPhotoViews: 0
+      }
     };
   },
 
@@ -622,6 +744,7 @@ var Game = {
 
   init: function(){
     this.load();
+    UI.applyVipVisuals();
     UI.renderStatus();
     UI.renderBuffs();
     if(this.state.floor===1 && Object.keys(this.state.foodDex).length===0){
@@ -634,6 +757,7 @@ var Game = {
       UI.renderStatus();
       setTimeout(function(){ UI.showDailyCheckIn(checkin); }, 500);
     }
+    this.checkAchievements();
   },
 
   save: function(){
@@ -642,11 +766,22 @@ var Game = {
   load: function(){
     var raw = null;
     try{ raw = localStorage.getItem("AmaoTowerSave_v2"); }catch(e){}
+    var def = this.defaultState();
     if(raw){
-      try{ this.state = Object.assign(this.defaultState(), JSON.parse(raw)); }
-      catch(e){ this.state = this.defaultState(); }
+      try{
+        var parsed = JSON.parse(raw);
+        this.state = Object.assign(def, parsed);
+        this.state.stats = Object.assign(def.stats, parsed.stats||{});
+        this.state.shopOwned = Object.assign({}, def.shopOwned, parsed.shopOwned||{});
+        this.state.vipStorySeen = Object.assign({}, def.vipStorySeen, parsed.vipStorySeen||{});
+        this.state.achievements = Object.assign({}, def.achievements, parsed.achievements||{});
+        if(!this.state.maxFloorReached || this.state.maxFloorReached < this.state.floor){
+          this.state.maxFloorReached = this.state.floor;
+        }
+      }
+      catch(e){ this.state = def; }
     } else {
-      this.state = this.defaultState();
+      this.state = def;
     }
   },
   reset: function(){
@@ -676,6 +811,7 @@ var Game = {
       this.state.foodDex[key] = entry;
     }
     entry.count++;
+    this.state.unseenFood = true;
     return {key:key, entry:entry, isNew: entry.count===1};
   },
 
@@ -684,6 +820,14 @@ var Game = {
   },
   healAmount: function(tier){
     return tier===1?15:(tier===2?30:54);
+  },
+
+  bumpDailyCounter: function(field, dateField){
+    var today = this.todayKey();
+    var st = this.state.stats;
+    if(st[dateField] !== today){ st[dateField] = today; st[field] = 0; }
+    st[field]++;
+    return st[field];
   },
 
   eatFood: function(key){
@@ -700,9 +844,13 @@ var Game = {
       var meta = STAT_META[entry.stat];
       UI.log("loot",meta.ico,"阿毛吃下了 <b class='hl-sage'>"+entry.quality+entry.aroma+entry.base+"</b>，獲得「"+meta.label+"」加成，持續 5 層。");
     }
+    if(entry.quality==="傳說的"){ this.state.stats.ateLegendaryFood = true; }
+    var dailyFood = this.bumpDailyCounter("dailyFoodToday","dailyFoodDate");
+    this.state.stats.dailyFoodMax = Math.max(this.state.stats.dailyFoodMax, dailyFood);
     this.save();
     UI.renderStatus();
     UI.renderBuffs();
+    this.checkAchievements();
   },
 
   findJunkDef: function(id){
@@ -710,12 +858,29 @@ var Game = {
   },
   addJunk: function(id){
     var entry = this.state.junkDex[id];
+    var wasKnown = !!entry;
     if(!entry){ entry = {count:0}; this.state.junkDex[id] = entry; }
     entry.count++;
-    return {entry:entry, isNew: entry.count===1};
+    this.state.unseenLoot = true;
+
+    if(id==="earring"){ this.state.stats.pickedEarring = true; }
+    if(id==="mapscrap" || id==="key"){
+      var today = this.todayKey();
+      var st = this.state.stats;
+      if(st.archaeoDate !== today){ st.archaeoDate = today; st.archaeoHasMap=false; st.archaeoHasKey=false; }
+      if(id==="mapscrap") st.archaeoHasMap = true;
+      if(id==="key") st.archaeoHasKey = true;
+      if(st.archaeoHasMap && st.archaeoHasKey){ st.archaeologistDone = true; }
+    }
+    return {entry:entry, isNew: entry.count===1, wasKnown:wasKnown};
   },
   rollJunk: function(){
-    var def = this.weightedPick(JUNK_POOL);
+    var def = this.weightedPick(JUNK_ITEMS);
+    var r = this.addJunk(def.id);
+    return {id:def.id, def:def, entry:r.entry, isNew:r.isNew};
+  },
+  rollMinigameJunk: function(){
+    var def = MINIGAME_ITEMS[Math.floor(Math.random()*MINIGAME_ITEMS.length)];
     var r = this.addJunk(def.id);
     return {id:def.id, def:def, entry:r.entry, isNew:r.isNew};
   },
@@ -726,6 +891,79 @@ var Game = {
     this.state.gold += reward;
     this.save();
     UI.renderStatus();
+  },
+
+  recycleJunk: function(selectedIds){
+    if(selectedIds.length!==5) return null;
+    var self = this;
+    var counts = {};
+    selectedIds.forEach(function(id){ counts[id]=(counts[id]||0)+1; });
+    for(var id in counts){
+      var entry = this.state.junkDex[id];
+      if(!entry || entry.count<counts[id]) return null; // 材料不足，拒絕
+    }
+    for(id in counts){ this.state.junkDex[id].count -= counts[id]; }
+
+    var undiscovered = JUNK_ITEMS.filter(function(d){ return !self.state.junkDex[d.id]; });
+    var resultDef;
+    if(undiscovered.length>0 && Math.random()<0.7){
+      resultDef = undiscovered[Math.floor(Math.random()*undiscovered.length)];
+    } else {
+      resultDef = this.weightedPick(JUNK_ITEMS);
+    }
+    var wasOwnedBefore = !!(this.state.junkDex[resultDef.id] && this.state.junkDex[resultDef.id].count>0);
+    var r = this.addJunk(resultDef.id);
+    if(wasOwnedBefore){ this.state.stats.recycleDuplicateHit = true; }
+
+    this.save();
+    UI.renderStatus();
+    this.checkAchievements();
+    return {def:resultDef, isNew:r.isNew};
+  },
+
+  claimFreeTea: function(){
+    var today = this.todayKey();
+    if(this.state.lastFreeTeaDate === today) return false;
+    this.state.lastFreeTeaDate = today;
+    var c = this.computed();
+    this.state.hp = Math.min(c.hpMax, this.state.hp + Math.round(c.hpMax*0.25));
+    this.state.buffs.push({stat:"gold", magnitude:0.10, floorsLeft:8});
+    this.save();
+    UI.renderStatus();
+    UI.renderBuffs();
+    UI.log("milestone","🧋","阿毛喝下了今日的招待茶，體力回復不少，還感覺渾身充滿了幹勁。");
+    return true;
+  },
+
+  teleportTo: function(floor){
+    floor = Math.max(1, Math.min(this.state.maxFloorReached, Math.floor(floor)));
+    this.state.floor = floor;
+    this.save();
+    UI.renderStatus();
+    UI.log("milestone","🌀","阿毛踏進傳送門，一眨眼來到了第 <b class='hl-blush'>"+floor+"</b> 層。");
+    return floor;
+  },
+
+  checkAchievements: function(){
+    var self = this;
+    var newlyUnlocked = [];
+    ACHIEVEMENTS.forEach(function(a){
+      if(self.state.achievements[a.id]) return;
+      var ok = false;
+      try{ ok = a.check(self.state, self.state.stats); }catch(e){ ok = false; }
+      if(ok){
+        self.state.achievements[a.id] = true;
+        newlyUnlocked.push(a);
+      }
+    });
+    if(newlyUnlocked.length>0){
+      this.save();
+      newlyUnlocked.forEach(function(a){
+        UI.log("milestone", a.ico, "解鎖成就徽章：<b class='hl-blush'>「"+a.name+"」</b>　"+a.desc);
+        UI.toast(a.ico, "新成就", a.name);
+      });
+    }
+    return newlyUnlocked;
   },
 
   tickBuffs: function(){
@@ -768,6 +1006,9 @@ var Game = {
       hpMax: 22 + lvl*9,
       atk: 4 + lvl*2
     };
+    if(mDef.name==="咖啡因怪獸"){ this.state.stats.coffeeEncounters++; }
+    var startHpPct = this.state.hp / c.hpMax;
+
     UI.log("battle","⚔️","遭遇了 <b class='hl-blush'>"+monster.name+"</b>！（HP "+monster.hp+"）");
     UI.enterBattleView(monster);
 
@@ -801,10 +1042,14 @@ var Game = {
         UI.exitBattleView();
         if(self.state.hp<=0){
           self.state.hp = Math.max(1, Math.round(c.hpMax*0.1));
+          self.state.stats.nearDeathCount++;
           UI.log("battle","💥","阿毛總共造成 "+pDmgTotal+" 傷害，也承受了 "+mDmgTotal+" 點反擊，體力見底……勉強撐了下來。");
         } else if(monster.hp<=0){
           var goldGain = Math.round((8+lvl*4) * c.goldRate);
           self.state.gold += goldGain;
+          self.state.stats.monsterKills++;
+          if(mDef.name==="殭屍"){ self.state.stats.zombieKills++; }
+          if(startHpPct < 0.10){ self.state.stats.underdogWin = true; }
           UI.log("battle","🏆","擊敗了 <b class='hl-blush'>"+monster.name+"</b>！造成 "+pDmgTotal+" 傷害、承受 "+mDmgTotal+" 點反擊，獲得 <b class='hl'>"+goldGain+"</b> 金幣。");
         } else {
           UI.log("battle","🌀","與 "+monster.name+" 打得難分難解，雙方互有損傷後，怪物先撤退了。");
@@ -838,36 +1083,69 @@ var Game = {
   },
 
   junkLootEvent: function(){
-    var r = this.rollJunk();
-    var isRare = r.def.type==="match" || r.def.type==="slide";
-    UI.log("loot", r.def.ico, "阿毛翻到了 <b class='hl-sage'>"+r.def.name+"</b>"+(r.isNew?"（戰利品新紀錄！）":"")+(isRare?"　✨稀有物品！":"")+"。");
-    UI.toast(r.def.ico, (r.isNew?"新發現":"撿到雜物"), r.def.name);
+    var r;
+    if(Math.random() < MINIGAME_CHANCE){
+      r = this.rollMinigameJunk();
+      UI.log("loot", r.def.ico, "阿毛翻到了 <b class='hl-sage'>"+r.def.name+"</b>"+(r.isNew?"（戰利品新紀錄！）":"")+"　✨稀有物品！");
+      UI.toast(r.def.ico, (r.isNew?"新發現":"撿到雜物"), r.def.name);
+    } else {
+      r = this.rollJunk();
+      UI.log("loot", r.def.ico, "阿毛翻到了 <b class='hl-sage'>"+r.def.name+"</b>"+(r.isNew?"（戰利品新紀錄！）":"")+"。");
+      UI.toast(r.def.ico, (r.isNew?"新發現":"撿到雜物"), r.def.name);
+    }
   },
 
   busy: false,
 
   roll: function(){
     if(this.state.hp<=0 || this.busy) return;
+
+    if(this.state.hp===1){ this.state.stats.rolledAtHp1 = true; }
+    var hour = new Date().getHours();
+    if(hour>=0 && hour<5){ this.state.stats.nightRoll = true; }
+
     var step = Math.floor(Math.random()*6)+1;
-    this.state.floor += step;
+    if(step===6){ this.state.stats.rolledMax6 = true; }
+    if(step===1){
+      this.state.stats.consecutiveOneStep++;
+      this.state.stats.consecutiveOneStepMax = Math.max(this.state.stats.consecutiveOneStepMax, this.state.stats.consecutiveOneStep);
+    } else {
+      this.state.stats.consecutiveOneStep = 0;
+    }
+
+    var wasAtTop = this.state.floor >= 9999;
+    this.state.floor = Math.min(9999, this.state.floor + step);
+    this.state.maxFloorReached = Math.max(this.state.maxFloorReached, this.state.floor);
     this.tickBuffs();
 
     UI.bumpSprite();
-    UI.log("mood","🎲","阿毛前進了 "+step+" 層，來到第 <b class='hl'>"+this.state.floor+"</b> 層。");
+    if(wasAtTop){
+      UI.log("mood","🧋","阿毛在鮮茶道裡晃來晃去，順手續了一杯茶。");
+    } else {
+      UI.log("mood","🎲","阿毛前進了 "+step+" 層，來到第 <b class='hl'>"+this.state.floor+"</b> 層。");
+    }
     UI.renderStatus();
 
     var r = Math.random();
     var self = this;
+    var isNothingEvent = false;
     if(r < 0.28){
       this.busy = true;
       UI.renderStatus();
+      this.state.stats.consecutiveNothing = 0;
       this.battle(function(){ self.busy = false; self.afterEvent(); });
       return;
     }
-    else if(r < 0.52){ this.lootEvent(); }
-    else if(r < 0.72){ this.junkLootEvent(); }
-    else if(r < 0.86){ this.goldEvent(); }
-    else if(r < 0.95){ this.moodEvent(); }
+    else if(r < 0.52){ this.lootEvent(); this.state.stats.consecutiveNothing = 0; }
+    else if(r < 0.72){ this.junkLootEvent(); this.state.stats.consecutiveNothing = 0; }
+    else if(r < 0.86){ this.goldEvent(); this.state.stats.consecutiveNothing = 0; }
+    else if(r < 0.95){ this.moodEvent(); this.state.stats.consecutiveNothing = 0; }
+    else { isNothingEvent = true; }
+
+    if(isNothingEvent){
+      this.state.stats.consecutiveNothing++;
+      this.state.stats.consecutiveNothingMax = Math.max(this.state.stats.consecutiveNothingMax, this.state.stats.consecutiveNothing);
+    }
 
     this.afterEvent();
   },
@@ -879,30 +1157,50 @@ var Game = {
       var c = this.computed();
       var bonus = Math.round(20 * c.goldRate);
       this.state.gold += bonus;
-      this.state.hp = Math.min(c.hpMax, this.state.hp + Math.round(c.hpMax*0.15));
-      UI.log("milestone","🎁","抵達第 "+this.state.floor+" 層的里程碑！獲得 <b class='hl'>"+bonus+"</b> 金幣與體力回復。");
+      UI.log("milestone","🎁","抵達第 "+this.state.floor+" 層的里程碑！獲得 <b class='hl'>"+bonus+"</b> 金幣。");
     }
 
     if(this.state.floor>=9999 && !this.state.endingSeen){
       this.state.endingSeen = true;
+      this.state.vipCard = true;
+      UI.applyVipVisuals();
       setTimeout(function(){ UI.showEnding(); }, 400);
     }
 
     this.save();
     UI.renderStatus();
     UI.renderBuffs();
+    this.checkAchievements();
+  },
+
+  itemCost: function(item){
+    var owned = this.state.shopOwned[item.id]||0;
+    var cost = item.price + owned*Math.round(item.price*0.6);
+    if(this.state.vipCard){ cost = Math.round(cost*0.9); }
+    return cost;
   },
 
   buyItem: function(id){
     var item = SHOP_ITEMS.filter(function(i){return i.id===id;})[0];
-    if(!item) return;
-    var cost = item.price + (this.state.shopOwned[id]||0) * Math.round(item.price*0.6);
+    if(!item) return false;
+    var cost = this.itemCost(item);
     if(this.state.gold < cost) return false;
     this.state.gold -= cost;
     this.state.shopOwned[id] = (this.state.shopOwned[id]||0)+1;
     item.apply(this.state);
+
+    if(item.owner && item.owner!=="vip"){
+      this.state.stats.merchantBuyCounts[item.owner] = (this.state.stats.merchantBuyCounts[item.owner]||0)+1;
+    }
+    var today = this.todayKey();
+    var st = this.state.stats;
+    if(st.dailySpendDate !== today){ st.dailySpendDate = today; st.dailySpendToday = 0; }
+    st.dailySpendToday += cost;
+    st.dailySpendMax = Math.max(st.dailySpendMax, st.dailySpendToday);
+
     this.save();
     UI.renderStatus();
+    this.checkAchievements();
     return true;
   }
 };
@@ -915,6 +1213,9 @@ var UI = {
   activeMerchant: null,
   foodTab: "inv",
   lootTab: "inv",
+  titleTab: "journey",
+  recycleMode: false,
+  recycleSelected: {},
 
   log: function(type, ico, html){
     var list = document.getElementById("log-list");
@@ -975,6 +1276,7 @@ var UI = {
     document.getElementById("hp-chip").className = "status-chip"+(st.hp < c.hpMax*0.25 ? " low":"");
     document.getElementById("gold-text").innerText = st.gold.toLocaleString();
     document.getElementById("title-text").innerText = TITLES[st.titleIdx].name;
+    document.getElementById("vip-chip").style.display = st.vipCard ? "flex" : "none";
 
     var next = Game.nextMilestoneFloor();
     var remain = Math.max(0, next - st.floor);
@@ -982,20 +1284,17 @@ var UI = {
     var pct = Math.max(4, Math.min(100, 100 - (remain/10)*100));
     document.getElementById("progress-bar").style.width = pct+"%";
 
-    var badge = document.getElementById("bag-badge");
-    var foodCount = 0;
-    Object.keys(st.foodDex).forEach(function(k){ foodCount += st.foodDex[k].count; });
-    if(foodCount>0){ badge.style.display="block"; badge.innerText = foodCount>99?"99+":foodCount; }
-    else { badge.style.display="none"; }
-
-    var lootBadge = document.getElementById("loot-badge");
-    var junkCount = 0;
-    Object.keys(st.junkDex).forEach(function(k){ junkCount += st.junkDex[k].count; });
-    if(junkCount>0){ lootBadge.style.display="block"; lootBadge.innerText = junkCount>99?"99+":junkCount; }
-    else { lootBadge.style.display="none"; }
+    document.getElementById("bag-badge").style.display = st.unseenFood ? "block" : "none";
+    document.getElementById("loot-badge").style.display = st.unseenLoot ? "block" : "none";
 
     var diceBtn = document.getElementById("dice-btn");
     diceBtn.disabled = st.hp<=0 || Game.busy;
+  },
+
+  applyVipVisuals: function(){
+    var stage = document.getElementById("stage");
+    if(Game.state.vipCard){ stage.classList.add("tea-shop-mode"); }
+    else { stage.classList.remove("tea-shop-mode"); }
   },
 
   renderBuffs: function(){
@@ -1010,13 +1309,34 @@ var UI = {
     });
   },
 
+  shopPurchasedThisSession: false,
+
   openModal: function(type){
     this.activeModal = type;
-    if(type==="shop"){ this.activeMerchant = Game.todayMerchant(); }
+    if(type==="shop"){
+      this.activeMerchant = Game.todayMerchant();
+      this.shopPurchasedThisSession = false;
+    }
+    if(type==="food"){ Game.state.unseenFood = false; Game.save(); }
+    if(type==="loot"){ Game.state.unseenLoot = false; Game.save(); }
     document.getElementById("modal-mask").classList.add("show");
     this.renderModal(type);
+    UI.renderStatus();
+
+    if(type==="shop" && Game.state.vipCard){
+      var m = this.activeMerchant;
+      if(!Game.state.vipStorySeen[m.id]){
+        Game.state.vipStorySeen[m.id] = true;
+        Game.save();
+        setTimeout(function(){ UI.showVipStory(m); }, 350);
+      }
+    }
   },
   closeModal: function(){
+    if(this.activeModal==="shop" && !this.shopPurchasedThisSession){
+      Game.state.stats.windowShopped = true;
+      Game.checkAchievements();
+    }
     document.getElementById("modal-mask").classList.remove("show");
     this.activeModal = null;
   },
@@ -1058,7 +1378,7 @@ var UI = {
           var e = Game.state.foodDex[k];
           var slot = document.createElement("div");
           slot.className = "dex-slot found";
-          slot.innerHTML = '<span class="ico">'+e.ico+'</span><span>'+e.quality.slice(0,2)+e.base+'</span>'+(e.count>0?'<span class="count">x'+e.count+'</span>':'');
+          slot.innerHTML = '<span class="ico">'+e.ico+'</span><span>'+e.quality.slice(0,2)+e.base+'</span>';
           slot.onclick = function(){ UI.openFoodDetail(k); };
           grid.appendChild(slot);
         });
@@ -1069,8 +1389,8 @@ var UI = {
 
     if(type==="loot"){
       title.innerText = "🎒 阿毛的戰利品";
-      var totalJunk = JUNK_POOL.length;
-      var foundJunk = Object.keys(Game.state.junkDex).length;
+      var totalJunk = JUNK_ITEMS.length;
+      var foundJunk = Object.keys(Game.state.junkDex).filter(function(k){return JUNK_ITEMS.some(function(j){return j.id===k;});}).length;
 
       var tabWrap2 = document.createElement("div");
       tabWrap2.className = "food-tabs";
@@ -1080,16 +1400,40 @@ var UI = {
       var dexBtn2 = document.createElement("div");
       dexBtn2.className = "food-tab-btn"+(this.lootTab==="dex"?" active":"");
       dexBtn2.innerText = "圖鑑（"+foundJunk+" / "+totalJunk+"）";
-      invBtn2.onclick = function(){ UI.lootTab="inv"; UI.renderModal("loot"); };
-      dexBtn2.onclick = function(){ UI.lootTab="dex"; UI.renderModal("loot"); };
+      invBtn2.onclick = function(){ UI.lootTab="inv"; UI.recycleMode=false; UI.recycleSelected={}; UI.renderModal("loot"); };
+      dexBtn2.onclick = function(){ UI.lootTab="dex"; UI.recycleMode=false; UI.recycleSelected={}; UI.renderModal("loot"); };
       tabWrap2.appendChild(invBtn2); tabWrap2.appendChild(dexBtn2);
       body.appendChild(tabWrap2);
 
-      var grid5 = document.createElement("div"); grid5.className="grid4";
       var jkeys = this.lootTab==="inv"
         ? Object.keys(Game.state.junkDex).filter(function(k){return Game.state.junkDex[k].count>0;})
         : Object.keys(Game.state.junkDex);
 
+      if(this.lootTab==="inv"){
+        var recycleBar = document.createElement("div");
+        recycleBar.style = "display:flex;gap:8px;margin-bottom:12px;";
+        var toggleBtn = document.createElement("div");
+        toggleBtn.className = "food-tab-btn"+(this.recycleMode?" active":"");
+        toggleBtn.style.flex = "1";
+        toggleBtn.innerText = this.recycleMode ? "取消回收" : "♻️ 回收模式";
+        toggleBtn.onclick = function(){
+          UI.recycleMode = !UI.recycleMode;
+          UI.recycleSelected = {};
+          UI.renderModal("loot");
+        };
+        recycleBar.appendChild(toggleBtn);
+        body.appendChild(recycleBar);
+      }
+
+      if(this.recycleMode){
+        var totalSelected = Object.keys(this.recycleSelected).reduce(function(sum,k){ return sum+UI.recycleSelected[k]; }, 0);
+        var info = document.createElement("div");
+        info.className = "mg-info";
+        info.innerHTML = "選5個一般雜物來回收（小遊戲道具不能選）　已選 <b>"+totalSelected+" / 5</b>";
+        body.appendChild(info);
+      }
+
+      var grid5 = document.createElement("div"); grid5.className="grid4";
       if(jkeys.length===0){
         grid5.innerHTML = this.lootTab==="inv"
           ? '<div class="empty-hint">背包空空的……<br>爬塔途中順手翻翻，說不定能撿到什麼。</div>'
@@ -1098,28 +1442,96 @@ var UI = {
         jkeys.forEach(function(k){
           var def = Game.findJunkDef(k);
           var entry = Game.state.junkDex[k];
+          var isGameItem = def.type==="match" || def.type==="slide";
           var slot = document.createElement("div");
-          slot.className = "dex-slot found";
-          slot.innerHTML = '<span class="ico">'+def.ico+'</span><span>'+def.name+'</span>'+(entry.count>0?'<span class="count">x'+entry.count+'</span>':'');
-          slot.onclick = function(){ UI.openLootDetail(k); };
+          var selectedCount = UI.recycleSelected[k]||0;
+          var cls = "dex-slot found"+(UI.recycleMode && isGameItem ? " locked":"")+(selectedCount>0?" active-title":"");
+          slot.className = cls;
+          slot.innerHTML = '<span class="ico">'+def.ico+'</span><span>'+def.name+'</span>'+(selectedCount>0?'<span class="count">已選'+selectedCount+'</span>':'');
+          if(UI.recycleMode){
+            if(!isGameItem){
+              slot.onclick = function(){
+                var totalNow = Object.keys(UI.recycleSelected).reduce(function(sum,kk){ return sum+UI.recycleSelected[kk]; }, 0);
+                var cur = UI.recycleSelected[k]||0;
+                if(cur < entry.count && totalNow < 5){
+                  UI.recycleSelected[k] = cur+1;
+                } else {
+                  UI.recycleSelected[k] = 0;
+                }
+                UI.renderModal("loot");
+              };
+            }
+          } else {
+            slot.onclick = function(){ UI.openLootDetail(k); };
+          }
           grid5.appendChild(slot);
         });
       }
       body.appendChild(grid5);
+
+      if(this.recycleMode){
+        var totalSel = Object.keys(this.recycleSelected).reduce(function(sum,k){ return sum+UI.recycleSelected[k]; }, 0);
+        var confirmBtn = document.createElement("button");
+        confirmBtn.className = "eat-btn";
+        confirmBtn.style.marginTop = "6px";
+        confirmBtn.disabled = totalSel!==5;
+        confirmBtn.innerText = totalSel===5 ? "確認回收這5個" : "還需要選滿5個";
+        confirmBtn.onclick = function(){
+          var ids = [];
+          Object.keys(UI.recycleSelected).forEach(function(k){
+            for(var i=0;i<UI.recycleSelected[k];i++){ ids.push(k); }
+          });
+          var result = Game.recycleJunk(ids);
+          if(result){
+            UI.log("loot", result.def.ico, "回收了5個雜物，換到了 <b class='hl-sage'>"+result.def.name+"</b>"+(result.isNew?"（戰利品新紀錄！）":"")+"。");
+            UI.toast(result.def.ico, "回收成功", result.def.name);
+          }
+          UI.recycleMode = false;
+          UI.recycleSelected = {};
+          UI.renderModal("loot");
+        };
+        body.appendChild(confirmBtn);
+      }
       return;
     }
 
     if(type==="titles"){
-      title.innerText = "🏅 阿毛的傳奇稱號";
+      title.innerText = "🏅 阿毛的榮譽牆";
+      var achCount = Object.keys(Game.state.achievements).length;
+
+      var tabWrap3 = document.createElement("div");
+      tabWrap3.className = "food-tabs";
+      var jourBtn = document.createElement("div");
+      jourBtn.className = "food-tab-btn"+(this.titleTab==="journey"?" active":"");
+      jourBtn.innerText = "旅程稱號";
+      var achBtn = document.createElement("div");
+      achBtn.className = "food-tab-btn"+(this.titleTab==="ach"?" active":"");
+      achBtn.innerText = "成就徽章（"+achCount+" / "+ACHIEVEMENTS.length+"）";
+      jourBtn.onclick = function(){ UI.titleTab="journey"; UI.renderModal("titles"); };
+      achBtn.onclick = function(){ UI.titleTab="ach"; UI.renderModal("titles"); };
+      tabWrap3.appendChild(jourBtn); tabWrap3.appendChild(achBtn);
+      body.appendChild(tabWrap3);
+
       var grid3 = document.createElement("div"); grid3.className="grid4";
-      TITLES.forEach(function(t,i){
-        var unlocked = i<=Game.state.titleIdx;
-        var slot = document.createElement("div");
-        slot.className = "dex-slot"+(unlocked?" found":" locked")+(i===Game.state.titleIdx?" active-title":"");
-        slot.innerHTML = '<span class="ico">'+(unlocked?"🏅":"🔒")+'</span><span>'+(unlocked?t.name:"????")+'</span>';
-        slot.onclick = function(){ UI.openTitleDetail(i); };
-        grid3.appendChild(slot);
-      });
+      if(this.titleTab==="journey"){
+        TITLES.forEach(function(t,i){
+          var unlocked = i<=Game.state.titleIdx;
+          var slot = document.createElement("div");
+          slot.className = "dex-slot"+(unlocked?" found":" locked")+(i===Game.state.titleIdx?" active-title":"");
+          slot.innerHTML = '<span class="ico">'+(unlocked?"🏅":"🔒")+'</span><span>'+(unlocked?t.name:"????")+'</span>';
+          slot.onclick = function(){ UI.openTitleDetail(i); };
+          grid3.appendChild(slot);
+        });
+      } else {
+        ACHIEVEMENTS.forEach(function(a){
+          var unlocked = !!Game.state.achievements[a.id];
+          var slot = document.createElement("div");
+          slot.className = "dex-slot"+(unlocked?" found":" locked");
+          slot.innerHTML = '<span class="ico">'+(unlocked?a.ico:"🔒")+'</span><span>'+(unlocked?a.name:"？？？")+'</span>';
+          slot.onclick = function(){ UI.openAchievementDetail(a.id); };
+          grid3.appendChild(slot);
+        });
+      }
       body.appendChild(grid3);
       return;
     }
@@ -1127,6 +1539,9 @@ var UI = {
     if(type==="shop"){
       var m = this.activeMerchant || (this.activeMerchant = Game.todayMerchant());
       title.innerText = "🛒 "+m.name+" 的移動商店";
+
+      var useVipLine = Game.state.vipCard && m.vip && Math.random()<0.4;
+      var welcomeLine = useVipLine ? m.vip[Math.floor(Math.random()*m.vip.length)] : m.welcome[Math.floor(Math.random()*m.welcome.length)];
 
       var card = document.createElement("div");
       card.className = "merchant-card";
@@ -1136,7 +1551,7 @@ var UI = {
           '<span class="ico">'+m.ico+'</span>'+
           '<div><div class="merchant-name" style="color:'+m.color+'">'+m.name+'</div><div class="merchant-tag">'+m.tag+'　・　今日當班</div></div>'+
         '</div>'+
-        '<div class="merchant-line" id="npc-line">「'+m.welcome[Math.floor(Math.random()*m.welcome.length)]+'」</div>';
+        '<div class="merchant-line" id="npc-line">「'+welcomeLine+'」</div>';
       body.appendChild(card);
 
       var hint = document.createElement("div");
@@ -1149,17 +1564,18 @@ var UI = {
       var todayItems = SHOP_ITEMS.filter(function(item){ return item.owner===m.id; });
       todayItems.forEach(function(item){
         var owned = Game.state.shopOwned[item.id]||0;
-        var cost = item.price + owned*Math.round(item.price*0.6);
+        var cost = Game.itemCost(item);
         var afford = Game.state.gold>=cost;
         var row = document.createElement("div");
         row.className = "shop-item"+(afford?"":" afford-no");
         row.innerHTML =
           '<span class="ico">'+item.ico+'</span>'+
           '<div class="info"><div class="name">'+item.name+(owned?'（已購 '+owned+'）':'')+'</div><div class="desc">'+item.desc+'</div></div>'+
-          '<div class="price">💰'+cost+'</div>';
+          '<div class="price">'+(Game.state.vipCard?'<span style="opacity:0.5;text-decoration:line-through;font-size:0.85em;">💰'+(cost+Math.round(cost/9))+'</span> ':'')+'💰'+cost+'</div>';
         row.onclick = function(){
           var line = document.getElementById("npc-line");
           if(Game.buyItem(item.id)){
+            UI.shopPurchasedThisSession = true;
             line.innerText = "「"+m.buy[Math.floor(Math.random()*m.buy.length)]+"」";
             UI.log("gold","🛍️","向 "+m.name+" 購買了 <b class='hl-sage'>"+item.name+"</b>。");
             UI.renderModal("shop");
@@ -1170,6 +1586,77 @@ var UI = {
         itemsWrap.appendChild(row);
       });
       body.appendChild(itemsWrap);
+
+      if(Game.state.vipCard){
+        var vipHead = document.createElement("div");
+        vipHead.style = "margin-top:20px;margin-bottom:10px;font-weight:900;color:var(--honey);font-size:0.9em;display:flex;align-items:center;gap:6px;";
+        vipHead.innerHTML = "🧋 VIP 專屬區　<span style='font-size:0.7em;color:var(--muted);font-weight:400;'>（不受今日商人影響，永遠都在）</span>";
+        body.appendChild(vipHead);
+
+        var teaClaimed = Game.state.lastFreeTeaDate === Game.todayKey();
+        var teaRow = document.createElement("div");
+        teaRow.className = "shop-item"+(teaClaimed?" afford-no":"");
+        teaRow.innerHTML =
+          '<span class="ico">🧋</span>'+
+          '<div class="info"><div class="name">今日招待茶</div><div class="desc">回復25%體力、金幣加成10%（8層）</div></div>'+
+          '<div class="price">'+(teaClaimed?"已領取":"免費")+'</div>';
+        if(!teaClaimed){
+          teaRow.onclick = function(){ Game.claimFreeTea(); UI.renderModal("shop"); };
+        }
+        body.appendChild(teaRow);
+
+        var vipItem = SHOP_ITEMS.filter(function(i){return i.owner==="vip";})[0];
+        if(vipItem){
+          var vOwned = Game.state.shopOwned[vipItem.id]||0;
+          var vCost = Game.itemCost(vipItem);
+          var vAfford = Game.state.gold>=vCost;
+          var vRow = document.createElement("div");
+          vRow.className = "shop-item"+(vAfford?"":" afford-no");
+          vRow.innerHTML =
+            '<span class="ico">'+vipItem.ico+'</span>'+
+            '<div class="info"><div class="name">'+vipItem.name+(vOwned?'（已購 '+vOwned+'）':'')+'</div><div class="desc">'+vipItem.desc+'</div></div>'+
+            '<div class="price">💰'+vCost+'</div>';
+          vRow.onclick = function(){
+            if(Game.buyItem(vipItem.id)){
+              UI.shopPurchasedThisSession = true;
+              UI.log("gold","🛍️","購買了傳說中的 <b class='hl-sage'>"+vipItem.name+"</b>。");
+              UI.renderModal("shop");
+            }
+          };
+          body.appendChild(vRow);
+        }
+
+        var teleCard = document.createElement("div");
+        teleCard.style = "background:var(--panel);border-radius:14px;padding:14px;margin-top:10px;";
+        var quickBtns = TITLES.filter(function(t){ return t.floor>0 && t.floor<=Game.state.maxFloorReached; })
+          .map(function(t){ return '<button class="food-tab-btn" data-floor="'+t.floor+'" style="flex:none;padding:8px 12px;">'+t.floor+'層</button>'; }).join("");
+        teleCard.innerHTML =
+          '<div style="font-weight:900;font-size:0.85em;margin-bottom:8px;">🌀 塔的傳送門</div>'+
+          '<div style="font-size:0.7em;color:var(--muted);margin-bottom:10px;">免費無限次，只能傳到你歷史上到過的樓層（目前最高：第 '+Game.state.maxFloorReached+' 層）</div>'+
+          '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;" id="tele-quick">'+quickBtns+'</div>'+
+          '<div style="display:flex;gap:8px;">'+
+            '<input type="number" id="tele-input" min="1" max="'+Game.state.maxFloorReached+'" placeholder="輸入樓層" style="flex:1;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--panel-2);color:var(--ivory);">'+
+            '<button class="eat-btn" id="tele-go" style="width:auto;margin-top:0;padding:0 18px;">傳送</button>'+
+          '</div>';
+        body.appendChild(teleCard);
+
+        var quickEls = teleCard.querySelectorAll("[data-floor]");
+        for(var qi=0; qi<quickEls.length; qi++){
+          (function(el){
+            el.onclick = function(){
+              Game.teleportTo(parseInt(el.getAttribute("data-floor"),10));
+              UI.closeModal();
+            };
+          })(quickEls[qi]);
+        }
+        var teleGo = document.getElementById("tele-go");
+        if(teleGo){
+          teleGo.onclick = function(){
+            var val = parseInt(document.getElementById("tele-input").value,10);
+            if(!isNaN(val)){ Game.teleportTo(val); UI.closeModal(); }
+          };
+        }
+      }
       return;
     }
 
@@ -1236,6 +1723,10 @@ var UI = {
     var entry = Game.state.junkDex[key];
     var isGame = def.type==="match" || def.type==="slide";
 
+    if(def.id==="cookie"){ Game.state.stats.viewedMoldyCookie = true; }
+    if(def.id==="photo"){ Game.state.stats.familyPhotoViews = (Game.state.stats.familyPhotoViews||0)+1; }
+    if(def.id==="cookie" || def.id==="photo"){ Game.save(); Game.checkAchievements(); }
+
     document.getElementById("modal-title").innerText = "戰利品詳情";
     var body = document.getElementById("modal-body");
     body.innerHTML =
@@ -1254,6 +1745,22 @@ var UI = {
         else MiniGame.startSlide(key);
       };
     }
+  },
+
+  openAchievementDetail: function(id){
+    var a = ACHIEVEMENTS.filter(function(x){return x.id===id;})[0];
+    var unlocked = !!Game.state.achievements[id];
+    document.getElementById("modal-title").innerText = "成就詳情";
+    var body = document.getElementById("modal-body");
+    if(!unlocked){
+      body.innerHTML = '<div class="title-detail"><div class="name">？？？</div><div class="desc">尚未解鎖，繼續冒險看看吧。</div></div>';
+      return;
+    }
+    body.innerHTML =
+      '<div class="title-detail">'+
+        '<div class="name">'+a.ico+' '+a.name+'</div>'+
+        '<div class="desc">'+a.desc+'</div>'+
+      '</div>';
   },
 
   openTitleDetail: function(idx){
@@ -1315,6 +1822,16 @@ var UI = {
   },
   closeDailyCheckIn: function(){
     document.getElementById("daily-mask").classList.remove("show");
+  },
+
+  showVipStory: function(m){
+    document.getElementById("story-ico").innerText = m.ico;
+    document.getElementById("story-title").innerText = "跟"+m.name+"續攤";
+    document.getElementById("story-desc").innerText = VIP_STORIES[m.id] || "";
+    document.getElementById("story-mask").classList.add("show");
+  },
+  closeVipStory: function(){
+    document.getElementById("story-mask").classList.remove("show");
   }
 };
 
@@ -1347,7 +1864,7 @@ var MiniGame = {
 
     this.matchState = {
       cards: cards.map(function(e){ return {emoji:e, flipped:false, matched:false}; }),
-      flippedIdx: [], tries: 0, matchedCount: 0, pairsCount: pairsCount, locked: false
+      flippedIdx: [], tries: 0, matchedCount: 0, pairsCount: pairsCount, locked: false, wrongFlips: 0
     };
     this.open("🃏 翻牌配對");
     this.renderMatch();
@@ -1396,6 +1913,7 @@ var MiniGame = {
           setTimeout(function(){ MiniGame.finishMatch(); }, 300);
         }
       } else {
+        st.wrongFlips = (st.wrongFlips||0)+1;
         setTimeout(function(){
           a.flipped = false; b.flipped = false;
           st.flippedIdx = [];
@@ -1411,6 +1929,14 @@ var MiniGame = {
     var extra = Math.max(0, st.tries - st.pairsCount);
     var reward = Math.min(1000, Math.max(200, 1000 - extra*80));
     Game.useMinigameReward(this.currentKey, reward);
+
+    var gs = Game.state.stats;
+    gs.matchWins++;
+    gs.matchMaxWrongFlips = Math.max(gs.matchMaxWrongFlips, st.wrongFlips||0);
+    if((st.wrongFlips||0)===0){ gs.hasFlawlessMatch = true; }
+    Game.save();
+    Game.checkAchievements();
+
     var body = document.getElementById("minigame-body");
     body.innerHTML =
       '<div class="mg-result">'+
@@ -1497,6 +2023,13 @@ var MiniGame = {
     var extra = Math.max(0, st.moves - par);
     var reward = Math.min(1000, Math.max(200, 1000 - extra*8));
     Game.useMinigameReward(this.currentKey, reward);
+
+    var gs = Game.state.stats;
+    gs.slideWins++;
+    if(gs.bestSlideMoves===null || st.moves<gs.bestSlideMoves){ gs.bestSlideMoves = st.moves; }
+    Game.save();
+    Game.checkAchievements();
+
     var body = document.getElementById("minigame-body");
     body.innerHTML =
       '<div class="mg-result">'+
@@ -1511,10 +2044,12 @@ var MiniGame = {
 
 document.getElementById("amao-sprite").addEventListener("click", function(){
   Game.state.gold += 5;
+  Game.state.stats.petClicks++;
   UI.log("gold","🐾","阿毛開心地搖了搖尾巴，順手撿到了 <b class='hl'>5</b> 枚金幣。");
   Game.save();
   UI.renderStatus();
   UI.bumpSprite();
+  Game.checkAchievements();
 });
 
 Game.init();
