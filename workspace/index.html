@@ -528,40 +528,29 @@ body::after {
 
 .task-note { font-size:15px; font-weight:600; color:var(--muted); line-height:1.6; margin-bottom:9px; }
 
-/* 時間軸色塊（本期 → 下一期） — 一眼判別本期是否完成 */
-.task-timeline {
-  display:flex; align-items:center; gap:9px; flex-wrap:wrap;
-  margin-top:4px;
-}
-.tl-chip {
+/* 單一狀態徽章 — 一眼判別，不再有雙色塊猜測 */
+.task-badge {
   display:inline-flex; align-items:center; gap:6px;
-  font-size:16.5px; font-weight:900; padding:9px 18px; border-radius:999px;
-  letter-spacing:.3px; white-space:nowrap;
+  font-size:17.5px; font-weight:900; padding:9px 20px; border-radius:999px;
+  margin-top:2px; letter-spacing:.3px;
 }
-.tl-arrow { font-size:18px; font-weight:900; color:var(--muted); flex-shrink:0; }
+.task-badge.done    { background:#DCFCE7; color:#15803D; }
+.task-badge.overdue { background:#FEE2E2; color:#C0392B; }
+.task-badge.soon,
+.task-badge.today   { background:#FEF3C7; color:#92400E; }
+.task-badge.todo    { background:#E2ECF7; color:#2C5F8A; }
 
-.tl-chip.done    { background:#DCFCE7; color:#15803D; }
-.tl-chip.overdue { background:#FEE2E2; color:#C0392B; }
-.tl-chip.soon,
-.tl-chip.today   { background:#FEF3C7; color:#92400E; }
-.tl-chip.todo    { background:#E2ECF7; color:#2C5F8A; }
-.tl-chip.pending { background:var(--surf2); color:var(--muted); border:1.5px dashed var(--border); }
+:root[data-theme="dark"] .task-badge.done    { background:#052E16; color:#4ADE80; }
+:root[data-theme="dark"] .task-badge.overdue { background:#3A0F0F; color:#F87171; }
+:root[data-theme="dark"] .task-badge.soon,
+:root[data-theme="dark"] .task-badge.today   { background:#332600; color:#FCD34D; }
+:root[data-theme="dark"] .task-badge.todo    { background:#13283E; color:#7BBCEE; }
 
-:root[data-theme="dark"] .tl-chip.done    { background:#052E16; color:#4ADE80; }
-:root[data-theme="dark"] .tl-chip.overdue { background:#3A0F0F; color:#F87171; }
-:root[data-theme="dark"] .tl-chip.soon,
-:root[data-theme="dark"] .tl-chip.today   { background:#332600; color:#FCD34D; }
-:root[data-theme="dark"] .tl-chip.todo    { background:#13283E; color:#7BBCEE; }
-:root[data-theme="dark"] .tl-chip.pending { background:var(--surf2); color:var(--muted); border-color:var(--border); }
-
-:root[data-theme="antique"] .tl-chip.done    { background:#DCEBC8; color:#3A6B2E; }
-:root[data-theme="antique"] .tl-chip.overdue { background:#F2D2C8; color:#B23A2E; }
-:root[data-theme="antique"] .tl-chip.soon,
-:root[data-theme="antique"] .tl-chip.today   { background:#F1E2BE; color:#8A5A1E; }
-:root[data-theme="antique"] .tl-chip.todo    { background:#EBDFC4; color:#8B5E34; }
-:root[data-theme="antique"] .tl-chip.pending { background:var(--surf2); color:var(--muted); border-color:var(--border); }
-
-.task-substatus { font-size:14px; font-weight:700; color:var(--muted); margin-top:8px; }
+:root[data-theme="antique"] .task-badge.done    { background:#DCEBC8; color:#3A6B2E; }
+:root[data-theme="antique"] .task-badge.overdue { background:#F2D2C8; color:#B23A2E; }
+:root[data-theme="antique"] .task-badge.soon,
+:root[data-theme="antique"] .task-badge.today   { background:#F1E2BE; color:#8A5A1E; }
+:root[data-theme="antique"] .task-badge.todo    { background:#EBDFC4; color:#8B5E34; }
 
 .task-edit-link {
   font-size:13.5px; font-weight:700; color:var(--A);
@@ -735,7 +724,7 @@ body::after {
     完成後請至
     <a href="https://docs.google.com/spreadsheets/d/1uYBA_CncbEAydmzNC1SRnsKJdswNgQh3zg1x6TKo0UU/edit#gid=646869954"
        target="_blank" rel="noopener">Google Sheet</a>
-    更新完成日期，並在 G 欄「本期完成」打 ✓
+    更新完成日期，並在 G 欄「本期完成」打 ✓、H 欄填「本次到期日」
   </div>
 </div>
 
@@ -1330,8 +1319,9 @@ window.addEventListener('DOMContentLoaded', () => {
 /* ═══════════════════════════════════════════════
    TASK SYSTEM — 讀取 Google Sheet 任務分頁
    Sheet 欄位（第2列起）：
-   A=任務名稱  B=圖示  C=頻率說明  D=到期日(yyyy/MM/dd)  E=最近完成日期  F=備註
+   A=任務名稱  B=圖示  C=頻率說明  D=下次到期日(yyyy/MM/dd)  E=最近完成日期  F=備註
    G=本期完成（做完打✓；空白代表尚未完成）
+   H=本期到期日（完成當下，順手記下「這一期原本的期限」；D 已被改成下次到期日）
 ═══════════════════════════════════════════════ */
 
 const TASK_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1uYBA_CncbEAydmzNC1SRnsKJdswNgQh3zg1x6TKo0UU/export?format=csv&gid=646869954';
@@ -1355,13 +1345,14 @@ function parseTaskRow(row) {
   // G 欄「本期完成」：非空且不是明確的「否」即視為已勾選
   const truthy = (v) => !!v && !/^(0|false|no|否|x|✗|✕|-|無|未|待)$/i.test(v.trim());
   return {
-    name:     cols[0] || '',
-    icon:     cols[1] || '📋',
-    freq:     cols[2] || '',
-    dueDate:  pcd(cols[3]),
-    lastDone: pcd(cols[4]),
-    note:     cols[5] || '',
-    doneFlag: truthy(cols[6]),   // G 欄：本期完成勾選
+    name:      cols[0] || '',
+    icon:      cols[1] || '📋',
+    freq:      cols[2] || '',
+    dueDate:   pcd(cols[3]),   // D：下次到期日
+    lastDone:  pcd(cols[4]),   // E：最近完成日期
+    note:      cols[5] || '',
+    doneFlag:  truthy(cols[6]),  // G：本期完成勾選
+    periodDue: pcd(cols[7]),  // H：本期到期日（做完當下記錄的舊期限）
   };
 }
 
@@ -1393,48 +1384,38 @@ function parseDate(str) {
   return null;
 }
 
-/* 從日期字串取出「X月」標籤，用來標示這是哪一期 */
-function monthLabel(dateStr) {
-  const d = parseDate(dateStr);
-  return d ? `${d.getMonth() + 1}月` : '本期';
-}
-
 /* ────────────────────────────────────────────────
-   本期狀態判別（v8：改用「本期完成」人工標記）
-   為什麼不再用日期猜？
-     例：到期 7/05、完成 6/30。無法只憑日期分辨這是
-        「7 月提早做完」還是「6 月拖到月底才補做」，
-        只有你本人知道。所以改由你在 Sheet 的 G 欄
-        「本期完成」打勾來宣告。
+   本期狀態判別（v10：不再猜月份，完全照 Sheet 真實欄位）
+   欄位對應你的實際操作習慣：
+     D＝下次到期日（做完當下你會手動改成下一期期限）
+     E＝最近完成日期
+     G＝本期完成勾選
+     H＝本期到期日（做完當下順手記錄「這一期原本的期限」）
    判定：
-     ‧ G 欄有勾  且 今天 ≤ 到期日  → ✅ 本期已完成（綠）
-     ‧ G 欄有勾  但 今天 > 到期日  → 週期已滾動，視為要再做
-                                     （自動回到提醒，不用手動清勾）
-     ‧ G 欄沒勾                    → 依到期日提示逾期／即將到期／待完成
-   → 做完新的一期時，只要更新「到期日」到下次期限、並確認
-      G 欄有勾，就會自動接續顯示已完成。
+     ‧ G 有勾、且 D（下次到期）還沒過期 → ✅ 已完成，倒數 D 還有幾天
+     ‧ G 有勾、但 D 已經過期            → 勾勾已過期失效，視為忘記更新，
+                                          自動回到依 D 提示逾期／待完成
+     ‧ G 沒勾                          → 依 D 直接提示逾期／即將到期／待完成
 ──────────────────────────────────────────────── */
 function cycleStatus(task) {
   const today  = new Date(); today.setHours(0,0,0,0);
-  const due    = parseDate(task.dueDate);
+  const due    = parseDate(task.dueDate);   // D：下次到期日
   const marked = !!task.doneFlag;
   const daysLeft = due ? Math.ceil((due - today) / 86400000) : null;
-  const month = monthLabel(task.dueDate);
 
-  // 人工標記本期完成，且尚未過到期日 → 已完成
-  if (marked && due && today.getTime() <= due.getTime()) {
-    return { state:'done', daysLeft, sortKey:4, month, label:`✅ ${month}已完成` };
-  }
-  if (marked && !due) {
-    return { state:'done', daysLeft:9999, sortKey:4, month, label:'✅ 本期已完成' };
+  if (marked && (!due || daysLeft >= 0)) {
+    return {
+      state:'done', daysLeft, sortKey:4,
+      label: due ? `✅ 已完成・下次到期還有 ${daysLeft} 天` : '✅ 已完成'
+    };
   }
 
-  // 未標記，或已過到期日（週期滾動）→ 依日期提示
-  if (!due) return { state:'todo', daysLeft:9999, sortKey:3, month, label:'🔵 待完成' };
-  if (daysLeft < 0)   return { state:'overdue', daysLeft, sortKey:0, month, label:`🔴 ${month}已逾期 ${Math.abs(daysLeft)} 天` };
-  if (daysLeft === 0) return { state:'today',   daysLeft, sortKey:1, month, label:`🟠 ${month}今天到期！` };
-  if (daysLeft <= 3)  return { state:'soon',    daysLeft, sortKey:2, month, label:`🟠 ${month}還剩 ${daysLeft} 天` };
-  return                     { state:'todo',    daysLeft, sortKey:3, month, label:`🔵 ${month}還剩 ${daysLeft} 天` };
+  // 未標記，或勾勾已過期（週期滾動、忘記更新）→ 依下次到期日提示
+  if (!due) return { state:'todo', daysLeft:9999, sortKey:3, label:'🔵 待完成' };
+  if (daysLeft < 0)   return { state:'overdue', daysLeft, sortKey:0, label:`🔴 已逾期 ${Math.abs(daysLeft)} 天` };
+  if (daysLeft === 0) return { state:'today',   daysLeft, sortKey:1, label:'🟠 今天到期！' };
+  if (daysLeft <= 3)  return { state:'soon',    daysLeft, sortKey:2, label:`🟠 即將到期・還剩 ${daysLeft} 天` };
+  return                     { state:'todo',    daysLeft, sortKey:3, label:`🔵 待完成・還剩 ${daysLeft} 天` };
 }
 
 function renderTasks() {
@@ -1455,18 +1436,14 @@ function renderTasks() {
   withStatus.forEach(({ t, st }) => {
     if (st.state === 'overdue') overdueCount++;
 
-    // 時間軸：已完成 → 顯示「本期已完成」+「下一期・待設定」雙色塊
-    //         未完成 → 只顯示單一色塊（逾期／即將到期／待完成）
-    const timeline = st.state === 'done'
-      ? `<div class="task-timeline">
-           <div class="tl-chip done">${st.label}</div>
-           <div class="tl-arrow">→</div>
-           <div class="tl-chip pending">⏳ 下一期・待設定到期日</div>
-         </div>
-         ${t.lastDone ? `<div class="task-substatus">完成於 ${t.lastDone}</div>` : ''}`
-      : `<div class="task-timeline">
-           <div class="tl-chip ${st.state}">${st.label}</div>
-         </div>`;
+    // 已完成：本次完成日 / 本次到期日(H) / 下次到期日(D) 三行，資料全部照 Sheet 真實值
+    // 未完成：只顯示 到期(D) / 完成(E)，不放 H（避免顯示上一期的舊資料造成混淆）
+    const dateRows = st.state === 'done'
+      ? `${t.lastDone  ? `<div class="dlabel">本次完成：</div><div class="dval">${t.lastDone}</div>`  : ''}
+         ${t.periodDue ? `<div class="dlabel">本次到期：</div><div class="dval">${t.periodDue}</div>` : ''}
+         ${t.dueDate   ? `<div class="dlabel">下次到期：</div><div class="dval">${t.dueDate}</div>`   : ''}`
+      : `${t.dueDate  ? `<div class="dlabel">到期：</div><div class="dval">${t.dueDate}</div>`  : ''}
+         ${t.lastDone ? `<div class="dlabel">完成：</div><div class="dval">${t.lastDone}</div>` : ''}`;
 
     out += `
     <div class="task-item ${st.state}">
@@ -1474,12 +1451,9 @@ function renderTasks() {
       <div class="task-info">
         <div class="task-name">${t.name}</div>
         ${t.freq ? `<div class="task-freq">🔁 ${t.freq}</div>` : ''}
-        <div class="task-dates">
-          ${t.dueDate  ? `<div class="dlabel">到期：</div><div class="dval">${t.dueDate}</div>`  : ''}
-          ${t.lastDone ? `<div class="dlabel">完成：</div><div class="dval">${t.lastDone}</div>` : ''}
-        </div>
+        <div class="task-dates">${dateRows}</div>
         ${t.note ? `<div class="task-note">💬 ${t.note}</div>` : ''}
-        ${timeline}
+        <div class="task-badge ${st.state}">${st.label}</div>
         <a class="task-edit-link" href="${TASK_EDIT_URL}" target="_blank" rel="noopener">
           → 至 Sheet 更新完成日期
         </a>
