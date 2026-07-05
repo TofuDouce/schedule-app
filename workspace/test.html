@@ -1,1446 +1,895 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" data-theme="light" data-card="glass" data-font="pingfang" data-texture="none">
+<html lang="zh-Hant" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>中正診所 Portal</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;900&family=Noto+Sans+TC:wght@500;700;900&family=Noto+Serif+TC:wght@600;700;900&family=LXGW+WenKai+TC:wght@400;500;700&family=Chiron+GoRound+TC:wght@500;700;900&display=swap" rel="stylesheet">
 <style>
-/* ═══════════════════════════════════════════════════
-   TOKENS — 三種佈景主題（明亮 / 夜間 / 仿舊）
-═══════════════════════════════════════════════════ */
-:root {
-  --fs-title: clamp(18px,1.8vw,24px);
-  --fs-desc:  clamp(14px,1.2vw,17px);
-  --grid:     4;
-
-  /* 明亮（預設） */
-  --A:   #2C5F8A;
-  --A2:  #3A7AB5;
-  --Alt: #5A96C8;
-  --bg:      #EDF2F7;
-  --surf:    #FFFFFF;
-  --surf2:   #F0F5FA;
-  --border:  #C8D9EC;
-  --shadow:  rgba(44,95,138,.10);
-  --shadowH: rgba(44,95,138,.20);
-  --text:    #1A3550;
-  --sub:     #2C5F8A;
-  --muted:   #5A7FA0;
-  --danger:  #C0392B;
-  --warn:    #B45309;
-  --warnBg:  #FFFBEA;
-  --warnBdr: #F59E0B;
-  --hdr:     rgba(237,242,247,.95);
+:root{
+  --bg:#eef3f8;
+  --card:#ffffff;
+  --card2:#f6f9fc;
+  --text:#17324a;
+  --muted:#647d96;
+  --line:#c9d9e8;
+  --brand:#246394;
+  --brand2:#3f8fc6;
+  --danger:#c0392b;
+  --warn:#b45309;
+  --good:#15803d;
+  --shadow:0 10px 28px rgba(31,70,105,.12);
 }
-
-/* 夜間 */
-:root[data-theme="dark"] {
-  --A:#3A7AB5; --A2:#5BA0DA; --Alt:#7BBCEE;
-  --bg:#0E1C2C; --surf:#162435; --surf2:#1C2E40;
-  --border:#2A4060; --shadow:rgba(0,0,0,.35); --shadowH:rgba(0,0,0,.55);
-  --text:#E2EDF8; --sub:#7BADD8; --muted:#5A82A8;
-  --hdr:rgba(14,28,44,.96); --warnBg:#271F00; --warnBdr:#B45309;
-  --danger:#E0564A; --warn:#E8A33D;
+html[data-theme="dark"]{
+  --bg:#0f1b28;
+  --card:#172638;
+  --card2:#203247;
+  --text:#e8f1fa;
+  --muted:#91a9bf;
+  --line:#31475f;
+  --brand:#63aee4;
+  --brand2:#8ac9f2;
+  --shadow:0 12px 34px rgba(0,0,0,.35);
 }
-
-/* 仿舊 — 羊皮紙暖色調 */
-:root[data-theme="antique"] {
-  --A:#9C6B30; --A2:#B98A4C; --Alt:#D1A86C;
-  --bg:#F1E8D8; --surf:#FBF6EC; --surf2:#F5ECDA;
-  --border:#D9C6A0; --shadow:rgba(120,90,40,.14); --shadowH:rgba(120,90,40,.26);
-  --text:#4A3826; --sub:#8B5E34; --muted:#9C8868;
-  --danger:#B23A2E; --warn:#8A5A1E; --warnBg:#FBF0D9; --warnBdr:#C9974A;
-  --hdr: rgba(241,232,216,.95);
+*{box-sizing:border-box}
+body{
+  margin:0;
+  min-height:100vh;
+  background:var(--bg);
+  color:var(--text);
+  font-family:"Noto Sans TC","Microsoft JhengHei",Arial,sans-serif;
 }
-
-/* dark mode */
-
-/* fonts — 五種字型 */
-:root[data-font="pingfang"]    { --ff:"PingFang TC","PingFang SC",-apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif; }
-:root[data-font="sourcesans"]  { --ff:"Noto Sans TC","Source Han Sans TC",sans-serif; }
-:root[data-font="sourceserif"] { --ff:"Noto Serif TC","Source Han Serif TC",serif; }
-:root[data-font="wenkai"]      { --ff:"LXGW WenKai TC","Noto Serif TC",serif; }
-:root[data-font="goround"]     { --ff:"Chiron GoRound TC","Noto Sans TC",sans-serif; }
-
-/* textures */
-:root[data-texture="dots"] body::after   { opacity:1; background-image:radial-gradient(circle, color-mix(in srgb,var(--A) 18%,transparent) 1px, transparent 1px); background-size:22px 22px; }
-:root[data-texture="grid"] body::after   { opacity:1; background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px); background-size:32px 32px; }
-:root[data-texture="none"] body::after   { opacity:0; }
-
-/* card styles */
-:root[data-card="glass"] .card { background:rgba(255,255,255,.72); backdrop-filter:blur(16px); }
-:root[data-theme="dark"][data-card="glass"] .card { background:rgba(22,36,53,.72); }
-:root[data-theme="antique"][data-card="glass"] .card { background:rgba(251,246,236,.78); }
-:root[data-card="flat"]  .card { background:var(--surf); box-shadow:none; border-width:2px; }
-:root[data-card="solid"] .card { background:var(--surf2); border-color:transparent; box-shadow:var(--shadow); }
-
-/* ═══════════════════════════════════════════════════
-   RESET
-═══════════════════════════════════════════════════ */
-*,*::before,*::after { margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent; }
-
-body {
-  min-height:100vh; background:var(--bg); color:var(--text);
-  font-family:var(--ff,"Noto Sans TC",sans-serif);
-  transition:background .3s,color .3s; overflow-x:hidden;
-  position:relative;
+header{
+  position:sticky;
+  top:0;
+  z-index:20;
+  display:grid;
+  grid-template-columns:auto minmax(220px,430px) auto;
+  gap:24px;
+  align-items:center;
+  padding:14px 28px;
+  background:rgba(238,243,248,.92);
+  border-bottom:1px solid var(--line);
+  backdrop-filter:blur(16px);
 }
-body::before {
-  content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
-  background:
-    radial-gradient(ellipse 55% 40% at 5%  5%,  color-mix(in srgb,var(--A) 8%,transparent) 0%,transparent 70%),
-    radial-gradient(ellipse 40% 35% at 95% 90%, color-mix(in srgb,var(--A2) 6%,transparent) 0%,transparent 70%);
+html[data-theme="dark"] header{background:rgba(15,27,40,.92)}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-mark{
+  width:44px;height:44px;border-radius:12px;
+  display:grid;place-items:center;
+  color:white;font-size:23px;
+  background:linear-gradient(135deg,var(--brand),var(--brand2));
+  box-shadow:var(--shadow);
 }
-body::after {
-  content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
-  opacity:0; transition:opacity .3s;
+.logo h1{margin:0;font-size:24px;font-weight:900;line-height:1.1}
+.logo small{display:block;margin-top:3px;color:var(--muted);font-size:11px;font-weight:900;letter-spacing:2px}
+.search{position:relative}
+.search span{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.search input{
+  width:100%;
+  padding:11px 14px 11px 40px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:var(--card);
+  color:var(--text);
+  font-size:15px;
+  font-weight:700;
+  outline:none;
 }
-
-/* ═══════════════════════════════════════════════════
-   HEADER
-═══════════════════════════════════════════════════ */
-.hdr {
-  position:fixed;top:0;left:0;right:0;z-index:900;
-  height:72px; display:flex; align-items:center; justify-content:space-between;
-  padding:0 36px;
-  background:var(--hdr); backdrop-filter:blur(24px);
-  border-bottom:1px solid var(--border);
-}
-.hdr::after {
-  content:''; position:absolute; bottom:-2px; left:0; right:0; height:2px;
-  background:linear-gradient(90deg,var(--A),var(--A2),var(--Alt));
-}
-
-.logo { display:flex; align-items:center; gap:14px; }
-.logo-icon {
-  width:44px;height:44px;border-radius:12px;flex-shrink:0;
-  background:linear-gradient(145deg,var(--A),var(--A2));
-  display:flex;align-items:center;justify-content:center;font-size:22px;
-  box-shadow:0 4px 14px var(--shadow);
-}
-.logo-name { font-size:clamp(18px,2vw,24px); font-weight:900; color:var(--text); }
-.logo-sub  { font-size:10px; font-weight:700; letter-spacing:3px; color:var(--A); margin-top:2px; }
-
-.hdr-center { flex:1; display:flex; justify-content:center; padding:0 20px; }
-.search-wrap {
-  position:relative; width:100%; max-width:400px;
-}
-.search-icon {
-  position:absolute; left:13px; top:50%; transform:translateY(-50%);
-  font-size:16px; pointer-events:none; color:var(--muted);
-}
-#searchInput {
-  width:100%; padding:10px 14px 10px 40px;
-  border:1.5px solid var(--border); border-radius:10px;
-  font-size:15px; font-family:inherit; font-weight:600;
-  background:var(--surf); color:var(--text);
-  transition:.2s;
-}
-#searchInput:focus { outline:none; border-color:var(--A); box-shadow:0 0 0 3px color-mix(in srgb,var(--A) 12%,transparent); }
-#searchInput::placeholder { color:var(--muted); }
-
-.hdr-right { display:flex; align-items:center; gap:20px; }
-#clock { font-family:"Inter",monospace; font-size:clamp(20px,2vw,28px); font-weight:900; color:var(--text); font-variant-numeric:tabular-nums; letter-spacing:1.5px; }
-#date  { font-size:12px; font-weight:700; color:var(--muted); margin-top:2px; }
-
-
-/* ═══════════════════════════════════════════════════
-   MAIN
-═══════════════════════════════════════════════════ */
-.main {
-  position:relative; z-index:1;
-  max-width:1520px; margin:0 auto;
-  padding:88px 32px 120px;
-}
-
-/* ── Announcement Banner ── */
-#announceBanner {
+.search input:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(36,99,148,.16)}
+.clock{text-align:right;font-weight:900}
+#time{font-size:28px;font-variant-numeric:tabular-nums}
+#date{margin-top:2px;color:var(--muted);font-size:12px}
+main{width:min(1480px,calc(100% - 48px));margin:0 auto;padding:22px 0 110px}
+.notice{
   display:none;
-  margin:16px 0 8px;
-  background:linear-gradient(135deg,color-mix(in srgb,var(--A) 8%,var(--surf)),var(--surf));
-  border:1.5px solid var(--border);
-  border-left:5px solid var(--A2);
-  border-radius:14px; padding:16px 22px;
-  font-size:15px; font-weight:700; color:var(--sub);
+  margin:4px 0 18px;
+  padding:14px 16px;
+  border:1px solid var(--line);
+  border-left:5px solid var(--brand);
+  border-radius:12px;
+  background:var(--card);
+  box-shadow:var(--shadow);
+  font-weight:700;
   line-height:1.7;
 }
-#announceBanner.show { display:block; }
-.announce-label {
-  font-size:11px; font-weight:800; letter-spacing:2px;
-  color:var(--A); text-transform:uppercase; margin-bottom:6px;
+.notice.show{display:block}
+.notice b{display:block;color:var(--brand);font-size:12px;letter-spacing:2px;margin-bottom:4px}
+.section-title{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin:28px 0 14px;
 }
-
-/* ── Recent strip ── */
-#recentSection { margin:16px 0 0; }
-.recent-strip {
-  display:flex; gap:10px; overflow-x:auto; padding-bottom:4px;
-  scrollbar-width:thin; scrollbar-color:var(--border) transparent;
+.section-title span{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:7px 15px;
+  border-radius:999px;
+  background:linear-gradient(135deg,var(--brand),var(--brand2));
+  color:white;
+  font-size:13px;
+  font-weight:900;
 }
-.recent-chip {
-  display:flex; align-items:center; gap:6px; flex-shrink:0;
-  padding:7px 14px; background:var(--surf); border:1.5px solid var(--border);
-  border-radius:999px; font-size:13px; font-weight:700; color:var(--sub);
-  text-decoration:none; transition:.15s; white-space:nowrap;
-}
-.recent-chip:hover { border-color:var(--A); color:var(--A); background:color-mix(in srgb,var(--A) 6%,var(--surf)); }
-
-/* ── Section Label ── */
-.sec-label {
-  display:flex; align-items:center; gap:12px;
-  margin:36px 0 16px;
-}
-.sec-label:first-of-type { margin-top:20px; }
-.sec-pill {
-  display:flex; align-items:center; gap:7px;
-  background:linear-gradient(135deg,var(--A),var(--A2));
-  color:#fff; font-size:13px; font-weight:800;
-  padding:6px 16px; border-radius:999px; letter-spacing:1.5px;
-  box-shadow:0 3px 12px var(--shadow); flex-shrink:0;
-}
-.sec-line { flex:1; height:1px; background:linear-gradient(90deg,var(--border),transparent); }
-
-/* ── Grid ── */
-.grid {
+.section-title i{height:1px;flex:1;background:linear-gradient(90deg,var(--line),transparent)}
+.grid{
   display:grid;
-  grid-template-columns:repeat(var(--grid,4),1fr);
-  gap:16px;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:14px;
 }
-
-/* ── Cards ── */
-.card {
-  background:rgba(255,255,255,.72); backdrop-filter:blur(16px);
-  border-radius:18px; border:1.5px solid var(--border);
-  box-shadow:0 3px 16px var(--shadow);
-  transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;
-  overflow:hidden; position:relative;
+.card{
+  min-height:168px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:var(--card);
+  box-shadow:0 8px 24px rgba(20,55,85,.08);
+  overflow:hidden;
+  transition:.16s;
 }
-.card::before {
-  content:''; position:absolute; top:0;left:0;right:0;height:3px;
-  background:linear-gradient(90deg,var(--A),var(--Alt));
-  transform:scaleX(0); transform-origin:left;
-  transition:transform .25s ease;
+.card:hover{transform:translateY(-3px);border-color:var(--brand);box-shadow:var(--shadow)}
+.card.hidden{display:none}
+.card.important{border-color:#e29b2d;background:#fff8e8}
+html[data-theme="dark"] .card.important{background:#2b240f}
+.card a,.card button{
+  width:100%;
+  height:100%;
+  min-height:168px;
+  padding:24px 14px 20px;
+  border:0;
+  background:transparent;
+  color:inherit;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  text-decoration:none;
+  cursor:pointer;
 }
-.card:hover { transform:translateY(-4px); box-shadow:0 10px 30px var(--shadowH); border-color:var(--A2); }
-.card:hover::before { transform:scaleX(1); }
-.card.hidden { display:none; }
-
-/* highlight */
-.card.hl { background:var(--warnBg)!important; border-color:var(--warnBdr)!important; }
-.card.hl::before { background:linear-gradient(90deg,#F59E0B,#FBBF24); }
-.card.hl .card-title { color:var(--warn); }
-.card.hl .card-desc  { color:#92400E; }
-:root[data-theme="dark"] .card.hl .card-title { color:#FCD34D; }
-:root[data-theme="dark"] .card.hl .card-desc  { color:#F59E0B; }
-
-.card-link {
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  padding:30px 18px 26px; text-decoration:none; color:inherit;
-  text-align:center; height:100%; gap:10px; cursor:pointer;
+.icon{
+  position:relative;
+  width:58px;
+  height:58px;
+  margin-bottom:12px;
+  display:grid;
+  place-items:center;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:var(--card2);
+  font-size:30px;
 }
-.icon-box {
-  width:66px; height:66px; border-radius:16px; flex-shrink:0;
-  background:var(--surf2); border:1.5px solid var(--border);
-  display:flex; align-items:center; justify-content:center;
-  font-size:34px; line-height:1; position:relative;
-  transition:transform .2s,background .2s;
+.dot{
+  display:none;
+  position:absolute;
+  top:-8px;
+  right:-8px;
+  min-width:22px;
+  height:22px;
+  padding:0 5px;
+  border-radius:999px;
+  border:2px solid var(--card);
+  background:var(--danger);
+  color:white;
+  font-size:11px;
+  font-weight:900;
+  place-items:center;
 }
-.card:hover .icon-box { transform:scale(1.1); background:color-mix(in srgb,var(--A) 10%,var(--surf2)); }
-.card-title { font-size:var(--fs-title); font-weight:900; color:var(--text); line-height:1.3; }
-.card-desc  { font-size:var(--fs-desc);  font-weight:600; color:var(--sub); line-height:1.4; }
-
-.icon-dot {
-  display:none; position:absolute; top:-4px; right:-4px;
-  min-width:18px; height:18px; padding:0 3px; border-radius:9px;
-  background:#C0392B; border:2px solid var(--surf);
-  color:#fff; font-size:10px; font-weight:800;
-  align-items:center; justify-content:center; line-height:1;
+.card h3{margin:0;font-size:21px;font-weight:900;line-height:1.3}
+.card p{margin:7px 0 0;color:var(--muted);font-size:14px;font-weight:700;line-height:1.5}
+.empty{
+  grid-column:1/-1;
+  padding:28px;
+  border:1px dashed var(--line);
+  border-radius:12px;
+  color:var(--muted);
+  text-align:center;
+  font-weight:700;
 }
-
-/* ── Memo panel ── */
-#memoPanel {
-  position:fixed; bottom:96px; right:30px; z-index:800;
-  width:300px; background:var(--surf); border:2px solid var(--border);
-  border-radius:18px; box-shadow:0 8px 32px var(--shadowH);
-  padding:18px; display:none; flex-direction:column; gap:10px;
+.floating{
+  position:fixed;
+  right:24px;
+  bottom:24px;
+  z-index:30;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
 }
-#memoPanel.show { display:flex; }
-#memoPanel h4 { font-size:14px; font-weight:800; color:var(--text); letter-spacing:1px; }
-#memoText {
-  width:100%; min-height:120px; resize:vertical;
-  border:1.5px solid var(--border); border-radius:10px;
-  padding:10px; font-family:inherit; font-size:14px; font-weight:600;
-  background:var(--surf2); color:var(--text); transition:.15s;
+.fab{
+  width:50px;
+  height:50px;
+  border:1px solid var(--line);
+  border-radius:13px;
+  background:var(--card);
+  color:var(--text);
+  box-shadow:var(--shadow);
+  cursor:pointer;
+  font-size:21px;
 }
-#memoText:focus { outline:none; border-color:var(--A); }
-.memo-save {
-  padding:9px; border:none; border-radius:10px; cursor:pointer;
-  background:linear-gradient(135deg,var(--A),var(--A2)); color:#fff;
-  font-size:14px; font-weight:800; font-family:inherit;
-  transition:.15s;
+.overlay{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:40;
+  background:rgba(0,0,0,.38);
+  backdrop-filter:blur(3px);
 }
-
-/* ── Float controls ── */
-.controls {
-  position:fixed; bottom:30px; right:30px;
-  display:flex; flex-direction:column; gap:10px; z-index:1000;
+.overlay.show{display:block}
+.modal{
+  display:none;
+  position:fixed;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  z-index:50;
+  width:min(620px,calc(100vw - 34px));
+  max-height:84vh;
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:var(--card);
+  box-shadow:0 24px 70px rgba(0,0,0,.25);
+  overflow:hidden;
 }
-.ctrl {
-  width:50px; height:50px; border-radius:13px;
-  border:1.5px solid var(--border); background:var(--surf);
-  font-size:20px; cursor:pointer;
-  display:flex; align-items:center; justify-content:center;
-  box-shadow:0 3px 14px var(--shadow); color:var(--text);
-  transition:transform .15s,box-shadow .15s;
+.modal.show{display:flex;flex-direction:column}
+.modal-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:17px 20px;
+  border-bottom:1px solid var(--line);
 }
-.ctrl:hover { transform:translateY(-2px); box-shadow:0 7px 20px var(--shadowH); }
-
-/* ── Admin panel ── */
-.panel {
-  position:fixed; top:0; right:-100%; width:460px; height:100vh;
-  background:var(--surf); border-left:2px solid var(--border);
-  overflow-y:auto; transition:right .35s cubic-bezier(.4,0,.2,1); z-index:2000;
+.modal-head h2{margin:0;font-size:20px;font-weight:900}
+.close{
+  width:36px;
+  height:36px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:transparent;
+  color:var(--text);
+  cursor:pointer;
+  font-size:18px;
 }
-.panel.show { right:0; box-shadow:-20px 0 60px rgba(0,0,0,.12); }
-
-.panel-hdr {
-  position:sticky; top:0; z-index:5;
-  display:flex; align-items:center; justify-content:space-between;
-  padding:20px 24px 18px;
-  background:var(--surf); border-bottom:2px solid var(--border);
+.modal-body{padding:18px 20px 22px;overflow:auto}
+label{display:block;margin:13px 0 6px;color:var(--muted);font-size:13px;font-weight:900}
+.input{
+  width:100%;
+  padding:11px 12px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:var(--card2);
+  color:var(--text);
+  font-size:15px;
+  font-weight:700;
+  outline:none;
 }
-.panel-hdr h2 { font-size:18px; font-weight:900; color:var(--text); }
-.xbtn {
-  width:36px;height:36px;border-radius:9px;border:1.5px solid var(--border);
-  background:transparent;cursor:pointer;font-size:17px;
-  display:flex;align-items:center;justify-content:center;
-  color:var(--muted);transition:.15s;
+.btn{
+  width:100%;
+  padding:12px;
+  border:0;
+  border-radius:10px;
+  background:linear-gradient(135deg,var(--brand),var(--brand2));
+  color:white;
+  font-weight:900;
+  cursor:pointer;
 }
-.xbtn:hover { background:var(--surf2); color:var(--danger); border-color:var(--danger); }
-
-.panel-body { padding:20px 24px 50px; display:flex; flex-direction:column; gap:16px; }
-
-.pcard {
-  background:var(--surf2); border:1.5px solid var(--border);
-  border-radius:14px; padding:18px;
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.seg button{
+  padding:9px 14px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:var(--card2);
+  color:var(--text);
+  font-weight:900;
+  cursor:pointer;
 }
-.pcard-title {
-  font-size:11px; font-weight:800; color:var(--A);
-  letter-spacing:2.5px; text-transform:uppercase; margin-bottom:14px;
+.seg button.on{background:var(--brand);border-color:var(--brand);color:white}
+.result{
+  display:none;
+  margin-top:18px;
+  padding:20px;
+  border:1px solid var(--brand);
+  border-radius:14px;
+  background:var(--card2);
+  text-align:center;
 }
-
-.plabel { font-size:13px; font-weight:700; color:var(--muted); display:block; margin:12px 0 7px; }
-.plabel:first-of-type { margin-top:0; }
-
-/* toggle button group */
-.tog-group { display:flex; gap:8px; flex-wrap:wrap; }
-.tog {
-  padding:8px 14px; border:1.5px solid var(--border); border-radius:9px;
-  background:var(--surf); color:var(--sub); font-size:13px; font-weight:700;
-  cursor:pointer; transition:.15s; font-family:inherit;
+.result.show{display:block}
+.result .big{font-size:46px;font-weight:900;color:var(--brand);line-height:1}
+.result .stage{
+  display:inline-block;
+  margin-top:10px;
+  padding:8px 15px;
+  border-radius:999px;
+  background:var(--brand);
+  color:white;
+  font-weight:900;
 }
-.tog.on { background:var(--A); color:#fff; border-color:var(--A); }
-
-/* slider */
-.srow { display:flex; align-items:center; gap:10px; }
-.srow input[type=range] { flex:1; height:7px; accent-color:var(--A); cursor:pointer; }
-.sval { font-size:12px; font-weight:800; min-width:38px; text-align:right; color:var(--A); }
-
-/* input */
-.pin {
-  width:100%; padding:11px 14px; border:1.5px solid var(--border); border-radius:10px;
-  font-size:14px; font-family:inherit; font-weight:600;
-  background:var(--surf); color:var(--text); margin-bottom:10px; transition:.15s;
+.task{
+  display:grid;
+  grid-template-columns:auto 1fr;
+  gap:14px;
+  padding:15px;
+  margin-bottom:12px;
+  border:1px solid var(--line);
+  border-left:6px solid var(--brand);
+  border-radius:14px;
+  background:var(--card2);
 }
-.pin:focus { outline:none; border-color:var(--A); box-shadow:0 0 0 3px color-mix(in srgb,var(--A) 12%,transparent); }
-
-/* emoji picker */
-.epick { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; margin-bottom:12px; }
-.eopt {
-  font-size:23px; text-align:center; padding:8px 4px;
-  border:1.5px solid var(--border); border-radius:10px;
-  background:var(--surf); cursor:pointer; transition:.15s; line-height:1;
+.task.overdue{border-left-color:var(--danger);background:#fff1f1}
+.task.today,.task.soon{border-left-color:#df8c22;background:#fff8df}
+.task.done{border-left-color:var(--good)}
+html[data-theme="dark"] .task.overdue{background:#2c1414}
+html[data-theme="dark"] .task.today,
+html[data-theme="dark"] .task.soon{background:#2b240f}
+.task-icon{font-size:34px}
+.task h3{margin:0 0 5px;font-size:20px}
+.task-meta{color:var(--muted);font-size:14px;font-weight:800;line-height:1.7}
+.badge{
+  display:inline-block;
+  margin-top:8px;
+  padding:7px 13px;
+  border-radius:999px;
+  background:var(--card);
+  color:var(--brand);
+  font-weight:900;
 }
-.eopt.on { border-color:var(--A); background:color-mix(in srgb,var(--A) 10%,var(--surf)); }
-
-/* buttons */
-.btn-prim {
-  width:100%; padding:13px; font-size:15px; font-weight:800; font-family:inherit;
-  border:none; border-radius:11px; cursor:pointer;
-  background:linear-gradient(135deg,var(--A),var(--A2)); color:#fff;
-  box-shadow:0 4px 14px var(--shadow); transition:opacity .15s,transform .15s;
+.task.overdue .badge{color:var(--danger)}
+.task.today .badge,.task.soon .badge{color:var(--warn)}
+.task.done .badge{color:var(--good)}
+.memo{
+  display:none;
+  position:fixed;
+  right:86px;
+  bottom:24px;
+  z-index:35;
+  width:min(320px,calc(100vw - 32px));
+  padding:16px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:var(--card);
+  box-shadow:var(--shadow);
 }
-.btn-prim:hover { opacity:.9; transform:translateY(-1px); }
-.btn-ghost {
-  width:100%; padding:11px; font-size:14px; font-weight:700; font-family:inherit;
-  border:1.5px solid var(--border); border-radius:11px; cursor:pointer;
-  background:transparent; color:var(--muted); transition:.15s;
+.memo.show{display:block}
+.memo h2{margin:0 0 10px;font-size:17px}
+.memo textarea{min-height:130px;resize:vertical}
+.alert{
+  display:none;
+  position:fixed;
+  left:50%;
+  top:15px;
+  transform:translateX(-50%);
+  z-index:70;
+  padding:10px 18px;
+  border:0;
+  border-radius:999px;
+  background:var(--danger);
+  color:white;
+  box-shadow:0 8px 26px rgba(192,57,43,.35);
+  font-weight:900;
+  cursor:pointer;
 }
-.btn-ghost:hover { background:var(--surf2); color:var(--text); border-color:var(--sub); }
-
-/* manage items */
-.mitem {
-  display:flex; justify-content:space-between; align-items:center;
-  padding:10px 13px; border-radius:10px; border:1.5px solid var(--border);
-  margin-bottom:7px; background:var(--surf); font-size:14px; font-weight:600; gap:8px;
+.alert.show{display:block}
+@media(max-width:1000px){.grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:720px){
+  header{grid-template-columns:1fr auto;padding:12px 15px}
+  .search{grid-column:1/-1;order:3}
+  .clock{display:none}
+  main{width:calc(100% - 24px)}
+  .grid{grid-template-columns:repeat(2,1fr)}
+  .modal{left:0;right:0;bottom:0;top:auto;transform:none;width:100%;max-height:88vh;border-radius:18px 18px 0 0}
+  .memo{right:12px;bottom:86px}
 }
-.mitem span { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.del {
-  background:transparent; color:var(--danger); border:1.5px solid var(--danger);
-  padding:4px 11px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:800;
-  white-space:nowrap; transition:.15s; flex-shrink:0;
-}
-.del:hover { background:var(--danger); color:#fff; }
-
-/* empty */
-.empty { grid-column:1/-1; text-align:center; padding:40px; color:var(--muted); font-size:15px; font-weight:600; }
-
-/* ═══ RWD ═══ */
-@media(max-width:1100px){ :root{ --grid:3; } }
-@media(max-width:800px) { .grid{ grid-template-columns:repeat(3,1fr)!important; } .hdr-center{ display:none; } }
-@media(max-width:580px) {
-  .grid{ grid-template-columns:repeat(2,1fr)!important; }
-  .hdr{ padding:0 16px; height:68px; }
-  .main{ padding:82px 12px 110px; }
-  .panel{ width:100%; }
-  .card-link{ padding:24px 14px 20px; }
-  .icon-box{ width:54px;height:54px;font-size:28px; }
-}
-@media(max-width:360px){ .grid{ grid-template-columns:1fr!important; } }
-
-
-/* ═══ TASK BADGE (頂部逾期提示) ═══ */
-#taskBadge {
-  position:fixed; top:16px; left:50%; transform:translateX(-50%);
-  z-index:1100; display:none;
-  background:#C0392B; color:#fff;
-  font-size:15px; font-weight:800;
-  padding:10px 24px; border-radius:999px;
-  box-shadow:0 4px 20px rgba(192,57,43,.4);
-  cursor:pointer; letter-spacing:.5px;
-  animation:badgePop .4s cubic-bezier(.34,1.56,.64,1);
-  align-items:center; gap:8px;
-}
-#taskBadge.show { display:flex; }
-@keyframes badgePop {
-  from { opacity:0; transform:translateX(-50%) scale(.7); }
-  to   { opacity:1; transform:translateX(-50%) scale(1); }
-}
-
-/* ═══ 共用彈出視窗（定期任務 / eGFR / 年份換算） ═══ */
-.modal-overlay {
-  display:none; position:fixed; inset:0; z-index:1499;
-  background:rgba(0,0,0,.35); backdrop-filter:blur(4px);
-}
-.modal-overlay.show { display:block; }
-
-/* 面板 — 電腦版置中 */
-.modal-panel {
-  position:fixed; z-index:1500;
-  top:50%; left:50%; transform:translate(-50%,-50%) scale(.96);
-  width:min(520px, 92vw); max-height:80vh;
-  background:var(--surf); border:2px solid var(--border);
-  border-radius:22px; box-shadow:0 20px 60px rgba(0,0,0,.2);
-  display:none; flex-direction:column; overflow:hidden;
-  opacity:0; transition:opacity .2s, transform .2s;
-}
-.modal-panel.show {
-  display:flex; opacity:1; transform:translate(-50%,-50%) scale(1);
-}
-
-/* 手機版：從底部全寬滑上來 */
-@media(max-width:600px) {
-  .modal-panel {
-    top:auto; left:0; right:0; bottom:0;
-    transform:translateY(30px);
-    width:100%; max-height:88vh;
-    border-radius:22px 22px 0 0;
-    border-bottom:none;
-  }
-  .modal-panel.show { transform:translateY(0); }
-}
-
-.tp-hdr {
-  display:flex; align-items:center; justify-content:space-between;
-  padding:18px 20px 16px; border-bottom:2px solid var(--border);
-  background:var(--surf); flex-shrink:0;
-}
-.tp-hdr h3 { font-size:18px; font-weight:900; color:var(--text); }
-.tp-hdr-right { display:flex; align-items:center; gap:8px; }
-.tp-refresh {
-  width:30px; height:30px; border-radius:8px;
-  border:1.5px solid var(--border); background:transparent;
-  cursor:pointer; font-size:15px;
-  display:flex; align-items:center; justify-content:center;
-  color:var(--muted); transition:.15s;
-}
-.tp-refresh:hover { background:var(--surf2); color:var(--A); }
-.tp-close {
-  width:30px; height:30px; border-radius:8px;
-  border:1.5px solid var(--border); background:transparent;
-  cursor:pointer; font-size:15px;
-  display:flex; align-items:center; justify-content:center;
-  color:var(--muted); transition:.15s;
-}
-.tp-close:hover { background:var(--surf2); color:var(--danger); border-color:var(--danger); }
-
-.tp-body { overflow-y:auto; padding:18px 20px 22px; flex:1; }
-
-.task-item {
-  display:flex; align-items:flex-start; gap:14px;
-  padding:16px 15px; border-radius:14px;
-  border:1.5px solid var(--border);
-  margin-bottom:10px; background:var(--surf2);
-  transition:.15s;
-}
-.task-item.overdue  { border-color:#C0392B; background:#FFF5F5; }
-.task-item.due-soon { border-color:#F59E0B; background:#FFFBEA; }
-:root[data-theme="dark"] .task-item.overdue  { background:#2A0A0A; }
-:root[data-theme="dark"] .task-item.due-soon { background:#271F00; }
-:root[data-theme="antique"] .task-item.overdue  { background:#F7DCD3; }
-:root[data-theme="antique"] .task-item.due-soon { background:#F6E8C9; }
-
-.task-icon { font-size:32px; line-height:1; margin-top:2px; flex-shrink:0; }
-
-.task-info { flex:1; min-width:0; }
-.task-name { font-size:17px; font-weight:900; color:var(--text); line-height:1.3; margin-bottom:5px; }
-.task-meta { font-size:14px; font-weight:600; color:var(--muted); line-height:1.8; }
-
-.task-badge {
-  display:inline-block; font-size:13px; font-weight:800;
-  padding:4px 12px; border-radius:999px; margin-top:6px;
-}
-.task-badge.ok      { background:#DCFCE7; color:#166534; }
-.task-badge.soon    { background:#FEF9C3; color:#92400E; }
-.task-badge.overdue { background:#FEE2E2; color:#C0392B; }
-:root[data-theme="dark"] .task-badge.ok      { background:#052E16; color:#4ADE80; }
-:root[data-theme="dark"] .task-badge.soon    { background:#271F00; color:#FCD34D; }
-:root[data-theme="dark"] .task-badge.overdue { background:#2A0A0A; color:#F87171; }
-:root[data-theme="antique"] .task-badge.ok      { background:#E3EFD9; color:#3A6B2E; }
-:root[data-theme="antique"] .task-badge.soon    { background:#F6E8C9; color:#8A5A1E; }
-:root[data-theme="antique"] .task-badge.overdue { background:#F7DCD3; color:#B23A2E; }
-
-.task-edit-link {
-  font-size:11px; font-weight:700; color:var(--A);
-  text-decoration:none; opacity:.7; transition:.15s;
-  display:block; margin-top:5px;
-}
-.task-edit-link:hover { opacity:1; text-decoration:underline; }
-
-.tp-footer {
-  padding:12px 16px; border-top:1px solid var(--border);
-  font-size:13px; font-weight:600; color:var(--muted);
-  text-align:center; flex-shrink:0;
-}
-.tp-footer a { color:var(--A); text-decoration:none; font-weight:700; }
-.tp-footer a:hover { text-decoration:underline; }
-
-.tp-loading { text-align:center; padding:32px 20px; color:var(--muted); font-size:14px; font-weight:600; }
-
-/* ═══ 小工具（eGFR / 年份換算）共用樣式 ═══ */
-.tool-note {
-  font-size:13px; font-weight:700; color:var(--muted);
-  background:var(--surf2); border-radius:10px; padding:10px 13px;
-  margin-bottom:16px; line-height:1.6;
-}
-.tool-result {
-  display:none; margin-top:20px; padding:24px 22px;
-  border-radius:18px; border:2px solid var(--A);
-  background:var(--surf2); text-align:center;
-}
-.tool-result.show { display:block; }
-.tool-result-label { font-size:13px; font-weight:800; color:var(--muted); margin-bottom:4px; }
-.tool-result-value { font-size:48px; font-weight:900; color:var(--A); line-height:1; }
-.tool-result-unit  { font-size:13px; font-weight:700; color:var(--muted); margin:4px 0 16px; }
-.tool-stage-badge {
-  display:inline-block; padding:9px 20px; border-radius:999px;
-  font-size:15px; font-weight:900; margin-bottom:12px;
-  background:var(--A); color:#fff;
-}
-.tool-stage-desc {
-  font-size:13.5px; line-height:1.75; color:var(--text); font-weight:600;
-  background:var(--bg); padding:14px 16px; border-radius:12px; text-align:justify;
-}
-
-.year-swap { text-align:center; font-size:24px; color:var(--muted); opacity:.5; margin:-2px 0 10px; }
-.age-box {
-  background:var(--surf2); border:1.5px dashed var(--A2); border-radius:16px;
-  padding:16px; text-align:center; margin-top:18px;
-}
-.age-box .age-label { font-size:13px; font-weight:800; color:var(--muted); margin-bottom:6px; }
-.age-box .age-value { font-size:30px; font-weight:900; color:var(--A); }
-.age-box .age-value small { font-size:15px; font-weight:800; color:var(--text); margin-left:3px; }
-
+@media(max-width:380px){.grid{grid-template-columns:1fr}}
 </style>
 </head>
+
 <body>
-
-<!-- ═══ HEADER ═══ -->
-<header class="hdr">
+<header>
   <div class="logo">
-    <div class="logo-icon">🏥</div>
+    <div class="logo-mark">🏥</div>
     <div>
-      <div class="logo-name">中正診所</div>
-      <div class="logo-sub">Portal System</div>
+      <h1>中正診所</h1>
+      <small>PORTAL SYSTEM</small>
     </div>
   </div>
 
-  <div class="hdr-center">
-    <div class="search-wrap">
-      <span class="search-icon">🔍</span>
-      <input id="searchInput" type="text" placeholder="搜尋書籤／工具…" oninput="filterCards()">
-    </div>
+  <div class="search">
+    <span>🔍</span>
+    <input id="searchInput" placeholder="搜尋書籤／工具…" oninput="filterCards()">
   </div>
 
-  <div class="hdr-right">
-    <div>
-      <div id="clock">00:00:00</div>
-      <div id="date">─</div>
-    </div>
+  <div class="clock">
+    <div id="time">00:00:00</div>
+    <div id="date">-</div>
   </div>
 </header>
 
-<!-- ═══ MAIN ═══ -->
-<main class="main">
-
-  <!-- 公告欄 -->
-  <div id="announceBanner">
-    <div class="announce-label">📢 診所公告</div>
-    <div id="announceText">─</div>
+<main>
+  <div id="notice" class="notice">
+    <b>📢 診所公告</b>
+    <div id="noticeText"></div>
   </div>
 
-  <!-- 最近開啟 -->
-  <div id="recentSection" style="display:none;">
-    <div class="sec-label" style="margin-top:16px;">
-      <div class="sec-pill">🕐 最近開啟</div>
-      <div class="sec-line"></div>
+  <section>
+    <div class="section-title"><span>🏠 主要入口</span><i></i></div>
+    <div id="primaryGrid" class="grid"><div class="empty">資料載入中…</div></div>
+  </section>
+
+  <section>
+    <div class="section-title"><span>🧮 快速工具</span><i></i></div>
+    <div class="grid">
+      <div class="card" data-search="egfr 腎功能 計算機">
+        <button onclick="openModal('egfrModal')">
+          <div class="icon">🩺</div>
+          <h3>eGFR 計算機</h3>
+          <p>CKD-EPI 腎功能分期估算</p>
+        </button>
+      </div>
+
+      <div class="card" data-search="年份 年齡 西元 民國">
+        <button onclick="openModal('yearModal')">
+          <div class="icon">📅</div>
+          <h3>年齡 / 年份換算</h3>
+          <p>西元、民國、年齡互換</p>
+        </button>
+      </div>
+
+      <div class="card" data-search="定期任務 到期 逾期">
+        <button onclick="openModal('taskModal'); loadTasks();">
+          <div class="icon">📋<span id="taskDot" class="dot"></span></div>
+          <h3>定期任務</h3>
+          <p>追蹤院內定期工作事項</p>
+        </button>
+      </div>
     </div>
-    <div class="recent-strip" id="recentStrip"></div>
-  </div>
+  </section>
 
-  <!-- 主要入口 -->
-  <div class="sec-label">
-    <div class="sec-pill">🏠 主要入口</div>
-    <div class="sec-line"></div>
-  </div>
-  <div id="primaryGrid" class="grid"><div class="empty">資料載入中…</div></div>
-
-  <!-- 快速工具（內建，點卡片直接跳出） -->
-  <div class="sec-label">
-    <div class="sec-pill">🧮 快速工具</div>
-    <div class="sec-line"></div>
-  </div>
-  <div class="grid">
-
-    <div class="card">
-      <a class="card-link" href="javascript:void(0)" onclick="openModal('egfrPanel')">
-        <div class="icon-box">🩺</div>
-        <div class="card-title">eGFR 計算機</div>
-        <div class="card-desc">CKD-EPI 腎功能分期估算</div>
-      </a>
-    </div>
-
-    <div class="card">
-      <a class="card-link" href="javascript:void(0)" onclick="openModal('yearPanel')">
-        <div class="icon-box">📅</div>
-        <div class="card-title">年齡 / 年份換算</div>
-        <div class="card-desc">西元・民國・年齡互換</div>
-      </a>
-    </div>
-
-    <div class="card">
-      <a class="card-link" href="javascript:void(0)" onclick="openModal('taskPanel')">
-        <div class="icon-box">📋<span class="icon-dot" id="taskCardDot"></span></div>
-        <div class="card-title">定期任務</div>
-        <div class="card-desc">追蹤院內定期工作事項</div>
-      </a>
-    </div>
-
-  </div>
-
-  <!-- 次要工具 -->
-  <div class="sec-label">
-    <div class="sec-pill">🔧 次要工具</div>
-    <div class="sec-line"></div>
-  </div>
-  <div id="secondaryGrid" class="grid"><div class="empty">資料載入中…</div></div>
-
+  <section>
+    <div class="section-title"><span>🔧 次要工具</span><i></i></div>
+    <div id="secondaryGrid" class="grid"><div class="empty">資料載入中…</div></div>
+  </section>
 </main>
 
+<button id="taskAlert" class="alert" onclick="openModal('taskModal'); loadTasks();">有任務逾期</button>
 
-<!-- ═══ 共用遮罩 ═══ -->
-<div id="modalOverlay" class="modal-overlay" onclick="closeModal()"></div>
+<div id="overlay" class="overlay" onclick="closeModal()"></div>
 
-<!-- ═══ TASK BADGE ═══ -->
-<div id="taskBadge" onclick="openModal('taskPanel')">
-  🔴 <span id="taskBadgeText">有任務逾期！</span>
-</div>
-
-<!-- ═══ TASK PANEL ═══ -->
-<div id="taskPanel" class="modal-panel">
-  <div class="tp-hdr">
-    <h3>📋 定期任務</h3>
-    <div class="tp-hdr-right">
-      <button class="tp-refresh" onclick="loadTasks()" title="重新整理">🔄</button>
-      <button class="tp-close"   onclick="closeModal()">✕</button>
-    </div>
+<div id="egfrModal" class="modal">
+  <div class="modal-head">
+    <h2>🩺 eGFR 計算機</h2>
+    <button class="close" onclick="closeModal()">✕</button>
   </div>
-  <div class="tp-body" id="taskBody">
-    <div class="tp-loading">載入中…</div>
-  </div>
-  <div class="tp-footer">
-    完成任務後請至
-    <a href="https://docs.google.com/spreadsheets/d/1uYBA_CncbEAydmzNC1SRnsKJdswNgQh3zg1x6TKo0UU/edit#gid=646869954"
-       target="_blank" rel="noopener">Google Sheet</a>
-    更新完成日期
-  </div>
-</div>
+  <div class="modal-body">
+    <p style="color:var(--muted);font-weight:700;line-height:1.6">根據 2021 CKD-EPI Creatinine 公式計算，結果僅供臨床參考。</p>
 
-<!-- ═══ eGFR 計算機 PANEL ═══ -->
-<div id="egfrPanel" class="modal-panel">
-  <div class="tp-hdr">
-    <h3>🩺 eGFR 計算機</h3>
-    <div class="tp-hdr-right">
-      <button class="tp-close" onclick="closeModal()">✕</button>
-    </div>
-  </div>
-  <div class="tp-body">
-    <div class="tool-note">根據 2021 CKD-EPI (Creatinine) 公式計算，僅供臨床參考。</div>
+    <label>血清肌酸酐 Scr（mg/dL）</label>
+    <input id="egfrScr" class="input" type="number" step="0.01" placeholder="例：0.90">
 
-    <label class="plabel">血清肌酸酐 Scr（mg/dL）</label>
-    <input id="egfrScr" class="pin" type="number" step="0.01" inputmode="decimal" placeholder="例：0.90">
+    <label>病患年齡</label>
+    <input id="egfrAge" class="input" type="number" placeholder="輸入歲數">
 
-    <label class="plabel">病患年齡</label>
-    <input id="egfrAge" class="pin" type="number" inputmode="numeric" placeholder="輸入歲數">
-
-    <label class="plabel">性別</label>
-    <div class="tog-group" style="margin-bottom:18px;">
-      <button type="button" class="tog on" id="egfrMaleBtn"   onclick="setEgfrGender('male')">男性</button>
-      <button type="button" class="tog"    id="egfrFemaleBtn" onclick="setEgfrGender('female')">女性</button>
+    <label>性別</label>
+    <div class="seg">
+      <button id="maleBtn" class="on" onclick="setGender('male')">男性</button>
+      <button id="femaleBtn" onclick="setGender('female')">女性</button>
     </div>
 
-    <button class="btn-prim" onclick="calcEgfr()">計算 eGFR</button>
+    <div style="height:16px"></div>
+    <button class="btn" onclick="calcEgfr()">計算 eGFR</button>
 
-    <div class="tool-result" id="egfrResultBox">
-      <div class="tool-result-label">eGFR 為</div>
-      <div class="tool-result-value" id="egfrVal">--</div>
-      <div class="tool-result-unit">ml/min/1.73m²</div>
-      <div class="tool-stage-badge" id="egfrStageTitle">--</div>
-      <div class="tool-stage-desc" id="egfrStageDesc">--</div>
+    <div id="egfrResult" class="result">
+      <div>eGFR 為</div>
+      <div id="egfrValue" class="big">--</div>
+      <div style="color:var(--muted);font-weight:700;margin-top:4px">ml/min/1.73m²</div>
+      <div id="egfrStage" class="stage">--</div>
+      <p id="egfrDesc" style="font-weight:700;line-height:1.7;text-align:left"></p>
     </div>
   </div>
 </div>
 
-<!-- ═══ 年齡／年份換算 PANEL ═══ -->
-<div id="yearPanel" class="modal-panel">
-  <div class="tp-hdr">
-    <h3>📅 年齡 / 年份換算</h3>
-    <div class="tp-hdr-right">
-      <button class="tp-close" onclick="closeModal()">✕</button>
-    </div>
+<div id="yearModal" class="modal">
+  <div class="modal-head">
+    <h2>📅 年齡 / 年份換算</h2>
+    <button class="close" onclick="closeModal()">✕</button>
   </div>
-  <div class="tp-body">
-    <label class="plabel">西元年（A.D.）</label>
-    <input id="cvAd" class="pin" type="number" inputmode="numeric" placeholder="2026" oninput="cvFromAd()">
+  <div class="modal-body">
+    <label>西元年</label>
+    <input id="adYear" class="input" type="number" oninput="fromAD()">
 
-    <div class="year-swap">⇅</div>
+    <label>民國年</label>
+    <input id="rocYear" class="input" type="number" oninput="fromROC()">
 
-    <label class="plabel">民國年（R.O.C.）</label>
-    <input id="cvRoc" class="pin" type="number" inputmode="numeric" placeholder="115" oninput="cvFromRoc()">
-
-    <div class="age-box">
-      <div class="age-label" id="cvAgeLabel">若此年為出生年，於今年滿：</div>
-      <div class="age-value" id="cvAgeOutput">0<small>歲</small></div>
+    <div class="result show">
+      <div id="ageLabel">若此年為出生年，於今年滿：</div>
+      <div id="ageValue" class="big">0 歲</div>
     </div>
-
-    <div class="tool-note" style="margin:16px 0 0; text-align:center;">輸入其中一項，另兩項會自動計算</div>
   </div>
 </div>
 
-<!-- ═══ MEMO ═══ -->
-<div id="memoPanel">
-  <h4>📝 快速備忘</h4>
-  <textarea id="memoText" placeholder="在此輸入備忘事項…"></textarea>
-  <button class="memo-save" onclick="saveMemo()">儲存</button>
+<div id="taskModal" class="modal">
+  <div class="modal-head">
+    <h2>📋 定期任務</h2>
+    <button class="close" onclick="closeModal()">✕</button>
+  </div>
+  <div id="taskBody" class="modal-body">
+    <div class="empty">載入中…</div>
+  </div>
 </div>
 
-<!-- ═══ FLOAT CONTROLS ═══ -->
-<div class="controls">
-  <button class="ctrl" id="themeBtn" onclick="toggleTheme()" title="切換佈景主題">🌙</button>
-  <button class="ctrl" onclick="toggleMemo()" title="備忘貼">📝</button>
-  <button class="ctrl" onclick="openPanel()" title="介面設定">⚙️</button>
+<div id="memo" class="memo">
+  <h2>📝 快速備忘</h2>
+  <textarea id="memoText" class="input" placeholder="在此輸入備忘事項…"></textarea>
+  <div style="height:10px"></div>
+  <button class="btn" onclick="saveMemo()">儲存</button>
 </div>
 
-<!-- ═══ ADMIN PANEL ═══ -->
-<div class="panel" id="adminPanel">
-  <div class="panel-hdr">
-    <h2>⚙️ 介面設定</h2>
-    <button class="xbtn" onclick="closePanel()">✕</button>
-  </div>
-  <div class="panel-body">
-
-    <!-- 顯示設定 -->
-    <div class="pcard">
-      <div class="pcard-title">🎨 顯示設定</div>
-
-      <label class="plabel">佈景主題</label>
-      <div class="tog-group">
-        <button class="tog" id="theme-light"   onclick="setTheme('light')">☀️ 明亮</button>
-        <button class="tog" id="theme-dark"    onclick="setTheme('dark')">🌙 夜間</button>
-        <button class="tog" id="theme-antique" onclick="setTheme('antique')">📜 仿舊</button>
-      </div>
-
-      <label class="plabel">卡片風格</label>
-      <div class="tog-group">
-        <button class="tog" id="card-glass" onclick="setCard('glass')">玻璃</button>
-        <button class="tog" id="card-flat"  onclick="setCard('flat')">線框</button>
-        <button class="tog" id="card-solid" onclick="setCard('solid')">實色</button>
-      </div>
-
-      <label class="plabel">背景材質</label>
-      <div class="tog-group">
-        <button class="tog" id="tex-none" onclick="setTexture('none')">無</button>
-        <button class="tog" id="tex-dots" onclick="setTexture('dots')">點陣</button>
-        <button class="tog" id="tex-grid" onclick="setTexture('grid')">網格</button>
-      </div>
-
-      <label class="plabel">字型</label>
-      <div class="tog-group">
-        <button class="tog" id="font-pingfang"    onclick="setFont('pingfang')">蘋方黑體</button>
-        <button class="tog" id="font-sourcesans"  onclick="setFont('sourcesans')">思源黑體</button>
-        <button class="tog" id="font-sourceserif" onclick="setFont('sourceserif')">思源宋體</button>
-        <button class="tog" id="font-wenkai"      onclick="setFont('wenkai')">霞鶩文楷</button>
-        <button class="tog" id="font-goround"     onclick="setFont('goround')">昭源環方</button>
-      </div>
-    </div>
-
-    <!-- 大小設定 -->
-    <div class="pcard">
-      <div class="pcard-title">📏 大小設定</div>
-
-      <label class="plabel">卡片標題大小</label>
-      <div class="srow">
-        <input type="range" id="tsSlider" min="16" max="30" value="24" oninput="applySize()">
-        <span class="sval" id="tsVal">24px</span>
-      </div>
-
-      <label class="plabel">說明文字大小</label>
-      <div class="srow">
-        <input type="range" id="dsSlider" min="13" max="22" value="17" oninput="applySize()">
-        <span class="sval" id="dsVal">17px</span>
-      </div>
-
-      <label class="plabel">每列卡片數（電腦版）</label>
-      <div class="tog-group">
-        <button class="tog" id="g3" onclick="setGrid(3)">3</button>
-        <button class="tog" id="g4" onclick="setGrid(4)">4</button>
-        <button class="tog" id="g5" onclick="setGrid(5)">5</button>
-        <button class="tog" id="g6" onclick="setGrid(6)">6</button>
-      </div>
-    </div>
-
-    <!-- 新增書籤 -->
-    <div class="pcard">
-      <div class="pcard-title">🔗 新增書籤</div>
-      <label class="plabel">放置區域</label>
-      <select id="linkCat" class="pin">
-        <option value="primary">主要入口區</option>
-        <option value="secondary" selected>次要工具區</option>
-      </select>
-      <label class="plabel">選擇圖示</label>
-      <div class="epick" id="emojiPicker"></div>
-      <input id="lTitle" class="pin" placeholder="名稱（含「重要」自動標黃色）">
-      <input id="lUrl"   class="pin" placeholder="網址 https://…">
-      <input id="lDesc"  class="pin" placeholder="簡短說明（選填）">
-      <button class="btn-prim" onclick="saveLink()">＋ 儲存並新增</button>
-    </div>
-
-    <!-- 管理已存書籤 -->
-    <div id="manageWrap"></div>
-
-    <button class="btn-ghost" onclick="location.reload()">🔄 重新同步雲端資料</button>
-
-  </div>
+<div class="floating">
+  <button class="fab" onclick="toggleTheme()" title="切換佈景">🌙</button>
+  <button class="fab" onclick="toggleMemo()" title="快速備忘">📝</button>
 </div>
 
 <script>
-/* ═══════════════════════════════════════════════
-   CONFIG
-═══════════════════════════════════════════════ */
-const SHEET = 'https://docs.google.com/spreadsheets/d/1uYBA_CncbEAydmzNC1SRnsKJdswNgQh3zg1x6TKo0UU/export?format=csv&gid=0';
-const EMOJIS = ['🩺','💉','🏥','💊','📦','💻','🔍','📋','🧪','📅','📝','⭐','👤','⚙️','🔗','🏠'];
-const LS     = { links:'cz_links_v6', cfg:'cz_cfg_v6', theme:'cz_theme_v6', memo:'cz_memo', recent:'cz_recent' };
+var SHEET_URL = "https://docs.google.com/spreadsheets/d/1uYBA_CncbEAydmzNC1SRnsKJdswNgQh3zg1x6TKo0UU/export?format=csv&gid=0";
+var TASK_URL = "https://docs.google.com/spreadsheets/d/1uYBA_CncbEAydmzNC1SRnsKJdswNgQh3zg1x6TKo0UU/export?format=csv&gid=646869954";
+var TASK_EDIT = "https://docs.google.com/spreadsheets/d/1uYBA_CncbEAydmzNC1SRnsKJdswNgQh3zg1x6TKo0UU/edit#gid=646869954";
 
-let selIcon  = '🔗';
-let links    = JSON.parse(localStorage.getItem(LS.links))  || { primary:[], secondary:[] };
-let recent   = JSON.parse(localStorage.getItem(LS.recent)) || [];
+var gender = "male";
+var taskLoaded = false;
 
-/* ═══════════════════════════════════════════════
-   THEME / FONT / CARD / TEXTURE
-═══════════════════════════════════════════════ */
-function setTheme(t) {
-  document.documentElement.setAttribute('data-theme', t);
-  ['light','dark','antique'].forEach(x => {
-    const el = document.getElementById('theme-'+x);
-    if (el) el.classList.toggle('on', x === t);
-  });
-  document.getElementById('themeBtn').textContent = t === 'light' ? '🌙' : t === 'dark' ? '📜' : '☀️';
-  localStorage.setItem(LS.theme, t);
-}
+function $(id){ return document.getElementById(id); }
 
-function toggleTheme() {
-  const order = ['light','dark','antique'];
-  const cur = document.documentElement.getAttribute('data-theme') || 'light';
-  setTheme(order[(order.indexOf(cur) + 1) % order.length]);
-}
-
-function setCard(s) {
-  document.documentElement.setAttribute('data-card', s);
-  ['glass','flat','solid'].forEach(x => document.getElementById('card-'+x).classList.toggle('on', x === s));
-  saveCfg();
-}
-
-function setTexture(t) {
-  document.documentElement.setAttribute('data-texture', t);
-  ['none','dots','grid'].forEach(x => document.getElementById('tex-'+x).classList.toggle('on', x === t));
-  saveCfg();
-}
-
-function setFont(f) {
-  document.documentElement.setAttribute('data-font', f);
-  ['pingfang','sourcesans','sourceserif','wenkai','goround'].forEach(x => document.getElementById('font-'+x).classList.toggle('on', x === f));
-  saveCfg();
-}
-
-function setGrid(n) {
-  document.documentElement.style.setProperty('--grid', n);
-  [3,4,5,6].forEach(x => document.getElementById('g'+x).classList.toggle('on', x === n));
-  saveCfg();
-}
-
-function applySize() {
-  const ts = document.getElementById('tsSlider').value;
-  const ds = document.getElementById('dsSlider').value;
-  document.getElementById('tsVal').textContent = ts + 'px';
-  document.getElementById('dsVal').textContent = ds + 'px';
-  document.documentElement.style.setProperty('--fs-title', ts + 'px');
-  document.documentElement.style.setProperty('--fs-desc',  ds + 'px');
-  saveCfg();
-}
-
-/* ═══════════════════════════════════════════════
-   PERSIST CONFIG
-═══════════════════════════════════════════════ */
-function saveCfg() {
-  localStorage.setItem(LS.cfg, JSON.stringify({
-    ts:   document.getElementById('tsSlider').value,
-    ds:   document.getElementById('dsSlider').value,
-    grid: document.documentElement.style.getPropertyValue('--grid').trim() || '4',
-    card: document.documentElement.getAttribute('data-card'),
-    font: document.documentElement.getAttribute('data-font'),
-    tex:  document.documentElement.getAttribute('data-texture'),
-  }));
-}
-
-function restoreCfg() {
-  const c = JSON.parse(localStorage.getItem(LS.cfg));
-  if (!c) { initToggles(); return; }
-  if (c.ts)   { document.getElementById('tsSlider').value = c.ts; }
-  if (c.ds)   { document.getElementById('dsSlider').value = c.ds; }
-  applySize();
-  setCard(c.card || 'glass');
-  setFont(c.font || 'pingfang');
-  setTexture(c.tex || 'none');
-  const g = parseInt(c.grid) || 4;
-  setGrid(g);
-}
-
-function initToggles() {
-  setCard('glass'); setFont('pingfang'); setTexture('none'); setGrid(4);
-}
-
-/* ═══════════════════════════════════════════════
-   PANEL
-═══════════════════════════════════════════════ */
-function openPanel()  { document.getElementById('adminPanel').classList.add('show'); }
-function closePanel() { document.getElementById('adminPanel').classList.remove('show'); }
-
-/* ═══════════════════════════════════════════════
-   共用彈出視窗（定期任務 / eGFR / 年份換算）
-═══════════════════════════════════════════════ */
-function openModal(id) {
-  document.querySelectorAll('.modal-panel').forEach(p => p.classList.remove('show'));
-  document.getElementById(id).classList.add('show');
-  document.getElementById('modalOverlay').classList.add('show');
-  document.body.style.overflow = 'hidden';
-  if (id === 'taskPanel' && !cachedTasks.length) loadTasks();
-}
-function closeModal() {
-  document.querySelectorAll('.modal-panel').forEach(p => p.classList.remove('show'));
-  document.getElementById('modalOverlay').classList.remove('show');
-  document.body.style.overflow = '';
-}
-
-/* ═══════════════════════════════════════════════
-   MEMO
-═══════════════════════════════════════════════ */
-function toggleMemo() { document.getElementById('memoPanel').classList.toggle('show'); }
-function saveMemo() {
-  localStorage.setItem(LS.memo, document.getElementById('memoText').value);
-  const btn = document.querySelector('.memo-save');
-  btn.textContent = '✓ 已儲存'; setTimeout(() => btn.textContent = '儲存', 1500);
-}
-
-/* ═══════════════════════════════════════════════
-   SEARCH / FILTER
-═══════════════════════════════════════════════ */
-function filterCards() {
-  const q = document.getElementById('searchInput').value.toLowerCase().trim();
-  document.querySelectorAll('.card').forEach(c => {
-    const text = c.textContent.toLowerCase();
-    c.classList.toggle('hidden', q.length > 0 && !text.includes(q));
+function escapeHTML(str){
+  return String(str || "").replace(/[&<>"']/g,function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c];
   });
 }
 
-/* ═══════════════════════════════════════════════
-   RECENT LINKS
-═══════════════════════════════════════════════ */
-function trackClick(title, url, icon) {
-  recent = recent.filter(r => r.url !== url);
-  recent.unshift({ title, url, icon });
-  if (recent.length > 8) recent = recent.slice(0, 8);
-  localStorage.setItem(LS.recent, JSON.stringify(recent));
+function parseCSV(text){
+  var rows=[], row=[], field="", quote=false;
+  for(var i=0;i<text.length;i++){
+    var c=text[i], n=text[i+1];
+    if(c === '"' && quote && n === '"'){ field += '"'; i++; }
+    else if(c === '"'){ quote = !quote; }
+    else if(c === "," && !quote){ row.push(field.trim()); field=""; }
+    else if((c === "\n" || c === "\r") && !quote){
+      if(c === "\r" && n === "\n") i++;
+      row.push(field.trim());
+      if(row.join("").trim()) rows.push(row);
+      row=[]; field="";
+    }else field += c;
+  }
+  row.push(field.trim());
+  if(row.join("").trim()) rows.push(row);
+  return rows;
 }
 
-function renderRecent() {
-  if (!recent.length) return;
-  document.getElementById('recentSection').style.display = 'block';
-  const strip = document.getElementById('recentStrip');
-  strip.innerHTML = recent.map(r =>
-    `<a class="recent-chip" href="${r.url}" target="_blank" rel="noopener"
-        onclick="trackClick(${JSON.stringify(r.title)},${JSON.stringify(r.url)},${JSON.stringify(r.icon)})">
-      ${r.icon || '🔗'} ${r.title}
-    </a>`
-  ).join('');
+function createCard(item){
+  var cls = item.title.indexOf("重要") >= 0 ? "card important" : "card";
+  return ''
+    + '<div class="'+cls+'" data-search="'+escapeHTML(item.title+" "+item.desc+" "+item.icon)+'">'
+    + '<a href="'+escapeHTML(item.url)+'" target="_blank" rel="noopener">'
+    + '<div class="icon">'+escapeHTML(item.icon || "🔗")+'</div>'
+    + '<h3>'+escapeHTML(item.title)+'</h3>'
+    + (item.desc ? '<p>'+escapeHTML(item.desc)+'</p>' : '')
+    + '</a></div>';
 }
 
-/* ═══════════════════════════════════════════════
-   CARD（雲端／自訂書籤用）
-═══════════════════════════════════════════════ */
-function createCard(l) {
-  const hl   = l.isHighlight ? ' hl' : '';
-  const icon = l.icon || '🔗';
-  const trackAttr = `onclick="trackClick(${JSON.stringify(l.title)},${JSON.stringify(l.url)},${JSON.stringify(icon)})"`;
-  return `
-  <div class="card${hl}">
-    <a class="card-link" href="${l.url}" target="_blank" rel="noopener" ${trackAttr}>
-      <div class="icon-box">${icon}</div>
-      <div class="card-title">${l.title}</div>
-      ${l.desc ? `<div class="card-desc">${l.desc}</div>` : ''}
-    </a>
-  </div>`;
-}
+async function loadBookmarks(){
+  var primary=[], secondary=[], announce=[];
+  try{
+    var res = await fetch(SHEET_URL + "&cb=" + Date.now());
+    var text = await res.text();
+    var rows = parseCSV(text).slice(1);
 
-/* ═══════════════════════════════════════════════
-   CLOUD DATA
-═══════════════════════════════════════════════ */
-async function fetchCloud() {
-  const pg = document.getElementById('primaryGrid');
-  const sg = document.getElementById('secondaryGrid');
+    rows.forEach(function(cols){
+      var cat=(cols[0]||"").toLowerCase();
+      var title=cols[1]||"";
+      var url=cols[2]||"";
+      var desc=cols[3]||"";
+      var icon=cols[4]||"🔗";
+      if(!title) return;
 
-  let announcements = [];
-
-  try {
-    const r    = await fetch(SHEET + '&cb=' + Date.now());
-    const text = await r.text();
-    const rows = text.split(/\r?\n/).slice(1);
-
-    pg.innerHTML = ''; sg.innerHTML = '';
-
-    rows.forEach(row => {
-      const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
-                      .map(c => c.replace(/^"|"$/g,'').trim());
-      if (cols.length < 2) return;
-      const [cat, title, url, desc, icon] = cols;
-      if (!title) return;
-
-      if (cat.toLowerCase().includes('announce')) {
-        announcements.push(title + (desc ? '　' + desc : ''));
+      if(cat.indexOf("announce") >= 0){
+        announce.push(title + (desc ? "　" + desc : ""));
         return;
       }
-      if (!url) return;
-      const card = createCard({ title, url, desc, icon, isHighlight: title.includes('重要') });
-      if (cat.toLowerCase().includes('primary')) pg.innerHTML += card;
-      else sg.innerHTML += card;
+
+      if(!url) return;
+      var item={title:title,url:url,desc:desc,icon:icon};
+      if(cat.indexOf("primary") >= 0) primary.push(item);
+      else secondary.push(item);
     });
-
-  } catch(e) {
-    pg.innerHTML = '<div class="empty">⚠️ 雲端連線失敗，顯示本機書籤</div>';
-    sg.innerHTML = '';
-  }
-
-  if (announcements.length) {
-    const b = document.getElementById('announceBanner');
-    b.classList.add('show');
-    document.getElementById('announceText').innerHTML = announcements.join('<br>');
-  }
-
-  links.primary.forEach(l => {
-    l.isHighlight = l.title.includes('重要');
-    document.getElementById('primaryGrid').innerHTML += createCard(l);
-  });
-  links.secondary.forEach(l => {
-    l.isHighlight = l.title.includes('重要');
-    document.getElementById('secondaryGrid').innerHTML += createCard(l);
-  });
-
-  ['primaryGrid','secondaryGrid'].forEach(id => {
-    const el = document.getElementById(id);
-    if (!el.querySelector('.card')) el.innerHTML = '<div class="empty">尚無書籤</div>';
-  });
-
-  renderManage();
-}
-
-/* ═══════════════════════════════════════════════
-   BOOKMARK CRUD
-═══════════════════════════════════════════════ */
-function saveLink() {
-  const title = document.getElementById('lTitle').value.trim();
-  const url   = document.getElementById('lUrl').value.trim();
-  const desc  = document.getElementById('lDesc').value.trim();
-  const cat   = document.getElementById('linkCat').value;
-  if (!title || !url) { alert('請填寫名稱與網址'); return; }
-  links[cat].push({ id:Date.now(), title, url, desc, icon:selIcon });
-  localStorage.setItem(LS.links, JSON.stringify(links));
-  location.reload();
-}
-
-function delLink(id) {
-  if (!confirm('確定刪除？')) return;
-  ['primary','secondary'].forEach(k => {
-    links[k] = links[k].filter(x => x.id != id);
-  });
-  localStorage.setItem(LS.links, JSON.stringify(links));
-  location.reload();
-}
-
-function renderManage() {
-  const all = [...links.primary, ...links.secondary];
-  const w   = document.getElementById('manageWrap');
-  if (!all.length) { w.innerHTML = ''; return; }
-  w.innerHTML = `
-    <div class="pcard">
-      <div class="pcard-title">📋 已儲存書籤（${all.length} 筆）</div>
-      ${all.map(l => `
-      <div class="mitem">
-        <span>${l.icon} ${l.title}</span>
-        <button class="del" onclick="delLink(${l.id})">刪除</button>
-      </div>`).join('')}
-    </div>`;
-}
-
-/* ═══════════════════════════════════════════════
-   EMOJI PICKER
-═══════════════════════════════════════════════ */
-(function() {
-  const w = document.getElementById('emojiPicker');
-  EMOJIS.forEach(e => {
-    const d = document.createElement('div');
-    d.className = 'eopt' + (e === selIcon ? ' on' : '');
-    d.textContent = e;
-    d.onclick = () => {
-      document.querySelectorAll('.eopt').forEach(x => x.classList.remove('on'));
-      d.classList.add('on'); selIcon = e;
-    };
-    w.appendChild(d);
-  });
-})();
-
-/* ═══════════════════════════════════════════════
-   CLOCK
-═══════════════════════════════════════════════ */
-const WD = ['日','一','二','三','四','五','六'];
-function tick() {
-  const n = new Date();
-  const h = String(n.getHours()).padStart(2,'0');
-  const m = String(n.getMinutes()).padStart(2,'0');
-  const s = String(n.getSeconds()).padStart(2,'0');
-  document.getElementById('clock').textContent = `${h}:${m}:${s}`;
-  const y  = n.getFullYear();
-  const mo = String(n.getMonth()+1).padStart(2,'0');
-  const d  = String(n.getDate()).padStart(2,'0');
-  document.getElementById('date').textContent = `民國 ${y-1911} 年 ${y}/${mo}/${d}（週${WD[n.getDay()]}）`;
-}
-
-/* ═══════════════════════════════════════════════
-   eGFR 計算機（CKD-EPI 2021 Creatinine）
-═══════════════════════════════════════════════ */
-let egfrGender = 'male';
-const EGFR_STAGES = [
-  { min: 90, title: "第一期：腎功能正常", desc: "腎功能正常，但可能有蛋白尿、血尿等腎臟損傷證據。建議積極控制血糖與血壓，維持良好生活習慣。" },
-  { min: 60, title: "第二期：輕度腎功能受損", desc: "腎功能輕微下降，合併有蛋白尿、血尿等。應定期追蹤腎功能，注意飲食，避免服用不明藥物或止痛藥。" },
-  { min: 45, title: "第三期A：中度腎功能受損", desc: "腎功能顯著下降。應開始限制磷、鈉的攝取，嚴格監控血壓血糖，並每 3-6 個月回診檢查。" },
-  { min: 30, title: "第三期B：中度腎功能嚴重受損", desc: "腎功能持續惡化。必須接受低蛋白飲食治療，預防貧血與骨病變等併發症，並由專科醫師持續追蹤。" },
-  { min: 15, title: "第四期：重度腎臟病變", desc: "腎功能重度衰竭。腎臟無法有效排除代謝廢物，需嚴格限制飲食，並由醫師評估開始準備透析治療的血管通路。" },
-  { min: 0,  title: "第五期：末期腎臟病變", desc: "腎臟功能剩正常人 15% 以下，逐漸無法排除廢物與水分，必須準備接受透析治療（洗腎）或腎臟移植。" }
-];
-
-function setEgfrGender(g) {
-  egfrGender = g;
-  document.getElementById('egfrMaleBtn').classList.toggle('on', g === 'male');
-  document.getElementById('egfrFemaleBtn').classList.toggle('on', g === 'female');
-}
-
-function calcEgfr() {
-  const scrVal = document.getElementById('egfrScr').value;
-  const ageVal = document.getElementById('egfrAge').value;
-  if (!scrVal || !ageVal) { alert('請輸入數值'); return; }
-
-  const scr = parseFloat(scrVal);
-  const age = parseFloat(ageVal);
-  const isFemale = egfrGender === 'female';
-
-  const k = isFemale ? 0.7 : 0.9;
-  const alpha = isFemale ? -0.241 : -0.302;
-  const genderFactor = isFemale ? 1.012 : 1.0;
-  const scrK = scr / k;
-
-  const val = 142 * Math.pow(Math.min(scrK, 1), alpha) * Math.pow(Math.max(scrK, 1), -1.200) * Math.pow(0.9938, age) * genderFactor;
-
-  document.getElementById('egfrVal').textContent = val.toFixed(2);
-  const info = EGFR_STAGES.find(s => val >= s.min);
-  document.getElementById('egfrStageTitle').textContent = info.title;
-  document.getElementById('egfrStageDesc').textContent  = info.desc;
-
-  const rb = document.getElementById('egfrResultBox');
-  rb.classList.add('show');
-  setTimeout(() => rb.scrollIntoView({ behavior:'smooth', block:'nearest' }), 100);
-}
-
-/* ═══════════════════════════════════════════════
-   年齡／年份換算
-═══════════════════════════════════════════════ */
-function cvUpdateAge(adYear) {
-  const out = document.getElementById('cvAgeOutput');
-  if (adYear) {
-    const age = new Date().getFullYear() - parseInt(adYear);
-    if (age >= 0) out.innerHTML = `${age}<small>歲</small>`;
-    else out.innerHTML = `<span style="font-size:16px;color:var(--muted);">尚未出生</span>`;
-  } else {
-    out.innerHTML = `0<small>歲</small>`;
-  }
-}
-
-function cvFromAd() {
-  const ad = document.getElementById('cvAd').value;
-  const rocInput = document.getElementById('cvRoc');
-  if (ad) { rocInput.value = parseInt(ad) - 1911; cvUpdateAge(ad); }
-  else    { rocInput.value = ''; cvUpdateAge(''); }
-}
-
-function cvFromRoc() {
-  const roc = document.getElementById('cvRoc').value;
-  const adInput = document.getElementById('cvAd');
-  if (roc) { const ad = parseInt(roc) + 1911; adInput.value = ad; cvUpdateAge(ad); }
-  else     { adInput.value = ''; cvUpdateAge(''); }
-}
-
-function cvInit() {
-  const y = new Date().getFullYear();
-  document.getElementById('cvAgeLabel').textContent = `若此年為出生年，於今年 (${y}) 滿：`;
-  document.getElementById('cvAd').value = y;
-  cvFromAd();
-}
-
-/* ═══════════════════════════════════════════════
-   INIT
-═══════════════════════════════════════════════ */
-window.addEventListener('DOMContentLoaded', () => {
-
-  // theme（明亮／夜間／仿舊）
-  setTheme(localStorage.getItem(LS.theme) || 'light');
-
-  // cfg（卡片風格／字型／材質／每列數／字體大小）
-  restoreCfg();
-
-  // memo
-  const memo = localStorage.getItem(LS.memo);
-  if (memo) document.getElementById('memoText').value = memo;
-
-  // clock
-  tick(); setInterval(tick, 1000);
-
-  // recent
-  renderRecent();
-
-  // 年齡／年份換算工具預設值
-  cvInit();
-
-  // data — 書籤優先載入
-  fetchCloud();
-
-  // tasks — 延後 2 秒再靜默檢查，不阻擋頁面
-  setTimeout(() => { silentCheckTasks(); }, 2000);
-});
-
-/* ═══════════════════════════════════════════════
-   TASK SYSTEM — 讀取 Google Sheet 任務分頁
-   Sheet 欄位（第2列起）：
-   A=任務名稱  B=圖示  C=頻率說明  D=到期日(yyyy/MM/dd)  E=最近完成日期  F=備註
-═══════════════════════════════════════════════ */
-
-const TASK_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1uYBA_CncbEAydmzNC1SRnsKJdswNgQh3zg1x6TKo0UU/export?format=csv&gid=646869954';
-const TASK_EDIT_URL  = 'https://docs.google.com/spreadsheets/d/1uYBA_CncbEAydmzNC1SRnsKJdswNgQh3zg1x6TKo0UU/edit#gid=646869954';
-
-let cachedTasks = [];
-
-async function loadTasks() {
-  document.getElementById('taskBody').innerHTML = '<div class="tp-loading">⏳ 載入中…</div>';
-  try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 8000);
-    const r    = await fetch(TASK_SHEET_URL + '&cb=' + Date.now(), { signal: controller.signal });
-    clearTimeout(timer);
-    const text = await r.text();
-    const rows = text.split(/\r?\n/).slice(1);
-
-    cachedTasks = rows.map(row => {
-      const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
-                      .map(c => c.replace(/^"|"$/g,'').trim());
-      if (!cols[0]) return null;
-      const parseCsvDate = (v) => {
-        if (!v) return '';
-        if (/^\d+$/.test(v)) {
-          const d = new Date((+v - 25569) * 86400000);
-          return d.getFullYear() + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + String(d.getDate()).padStart(2,'0');
-        }
-        return v;
-      };
-      return {
-        name:     cols[0] || '',
-        icon:     cols[1] || '📋',
-        freq:     cols[2] || '',
-        dueDate:  parseCsvDate(cols[3]),
-        lastDone: parseCsvDate(cols[4]),
-        note:     cols[5] || '',
-      };
-    }).filter(Boolean);
-
-    renderTasks();
-  } catch(e) {
-    const msg = e.name === 'AbortError' ? '連線逾時，請稍後再試' : '請確認 Sheet 已公開分享';
-    document.getElementById('taskBody').innerHTML =
-      `<div class="tp-loading">⚠️ 無法讀取任務資料<br><small>${msg}</small></div>`;
-  }
-}
-
-function parseDate(str) {
-  if (!str) return null;
-  str = str.trim();
-  const m4 = str.match(/(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})/);
-  if (m4) return new Date(+m4[1], +m4[2]-1, +m4[3]);
-  const roc = str.match(/^(\d{2,3})[\/-](\d{1,2})[\/-](\d{1,2})/);
-  if (roc && +roc[1] < 200) return new Date(+roc[1]+1911, +roc[2]-1, +roc[3]);
-  return null;
-}
-
-function calcStatus(task) {
-  const today   = new Date(); today.setHours(0,0,0,0);
-  const dueDate = parseDate(task.dueDate);
-  if (!dueDate) return { label:'─', cls:'ok', daysLeft:999 };
-
-  const daysLeft = Math.ceil((dueDate - today) / 86400000);
-  if (daysLeft < 0)   return { label:`逾期 ${Math.abs(daysLeft)} 天`, cls:'overdue', daysLeft };
-  if (daysLeft === 0) return { label:'今天到期！',                     cls:'soon',    daysLeft };
-  if (daysLeft <= 3)  return { label:`還剩 ${daysLeft} 天`,            cls:'soon',    daysLeft };
-  return                     { label:`還剩 ${daysLeft} 天`,            cls:'ok',      daysLeft };
-}
-
-function renderTasks() {
-  const body = document.getElementById('taskBody');
-  if (!cachedTasks.length) {
-    body.innerHTML = '<div class="tp-loading">Sheet 裡沒有任務資料</div>';
+  }catch(e){
+    $("primaryGrid").innerHTML = '<div class="empty">雲端資料讀取失敗，但快速工具仍可使用</div>';
+    $("secondaryGrid").innerHTML = '<div class="empty">尚無資料</div>';
     return;
   }
 
-  const sorted = [...cachedTasks].sort((a,b) => calcStatus(a).daysLeft - calcStatus(b).daysLeft);
+  $("primaryGrid").innerHTML = primary.length ? primary.map(createCard).join("") : '<div class="empty">尚無書籤</div>';
+  $("secondaryGrid").innerHTML = secondary.length ? secondary.map(createCard).join("") : '<div class="empty">尚無書籤</div>';
 
-  let overdueCount = 0;
-  let out = '';
+  if(announce.length){
+    $("notice").classList.add("show");
+    $("noticeText").innerHTML = announce.map(escapeHTML).join("<br>");
+  }
 
-  sorted.forEach(t => {
-    const st = calcStatus(t);
-    if (st.cls === 'overdue') overdueCount++;
-
-    const itemCls = st.cls === 'overdue' ? 'task-item overdue'
-                  : st.cls === 'soon'    ? 'task-item due-soon'
-                  : 'task-item';
-
-    out += `
-    <div class="${itemCls}">
-      <div class="task-icon">${t.icon}</div>
-      <div class="task-info">
-        <div class="task-name">${t.name}</div>
-        <div class="task-meta">
-          ${t.freq ? `🔁 ${t.freq}` : ''}
-          ${t.dueDate  ? `　📅 到期：${t.dueDate}`  : ''}
-          ${t.lastDone ? `　✓ 完成：${t.lastDone}` : ''}
-          ${t.note     ? `<br>💬 ${t.note}` : ''}
-        </div>
-        <span class="task-badge ${st.cls}">${st.label}</span>
-        <a class="task-edit-link" href="${TASK_EDIT_URL}" target="_blank" rel="noopener">
-          → 至 Sheet 更新完成日期
-        </a>
-      </div>
-    </div>`;
-  });
-
-  body.innerHTML = out;
-  updateOverdueBadge(overdueCount);
+  filterCards();
 }
 
-function updateOverdueBadge(count) {
-  const badge = document.getElementById('taskBadge');
-  const dot   = document.getElementById('taskCardDot');
-  if (count > 0) {
-    badge.classList.add('show');
-    document.getElementById('taskBadgeText').textContent = `有 ${count} 個任務逾期！點此查看`;
-    if (dot) { dot.style.display = 'flex'; dot.textContent = count > 9 ? '9+' : count; }
-  } else {
-    badge.classList.remove('show');
-    if (dot) dot.style.display = 'none';
+function filterCards(){
+  var q = $("searchInput").value.trim().toLowerCase();
+  document.querySelectorAll(".card").forEach(function(card){
+    var text = (card.textContent + " " + (card.dataset.search || "")).toLowerCase();
+    card.classList.toggle("hidden", q && text.indexOf(q) < 0);
+  });
+}
+
+function openModal(id){
+  document.querySelectorAll(".modal").forEach(function(m){ m.classList.remove("show"); });
+  $("overlay").classList.add("show");
+  $(id).classList.add("show");
+  document.body.style.overflow = "hidden";
+}
+
+function closeModal(){
+  document.querySelectorAll(".modal").forEach(function(m){ m.classList.remove("show"); });
+  $("overlay").classList.remove("show");
+  document.body.style.overflow = "";
+}
+
+function toggleTheme(){
+  var html = document.documentElement;
+  var next = html.getAttribute("data-theme") === "dark" ? "light" : "dark";
+  html.setAttribute("data-theme", next);
+  localStorage.setItem("cz_theme_simple", next);
+}
+
+function toggleMemo(){
+  $("memo").classList.toggle("show");
+}
+
+function saveMemo(){
+  localStorage.setItem("cz_memo_simple", $("memoText").value);
+  alert("已儲存");
+}
+
+function setGender(g){
+  gender = g;
+  $("maleBtn").classList.toggle("on", g === "male");
+  $("femaleBtn").classList.toggle("on", g === "female");
+}
+
+function calcEgfr(){
+  var scr = parseFloat($("egfrScr").value);
+  var age = parseFloat($("egfrAge").value);
+  if(!scr || !age || scr <= 0 || age <= 0){
+    alert("請輸入正確的 Scr 與年齡");
+    return;
+  }
+
+  var female = gender === "female";
+  var k = female ? 0.7 : 0.9;
+  var alpha = female ? -0.241 : -0.302;
+  var factor = female ? 1.012 : 1;
+  var scrK = scr / k;
+
+  var val = 142
+    * Math.pow(Math.min(scrK,1), alpha)
+    * Math.pow(Math.max(scrK,1), -1.2)
+    * Math.pow(0.9938, age)
+    * factor;
+
+  var stage = getStage(val);
+  $("egfrValue").textContent = val.toFixed(2);
+  $("egfrStage").textContent = stage.title;
+  $("egfrDesc").textContent = stage.desc;
+  $("egfrResult").classList.add("show");
+}
+
+function getStage(v){
+  if(v >= 90) return {title:"第一期：腎功能正常",desc:"腎功能正常，但仍需搭配尿蛋白、血尿與臨床狀況判讀。"};
+  if(v >= 60) return {title:"第二期：輕度腎功能受損",desc:"建議定期追蹤腎功能，控制血壓血糖，避免不明藥物與止痛藥。"};
+  if(v >= 45) return {title:"第三期A：中度腎功能受損",desc:"腎功能已有明顯下降，建議規律追蹤並注意飲食與慢性病控制。"};
+  if(v >= 30) return {title:"第三期B：中度腎功能嚴重受損",desc:"需更密切追蹤，評估貧血、骨病變與飲食調整。"};
+  if(v >= 15) return {title:"第四期：重度腎臟病變",desc:"腎功能重度下降，應由醫師評估後續治療與透析準備。"};
+  return {title:"第五期：末期腎臟病變",desc:"可能需要透析或腎臟移植評估，請依醫師判斷處理。"};
+}
+
+function fromAD(){
+  var ad = parseInt($("adYear").value,10);
+  $("rocYear").value = ad ? ad - 1911 : "";
+  updateAge(ad);
+}
+
+function fromROC(){
+  var roc = parseInt($("rocYear").value,10);
+  var ad = roc ? roc + 1911 : "";
+  $("adYear").value = ad;
+  updateAge(ad);
+}
+
+function updateAge(ad){
+  var y = new Date().getFullYear();
+  $("ageLabel").textContent = "若此年為出生年，於今年 (" + y + ") 滿：";
+  if(!ad) $("ageValue").textContent = "0 歲";
+  else if(ad > y) $("ageValue").textContent = "尚未出生";
+  else $("ageValue").textContent = (y - ad) + " 歲";
+}
+
+function excelDate(v){
+  if(!v) return "";
+  v = String(v).trim();
+  if(/^\d+$/.test(v)){
+    var d = new Date((Number(v) - 25569) * 86400000);
+    return formatDate(d);
+  }
+  return v;
+}
+
+function parseDate(v){
+  if(!v) return null;
+  var m = String(v).trim().match(/^(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})/);
+  if(m) return new Date(+m[1], +m[2]-1, +m[3]);
+  var r = String(v).trim().match(/^(\d{2,3})[\/-](\d{1,2})[\/-](\d{1,2})/);
+  if(r && +r[1] < 200) return new Date(+r[1]+1911, +r[2]-1, +r[3]);
+  return null;
+}
+
+function isDone(v){
+  return !!v && !/^(0|false|no|否|x|✗|✕|-|無|未|待)$/i.test(String(v).trim());
+}
+
+function taskStatus(t){
+  var today = new Date();
+  today.setHours(0,0,0,0);
+  var due = parseDate(t.due);
+  var days = due ? Math.ceil((due - today) / 86400000) : null;
+
+  if(t.done && (!due || days >= 0)){
+    return {state:"done",sort:4,days:days || 9999,label: due ? "✅ 已完成・下次到期還有 " + days + " 天" : "✅ 已完成"};
+  }
+  if(!due) return {state:"todo",sort:3,days:9999,label:"🔵 待完成"};
+  if(days < 0) return {state:"overdue",sort:0,days:days,label:"🔴 已逾期 " + Math.abs(days) + " 天"};
+  if(days === 0) return {state:"today",sort:1,days:days,label:"🟠 今天到期"};
+  if(days <= 3) return {state:"soon",sort:2,days:days,label:"🟠 即將到期・還剩 " + days + " 天"};
+  return {state:"todo",sort:3,days:days,label:"🔵 待完成・還剩 " + days + " 天"};
+}
+
+async function loadTasks(){
+  if(taskLoaded) return;
+  $("taskBody").innerHTML = '<div class="empty">載入中…</div>';
+
+  try{
+    var res = await fetch(TASK_URL + "&cb=" + Date.now());
+    var text = await res.text();
+    var rows = parseCSV(text).slice(1);
+    var tasks = rows.map(function(c){
+      if(!c[0]) return null;
+      return {
+        name:c[0]||"",
+        icon:c[1]||"📋",
+        freq:c[2]||"",
+        due:excelDate(c[3]),
+        doneDate:excelDate(c[4]),
+        note:c[5]||"",
+        done:isDone(c[6]),
+        periodDue:excelDate(c[7])
+      };
+    }).filter(Boolean);
+
+    renderTasks(tasks);
+    taskLoaded = true;
+  }catch(e){
+    $("taskBody").innerHTML = '<div class="empty">無法讀取任務資料。快速工具仍可使用。</div>';
   }
 }
 
-// 頁面載入時靜默檢查逾期
-async function silentCheckTasks() {
-  try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 8000);
-    const r    = await fetch(TASK_SHEET_URL + '&cb=' + Date.now(), { signal: controller.signal });
-    clearTimeout(timer);
-    const text = await r.text();
-    const rows = text.split(/\r?\n/).slice(1);
-    cachedTasks = rows.map(row => {
-      const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
-                      .map(c => c.replace(/^"|"$/g,'').trim());
-      if (!cols[0]) return null;
-      const pcd = (v) => {
-        if (!v) return '';
-        if (/^\d+$/.test(v)) {
-          const d = new Date((+v - 25569) * 86400000);
-          return d.getFullYear() + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + String(d.getDate()).padStart(2,'0');
-        }
-        return v;
-      };
-      return { name:cols[0], icon:cols[1]||'📋', freq:cols[2]||'', dueDate:pcd(cols[3]), lastDone:pcd(cols[4]), note:cols[5]||'' };
-    }).filter(Boolean);
-    const overdueCount = cachedTasks.filter(t => calcStatus(t).cls === 'overdue').length;
-    updateOverdueBadge(overdueCount);
-  } catch(e) { /* 靜默失敗 */ }
+function renderTasks(tasks){
+  if(!tasks.length){
+    $("taskBody").innerHTML = '<div class="empty">Sheet 裡沒有任務資料</div>';
+    updateTaskAlert(0);
+    return;
+  }
+
+  var list = tasks.map(function(t){
+    return {t:t,st:taskStatus(t)};
+  }).sort(function(a,b){
+    return (a.st.sort - b.st.sort) || (a.st.days - b.st.days);
+  });
+
+  var overdue = 0;
+  var html = "";
+
+  list.forEach(function(x){
+    var t = x.t, st = x.st;
+    if(st.state === "overdue") overdue++;
+
+    html += '<div class="task '+st.state+'">';
+    html += '<div class="task-icon">'+escapeHTML(t.icon)+'</div>';
+    html += '<div>';
+    html += '<h3>'+escapeHTML(t.name)+'</h3>';
+    if(t.freq) html += '<div class="task-meta">🔁 '+escapeHTML(t.freq)+'</div>';
+    if(t.due) html += '<div class="task-meta">到期：'+escapeHTML(t.due)+'</div>';
+    if(t.doneDate) html += '<div class="task-meta">完成：'+escapeHTML(t.doneDate)+'</div>';
+    if(t.note) html += '<div class="task-meta">💬 '+escapeHTML(t.note)+'</div>';
+    html += '<div class="badge">'+escapeHTML(st.label)+'</div>';
+    html += '<br><a href="'+TASK_EDIT+'" target="_blank" rel="noopener" style="display:inline-block;margin-top:9px;color:var(--brand);font-weight:900;text-decoration:none">至 Sheet 更新完成日期</a>';
+    html += '</div></div>';
+  });
+
+  $("taskBody").innerHTML = html;
+  updateTaskAlert(overdue);
 }
 
+function updateTaskAlert(count){
+  var alert = $("taskAlert");
+  var dot = $("taskDot");
+  if(count > 0){
+    alert.classList.add("show");
+    alert.textContent = "有 " + count + " 個任務逾期！點此查看";
+    dot.style.display = "grid";
+    dot.textContent = count > 9 ? "9+" : count;
+  }else{
+    alert.classList.remove("show");
+    dot.style.display = "none";
+  }
+}
+
+async function silentTaskCheck(){
+  try{
+    var res = await fetch(TASK_URL + "&cb=" + Date.now());
+    var text = await res.text();
+    var rows = parseCSV(text).slice(1);
+    var count = 0;
+    rows.forEach(function(c){
+      if(!c[0]) return;
+      var t = {due:excelDate(c[3]),done:isDone(c[6])};
+      if(taskStatus(t).state === "overdue") count++;
+    });
+    updateTaskAlert(count);
+  }catch(e){}
+}
+
+function formatDate(d){
+  return d.getFullYear()+"/"+String(d.getMonth()+1).padStart(2,"0")+"/"+String(d.getDate()).padStart(2,"0");
+}
+
+function tick(){
+  var n = new Date();
+  $("time").textContent =
+    String(n.getHours()).padStart(2,"0") + ":" +
+    String(n.getMinutes()).padStart(2,"0") + ":" +
+    String(n.getSeconds()).padStart(2,"0");
+
+  var wd = ["日","一","二","三","四","五","六"][n.getDay()];
+  $("date").textContent = "民國 " + (n.getFullYear()-1911) + " 年 " + formatDate(n) + "（週" + wd + "）";
+}
+
+function init(){
+  var theme = localStorage.getItem("cz_theme_simple") || "light";
+  document.documentElement.setAttribute("data-theme", theme);
+
+  $("memoText").value = localStorage.getItem("cz_memo_simple") || "";
+
+  var y = new Date().getFullYear();
+  $("adYear").value = y;
+  fromAD();
+
+  tick();
+  setInterval(tick,1000);
+
+  loadBookmarks();
+  setTimeout(silentTaskCheck,1500);
+}
+
+document.addEventListener("keydown",function(e){
+  if(e.key === "Escape") closeModal();
+  if(e.key === "/" && !["INPUT","TEXTAREA"].includes(document.activeElement.tagName)){
+    e.preventDefault();
+    $("searchInput").focus();
+  }
+});
+
+init();
 </script>
 </body>
 </html>
