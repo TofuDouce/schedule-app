@@ -2523,6 +2523,96 @@ document.getElementById("amao-sprite").addEventListener("click", function(){
 });
 
 Game.init();
+</script><script>
+/* ============================================================
+   阿毛之塔 - 神秘序號外掛
+   使用方式：整段貼在原網頁 </html> 之前即可，不用改任何原始碼
+   序號：99999（金幣）、STAR（無敵星星10回合）、SISTER（全老闆商品）
+   ============================================================ */
+(function(){
+  if(typeof Game==="undefined" || typeof UI==="undefined"){ return; }
+
+  // ---- 序號效果 ----
+  window.AmaoCheat = {
+    redeem: function(code){
+      code = String(code||"").trim().toUpperCase();
+      if(code==="99999"){
+        Game.state.gold += 99999;
+        UI.log("gold","🎁","<b class='hl'>神秘序號生效！</b>獲得 99,999 金幣！");
+        Game.save(); UI.renderStatus();
+        return "💰 已獲得 99,999 金幣！";
+      }
+      if(code==="STAR"){
+        var c = Game.computed();
+        Game.state.hp = c.hpMax;
+        Game.state.buffs.push({stat:"atk",  magnitude:400, floorsLeft:10});
+        Game.state.buffs.push({stat:"def",  magnitude:5,   floorsLeft:10});
+        Game.state.buffs.push({stat:"crit", magnitude:1,   floorsLeft:10});
+        Game.state.buffs.push({stat:"luck", magnitude:0.5, floorsLeft:10});
+        UI.log("milestone","⭐","<b class='hl'>無敵星星啟動！</b>阿毛渾身發光，體力全滿、全能力爆表，持續 10 次骰子！");
+        Game.save(); UI.renderStatus(); UI.renderBuffs();
+        return "⭐ 無敵星星已啟動！效果顯示在主畫面上方";
+      }
+      if(code==="SISTER"){
+        Game.state.sisterMode = true;
+        UI.log("milestone","🛒","<b class='hl'>神秘力量湧入商店……</b>四位老闆的商品全部上架了！");
+        Game.save();
+        return "🛒 全老闆商品已解鎖！去商店看看吧";
+      }
+      return "❌ 序號無效，再檢查一下拼字？";
+    }
+  };
+
+  // ---- 攔截商店渲染：SISTER 模式下暫時把所有商品掛到今日老闆名下 ----
+  var origRenderModal = UI.renderModal.bind(UI);
+  UI.renderModal = function(type){
+    if(type==="shop" && Game.state.sisterMode){
+      var m = UI.activeMerchant || Game.todayMerchant();
+      var savedOwners = SHOP_ITEMS.map(function(i){ return i.owner; });
+      SHOP_ITEMS.forEach(function(i){ if(i.owner!=="vip"){ i.owner = m.id; } });
+      try{ origRenderModal(type); }
+      finally{ SHOP_ITEMS.forEach(function(i,idx){ i.owner = savedOwners[idx]; }); }
+      return;
+    }
+    origRenderModal(type);
+    // ---- 在系統設定面板底部加上序號兌換區 ----
+    if(type==="system"){
+      var body = document.getElementById("modal-body");
+      if(!body || document.getElementById("cheat-box")) return;
+      var box = document.createElement("div");
+      box.id = "cheat-box";
+      box.style.cssText = "margin-top:20px;padding:14px;background:var(--panel);border:1px dashed var(--sage-deep);border-radius:14px;";
+
+      var label = document.createElement("div");
+      label.style.cssText = "font-size:0.78em;font-weight:900;color:var(--sage);text-align:center;margin-bottom:10px;";
+      label.innerText = "— 神秘序號兌換處 —";
+      box.appendChild(label);
+
+      var row = document.createElement("div");
+      row.style.cssText = "display:flex;gap:8px;";
+      var input = document.createElement("input");
+      input.type = "text";
+      input.placeholder = "輸入序號…";
+      input.style.cssText = "flex:1;padding:11px;border-radius:10px;border:1px solid var(--line);background:var(--panel-2);color:var(--ivory);outline:none;";
+      var btn = document.createElement("button");
+      btn.innerText = "兌換";
+      btn.style.cssText = "padding:0 20px;border:none;border-radius:10px;background:var(--sage);color:#1A2318;font-weight:900;cursor:pointer;";
+      row.appendChild(input); row.appendChild(btn);
+      box.appendChild(row);
+
+      var msg = document.createElement("div");
+      msg.style.cssText = "font-size:0.75em;color:var(--muted);text-align:center;margin-top:10px;min-height:1.2em;";
+      box.appendChild(msg);
+
+      btn.onclick = function(){
+        msg.innerText = window.AmaoCheat.redeem(input.value);
+        input.value = "";
+      };
+      body.appendChild(box);
+    }
+  };
+})();
 </script>
+
 </body>
 </html>
