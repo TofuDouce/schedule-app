@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
-<title>阿毛之塔</title>
+<title>阿毛之塔｜9999層的鮮茶道之約</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Chiron+Gorund+TC:wght@400;700;900&family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Serif+TC:ital,wght@0,700;0,900;1,700;1,900&display=swap" rel="stylesheet">
@@ -270,6 +270,41 @@ body{
 #daily-mask.show{display:flex;}
 #story-mask{position:fixed;inset:0;background:rgba(10,10,14,0.9);z-index:500;display:none;align-items:center;justify-content:center;padding:26px;}
 #story-mask.show{display:flex;}
+#choice-mask{position:fixed;inset:0;background:rgba(10,10,14,0.9);z-index:550;display:none;align-items:center;justify-content:center;padding:26px;}
+#choice-mask.show{display:flex;}
+#rescue-mask{position:fixed;inset:0;background:rgba(10,10,14,0.92);z-index:560;display:none;align-items:center;justify-content:center;padding:26px;}
+#rescue-mask.show{display:flex;}
+.choice-list{display:flex;flex-direction:column;gap:8px;text-align:left;}
+.choice-list .shop-item{cursor:pointer;}
+.choice-list .shop-item.disabled{opacity:0.4;pointer-events:none;}
+
+/* ---------- Battle controls ---------- */
+#battle-controls{display:flex;flex-direction:column;gap:8px;margin-bottom:6px;}
+.rage-row{display:flex;align-items:center;gap:10px;}
+.rage-label{font-size:0.72em;font-weight:900;color:var(--honey);white-space:nowrap;}
+.rage-bar{flex:1;height:10px;border-radius:6px;background:var(--panel-2);overflow:hidden;border:1px solid var(--line);}
+.rage-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--honey-deep),var(--honey));border-radius:6px;transition:width .3s;}
+.skill-row{display:flex;gap:8px;}
+.skill-btn{
+  flex:1;border-radius:11px;padding:8px 4px;cursor:pointer;
+  background:var(--panel-2);color:var(--ivory);font-weight:900;font-size:0.78em;
+  display:flex;flex-direction:column;align-items:center;gap:2px;border:1px solid var(--line);
+}
+.skill-btn small{font-size:0.72em;color:var(--muted);font-weight:400;}
+.skill-btn:not(:disabled){background:var(--sage);color:#1A2318;border-color:var(--sage-deep);}
+.skill-btn:not(:disabled) small{color:#3A4A38;}
+.skill-btn.finisher:not(:disabled){background:var(--danger);color:#2A1414;border-color:#A85F5F;animation:finisherPulse 1s infinite;}
+@keyframes finisherPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.04);}}
+.skill-btn:disabled{opacity:0.45;cursor:default;}
+
+.fighter-shieldbar{width:88px;height:5px;border-radius:3px;background:var(--panel-2);overflow:hidden;border:1px solid var(--line);}
+.fighter-shieldbar i{display:block;height:100%;background:var(--dust);border-radius:3px;transition:width .35s;}
+
+.float-txt{
+  position:absolute;font-weight:900;font-size:0.9em;pointer-events:none;z-index:5;
+  animation:floatUp .9s ease-out forwards;text-shadow:0 2px 4px rgba(0,0,0,0.6);
+}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0);}100%{opacity:0;transform:translateY(-34px);}}
 .ending-card{background:var(--ink-2);border:1px solid var(--blush-deep);border-radius:20px;padding:32px 24px;text-align:center;max-width:380px;}
 .ending-card .big-ico{font-size:3.2em;margin-bottom:10px;}
 .ending-card h2{font-family:"Noto Serif TC",serif;font-size:1.3em;color:var(--blush);margin-bottom:10px;}
@@ -364,6 +399,7 @@ body{
       <div class="vs-mark">VS</div>
       <div class="fighter fighter-right" id="fighter-monster">
         <span class="fighter-ico" id="fighter-monster-ico">🧟</span>
+        <div class="fighter-shieldbar" id="monster-shieldbar" style="display:none;"><i id="fighter-monster-shield" style="width:100%"></i></div>
         <div class="fighter-hpbar"><i id="fighter-monster-hp" style="width:100%"></i></div>
       </div>
     </div>
@@ -377,6 +413,17 @@ body{
 
 <footer id="app-footer">
   <button id="dice-btn" onclick="Game.roll()"><span>🎲</span><span>投擲命運之骰</span></button>
+  <div id="battle-controls" style="display:none;">
+    <div class="rage-row">
+      <span class="rage-label">🔥 怒氣</span>
+      <div class="rage-bar"><i id="rage-fill" style="width:0%"></i></div>
+    </div>
+    <div class="skill-row">
+      <button class="skill-btn" id="skill-roar" onclick="Game.skillRoar()">🐺 咆哮<small>100怒氣</small></button>
+      <button class="skill-btn" id="skill-bite" onclick="Game.skillBite()">😬 咬住不放<small>60怒氣</small></button>
+      <button class="skill-btn finisher" id="skill-finish" onclick="Game.skillFinisher()">⚡ 終結一擊<small>殘血限定</small></button>
+    </div>
+  </div>
   <div class="nav-row">
     <div class="nav-btn" onclick="UI.openModal('food')">
       <span class="ico">🍱</span><span class="lbl">美食</span>
@@ -428,6 +475,30 @@ body{
     <h2 id="story-title">續攤時光</h2>
     <p id="story-desc"></p>
     <button onclick="UI.closeVipStory()">收下這份心意</button>
+  </div>
+</div>
+
+<div id="choice-mask">
+  <div class="ending-card">
+    <div class="big-ico">🏆</div>
+    <h2>戰鬥勝利！選一份獎勵</h2>
+    <div class="choice-list">
+      <div class="shop-item" onclick="Game.applyBattleChoice(1)"><span class="ico">💰</span><div class="info"><div class="name">滿滿的金幣</div><div class="desc" id="choice-gold-desc">額外金幣獎勵</div></div></div>
+      <div class="shop-item" onclick="Game.applyBattleChoice(2)"><span class="ico">💗</span><div class="info"><div class="name">喘口氣休息</div><div class="desc">回復 30% 體力</div></div></div>
+      <div class="shop-item" onclick="Game.applyBattleChoice(3)"><span class="ico">🚀</span><div class="info"><div class="name">乘勝追擊</div><div class="desc">立刻前進 3 層</div></div></div>
+    </div>
+  </div>
+</div>
+
+<div id="rescue-mask">
+  <div class="ending-card" style="border-color:var(--danger);">
+    <div class="big-ico">😵</div>
+    <h2 style="color:var(--danger);">阿毛快撐不住了！</h2>
+    <div class="choice-list">
+      <div class="shop-item" id="rescue-food-btn" onclick="Game.rescueEatFood()"><span class="ico">🍱</span><div class="info"><div class="name">緊急吃補血美食</div><div class="desc" id="rescue-food-desc"></div></div></div>
+      <div class="shop-item" id="rescue-npc-btn" onclick="Game.rescueMerchant()"><span class="ico">🆘</span><div class="info"><div class="name">召喚今日老闆救場</div><div class="desc" id="rescue-npc-desc"></div></div></div>
+      <div class="shop-item" onclick="Game.rescueRetreat()"><span class="ico">🏳️</span><div class="info"><div class="name">認輸撤退</div><div class="desc">保住一口氣逃走，這場沒有獎勵</div></div></div>
+    </div>
   </div>
 </div>
 
@@ -530,9 +601,15 @@ var ACHIEVEMENTS = [
 ];
 var MONSTER_PREFIX = ["兇猛的","中二的","閃閃發光的","莫蘭迪色的","來自深淵的","忘記吃早餐的","看起來很香的","透明的","脾氣暴躁的"];
 var MONSTER_LIST = [
-  {name:"殭屍", ico:"🧟"}, {name:"加班小精靈", ico:"🧚"}, {name:"香菜惡魔", ico:"🌿"},
-  {name:"低飽和史萊姆", ico:"🟢"}, {name:"腳步聲怪客", ico:"👣"}, {name:"咖啡因怪獸", ico:"☕"},
-  {name:"壞掉的販賣機", ico:"🥤"}, {name:"巨大骨頭", ico:"🦴"}, {name:"打呵欠的守衛", ico:"😪"}
+  {name:"殭屍", ico:"🧟", mech:"normal"},
+  {name:"加班小精靈", ico:"🧚", mech:"heal"},
+  {name:"香菜惡魔", ico:"🌿", mech:"normal"},
+  {name:"低飽和史萊姆", ico:"🟢", mech:"heal"},
+  {name:"腳步聲怪客", ico:"👣", mech:"normal"},
+  {name:"咖啡因怪獸", ico:"☕", mech:"normal"},
+  {name:"壞掉的販賣機", ico:"🥤", mech:"shield"},
+  {name:"巨大骨頭", ico:"🦴", mech:"shield"},
+  {name:"打呵欠的守衛", ico:"😪", mech:"normal"}
 ];
 
 var MERCHANTS = [
@@ -660,6 +737,8 @@ var Game = {
       lastFreeTeaDate: null,
       unseenFood: false,
       unseenLoot: false,
+      expeditionDate: null,
+      expeditionCountToday: 0,
       achievements: {},       // id -> true
       stats: {
         monsterKills: 0, nearDeathCount: 0,
@@ -688,7 +767,7 @@ var Game = {
     var c = {
       hpMax: t.hpMax + this.state.bonusHpMax,
       atk: t.atk + this.state.bonusAtk,
-      def: t.def + this.state.bonusDef,
+      def: t.def/100 + this.state.bonusDef,
       goldRate: t.goldRate + this.state.bonusGoldRate,
       luck: t.luck + this.state.bonusLuck,
       crit: t.crit
@@ -771,10 +850,11 @@ var Game = {
       try{
         var parsed = JSON.parse(raw);
         this.state = Object.assign(def, parsed);
-        this.state.stats = Object.assign(def.stats, parsed.stats||{});
-        this.state.shopOwned = Object.assign({}, def.shopOwned, parsed.shopOwned||{});
-        this.state.vipStorySeen = Object.assign({}, def.vipStorySeen, parsed.vipStorySeen||{});
-        this.state.achievements = Object.assign({}, def.achievements, parsed.achievements||{});
+        // 注意：上一行已讓 def.stats 被 parsed.stats 覆蓋，深層合併必須用全新的預設物件
+        this.state.stats = Object.assign(this.defaultState().stats, parsed.stats||{});
+        this.state.shopOwned = Object.assign({}, parsed.shopOwned||{});
+        this.state.vipStorySeen = Object.assign({}, parsed.vipStorySeen||{});
+        this.state.achievements = Object.assign({}, parsed.achievements||{});
         if(!this.state.maxFloorReached || this.state.maxFloorReached < this.state.floor){
           this.state.maxFloorReached = this.state.floor;
         }
@@ -921,6 +1001,52 @@ var Game = {
     return {def:resultDef, isNew:r.isNew};
   },
 
+  rollUndiscoveredFood: function(){
+    // 嘗試最多25次抽出圖鑑裡還沒有的組合，抽不到就照一般規則
+    for(var attempt=0; attempt<25; attempt++){
+      var q = this.weightedPick(QUALITY);
+      var a = AROMA[Math.floor(Math.random()*AROMA.length)];
+      var b = BASE[Math.floor(Math.random()*BASE.length)];
+      var key = q.name+"|"+a.name+"|"+b.name;
+      if(!this.state.foodDex[key]){
+        var entry = {count:1, quality:q.name, aroma:a.name, base:b.name, tier:q.tier, stat:a.stat, ico:b.ico};
+        this.state.foodDex[key] = entry;
+        this.state.unseenFood = true;
+        return {key:key, entry:entry, isNew:true};
+      }
+    }
+    return this.rollFood();
+  },
+
+  expedition: function(){
+    var today = this.todayKey();
+    if(this.state.expeditionDate !== today){
+      this.state.expeditionDate = today;
+      this.state.expeditionCountToday = 0;
+    }
+    if(this.state.expeditionCountToday >= 3) return false;
+    var c = this.computed();
+    var cost = Math.round(c.hpMax*0.3);
+    if(this.state.maxFloorReached < 50 || this.state.hp <= cost) return false;
+
+    this.state.hp -= cost;
+    this.state.expeditionCountToday++;
+
+    UI.log("milestone","🧭","阿毛出發遠征，回到熟悉的樓層掃蕩……");
+    var names = [];
+    for(var i=0;i<4;i++){
+      var r = Math.random()<0.7 ? this.rollUndiscoveredFood() : this.rollFood();
+      names.push((r.isNew?"✨":"")+r.entry.quality+r.entry.aroma+r.entry.base);
+    }
+    var goldGain = Math.round((60+Math.random()*60) * c.goldRate);
+    this.state.gold += goldGain;
+    UI.log("loot","🎒","遠征收穫：<b class='hl-sage'>"+names.join("、")+"</b>，還有 <b class='hl'>"+goldGain+"</b> 金幣！");
+    this.save();
+    UI.renderStatus();
+    this.checkAchievements();
+    return true;
+  },
+
   claimFreeTea: function(){
     var today = this.todayKey();
     if(this.state.lastFreeTeaDate === today) return false;
@@ -993,72 +1119,333 @@ var Game = {
     return Math.min(next10, nextTitle);
   },
 
+  currentBattle: null,
+
   battle: function(onDone){
     var self = this;
     var c = this.computed();
-    var floor = this.state.floor;
-    var lvl = Math.max(1, Math.ceil(floor/10));
+    var lvl = Math.max(1, Math.ceil(this.state.floor/10));
+    var clvl = Math.min(lvl, 60); // 戰力等級上限，與玩家稱號能力封頂匹配
     var mDef = MONSTER_LIST[Math.floor(Math.random()*MONSTER_LIST.length)];
+    var baseHp = 20 + clvl*6;
     var monster = {
       name: MONSTER_PREFIX[Math.floor(Math.random()*MONSTER_PREFIX.length)] + mDef.name,
       ico: mDef.ico,
-      hp: 22 + lvl*9,
-      hpMax: 22 + lvl*9,
-      atk: 4 + lvl*2
+      mech: mDef.mech,
+      hp: baseHp, hpMax: baseHp,
+      shield: mDef.mech==="shield" ? Math.round(baseHp*0.5) : 0,
+      shieldMax: mDef.mech==="shield" ? Math.round(baseHp*0.5) : 0,
+      atk: 3 + Math.round(clvl*0.8)
     };
     if(mDef.name==="咖啡因怪獸"){ this.state.stats.coffeeEncounters++; }
-    var startHpPct = this.state.hp / c.hpMax;
 
-    UI.log("battle","⚔️","遭遇了 <b class='hl-blush'>"+monster.name+"</b>！（HP "+monster.hp+"）");
+    this.currentBattle = {
+      monster: monster, lvl: lvl, onDone: onDone,
+      rage: 0, stunned: 0, round: 0,
+      finisherUsed: false, finisherKill: false,
+      pDmg: 0, mDmg: 0,
+      startHpPct: this.state.hp / c.hpMax,
+      awaitingRescue: false, awaitingChoice: false, ended: false,
+      timer: null
+    };
+
+    var mechNote = monster.mech==="heal" ? "（每3回合會自我治療！）" : (monster.mech==="shield" ? "（有護盾，要先打破！）" : "");
+    UI.log("battle","⚔️","遭遇了 <b class='hl-blush'>"+monster.name+"</b>！（HP "+monster.hp+"）"+mechNote);
     UI.enterBattleView(monster);
+    UI.showBattleControls();
+    UI.updateSkillButtons();
 
-    var rounds = 0, maxRounds = 4, pDmgTotal = 0, mDmgTotal = 0;
+    this.currentBattle.timer = setTimeout(function(){ self.battleStep(); }, 500);
+  },
 
-    function step(){
-      if(monster.hp>0 && self.state.hp>0 && rounds<maxRounds){
-        rounds++;
-        var isCrit = Math.random() < c.crit;
-        var dmg = Math.round((c.atk + Math.random()*4) * (isCrit?1.8:1));
-        monster.hp = Math.max(0, monster.hp - dmg); pDmgTotal += dmg;
+  // 對怪物造成傷害（護盾優先吸收），回傳實際扣血描述
+  damageMonster: function(amount){
+    var b = this.currentBattle; if(!b) return;
+    var m = b.monster;
+    if(m.shield>0){
+      var absorbed = Math.min(m.shield, amount);
+      m.shield -= absorbed;
+      amount -= absorbed;
+      if(m.shield<=0){ UI.log("battle","🛡️","怪物的護盾碎裂了！"); }
+    }
+    if(amount>0){ m.hp = Math.max(0, m.hp - amount); }
+    b.pDmg += amount;
+  },
 
-        if(monster.hp>0){
-          var taken = Math.max(1, Math.round(monster.atk*(1-c.def) - Math.random()*2));
-          self.state.hp -= taken; mDmgTotal += taken;
-        }
-        UI.updateFighters(monster, true);
-        setTimeout(step, 420);
-        return;
-      }
-      finish();
+  battleStep: function(){
+    var b = this.currentBattle;
+    if(!b || b.ended || b.awaitingRescue || b.awaitingChoice) return;
+    var self = this;
+    var c = this.computed();
+    var m = b.monster;
+    b.round++;
+
+    // --- 阿毛攻擊 ---
+    var isCrit = Math.random() < c.crit;
+    var dmg = Math.round((c.atk + Math.random()*4) * (isCrit?1.8:1));
+    this.damageMonster(dmg);
+    UI.floatText((isCrit?"暴擊 ":"")+ "-"+dmg, "right", isCrit?"var(--honey)":"var(--ivory)");
+    UI.updateFighters(m, true);
+
+    if(m.hp<=0){ this.battleVictory(); return; }
+
+    // --- 回血怪機制 ---
+    if(m.mech==="heal" && b.round%3===0){
+      var healAmt = Math.round(m.hpMax*0.12);
+      m.hp = Math.min(m.hpMax, m.hp+healAmt);
+      UI.floatText("+"+healAmt, "right", "var(--sage)");
+      UI.log("battle","💚",m.name+" 自我治療了 "+healAmt+" 點！");
+      UI.updateFighters(m, false);
     }
 
-    function finish(){
-      if(monster.hp>0 && self.state.hp>0){
-        var finalDmg = Math.round(c.atk*1.4);
-        monster.hp = Math.max(0, monster.hp - finalDmg); pDmgTotal += finalDmg;
-        UI.updateFighters(monster, true);
+    // --- 怪物攻擊（除非被咬住） ---
+    if(b.stunned>0){
+      b.stunned--;
+      UI.floatText("被咬住！", "right", "var(--blush)");
+    } else {
+      var dodgeChance = Math.min(0.30, c.luck*0.9);
+      var blockChance = Math.min(0.25, c.def*0.8);
+      var roll = Math.random();
+      if(roll < dodgeChance){
+        UI.floatText("Miss!", "left", "var(--dust)");
+      } else if(roll < dodgeChance+blockChance){
+        UI.floatText("完美格擋!", "left", "var(--sage)");
+      } else {
+        var taken = Math.max(1, Math.round(m.atk*(1-c.def) - Math.random()*2));
+        this.state.hp -= taken; b.mDmg += taken;
+        b.rage = Math.min(100, b.rage+10);
+        UI.floatText("-"+taken, "left", "var(--danger)");
       }
-      setTimeout(function(){
-        UI.exitBattleView();
-        if(self.state.hp<=0){
-          self.state.hp = Math.max(1, Math.round(c.hpMax*0.1));
-          self.state.stats.nearDeathCount++;
-          UI.log("battle","💥","阿毛總共造成 "+pDmgTotal+" 傷害，也承受了 "+mDmgTotal+" 點反擊，體力見底……勉強撐了下來。");
-        } else if(monster.hp<=0){
-          var goldGain = Math.round((8+lvl*4) * c.goldRate);
-          self.state.gold += goldGain;
-          self.state.stats.monsterKills++;
-          if(mDef.name==="殭屍"){ self.state.stats.zombieKills++; }
-          if(startHpPct < 0.10){ self.state.stats.underdogWin = true; }
-          UI.log("battle","🏆","擊敗了 <b class='hl-blush'>"+monster.name+"</b>！造成 "+pDmgTotal+" 傷害、承受 "+mDmgTotal+" 點反擊，獲得 <b class='hl'>"+goldGain+"</b> 金幣。");
-        } else {
-          UI.log("battle","🌀","與 "+monster.name+" 打得難分難解，雙方互有損傷後，怪物先撤退了。");
-        }
-        onDone();
-      }, 460);
     }
 
-    setTimeout(step, 320);
+    // --- 怒氣累積 ---
+    b.rage = Math.min(100, b.rage+15);
+    UI.updateRage();
+    UI.updateSkillButtons();
+    UI.updateFighters(m, false);
+    UI.renderStatus();
+
+    if(this.state.hp<=0){ this.enterRescue(); return; }
+    if(b.round>=30){ this.battleFlee(); return; }
+
+    b.timer = setTimeout(function(){ self.battleStep(); }, 850);
+  },
+
+  // --- 主動技能 ---
+  skillRoar: function(){
+    var b = this.currentBattle;
+    if(!b || b.ended || b.awaitingRescue || b.awaitingChoice || b.rage<100) return;
+    b.rage -= 100;
+    var c = this.computed();
+    var dmg = Math.round(c.atk*2.5);
+    this.damageMonster(dmg);
+    UI.floatText("咆哮 -"+dmg, "right", "var(--honey)");
+    UI.log("battle","🐺","阿毛發出震天咆哮，造成 <b class='hl'>"+dmg+"</b> 點傷害！");
+    UI.updateRage(); UI.updateSkillButtons(); UI.updateFighters(b.monster, true);
+    if(b.monster.hp<=0){ this.battleVictory(); }
+  },
+  skillBite: function(){
+    var b = this.currentBattle;
+    if(!b || b.ended || b.awaitingRescue || b.awaitingChoice || b.rage<60) return;
+    b.rage -= 60;
+    b.stunned = 1;
+    UI.log("battle","😬","阿毛死死咬住了怪物，對方下回合無法行動！");
+    UI.updateRage(); UI.updateSkillButtons();
+  },
+  skillFinisher: function(){
+    var b = this.currentBattle;
+    if(!b || b.ended || b.awaitingRescue || b.awaitingChoice || b.finisherUsed) return;
+    var m = b.monster;
+    if(m.shield>0 || m.hp > m.hpMax*0.25) return;
+    b.finisherUsed = true;
+    var c = this.computed();
+    var dmg = Math.round(c.atk*3);
+    var willKill = dmg >= m.hp;
+    this.damageMonster(dmg);
+    UI.floatText("終結 -"+dmg, "right", "var(--danger)");
+    UI.updateFighters(m, true);
+    if(m.hp<=0){
+      if(willKill){ b.finisherKill = true; }
+      UI.log("battle","⚡","終結一擊命中要害！");
+      this.battleVictory();
+    } else {
+      UI.log("battle","⚡","終結一擊沒能收尾，怪物還在掙扎……");
+      UI.updateSkillButtons();
+    }
+  },
+
+  // --- 瀕死救援 ---
+  enterRescue: function(){
+    var b = this.currentBattle;
+    b.awaitingRescue = true;
+    if(b.timer) clearTimeout(b.timer);
+    this.state.hp = 0;
+    UI.renderStatus();
+
+    var healFoods = this.getHealFoods();
+    var foodBtn = document.getElementById("rescue-food-btn");
+    var foodDesc = document.getElementById("rescue-food-desc");
+    if(healFoods.length>0){
+      var best = healFoods[0];
+      foodBtn.classList.remove("disabled");
+      foodDesc.innerText = "吃下「"+best.entry.quality+best.entry.aroma+best.entry.base+"」回復 "+this.healAmount(best.entry.tier)+" 點體力，繼續戰鬥";
+    } else {
+      foodBtn.classList.add("disabled");
+      foodDesc.innerText = "背包裡沒有回復類美食……";
+    }
+
+    var cost = this.rescueCost();
+    var npcBtn = document.getElementById("rescue-npc-btn");
+    var npcDesc = document.getElementById("rescue-npc-desc");
+    var m = this.todayMerchant();
+    if(this.state.gold>=cost){
+      npcBtn.classList.remove("disabled");
+      npcDesc.innerText = "花 "+cost+" 金幣請 "+m.name+" 救場，回復 50% 體力";
+    } else {
+      npcBtn.classList.add("disabled");
+      npcDesc.innerText = "需要 "+cost+" 金幣，但錢包空空……";
+    }
+
+    document.getElementById("rescue-mask").classList.add("show");
+  },
+
+  getHealFoods: function(){
+    var self = this;
+    return Object.keys(this.state.foodDex)
+      .map(function(k){ return {key:k, entry:self.state.foodDex[k]}; })
+      .filter(function(x){ return x.entry.stat==="heal" && x.entry.count>0; })
+      .sort(function(a,b){ return b.entry.tier - a.entry.tier; });
+  },
+  rescueCost: function(){
+    return 100 + Math.min(this.currentBattle.lvl, 60)*15;
+  },
+
+  rescueEatFood: function(){
+    var b = this.currentBattle;
+    if(!b || !b.awaitingRescue) return;
+    var healFoods = this.getHealFoods();
+    if(healFoods.length===0) return;
+    var best = healFoods[0];
+    best.entry.count--;
+    var amt = this.healAmount(best.entry.tier);
+    var c = this.computed();
+    this.state.hp = Math.min(c.hpMax, amt);
+    var dailyFood = this.bumpDailyCounter("dailyFoodToday","dailyFoodDate");
+    this.state.stats.dailyFoodMax = Math.max(this.state.stats.dailyFoodMax, dailyFood);
+    UI.log("battle","🍱","阿毛緊急吞下 <b class='hl-sage'>"+best.entry.quality+best.entry.aroma+best.entry.base+"</b>，回復 <b class='hl'>"+amt+"</b> 點體力，重新站了起來！");
+    this.resumeFromRescue();
+  },
+  rescueMerchant: function(){
+    var b = this.currentBattle;
+    if(!b || !b.awaitingRescue) return;
+    var cost = this.rescueCost();
+    if(this.state.gold<cost) return;
+    this.state.gold -= cost;
+    var c = this.computed();
+    this.state.hp = Math.round(c.hpMax*0.5);
+    var m = this.todayMerchant();
+    var rescueLines = {
+      pumpkin: "哈！倒下的狗狗不是好狗狗，站起來！",
+      lulumida: "（嘆氣）真是的，數據又要重算了……喝下去。",
+      sheep: "阿、阿毛！我帶了我畫圖時吃的補給品……",
+      tuna: "放心，我把你的HP數值偷偷改回來了（笑）。"
+    };
+    UI.log("battle","🆘",m.ico+" "+m.name+" 及時趕到！「"+(rescueLines[m.id]||"")+"」阿毛回復了 50% 體力！");
+    this.resumeFromRescue();
+  },
+  rescueRetreat: function(){
+    var b = this.currentBattle;
+    if(!b || !b.awaitingRescue) return;
+    document.getElementById("rescue-mask").classList.remove("show");
+    var c = this.computed();
+    this.state.hp = Math.max(1, Math.round(c.hpMax*0.1));
+    this.state.stats.nearDeathCount++;
+    UI.log("battle","🏳️","阿毛拖著疲憊的身體撤退了……造成 "+b.pDmg+" 傷害、承受 "+b.mDmg+" 點，這場沒有獎勵。");
+    this.endBattle();
+  },
+  resumeFromRescue: function(){
+    var b = this.currentBattle;
+    document.getElementById("rescue-mask").classList.remove("show");
+    b.awaitingRescue = false;
+    this.state.stats.nearDeathCount++;
+    UI.renderStatus();
+    UI.renderBuffs();
+    var self = this;
+    b.timer = setTimeout(function(){ self.battleStep(); }, 850);
+  },
+
+  // --- 勝利與收尾 ---
+  battleVictory: function(){
+    var b = this.currentBattle;
+    if(b.ended) return;
+    if(b.timer) clearTimeout(b.timer);
+    var c = this.computed();
+    var m = b.monster;
+
+    var goldGain = Math.round((8+b.lvl*4) * c.goldRate);
+    if(b.finisherKill){ goldGain = Math.round(goldGain*1.5); }
+    b.goldGain = goldGain;
+
+    this.state.stats.monsterKills++;
+    if(m.ico==="🧟"){ this.state.stats.zombieKills++; }
+    if(b.startHpPct < 0.10){ this.state.stats.underdogWin = true; }
+
+    var finText = b.finisherKill ? "（終結一擊加成 x1.5！）" : "";
+    UI.log("battle","🏆","擊敗了 <b class='hl-blush'>"+m.name+"</b>！造成 "+b.pDmg+" 傷害、承受 "+b.mDmg+" 點反擊。"+finText);
+
+    if(b.finisherKill){
+      var junkR = this.rollJunk();
+      UI.log("loot", junkR.def.ico, "終結一擊震出了戰利品：<b class='hl-sage'>"+junkR.def.name+"</b>！");
+    }
+
+    document.getElementById("choice-gold-desc").innerText = "獲得 "+Math.round(goldGain*1.6)+" 金幣（基礎 "+goldGain+" 再加碼）";
+    b.awaitingChoice = true;
+    UI.exitBattleView();
+    UI.hideBattleControls();
+    document.getElementById("choice-mask").classList.add("show");
+  },
+
+  applyBattleChoice: function(n){
+    var b = this.currentBattle;
+    if(!b || !b.awaitingChoice) return;
+    document.getElementById("choice-mask").classList.remove("show");
+    var c = this.computed();
+    if(n===1){
+      var total = Math.round(b.goldGain*1.6);
+      this.state.gold += total;
+      UI.log("gold","💰","選擇了金幣獎勵，入手 <b class='hl'>"+total+"</b> 金幣！");
+    } else if(n===2){
+      this.state.gold += b.goldGain;
+      this.state.hp = Math.min(c.hpMax, this.state.hp + Math.round(c.hpMax*0.30));
+      UI.log("loot","💗","阿毛坐下來喘口氣，回復了 30% 體力（基礎金幣 "+b.goldGain+" 照拿）。");
+    } else {
+      this.state.gold += b.goldGain;
+      var before = this.state.floor;
+      this.state.floor = Math.min(9999, this.state.floor+3);
+      this.state.maxFloorReached = Math.max(this.state.maxFloorReached, this.state.floor);
+      UI.log("milestone","🚀","乘勝追擊！從 "+before+" 層一口氣衝到第 <b class='hl'>"+this.state.floor+"</b> 層（基礎金幣 "+b.goldGain+" 照拿）。");
+    }
+    this.endBattle();
+  },
+
+  battleFlee: function(){
+    var b = this.currentBattle;
+    if(b.timer) clearTimeout(b.timer);
+    UI.log("battle","🌀","打了30回合還分不出勝負，"+b.monster.name+" 悻悻然地撤退了。");
+    this.endBattle();
+  },
+
+  endBattle: function(){
+    var b = this.currentBattle;
+    b.ended = true;
+    if(b.timer) clearTimeout(b.timer);
+    UI.exitBattleView();
+    UI.hideBattleControls();
+    this.currentBattle = null;
+    var done = b.onDone;
+    this.save();
+    UI.renderStatus();
+    done();
   },
 
   moodEvent: function(){
@@ -1247,6 +1634,13 @@ var UI = {
     document.getElementById("fighter-monster-ico").innerText = monster.ico;
     document.getElementById("fighter-monster-hp").style.width = "100%";
     document.getElementById("fighter-amao-hp").style.width = "100%";
+    var sb = document.getElementById("monster-shieldbar");
+    if(monster.shieldMax>0){
+      sb.style.display = "block";
+      document.getElementById("fighter-monster-shield").style.width = "100%";
+    } else {
+      sb.style.display = "none";
+    }
     arena.style.display = "flex";
   },
   updateFighters: function(monster, clash){
@@ -1255,6 +1649,10 @@ var UI = {
     var monPct = Math.max(0, Math.round((monster.hp/monster.hpMax)*100));
     document.getElementById("fighter-amao-hp").style.width = playerPct+"%";
     document.getElementById("fighter-monster-hp").style.width = monPct+"%";
+    if(monster.shieldMax>0){
+      var shieldPct = Math.max(0, Math.round((monster.shield/monster.shieldMax)*100));
+      document.getElementById("fighter-monster-shield").style.width = shieldPct+"%";
+    }
     if(clash){
       var left = document.getElementById("fighter-amao");
       var right = document.getElementById("fighter-monster");
@@ -1266,6 +1664,44 @@ var UI = {
   exitBattleView: function(){
     document.getElementById("battle-arena").style.display = "none";
     document.getElementById("idle-view").style.display = "flex";
+  },
+
+  showBattleControls: function(){
+    document.getElementById("dice-btn").style.display = "none";
+    document.getElementById("battle-controls").style.display = "flex";
+    this.updateRage();
+    this.updateSkillButtons();
+  },
+  hideBattleControls: function(){
+    document.getElementById("dice-btn").style.display = "flex";
+    document.getElementById("battle-controls").style.display = "none";
+  },
+  updateRage: function(){
+    var b = Game.currentBattle;
+    document.getElementById("rage-fill").style.width = (b ? b.rage : 0)+"%";
+  },
+  updateSkillButtons: function(){
+    var b = Game.currentBattle;
+    var roar = document.getElementById("skill-roar");
+    var bite = document.getElementById("skill-bite");
+    var fin = document.getElementById("skill-finish");
+    if(!b){ roar.disabled = bite.disabled = fin.disabled = true; return; }
+    roar.disabled = b.rage < 100;
+    bite.disabled = b.rage < 60 || b.stunned > 0;
+    var m = b.monster;
+    fin.disabled = b.finisherUsed || m.shield > 0 || m.hp > m.hpMax*0.25 || m.hp <= 0;
+  },
+  floatText: function(text, side, color){
+    var arena = document.getElementById("battle-arena");
+    var span = document.createElement("span");
+    span.className = "float-txt";
+    span.innerText = text;
+    span.style.color = color || "var(--ivory)";
+    span.style.top = (30 + Math.random()*30)+"%";
+    if(side==="left"){ span.style.left = (12 + Math.random()*10)+"%"; }
+    else { span.style.right = (12 + Math.random()*10)+"%"; }
+    arena.appendChild(span);
+    setTimeout(function(){ if(span.parentNode) span.parentNode.removeChild(span); }, 950);
   },
 
   renderStatus: function(){
@@ -1369,17 +1805,51 @@ var UI = {
         ? Object.keys(Game.state.foodDex).filter(function(k){return Game.state.foodDex[k].count>0;})
         : Object.keys(Game.state.foodDex);
 
+      if(this.foodTab==="inv"){
+        var expUsed = Game.state.expeditionDate===Game.todayKey() ? Game.state.expeditionCountToday : 0;
+        var expLeft = 3 - expUsed;
+        var c0 = Game.computed();
+        var expCost = Math.round(c0.hpMax*0.3);
+        var canExp = Game.state.maxFloorReached>=50 && Game.state.hp>expCost && expLeft>0;
+        var expBtn = document.createElement("div");
+        expBtn.className = "food-tab-btn"+(canExp?" active":"");
+        expBtn.style.marginBottom = "12px";
+        expBtn.innerText = "🧭 遠征掃蕩（耗"+expCost+"體力，今日剩 "+Math.max(0,expLeft)+" 次）";
+        if(canExp){ expBtn.onclick = function(){ Game.expedition(); UI.renderModal("food"); }; }
+        else { expBtn.style.opacity = "0.5"; }
+        body.appendChild(expBtn);
+
+        var eatHint = document.createElement("div");
+        eatHint.style = "font-size:0.68em;color:var(--muted);text-align:center;margin-bottom:10px;";
+        eatHint.innerText = "點一下直接吃！效果都標在卡片上了";
+        body.appendChild(eatHint);
+      }
+
       if(keys.length===0){
         grid.innerHTML = this.foodTab==="inv"
           ? '<div class="empty-hint">庫存空空的……<br>去爬塔試試手氣吧！</div>'
           : '<div class="empty-hint">圖鑑還是空的，爬塔途中會隨機發現各種美食組合，共有 '+totalCombos+' 種等你收集！</div>';
       } else {
+        var isInv = this.foodTab==="inv";
         keys.forEach(function(k){
           var e = Game.state.foodDex[k];
           var slot = document.createElement("div");
           slot.className = "dex-slot found";
-          slot.innerHTML = '<span class="ico">'+e.ico+'</span><span>'+e.quality.slice(0,2)+e.base+'</span>';
-          slot.onclick = function(){ UI.openFoodDetail(k); };
+          if(isInv){
+            var meta = STAT_META[e.stat];
+            var effText = e.stat==="heal"
+              ? "💗+"+Game.healAmount(e.tier)
+              : meta.ico+"+"+Math.round(Game.effectMagnitude(e.tier)*100)+"%";
+            slot.innerHTML = '<span class="ico">'+e.ico+'</span><span>'+e.quality.slice(0,2)+e.base+'</span><span style="font-size:0.85em;color:var(--sage);font-weight:900;">'+effText+'</span>';
+            slot.onclick = function(){
+              Game.eatFood(k);
+              UI.toast(e.ico, "吃掉了", e.quality+e.base);
+              UI.renderModal("food");
+            };
+          } else {
+            slot.innerHTML = '<span class="ico">'+e.ico+'</span><span>'+e.quality.slice(0,2)+e.base+'</span>';
+            slot.onclick = function(){ UI.openFoodDetail(k); };
+          }
           grid.appendChild(slot);
         });
       }
@@ -1779,7 +2249,7 @@ var UI = {
         '<div class="desc">'+t.desc+'</div>'+
         '<div class="stat-line"><span>體力上限</span><span>'+t.hpMax+'</span></div>'+
         '<div class="stat-line"><span>攻擊力</span><span>'+t.atk+'</span></div>'+
-        '<div class="stat-line"><span>防禦</span><span>'+Math.round(t.def*100)/100+'</span></div>'+
+        '<div class="stat-line"><span>防禦</span><span>'+t.def+'%</span></div>'+
         '<div class="stat-line"><span>金幣加成</span><span>x'+t.goldRate+'</span></div>'+
         '<div class="stat-line"><span>幸運</span><span>+'+Math.round(t.luck*100)+'%</span></div>'+
         (isCurrent
