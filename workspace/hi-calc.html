@@ -1,0 +1,2268 @@
+
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中正診所｜營收精算與智慧分流評估器</title>
+    <style>
+        /* ═══════════════════════════════════════════════
+           TOKENS — 與中正診所 Portal 完全一致的三種佈景主題
+           （明亮 / 夜間 / 仿舊），並支援文字整體縮放
+        ═══════════════════════════════════════════════ */
+        :root {
+            --app-scale: 1;
+
+            /* 明亮（預設）— 與 Portal 相同色票 */
+            --bg-primary:      #EDF2F7;
+            --bg-secondary:    #F0F5FA;
+            --bg-card:         #FFFFFF;
+            --bg-card-hover:   #F0F5FA;
+            --border-color:    #C8D9EC;
+            --text-primary:    #1A3550;
+            --text-secondary:  #5A7FA0;
+            --accent-primary:  #2C5F8A;
+            --accent-secondary:#3A7AB5;
+            --accent-gradient: linear-gradient(135deg, #2C5F8A 0%, #3A7AB5 100%);
+            --danger:  #C0392B;
+            --warn:    #B45309;
+            --warnBg:  #FFFBEA;
+            --warnBdr: #F59E0B;
+
+            /* Tier Colors */
+            --color-t1: #0d9488; /* Teal - 364 pt */
+            --color-t2: #2563eb; /* Blue - 250 pt */
+            --color-t3: #d97706; /* Amber - 220 pt */
+            --color-t4: #e11d48; /* Rose - 160 pt */
+
+            --shadow-sm: 0 1px 2px 0 rgba(44, 95, 138, 0.08);
+            --shadow-md: 0 4px 6px -1px rgba(44, 95, 138, 0.10), 0 2px 4px -1px rgba(44, 95, 138, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(44, 95, 138, 0.10), 0 4px 6px -2px rgba(44, 95, 138, 0.05);
+            --shadow-glow: 0 0 20px rgba(44, 95, 138, 0.12);
+
+            --advice-bg: #FBF1E0;
+
+            --transition-all: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 夜間 */
+        html[data-theme="dark"] {
+            --bg-primary:     #0E1C2C;
+            --bg-secondary:   #1C2E40;
+            --bg-card:        #162435;
+            --bg-card-hover:  #1C2E40;
+            --border-color:   #2A4060;
+            --text-primary:   #E2EDF8;
+            --text-secondary: #7BADD8;
+            --accent-primary:  #3A7AB5;
+            --accent-secondary:#5BA0DA;
+            --accent-gradient: linear-gradient(135deg, #3A7AB5 0%, #5BA0DA 100%);
+            --danger:  #E0564A;
+            --warn:    #E8A33D;
+            --warnBg:  #271F00;
+            --warnBdr: #B45309;
+            --shadow-sm: 0 1px 2px 0 rgba(0,0,0,.35);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,.35), 0 2px 4px -1px rgba(0,0,0,.25);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,.45), 0 4px 6px -2px rgba(0,0,0,.3);
+            --shadow-glow: 0 0 20px rgba(58, 122, 181, 0.25);
+            --advice-bg: #241B10;
+        }
+
+        /* 仿舊 — 羊皮紙暖色調 */
+        html[data-theme="antique"] {
+            --bg-primary:     #F1E8D8;
+            --bg-secondary:   #F5ECDA;
+            --bg-card:        #FBF6EC;
+            --bg-card-hover:  #F5ECDA;
+            --border-color:   #D9C6A0;
+            --text-primary:   #4A3826;
+            --text-secondary: #8B5E34;
+            --accent-primary:  #9C6B30;
+            --accent-secondary:#B98A4C;
+            --accent-gradient: linear-gradient(135deg, #9C6B30 0%, #B98A4C 100%);
+            --danger:  #B23A2E;
+            --warn:    #8A5A1E;
+            --warnBg:  #FBF0D9;
+            --warnBdr: #C9974A;
+            --shadow-sm: 0 1px 2px 0 rgba(120,90,40,.10);
+            --shadow-md: 0 4px 6px -1px rgba(120,90,40,.14), 0 2px 4px -1px rgba(120,90,40,.10);
+            --shadow-lg: 0 10px 15px -3px rgba(120,90,40,.18), 0 4px 6px -2px rgba(120,90,40,.10);
+            --shadow-glow: 0 0 20px rgba(156, 107, 48, 0.18);
+            --advice-bg: #F5E7C8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        html {
+            font-size: calc(16px * var(--app-scale));
+        }
+
+        body {
+            font-family: "PingFang TC","PingFang SC",-apple-system,BlinkMacSystemFont,'Noto Sans TC','Heiti TC','Microsoft JhengHei', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 24px;
+            line-height: 1.5;
+        }
+
+        /* Container Layout */
+        .app-container {
+            max-width: 1440px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* Header Styling */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            box-shadow: var(--shadow-md);
+            position: relative;
+            overflow: hidden;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--accent-gradient);
+        }
+
+        .header-title h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-title p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        /* Dashboard Grid Layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        @media (min-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 350px 1fr;
+            }
+        }
+
+        /* Sidebar Control Panel */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .panel-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .panel-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            transition: var(--transition-all);
+        }
+
+        .btn:hover {
+            border-color: var(--accent-primary);
+            background: var(--bg-card-hover);
+        }
+
+        .btn-primary {
+            background: var(--accent-gradient);
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            border-radius: 8px;
+        }
+
+        .btn-danger {
+            background: rgba(225, 29, 72, 0.1);
+            color: #ef4444;
+            border-color: rgba(225, 29, 72, 0.2);
+        }
+
+        .btn-danger:hover {
+            background: #e11d48;
+            color: white;
+            border-color: #e11d48;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .input-control {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 8px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.875rem;
+            outline: none;
+            transition: var(--transition-all);
+        }
+
+        .input-control:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        /* Number/Slider Combo */
+        .slider-combo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .slider-combo input[type="range"] {
+            flex: 1;
+        }
+
+        .slider-combo input[type="number"] {
+            width: 80px;
+            text-align: right;
+        }
+
+        /* Custom Accordion for parameters */
+        .accordion {
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .accordion-header {
+            padding: 12px 16px;
+            background: var(--bg-secondary);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.8125rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+
+        .accordion-content {
+            padding: 16px;
+            display: none;
+            border-top: 1px solid var(--border-color);
+            background: var(--bg-card);
+        }
+
+        .accordion.open .accordion-content {
+            display: block;
+        }
+
+        /* Main Content Dashboard Area */
+        .main-dashboard {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* Metric Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+        }
+
+        .metric-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .metric-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 10%;
+            width: 80%;
+            height: 2px;
+            background: transparent;
+            transition: var(--transition-all);
+        }
+
+        .metric-card.primary::after { background: var(--accent-primary); }
+        .metric-card.accent::after { background: var(--color-t1); }
+        .metric-card.warning::after { background: var(--color-t3); }
+
+        .metric-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 1.75rem;
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 6px;
+            color: var(--text-primary);
+        }
+
+        .metric-sub {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            font-size: 0.6875rem;
+            font-weight: 700;
+        }
+
+        .badge-success { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+        .badge-danger { background: rgba(225, 29, 72, 0.1); color: #e11d48; }
+        .badge-warning { background: rgba(217, 119, 6, 0.1); color: #d97706; }
+        .badge-info { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+
+        /* Split Section: Charts & Simulation */
+        .section-split {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        @media (min-width: 1200px) {
+            .section-split {
+                grid-template-columns: 3fr 2fr;
+            }
+        }
+
+        .visualization-card {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .tabs-header {
+            display: flex;
+            gap: 8px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.8125rem;
+            padding: 6px 12px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: var(--transition-all);
+        }
+
+        .tab-btn.active {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* SVG Chart CSS styling */
+        svg {
+            background: transparent;
+            overflow: visible;
+        }
+
+        /* Simulation Card Controls */
+        .sim-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        /* Doctor List & Workloads (Interactive Cards) */
+        .doctor-list-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .doctor-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: var(--shadow-sm);
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            position: relative;
+        }
+
+        @media (min-width: 768px) {
+            .doctor-card {
+                grid-template-columns: 200px 1fr;
+            }
+        }
+
+        .doc-profile {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+
+        @media (min-width: 768px) {
+            .doc-profile {
+                border-bottom: none;
+                border-right: 1px solid var(--border-color);
+                padding-bottom: 0;
+                padding-right: 16px;
+            }
+        }
+
+        .doc-profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .doc-name-input {
+            background: transparent;
+            border: 1px dashed transparent;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-weight: 700;
+            padding: 4px;
+            border-radius: 4px;
+            width: 120px;
+        }
+
+        .doc-name-input:hover, .doc-name-input:focus {
+            border-color: var(--border-color);
+            background: var(--bg-primary);
+        }
+
+        .doc-days-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .doc-days-input-wrap label {
+            font-size: 0.6875rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            display: block;
+        }
+
+        .doc-days-input {
+            width: 100%;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-size: 0.75rem;
+            padding: 4px 6px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .doc-slider-wrap {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .doc-slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8125rem;
+        }
+
+        .doc-slider-val {
+            font-weight: 800;
+            color: var(--accent-secondary);
+            font-size: 0.9375rem;
+        }
+
+        /* Stacked Capacity Progress Bar */
+        .stacked-bar-container {
+            margin-top: 6px;
+        }
+
+        .stacked-bar {
+            height: 14px;
+            background: var(--bg-primary);
+            border-radius: 9999px;
+            overflow: hidden;
+            display: flex;
+            width: 100%;
+        }
+
+        .bar-segment {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .bar-segment.t1 { background-color: var(--color-t1); }
+        .bar-segment.t2 { background-color: var(--color-t2); }
+        .bar-segment.t3 { background-color: var(--color-t3); }
+        .bar-segment.t4 { background-color: var(--color-t4); }
+
+        .stacked-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 6px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .stacked-label-item {
+            font-size: 0.6875rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-secondary);
+        }
+
+        .indicator-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .indicator-dot.t1 { background-color: var(--color-t1); }
+        .indicator-dot.t2 { background-color: var(--color-t2); }
+        .indicator-dot.t3 { background-color: var(--color-t3); }
+        .indicator-dot.t4 { background-color: var(--color-t4); }
+
+        /* Tables */
+        .table-card {
+            overflow: hidden;
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.875rem;
+        }
+
+        thead tr {
+            background-color: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            padding: 14px 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        td {
+            padding: 14px 16px;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr:hover {
+            background: rgba(0, 0, 0, 0.01);
+        }
+
+        html[data-theme="dark"] tbody tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        html[data-theme="antique"] tbody tr:hover {
+            background: rgba(74, 56, 38, 0.04);
+        }
+
+        .num-col {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .num-pos { color: #10b981; font-weight: 600; }
+        .num-neg { color: #ef4444; font-weight: 600; }
+        .num-zero { color: var(--text-secondary); }
+
+        .nested-doc-row {
+            background-color: rgba(0, 0, 0, 0.008);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        html[data-theme="dark"] .nested-doc-row {
+            background-color: rgba(255, 255, 255, 0.015);
+        }
+
+        html[data-theme="antique"] .nested-doc-row {
+            background-color: rgba(74, 56, 38, 0.03);
+        }
+
+        /* Advice Panel */
+        .advice-card {
+            border-left: 4px solid var(--color-t3);
+            background: var(--advice-bg);
+        }
+
+        .advice-header {
+            font-size: 0.9375rem;
+            font-weight: 700;
+            color: var(--color-t3);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .advice-content {
+            font-size: 0.8438rem;
+            line-height: 1.6;
+            color: var(--text-primary);
+        }
+
+        /* 文字大小控制 */
+        .text-scale-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 6px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 9999px;
+            margin-right: 4px;
+        }
+
+        .text-scale-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            padding-left: 6px;
+            white-space: nowrap;
+        }
+
+        .btn-scale {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-weight: 800;
+            font-size: 0.75rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition-all);
+        }
+
+        .btn-scale:hover {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+
+        .text-scale-val {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            min-width: 38px;
+            text-align: center;
+        }
+
+        /* Slider Styles Customization */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--border-color);
+            height: 6px;
+            border-radius: 9999px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition-all);
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            background: var(--accent-secondary);
+        }
+
+        /* Modal styling */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+        }
+
+        /* Print Media Queries */
+        @media print {
+            body {
+                background: white !important;
+                color: black !important;
+                padding: 0 !important;
+            }
+            .no-print, .btn, .text-scale-group, .sidebar, .header-controls, .doc-profile-header button, .tabs-header {
+                display: none !important;
+            }
+            .app-container {
+                gap: 12px !important;
+            }
+            .dashboard-grid {
+                grid-template-columns: 1fr !important;
+            }
+            .panel-card, header, .metric-card {
+                border: 1px solid #ccc !important;
+                background: white !important;
+                box-shadow: none !important;
+                color: black !important;
+            }
+            .metric-value {
+                color: black !important;
+            }
+            table, th, td {
+                border-color: #ddd !important;
+                color: black !important;
+            }
+            .bar-segment {
+                border: 1px solid #aaa !important;
+            }
+            .accordion-content {
+                display: block !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    
+    <!-- Top Header -->
+    <header>
+        <div class="header-title">
+            <h1>中正診所｜營收精算與智慧分流評估器</h1>
+            <p>依據健保給付規定：比對 8/1 新制與舊制，支援醫師自訂門診量與看診天數</p>
+        </div>
+        <div class="header-controls">
+            <!-- 文字大小 -->
+            <div class="text-scale-group" role="group" aria-label="文字大小">
+                <span class="text-scale-label">文字大小</span>
+                <button class="btn-scale" onclick="adjustScale(-1)" title="縮小文字">A－</button>
+                <span class="text-scale-val" id="scaleVal">100%</span>
+                <button class="btn-scale" onclick="adjustScale(1)" title="放大文字">A＋</button>
+            </div>
+
+            <!-- Theme Toggle -->
+            <button class="btn btn-sm" id="themeToggle" onclick="toggleTheme()" title="切換主題（明亮／夜間／仿舊）">
+                <span id="themeIcon">🌙</span> <span id="themeLabel">切換主題</span>
+            </button>
+
+            <button class="btn btn-sm" onclick="showShareModal()">
+                🔗 分享狀態
+            </button>
+            <button class="btn btn-sm" onclick="showImportModal()">
+                📥 匯入狀態
+            </button>
+            <button class="btn btn-sm" onclick="window.print()">
+                🖨️ 列印報告
+            </button>
+            <button class="btn btn-sm btn-primary" onclick="exportCSV()">
+                📥 匯出資料
+            </button>
+        </div>
+    </header>
+
+    <!-- Metrics Summary Cards -->
+    <div class="metrics-grid">
+        <div class="metric-card primary">
+            <span class="metric-label">舊制 (25天基準) 預估收入</span>
+            <div class="metric-value" id="oldTotalVal">NT$ 0</div>
+            <div class="metric-sub">
+                <span class="badge badge-info">平均點數: <span id="oldAvgPts">0.0</span> 點</span>
+            </div>
+        </div>
+        <div class="metric-card primary">
+            <span class="metric-label">新制 (22天基準) 預估收入</span>
+            <div class="metric-value" id="newTotalVal">NT$ 0</div>
+            <div class="metric-sub">
+                <span class="badge badge-info">平均點數: <span id="newAvgPts">0.0</span> 點</span>
+            </div>
+        </div>
+        <div class="metric-card" id="diffMetricCard">
+            <span class="metric-label">政策變更收入影響額</span>
+            <div class="metric-value" id="diffTotalVal">NT$ 0</div>
+            <div class="metric-sub">
+                <span class="badge" id="diffPercentBadge">0.0%</span>
+                <span id="diffStatusText">持平</span>
+            </div>
+        </div>
+        <div class="metric-card warning">
+            <span class="metric-label">全院分流健康狀態</span>
+            <div class="metric-value" style="font-size: 1.375rem; padding-top: 4px;" id="clinicHealthVal">安全</div>
+            <div class="metric-sub" id="clinicHealthDesc">
+                所有醫師人次控制妥當
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Grid Content -->
+    <div class="dashboard-grid">
+        
+        <!-- Left: Clinic & Parameter Settings -->
+        <div class="sidebar">
+            
+            <!-- Global Simulation Parameters -->
+            <div class="panel-card">
+                <div class="panel-title">
+                    <span>⚙️ 模擬參數與設定</span>
+                </div>
+                
+                <div class="form-group">
+                    <label>診所每月總看診人次 (進行模擬用)</label>
+                    <div class="slider-combo">
+                        <input type="range" id="totalPatientsSlider" min="500" max="15000" step="50" value="4013" oninput="syncTotalPatients(this.value)">
+                        <input type="number" id="totalPatientsInput" class="input-control" value="4013" oninput="syncTotalPatients(this.value)">
+                    </div>
+                </div>
+
+                <div class="sim-actions">
+                    <button class="btn btn-sm btn-primary" onclick="simulateDistribution('optimal')">⚡ 智慧最佳分流</button>
+                    <button class="btn btn-sm" onclick="simulateDistribution('equal')">⚖️ 平均分流</button>
+                </div>
+                
+                <div style="margin-top: 16px;">
+                    <div class="accordion" id="paramAccordion">
+                        <div class="accordion-header" onclick="toggleAccordion()">
+                            <span>🔧 點值與給付係數設定 (進階)</span>
+                            <span id="accordionArrow">▼</span>
+                        </div>
+                        <div class="accordion-content">
+                            <div class="form-group">
+                                <label>預估點值折合率 (例：1點=0.92元)</label>
+                                <input type="number" id="pointRateInput" class="input-control" value="1.00" step="0.01" min="0.5" max="1.5" onchange="updateAll()">
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                <div class="form-group">
+                                    <label>舊制基準天數</label>
+                                    <input type="number" id="oldBaseDays" class="input-control" value="25" onchange="updateAll()">
+                                </div>
+                                <div class="form-group">
+                                    <label>新制基準天數</label>
+                                    <input type="number" id="newBaseDays" class="input-control" value="22" onchange="updateAll()">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>新制日申報人次門檻係數</label>
+                                <div style="display: flex; gap: 4px;">
+                                    <input type="number" id="newMultT1" class="input-control" style="font-size: 0.6875rem;" value="35" title="第一級上限" onchange="updateAll()">
+                                    <input type="number" id="newMultT2" class="input-control" style="font-size: 0.6875rem;" value="45" title="第二級上限" onchange="updateAll()">
+                                    <input type="number" id="newMultT3" class="input-control" style="font-size: 0.6875rem;" value="65" title="第三級上限" onchange="updateAll()">
+                                </div>
+                                <span style="font-size: 0.625rem; color: var(--text-secondary);">分別對應 35, 45, 65 門檻係數</span>
+                            </div>
+                            <div class="form-group">
+                                <label>各級給付點數</label>
+                                <div style="display: flex; gap: 4px;">
+                                    <input type="number" id="ptT1" class="input-control" value="364" title="第一級點數" onchange="updateAll()">
+                                    <input type="number" id="ptT2" class="input-control" value="250" title="第二級點數" onchange="updateAll()">
+                                    <input type="number" id="ptT3" class="input-control" value="220" title="第三級點數" onchange="updateAll()">
+                                    <input type="number" id="ptT4" class="input-control" value="160" title="處罰級點數" onchange="updateAll()">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Strategic Advice Box -->
+            <div class="panel-card advice-card">
+                <div class="advice-header">
+                    <span>📊 診所營運分流策略建議</span>
+                </div>
+                <div class="advice-content" id="strategyAdviceText">
+                    正在分析診所營運動態，請稍候...
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right: Visualization & Doctor Allocations -->
+        <div class="main-dashboard">
+            
+            <!-- Charts & Visualization Card -->
+            <div class="panel-card visualization-card">
+                <div class="tabs-header">
+                    <button class="tab-btn active" onclick="switchTab('revTab', this)">📊 營收比對圖</button>
+                    <button class="tab-btn" onclick="switchTab('distTab', this)">👥 全院人次落點分佈</button>
+                </div>
+                
+                <!-- Revenue Comparison SVG Chart -->
+                <div id="revTab" class="tab-content active" style="text-align: center;">
+                    <svg id="svgRevenueChart" width="100%" height="280" viewBox="0 0 500 280">
+                        <!-- Rendered by JS -->
+                    </svg>
+                </div>
+
+                <!-- Patient Distribution SVG Chart -->
+                <div id="distTab" class="tab-content" style="text-align: center;">
+                    <svg id="svgDistributionChart" width="100%" height="180" viewBox="0 0 500 180">
+                        <!-- Rendered by JS -->
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Doctor List (Interactive Panel) -->
+            <div class="panel-card">
+                <div class="panel-title">
+                    <span>👨‍⚕️ 醫師排班與實際看診量設定</span>
+                    <button class="btn btn-sm btn-primary" onclick="addDoctor()">➕ 新增看診醫師</button>
+                </div>
+                <div class="doctor-list-container" id="doctorList">
+                    <!-- Doctor items rendered dynamically -->
+                </div>
+            </div>
+
+            <!-- Detailed Tiers breakdown Table -->
+            <div class="panel-card table-card">
+                <div class="panel-title">
+                    <span>📝 新舊制各級申報人次與金額細節</span>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>給付級距 / 單價點數</th>
+                                <th>基準與總上限門檻 (全院)</th>
+                                <th class="num-col">舊制認列人次</th>
+                                <th class="num-col">新制認列人次</th>
+                                <th class="num-col">預估給付差異 (NT$)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detailedTableBody">
+                            <!-- Dynamic Content -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+        
+    </div>
+
+</div>
+
+<!-- Share Modal -->
+<div id="shareModal" class="modal-overlay">
+    <div class="panel-card" style="width:90%; max-width:520px; position:relative; box-shadow:var(--shadow-lg);">
+        <h3 style="font-size: 1.125rem; font-weight:800; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+            <span>🔗 一鍵分享當前試算狀態</span>
+            <span style="cursor:pointer; font-size: 1.25rem; color: var(--text-secondary);" onclick="closeModal('shareModal')">✕</span>
+        </h3>
+        <p style="font-size: 0.8125rem; color:var(--text-secondary); margin-bottom:16px; line-height: 1.5;">
+            已將分享連結自動複製到您的剪貼簿！<br>
+            若對方是開啟本機 HTML 網頁，建議直接複製下方的「狀態代碼」發送給他，於網頁頂部點選「匯入狀態」即可載入此數據。
+        </p>
+        <div class="form-group">
+            <label>分享連結</label>
+            <input type="text" id="shareUrlInput" class="input-control" readonly onclick="this.select()">
+        </div>
+        <div class="form-group">
+            <label>狀態代碼 (純文字跨系統最通用)</label>
+            <textarea id="shareCodeInput" class="input-control" style="height:100px; font-family:monospace; font-size: 0.6875rem; line-height: 1.4; resize: none;" readonly onclick="this.select()"></textarea>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top: 16px;">
+            <button class="btn btn-primary btn-sm" onclick="copyShareText()">複製連結</button>
+            <button class="btn btn-sm" onclick="closeModal('shareModal')">關閉</button>
+        </div>
+    </div>
+</div>
+
+<!-- Import Modal -->
+<div id="importModal" class="modal-overlay">
+    <div class="panel-card" style="width:90%; max-width:500px; position:relative; box-shadow:var(--shadow-lg);">
+        <h3 style="font-size: 1.125rem; font-weight:800; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+            <span>📥 匯入試算狀態</span>
+            <span style="cursor:pointer; font-size: 1.25rem; color: var(--text-secondary);" onclick="closeModal('importModal')">✕</span>
+        </h3>
+        <p style="font-size: 0.8125rem; color:var(--text-secondary); margin-bottom:16px;">
+            請貼上由其他使用者產生的「狀態代碼」或「包含狀態代碼的網址」，系統將立即恢復所有的醫師、看診天數與模擬參數。
+        </p>
+        <div class="form-group">
+            <label>狀態代碼 或 分享網址</label>
+            <textarea id="importCodeInput" class="input-control" style="height:120px; font-family:monospace; font-size: 0.6875rem; line-height:1.4; placeholder-color:var(--text-secondary);" placeholder="在此貼上代碼或網址..."></textarea>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top: 16px;">
+            <button class="btn btn-primary btn-sm" onclick="applyImport()">確認匯入</button>
+            <button class="btn btn-sm" onclick="closeModal('importModal')">取消</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast" style="display:none; position:fixed; bottom:24px; right:24px; background:var(--accent-gradient); color:white; padding:12px 24px; border-radius:10px; box-shadow:var(--shadow-lg); font-weight:600; font-size: 0.875rem; z-index:2000; animation: slideUp 0.3s ease;">
+    成功複製！
+</div>
+
+<script>
+    // State Manager
+    let doctors = [
+        { id: 1, name: "醫師 A", daysOld: 25, daysNew: 22, patients: 980 },
+        { id: 2, name: "醫師 B", daysOld: 25, daysNew: 22, patients: 1017 },
+        { id: 3, name: "醫師 C", daysOld: 25, daysNew: 22, patients: 1016 },
+        { id: 4, name: "醫師 D", daysOld: 25, daysNew: 22, patients: 1000 }
+    ];
+
+    let currentTab = 'revTab';
+
+    // Formatting Helpers
+    const fmt = (num) => Math.round(num).toLocaleString('zh-TW');
+
+    // Toggle Sidebar Accordion
+    function toggleAccordion() {
+        const acc = document.getElementById('paramAccordion');
+        acc.classList.toggle('open');
+        const arrow = document.getElementById('accordionArrow');
+        arrow.textContent = acc.classList.contains('open') ? '▲' : '▼';
+    }
+
+    // ═══════════════════════════════════════════════
+    // 主題系統（明亮／夜間／仿舊）— 與 Portal 共用同一組
+    // localStorage 設定，兩邊主題會自動同步
+    // ═══════════════════════════════════════════════
+    const THEME_KEY = 'cz_theme_v6';
+    const THEME_ICON  = { light: '🌙', dark: '📜', antique: '☀️' };
+    const THEME_LABEL = { light: '切換為夜間', dark: '切換為仿舊', antique: '切換為明亮' };
+
+    function setTheme(t) {
+        document.documentElement.setAttribute('data-theme', t);
+        document.getElementById('themeIcon').textContent  = THEME_ICON[t]  || '🌙';
+        document.getElementById('themeLabel').textContent = THEME_LABEL[t] || '切換主題';
+        localStorage.setItem(THEME_KEY, t);
+        updateCharts();
+    }
+
+    function toggleTheme() {
+        const order = ['light', 'dark', 'antique'];
+        const cur = document.documentElement.getAttribute('data-theme') || 'light';
+        setTheme(order[(order.indexOf(cur) + 1) % order.length]);
+    }
+
+    // ═══════════════════════════════════════════════
+    // 文字整體縮放（無障礙功能，方便長輩醫師閱讀）
+    // 100% ~ 160%，每次調整 10%，設定會記住
+    // ═══════════════════════════════════════════════
+    const SCALE_KEY = 'cz_eval_scale_v1';
+    const SCALE_MIN = 1.0;
+    const SCALE_MAX = 1.6;
+    const SCALE_STEP = 0.1;
+    let currentScale = 1.0;
+
+    function applyScale(scale) {
+        currentScale = Math.min(SCALE_MAX, Math.max(SCALE_MIN, scale));
+        document.documentElement.style.setProperty('--app-scale', currentScale);
+        document.getElementById('scaleVal').textContent = Math.round(currentScale * 100) + '%';
+        localStorage.setItem(SCALE_KEY, currentScale);
+        updateCharts();
+    }
+
+    function adjustScale(direction) {
+        applyScale(currentScale + direction * SCALE_STEP);
+    }
+
+    // Synchronize Total Clinic Patients and re-distribute
+    function syncTotalPatients(val) {
+        let numeric = parseInt(val) || 0;
+        if (numeric < 0) numeric = 0;
+        document.getElementById('totalPatientsSlider').value = numeric;
+        document.getElementById('totalPatientsInput').value = numeric;
+        
+        // Equal allocation by default when user edits the global volume
+        distributePatientsEvenly(numeric);
+        updateAll();
+    }
+
+    function distributePatientsEvenly(total) {
+        if (doctors.length === 0) return;
+        const baseVal = Math.floor(total / doctors.length);
+        const remainder = total % doctors.length;
+        
+        doctors.forEach((doc, idx) => {
+            doc.patients = baseVal + (idx < remainder ? 1 : 0);
+        });
+        renderDoctorsList();
+    }
+
+    // Tab switcher
+    function switchTab(tabId, el) {
+        currentTab = tabId;
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        
+        el.classList.add('active');
+        document.getElementById(tabId).classList.add('active');
+        updateCharts();
+    }
+
+    // Add Doctor
+    function addDoctor() {
+        const nextId = doctors.length > 0 ? Math.max(...doctors.map(d => d.id)) + 1 : 1;
+        const letter = String.fromCharCode(65 + (doctors.length % 26));
+        const name = `醫師 ${letter}`;
+        
+        doctors.push({
+            id: nextId,
+            name: name,
+            daysOld: 25,
+            daysNew: 22,
+            patients: 1000
+        });
+        
+        // Sync total clinic patients
+        syncClinicPatientsCount();
+        renderDoctorsList();
+        updateAll();
+    }
+
+    // Delete Doctor
+    function deleteDoctor(id) {
+        if (doctors.length <= 1) {
+            alert("診所必須至少保留一位看診醫師！");
+            return;
+        }
+        doctors = doctors.filter(d => d.id !== id);
+        
+        syncClinicPatientsCount();
+        renderDoctorsList();
+        updateAll();
+    }
+
+    // Sync total slider value based on doctors sum
+    function syncClinicPatientsCount() {
+        const total = doctors.reduce((sum, d) => sum + d.patients, 0);
+        document.getElementById('totalPatientsSlider').value = total;
+        document.getElementById('totalPatientsInput').value = total;
+    }
+
+    // Update individual doctor input
+    function updateDocPatients(id, val) {
+        const doc = doctors.find(d => d.id === id);
+        if (doc) {
+            doc.patients = parseInt(val) || 0;
+            // Update input and slider elements
+            const input = document.getElementById(`doc-input-${id}`);
+            const slider = document.getElementById(`doc-slider-${id}`);
+            if (input) input.value = doc.patients;
+            if (slider) slider.value = doc.patients;
+            
+            syncClinicPatientsCount();
+            
+            // Recalculate and update only visuals/cards (optimized for performance)
+            calculateAndRender();
+        }
+    }
+
+    function updateDocName(id, val) {
+        const doc = doctors.find(d => d.id === id);
+        if (doc) {
+            doc.name = val;
+            updateAll();
+        }
+    }
+
+    function updateDocDays(id, field, val) {
+        const doc = doctors.find(d => d.id === id);
+        if (doc) {
+            doc[field] = parseInt(val) || 0;
+            updateAll();
+        }
+    }
+
+    // Render Doctor Control List
+    function renderDoctorsList() {
+        const container = document.getElementById('doctorList');
+        container.innerHTML = '';
+        
+        doctors.forEach(doc => {
+            const maxVal = 4000; // max slider scale for individuals
+            
+            // Calculate thresholds under new config for preview
+            const newDays = doc.daysNew;
+            const newT1 = parseInt(document.getElementById('newMultT1').value) * newDays;
+            const newT2 = parseInt(document.getElementById('newMultT2').value) * newDays;
+            const newT3 = parseInt(document.getElementById('newMultT3').value) * newDays;
+            
+            const card = document.createElement('div');
+            card.className = 'doctor-card';
+            card.id = `doc-card-${doc.id}`;
+            
+            card.innerHTML = `
+                <div class="doc-profile">
+                    <div class="doc-profile-header">
+                        <input type="text" class="doc-name-input" value="${doc.name}" onchange="updateDocName(${doc.id}, this.value)">
+                        <button class="btn btn-sm btn-danger" onclick="deleteDoctor(${doc.id})" title="刪除醫師">🗑️</button>
+                    </div>
+                    <div class="doc-days-row">
+                        <div class="doc-days-input-wrap">
+                            <label>舊天數</label>
+                            <input type="number" class="doc-days-input" value="${doc.daysOld}" onchange="updateDocDays(${doc.id}, 'daysOld', this.value)">
+                        </div>
+                        <div class="doc-days-input-wrap">
+                            <label>新天數</label>
+                            <input type="number" class="doc-days-input" value="${doc.daysNew}" onchange="updateDocDays(${doc.id}, 'daysNew', this.value)">
+                        </div>
+                    </div>
+                </div>
+                <div class="doc-slider-wrap">
+                    <div class="doc-slider-header">
+                        <span style="color: var(--text-secondary);">每月預估看診量</span>
+                        <div class="doc-slider-val"><span id="doc-val-display-${doc.id}">${fmt(doc.patients)}</span> <span style="font-size: 0.6875rem; color: var(--text-secondary); font-weight: normal;">人次</span></div>
+                    </div>
+                    <div class="slider-combo">
+                        <input type="range" id="doc-slider-${doc.id}" min="0" max="${maxVal}" step="10" value="${doc.patients}" oninput="updateDocPatients(${doc.id}, this.value)">
+                        <input type="number" id="doc-input-${doc.id}" class="input-control" style="width: 70px; padding: 4px 6px; font-size: 0.75rem;" value="${doc.patients}" oninput="updateDocPatients(${doc.id}, this.value)">
+                    </div>
+                    
+                    <!-- Stacked Visual Bar -->
+                    <div class="stacked-bar-container">
+                        <div class="stacked-bar" id="doc-bar-${doc.id}">
+                            <!-- Filled dynamically by calculations -->
+                        </div>
+                        <div class="stacked-labels" id="doc-labels-${doc.id}">
+                            <!-- Labels dynamically filled -->
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    // Simulation / Allocations Engine
+    function simulateDistribution(mode) {
+        const total = doctors.reduce((sum, d) => sum + d.patients, 0);
+        
+        if (mode === 'equal') {
+            distributePatientsEvenly(total);
+        } else if (mode === 'optimal') {
+            // Get current configuration thresholds
+            const nT1Mult = parseInt(document.getElementById('newMultT1').value);
+            const nT2Mult = parseInt(document.getElementById('newMultT2').value);
+            const nT3Mult = parseInt(document.getElementById('newMultT3').value);
+
+            // Greedy optimal allocation to maximize revenue (slope priority: T1 > T2 > T3 > T4)
+            const allocations = doctors.map(() => 0);
+            let remaining = total;
+
+            // Compute capacity limit arrays
+            const limit1 = doctors.map(d => nT1Mult * d.daysNew);
+            const limit2 = doctors.map(d => (nT2Mult - nT1Mult) * d.daysNew);
+            const limit3 = doctors.map(d => (nT3Mult - nT2Mult) * d.daysNew);
+
+            // 1. Fill Tier 1 for everyone proportionally
+            allocateToTier(limit1);
+            // 2. Fill Tier 2
+            allocateToTier(limit2);
+            // 3. Fill Tier 3
+            allocateToTier(limit3);
+            // 4. Any leftover is penalty tier (spread evenly)
+            if (remaining > 0) {
+                const perDoc = Math.floor(remaining / doctors.length);
+                const extra = remaining % doctors.length;
+                for (let i = 0; i < doctors.length; i++) {
+                    allocations[i] += perDoc + (i < extra ? 1 : 0);
+                }
+            }
+
+            function allocateToTier(capacities) {
+                const totalCap = capacities.reduce((a, b) => a + b, 0);
+                if (totalCap === 0 || remaining <= 0) return;
+
+                if (remaining >= totalCap) {
+                    for (let i = 0; i < doctors.length; i++) {
+                        allocations[i] += capacities[i];
+                    }
+                    remaining -= totalCap;
+                } else {
+                    let allocated = 0;
+                    const portions = capacities.map(c => {
+                        const share = Math.floor((c / totalCap) * remaining);
+                        allocated += share;
+                        return share;
+                    });
+                    
+                    let diff = remaining - allocated;
+                    for (let i = 0; i < doctors.length && diff > 0; i++) {
+                        const space = capacities[i] - portions[i];
+                        const add = Math.min(space, diff);
+                        portions[i] += add;
+                        diff -= add;
+                    }
+                    
+                    for (let i = 0; i < doctors.length; i++) {
+                        allocations[i] += portions[i];
+                    }
+                    remaining = 0;
+                }
+            }
+
+            // Sync allocations to doctor state
+            doctors.forEach((doc, idx) => {
+                doc.patients = allocations[idx];
+            });
+            
+            renderDoctorsList();
+        }
+        
+        updateAll();
+    }
+
+    // Calculations and Dynamic Visual Updates
+    let cachedResults = {};
+
+    function calculateAndRender() {
+        const pointRate = parseFloat(document.getElementById('pointRateInput').value) || 1.0;
+        
+        // Multipliers
+        const oldBaseDays = parseInt(document.getElementById('oldBaseDays').value);
+        const newBaseDays = parseInt(document.getElementById('newBaseDays').value);
+        
+        const ptT1 = parseInt(document.getElementById('ptT1').value);
+        const ptT2 = parseInt(document.getElementById('ptT2').value);
+        const ptT3 = parseInt(document.getElementById('ptT3').value);
+        const ptT4 = parseInt(document.getElementById('ptT4').value);
+        
+        const newMultT1 = parseInt(document.getElementById('newMultT1').value);
+        const newMultT2 = parseInt(document.getElementById('newMultT2').value);
+        const newMultT3 = parseInt(document.getElementById('newMultT3').value);
+
+        // Core variables
+        let oldGrandTotal = 0;
+        let newGrandTotal = 0;
+        let totalPatients = 0;
+
+        // Clinic-wide distribution variables
+        let oldClinicTiers = [0, 0, 0, 0];
+        let newClinicTiers = [0, 0, 0, 0];
+        let penaltyDocsCount = 0;
+
+        // Run calculations per doctor
+        doctors.forEach(doc => {
+            const p = doc.patients;
+            totalPatients += p;
+            document.getElementById(`doc-val-display-${doc.id}`).innerText = fmt(p);
+            
+            // Standard Multipliers scaled by doctor days
+            // Old system: 30, 40, 60 coefficients. Old base days defaults to 25.
+            const oldT1 = 30 * doc.daysOld;
+            const oldT2 = 40 * doc.daysOld;
+            const oldT3 = 60 * doc.daysOld;
+
+            // New system: customizable coefficients & days
+            const newT1 = newMultT1 * doc.daysNew;
+            const newT2 = newMultT2 * doc.daysNew;
+            const newT3 = newMultT3 * doc.daysNew;
+
+            // Tier distribution Old
+            const oldV1 = Math.min(p, oldT1);
+            const oldV2 = Math.max(0, Math.min(p, oldT2) - oldT1);
+            const oldV3 = Math.max(0, Math.min(p, oldT3) - oldT2);
+            const oldV4 = Math.max(0, p - oldT3);
+
+            // Tier distribution New
+            const newV1 = Math.min(p, newT1);
+            const newV2 = Math.max(0, Math.min(p, newT2) - newT1);
+            const newV3 = Math.max(0, Math.min(p, newT3) - newT2);
+            const newV4 = Math.max(0, p - newT3);
+
+            // Sum up
+            oldClinicTiers[0] += oldV1;
+            oldClinicTiers[1] += oldV2;
+            oldClinicTiers[2] += oldV3;
+            oldClinicTiers[3] += oldV4;
+
+            newClinicTiers[0] += newV1;
+            newClinicTiers[1] += newV2;
+            newClinicTiers[2] += newV3;
+            newClinicTiers[3] += newV4;
+
+            const oldRev = (oldV1 * ptT1) + (oldV2 * ptT2) + (oldV3 * ptT3) + (oldV4 * ptT4);
+            const newRev = (newV1 * ptT1) + (newV2 * ptT2) + (newV3 * ptT3) + (newV4 * ptT4);
+
+            oldGrandTotal += oldRev;
+            newGrandTotal += newRev;
+
+            if (newV4 > 0) {
+                penaltyDocsCount++;
+            }
+
+            // Update doctor card visual stacked bars
+            const bar = document.getElementById(`doc-bar-${doc.id}`);
+            const labels = document.getElementById(`doc-labels-${doc.id}`);
+            
+            if (bar && labels) {
+                if (p === 0) {
+                    bar.innerHTML = `<div class="bar-segment" style="width: 100%; background-color: var(--border-color)"></div>`;
+                    labels.innerHTML = '<span class="stacked-label-item">無看診人次</span>';
+                } else {
+                    const pct1 = (newV1 / p) * 100;
+                    const pct2 = (newV2 / p) * 100;
+                    const pct3 = (newV3 / p) * 100;
+                    const pct4 = (newV4 / p) * 100;
+
+                    bar.innerHTML = `
+                        <div class="bar-segment t1" style="width: ${pct1}%" title="364點: ${newV1}人"></div>
+                        <div class="bar-segment t2" style="width: ${pct2}%" title="250點: ${newV2}人"></div>
+                        <div class="bar-segment t3" style="width: ${pct3}%" title="220點: ${newV3}人"></div>
+                        <div class="bar-segment t4" style="width: ${pct4}%" title="160點(處罰區): ${newV4}人"></div>
+                    `;
+
+                    labels.innerHTML = `
+                        <span class="stacked-label-item"><span class="indicator-dot t1"></span>${ptT1}點: ${fmt(newV1)}</span>
+                        ${newV2 > 0 ? `<span class="stacked-label-item"><span class="indicator-dot t2"></span>${ptT2}點: ${fmt(newV2)}</span>` : ''}
+                        ${newV3 > 0 ? `<span class="stacked-label-item"><span class="indicator-dot t3"></span>${ptT3}點: ${fmt(newV3)}</span>` : ''}
+                        ${newV4 > 0 ? `<span class="stacked-label-item"><span class="indicator-dot t4"></span>${ptT4}點(罰): <b style="color:var(--color-t4)">${fmt(newV4)}</b></span>` : ''}
+                    `;
+                }
+            }
+        });
+
+        // Apply Conversion Rate (點值折合率)
+        const oldCash = oldGrandTotal * pointRate;
+        const newCash = newGrandTotal * pointRate;
+        const diffCash = newCash - oldCash;
+
+        // Render Metric cards
+        document.getElementById('oldTotalVal').innerText = `NT$ ${fmt(oldCash)}`;
+        document.getElementById('newTotalVal').innerText = `NT$ ${fmt(newCash)}`;
+        
+        const oldAvgPts = totalPatients > 0 ? (oldGrandTotal / totalPatients).toFixed(1) : "0.0";
+        const newAvgPts = totalPatients > 0 ? (newGrandTotal / totalPatients).toFixed(1) : "0.0";
+        document.getElementById('oldAvgPts').innerText = oldAvgPts;
+        document.getElementById('newAvgPts').innerText = newAvgPts;
+
+        // Diff card style
+        const diffValEl = document.getElementById('diffTotalVal');
+        const diffBadgeEl = document.getElementById('diffPercentBadge');
+        const diffStatusEl = document.getElementById('diffStatusText');
+        const diffCard = document.getElementById('diffMetricCard');
+        
+        const pctDiff = oldCash > 0 ? ((diffCash / oldCash) * 100).toFixed(1) : "0.0";
+
+        diffValEl.innerText = `${diffCash >= 0 ? '+' : ''}NT$ ${fmt(diffCash)}`;
+        diffBadgeEl.innerText = `${diffCash >= 0 ? '+' : ''}${pctDiff}%`;
+        
+        if (diffCash > 0) {
+            diffCard.style.boxShadow = '0 0 20px rgba(16, 185, 129, 0.2)';
+            diffBadgeEl.className = 'badge badge-success';
+            diffStatusEl.innerText = '盈餘提升';
+            diffStatusEl.style.color = '#10b981';
+        } else if (diffCash < 0) {
+            diffCard.style.boxShadow = '0 0 20px rgba(239, 68, 68, 0.2)';
+            diffBadgeEl.className = 'badge badge-danger';
+            diffStatusEl.innerText = '收入受損';
+            diffStatusEl.style.color = '#ef4444';
+        } else {
+            diffCard.style.boxShadow = 'none';
+            diffBadgeEl.className = 'badge badge-warning';
+            diffStatusEl.innerText = '持平';
+            diffStatusEl.style.color = 'var(--text-secondary)';
+        }
+
+        // Clinic Health Card
+        const healthValEl = document.getElementById('clinicHealthVal');
+        const healthDescEl = document.getElementById('clinicHealthDesc');
+        
+        if (penaltyDocsCount > 0) {
+            healthValEl.innerText = '⚠️ 警訊';
+            healthValEl.style.color = 'var(--color-t4)';
+            healthDescEl.innerHTML = `有 <b style="color:var(--color-t4)">${penaltyDocsCount}</b> 位醫師看診量掉入處罰區 (160點)`;
+        } else {
+            healthValEl.innerText = '✅ 安全';
+            healthValEl.style.color = 'var(--color-t1)';
+            healthDescEl.innerText = '全院申報比率控制極佳';
+        }
+
+        // Detailed Table
+        renderDetailedTable(oldClinicTiers, newClinicTiers, ptT1, ptT2, ptT3, ptT4, pointRate);
+
+        // Generate optimal simulation values for chart comparison
+        // Let's compute optimized revenue for same total patient count
+        const optimizedAllocations = getOptimizedRevenueAlloc(totalPatients, newMultT1, newMultT2, newMultT3);
+        let optimizedGrandTotal = 0;
+        let optClinicTiers = [0, 0, 0, 0];
+        
+        doctors.forEach((doc, idx) => {
+            const p = optimizedAllocations[idx];
+            const newT1 = newMultT1 * doc.daysNew;
+            const newT2 = newMultT2 * doc.daysNew;
+            const newT3 = newMultT3 * doc.daysNew;
+
+            const v1 = Math.min(p, newT1);
+            const v2 = Math.max(0, Math.min(p, newT2) - newT1);
+            const v3 = Math.max(0, Math.min(p, newT3) - newT2);
+            const v4 = Math.max(0, p - newT3);
+
+            optClinicTiers[0] += v1;
+            optClinicTiers[1] += v2;
+            optClinicTiers[2] += v3;
+            optClinicTiers[3] += v4;
+
+            optimizedGrandTotal += (v1 * ptT1) + (v2 * ptT2) + (v3 * ptT3) + (v4 * ptT4);
+        });
+
+        const optCash = optimizedGrandTotal * pointRate;
+
+        // Store calculations for charts
+        cachedResults = {
+            oldTotal: oldCash,
+            newTotal: newCash,
+            optTotal: optCash,
+            oldTiers: oldClinicTiers,
+            newTiers: newClinicTiers,
+            optTiers: optClinicTiers
+        };
+
+        updateCharts();
+        generateStrategyAdvice(totalPatients, newClinicTiers, penaltyDocsCount, newCash, optCash);
+    }
+
+    function getOptimizedRevenueAlloc(total, nT1Mult, nT2Mult, nT3Mult) {
+        const allocations = doctors.map(() => 0);
+        let remaining = total;
+
+        const limit1 = doctors.map(d => nT1Mult * d.daysNew);
+        const limit2 = doctors.map(d => (nT2Mult - nT1Mult) * d.daysNew);
+        const limit3 = doctors.map(d => (nT3Mult - nT2Mult) * d.daysNew);
+
+        // Fill T1
+        remaining = fillAlloc(allocations, limit1, remaining);
+        // Fill T2
+        remaining = fillAlloc(allocations, limit2, remaining);
+        // Fill T3
+        remaining = fillAlloc(allocations, limit3, remaining);
+        // Leftover
+        if (remaining > 0) {
+            const perDoc = Math.floor(remaining / doctors.length);
+            const extra = remaining % doctors.length;
+            for (let i = 0; i < doctors.length; i++) {
+                allocations[i] += perDoc + (i < extra ? 1 : 0);
+            }
+        }
+
+        return allocations;
+
+        function fillAlloc(allocs, limits, rem) {
+            const totalCap = limits.reduce((a, b) => a + b, 0);
+            if (totalCap === 0 || rem <= 0) return rem;
+
+            if (rem >= totalCap) {
+                for (let i = 0; i < allocs.length; i++) {
+                    allocs[i] += limits[i];
+                }
+                return rem - totalCap;
+            } else {
+                let allocated = 0;
+                const portions = limits.map(l => {
+                    const sh = Math.floor((l / totalCap) * rem);
+                    allocated += sh;
+                    return sh;
+                });
+                let diff = rem - allocated;
+                for (let i = 0; i < allocs.length && diff > 0; i++) {
+                    const sp = limits[i] - portions[i];
+                    const add = Math.min(sp, diff);
+                    portions[i] += add;
+                    diff -= add;
+                }
+                for (let i = 0; i < allocs.length; i++) {
+                    allocs[i] += portions[i];
+                }
+                return 0;
+            }
+        }
+    }
+
+    // Render detailed comparison table
+    function renderDetailedTable(oldTiers, newTiers, p1, p2, p3, p4, rate) {
+        const body = document.getElementById('detailedTableBody');
+        body.innerHTML = '';
+
+        const tiersInfo = [
+            { name: `${p1} 點 (第一級距)`, oldVal: oldTiers[0], newVal: newTiers[0], points: p1, color: 'var(--color-t1)' },
+            { name: `${p2} 點 (第二級距)`, oldVal: oldTiers[1], newVal: newTiers[1], points: p2, color: 'var(--color-t2)' },
+            { name: `${p3} 點 (第三級距)`, oldVal: oldTiers[2], newVal: newTiers[2], points: p3, color: 'var(--color-t3)' },
+            { name: `${p4} 點 (折價處罰級距)`, oldVal: oldTiers[3], newVal: newTiers[3], points: p4, color: 'var(--color-t4)' }
+        ];
+
+        // Global limits for display
+        const oldBaseDays = parseInt(document.getElementById('oldBaseDays').value);
+        const newBaseDays = parseInt(document.getElementById('newBaseDays').value);
+        
+        const newMultT1 = parseInt(document.getElementById('newMultT1').value);
+        const newMultT2 = parseInt(document.getElementById('newMultT2').value);
+        const newMultT3 = parseInt(document.getElementById('newMultT3').value);
+
+        const totalOldDays = doctors.reduce((sum, d) => sum + d.daysOld, 0);
+        const totalNewDays = doctors.reduce((sum, d) => sum + d.daysNew, 0);
+
+        const limitsDesc = [
+            `舊: 1~30人/日 × 醫師天數<br>新: 1~${newMultT1}人/日 × 醫師天數`,
+            `舊: 31~40人/日 × 醫師天數<br>新: ${newMultT1+1}~${newMultT2}人/日 × 醫師天數`,
+            `舊: 41~60人/日 × 醫師天數<br>新: ${newMultT2+1}~${newMultT3}人/日 × 醫師天數`,
+            `舊: 61人/日以上 × 醫師天數<br>新: ${newMultT3+1}人/日以上 × 醫師天數`
+        ];
+
+        tiersInfo.forEach((tier, idx) => {
+            const oldRev = tier.oldVal * tier.points * rate;
+            const newRev = tier.newVal * tier.points * rate;
+            const diff = newRev - oldRev;
+
+            const tr = document.createElement('tr');
+            
+            let diffClass = 'num-zero';
+            if (diff > 0) diffClass = 'num-pos';
+            else if (diff < 0) diffClass = 'num-neg';
+
+            tr.innerHTML = `
+                <td style="font-weight: 700; border-left: 4px solid ${tier.color}; padding-left: 12px;">
+                    ${tier.name}
+                </td>
+                <td style="font-size: 0.75rem; color: var(--text-secondary);">
+                    ${limitsDesc[idx]}
+                </td>
+                <td class="num-col">${fmt(tier.oldVal)} <span style="font-size: 0.6875rem; color:var(--text-secondary)">人次</span></td>
+                <td class="num-col" style="font-weight: 700;">${fmt(tier.newVal)} <span style="font-size: 0.6875rem; color:var(--text-secondary)">人次</span></td>
+                <td class="num-col ${diffClass}">${diff >= 0 ? '+' : ''}${fmt(diff)}</td>
+            `;
+            body.appendChild(tr);
+
+            // Add expandable nested breakdown for doctors
+            const detailsTr = document.createElement('tr');
+            detailsTr.className = 'nested-doc-row';
+            
+            let docsBreakdown = '';
+            doctors.forEach(doc => {
+                let dOldVal = 0, dNewVal = 0;
+                
+                // Old Doctor Scale
+                const oldT1 = 30 * doc.daysOld;
+                const oldT2 = 40 * doc.daysOld;
+                const oldT3 = 60 * doc.daysOld;
+
+                // New Doctor Scale
+                const newT1 = newMultT1 * doc.daysNew;
+                const newT2 = newMultT2 * doc.daysNew;
+                const newT3 = newMultT3 * doc.daysNew;
+
+                if (idx === 0) {
+                    dOldVal = Math.min(doc.patients, oldT1);
+                    dNewVal = Math.min(doc.patients, newT1);
+                } else if (idx === 1) {
+                    dOldVal = Math.max(0, Math.min(doc.patients, oldT2) - oldT1);
+                    dNewVal = Math.max(0, Math.min(doc.patients, newT2) - newT1);
+                } else if (idx === 2) {
+                    dOldVal = Math.max(0, Math.min(doc.patients, oldT3) - oldT2);
+                    dNewVal = Math.max(0, Math.min(doc.patients, newT3) - newT2);
+                } else {
+                    dOldVal = Math.max(0, doc.patients - oldT3);
+                    dNewVal = Math.max(0, doc.patients - newT3);
+                }
+
+                docsBreakdown += `
+                    <span style="margin-right: 16px; display:inline-block">
+                        👤 <b>${doc.name}</b>: 舊 ${fmt(dOldVal)}人次 / 新 <span style="color:${dNewVal > 0 ? tier.color : 'inherit'}">${fmt(dNewVal)}人次</span>
+                    </span>
+                `;
+            });
+
+            detailsTr.innerHTML = `
+                <td colspan="5" style="padding: 6px 16px 6px 24px; border-bottom: 1px solid var(--border-color)">
+                    ${docsBreakdown}
+                </td>
+            `;
+            body.appendChild(detailsTr);
+        });
+    }
+
+    // SVG Charts Drawing
+    function updateCharts() {
+        if (!cachedResults.oldTotal) return;
+
+        // Draw Revenue Chart
+        drawRevenueChart(cachedResults.oldTotal, cachedResults.newTotal, cachedResults.optTotal);
+
+        // Draw Distribution Chart
+        drawDistributionChart(cachedResults.oldTiers, cachedResults.newTiers, cachedResults.optTiers);
+    }
+
+    function drawRevenueChart(oldVal, newVal, optVal) {
+        const svg = document.getElementById('svgRevenueChart');
+        if (!svg) return;
+        svg.innerHTML = '';
+
+        const maxVal = Math.max(oldVal, newVal, optVal, 100000) * 1.15;
+        const padding = { top: 40, right: 30, bottom: 40, left: 75 };
+        
+        // Dynamic box sizing
+        const w = svg.clientWidth || 500;
+        const h = 280;
+        svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+        
+        const chartWidth = w - padding.left - padding.right;
+        const chartHeight = h - padding.top - padding.bottom;
+
+        const getY = (val) => padding.top + chartHeight - (val / maxVal) * chartHeight;
+        const getX = (index) => padding.left + (chartWidth / 3) * index + (chartWidth / 6);
+
+        // Grid lines & Y Labels
+        for (let i = 0; i <= 4; i++) {
+            const val = (maxVal / 4) * i;
+            const y = getY(val);
+
+            // Dashed line
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', padding.left);
+            line.setAttribute('y1', y);
+            line.setAttribute('x2', w - padding.right);
+            line.setAttribute('y2', y);
+            line.setAttribute('stroke', 'var(--border-color)');
+            line.setAttribute('stroke-dasharray', '4 4');
+            svg.appendChild(line);
+
+            // Label text
+            const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            txt.setAttribute('x', padding.left - 10);
+            txt.setAttribute('y', y + 4);
+            txt.setAttribute('text-anchor', 'end');
+            txt.setAttribute('fill', 'var(--text-secondary)');
+            txt.setAttribute('font-size', String(10 * currentScale));
+            txt.setAttribute('font-weight', '500');
+            txt.textContent = 'NT$ ' + fmt(val);
+            svg.appendChild(txt);
+        }
+
+        const data = [
+            { label: '舊制收入', val: oldVal, color: '#64748b', gradient: 'url(#gradOld)' },
+            { label: '新制收入', val: newVal, color: '#3b82f6', gradient: 'url(#gradNew)' },
+            { label: '最佳化分流', val: optVal, color: '#0d9488', gradient: 'url(#gradOpt)' }
+        ];
+
+        // Add Gradients Definitions
+        const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        defs.innerHTML = `
+            <linearGradient id="gradOld" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#94a3b8"/>
+                <stop offset="100%" stop-color="#475569"/>
+            </linearGradient>
+            <linearGradient id="gradNew" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#60a5fa"/>
+                <stop offset="100%" stop-color="#1d4ed8"/>
+            </linearGradient>
+            <linearGradient id="gradOpt" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#14b8a6"/>
+                <stop offset="100%" stop-color="#0f766e"/>
+            </linearGradient>
+        `;
+        svg.appendChild(defs);
+
+        data.forEach((d, i) => {
+            const cx = getX(i);
+            const cy = getY(d.val);
+            const ch = Math.max(getY(0) - cy, 4);
+            const barW = Math.min(60, chartWidth / 5);
+
+            // Draw Bar
+            const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            rect.setAttribute('x', cx - barW/2);
+            rect.setAttribute('y', cy);
+            rect.setAttribute('width', barW);
+            rect.setAttribute('height', ch);
+            rect.setAttribute('rx', '6');
+            rect.setAttribute('fill', d.gradient);
+            rect.style.transition = 'all 0.3s ease';
+            
+            // Value Label Above Bar
+            const valText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            valText.setAttribute('x', cx);
+            valText.setAttribute('y', cy - 8);
+            valText.setAttribute('text-anchor', 'middle');
+            valText.setAttribute('fill', 'var(--text-primary)');
+            valText.setAttribute('font-size', String(11 * currentScale));
+            valText.setAttribute('font-weight', '700');
+            valText.textContent = 'NT$ ' + fmt(d.val);
+
+            // Group Label Below Bar
+            const lblText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            lblText.setAttribute('x', cx);
+            lblText.setAttribute('y', h - 15);
+            lblText.setAttribute('text-anchor', 'middle');
+            lblText.setAttribute('fill', 'var(--text-primary)');
+            lblText.setAttribute('font-size', String(12 * currentScale));
+            lblText.setAttribute('font-weight', '600');
+            lblText.textContent = d.label;
+
+            svg.appendChild(rect);
+            svg.appendChild(valText);
+            svg.appendChild(lblText);
+        });
+    }
+
+    function drawDistributionChart(oldT, newT, optT) {
+        const svg = document.getElementById('svgDistributionChart');
+        if (!svg) return;
+        svg.innerHTML = '';
+
+        const padding = { top: 30, right: 30, bottom: 40, left: 85 };
+        const w = svg.clientWidth || 500;
+        const h = 180;
+        svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+        
+        const chartWidth = w - padding.left - padding.right;
+        const chartHeight = h - padding.top - padding.bottom;
+
+        const data = [
+            { label: '舊制總人次', tiers: oldT },
+            { label: '新制總人次', tiers: newT },
+            { label: '最佳化分流', tiers: optT }
+        ];
+
+        data.forEach((d, i) => {
+            const y = padding.top + (chartHeight / 3) * i + 8;
+            const total = d.tiers.reduce((a, b) => a + b, 0);
+
+            // Y Axis Label
+            const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            txt.setAttribute('x', padding.left - 12);
+            txt.setAttribute('y', y + 14);
+            txt.setAttribute('text-anchor', 'end');
+            txt.setAttribute('fill', 'var(--text-primary)');
+            txt.setAttribute('font-size', String(12 * currentScale));
+            txt.setAttribute('font-weight', '600');
+            txt.textContent = d.label;
+            svg.appendChild(txt);
+
+            if (total === 0) return;
+
+            let curX = padding.left;
+            const colors = ['var(--color-t1)', 'var(--color-t2)', 'var(--color-t3)', 'var(--color-t4)'];
+
+            d.tiers.forEach((tVal, tIdx) => {
+                if (tVal === 0) return;
+                const segW = (tVal / total) * chartWidth;
+
+                // Draw segment rect
+                const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                rect.setAttribute('x', curX);
+                rect.setAttribute('y', y);
+                rect.setAttribute('width', segW);
+                rect.setAttribute('height', '18');
+                rect.setAttribute('fill', colors[tIdx]);
+                rect.setAttribute('rx', '3');
+                
+                // Add inner text if width allows
+                if (segW > 35) {
+                    const valTxt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    valTxt.setAttribute('x', curX + segW/2);
+                    valTxt.setAttribute('y', y + 13);
+                    valTxt.setAttribute('text-anchor', 'middle');
+                    valTxt.setAttribute('fill', '#ffffff');
+                    valTxt.setAttribute('font-size', String(9 * currentScale));
+                    valTxt.setAttribute('font-weight', '700');
+                    valTxt.textContent = fmt(tVal);
+                    svg.appendChild(valTxt);
+                }
+
+                svg.appendChild(rect);
+                curX += segW;
+            });
+        });
+    }
+
+    // Dynamic strategy advice generator
+    function generateStrategyAdvice(total, newTiers, penalties, curRevenue, optRevenue) {
+        const adviceBox = document.getElementById('strategyAdviceText');
+        const diff = optRevenue - curRevenue;
+
+        let html = '';
+
+        if (penalties > 0) {
+            html += `<p style="margin-bottom: 8px;">⚠️ <b>分流警訊：</b> 診所有部分醫師看診量已經掉入<b>折價處罰區(160點)</b>。超出上限的人次僅能獲得 160 點給付，利潤極低。</p>`;
+        } else {
+            html += `<p style="margin-bottom: 8px;">✅ <b>分流狀態良好：</b> 目前全院看診分佈安全，申報給付均在 220 點以上的中高層級，未觸及 160 點處罰線。</p>`;
+        }
+
+        if (diff > 500) {
+            html += `<p style="margin-bottom: 8px;">💡 <b>智慧最佳化建議：</b> 透過系統的「智慧最佳分流」，可以將部分高診量醫師的患者分流至其他有額度的醫師。預期可<b>提升給付金額約 NT$ ${fmt(diff)}</b>！</p>`;
+        } else {
+            html += `<p style="margin-bottom: 8px;">✨ <b>營運狀態提示：</b> 目前全院的分流已經相當接近利潤最大化的狀態。持續落實分流掛號策略即可。</p>`;
+        }
+
+        // Calculate critical sweet spots
+        const newMultT3 = parseInt(document.getElementById('newMultT3').value);
+        const totalNewDays = doctors.reduce((sum, d) => sum + d.daysNew, 0);
+        const maxPerfectCap = totalNewDays * newMultT3;
+
+        html += `
+            <div style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-color); font-size: 0.75rem; color: var(--text-secondary);">
+                📌 <b>診所總防線指標：</b><br>
+                全院新制 220 點最優防線容量為：<b>${fmt(maxPerfectCap)}</b> 人次 (全院看診總天數 × ${newMultT3})。<br>
+                目前全院總看診人次為 <b>${fmt(total)}</b>。
+                ${total > maxPerfectCap ? `<br><span style="color:var(--color-t4)">⚠️ 目前已超出防線額度 ${fmt(total - maxPerfectCap)} 人次，建議引導部分病人改看門診外的自費項目、居家醫療等不受限業務。</span>` : ''}
+            </div>
+        `;
+
+        adviceBox.innerHTML = html;
+    }
+
+    // CSV Data Export
+    function exportCSV() {
+        let csv = '\uFEFF'; // UTF-8 BOM
+        csv += '醫師名稱,舊制看診天數,新制看診天數,每月看診量,舊制預估收入,新制預估收入,新舊制差異\n';
+
+        const pointRate = parseFloat(document.getElementById('pointRateInput').value) || 1.0;
+        const ptT1 = parseInt(document.getElementById('ptT1').value);
+        const ptT2 = parseInt(document.getElementById('ptT2').value);
+        const ptT3 = parseInt(document.getElementById('ptT3').value);
+        const ptT4 = parseInt(document.getElementById('ptT4').value);
+        const newMultT1 = parseInt(document.getElementById('newMultT1').value);
+        const newMultT2 = parseInt(document.getElementById('newMultT2').value);
+        const newMultT3 = parseInt(document.getElementById('newMultT3').value);
+
+        doctors.forEach(doc => {
+            const oldT1 = 30 * doc.daysOld;
+            const oldT2 = 40 * doc.daysOld;
+            const oldT3 = 60 * doc.daysOld;
+            const newT1 = newMultT1 * doc.daysNew;
+            const newT2 = newMultT2 * doc.daysNew;
+            const newT3 = newMultT3 * doc.daysNew;
+
+            const oldV1 = Math.min(doc.patients, oldT1);
+            const oldV2 = Math.max(0, Math.min(doc.patients, oldT2) - oldT1);
+            const oldV3 = Math.max(0, Math.min(doc.patients, oldT3) - oldT2);
+            const oldV4 = Math.max(0, doc.patients - oldT3);
+
+            const newV1 = Math.min(doc.patients, newT1);
+            const newV2 = Math.max(0, Math.min(doc.patients, newT2) - newT1);
+            const newV3 = Math.max(0, Math.min(doc.patients, newT3) - newT2);
+            const newV4 = Math.max(0, doc.patients - newT3);
+
+            const oldRev = ((oldV1 * ptT1) + (oldV2 * ptT2) + (oldV3 * ptT3) + (oldV4 * ptT4)) * pointRate;
+            const newRev = ((newV1 * ptT1) + (newV2 * ptT2) + (newV3 * ptT3) + (newV4 * ptT4)) * pointRate;
+            const diff = newRev - oldRev;
+
+            csv += `"${doc.name}",${doc.daysOld},${doc.daysNew},${doc.patients},${Math.round(oldRev)},${Math.round(newRev)},${Math.round(diff)}\n`;
+        });
+
+        // Add summary row
+        const oldSum = cachedResults.oldTotal;
+        const newSum = cachedResults.newTotal;
+        const diffSum = newSum - oldSum;
+        const totalPat = doctors.reduce((sum, d) => sum + d.patients, 0);
+        csv += `全院總計,-,-,${totalPat},${Math.round(oldSum)},${Math.round(newSum)},${Math.round(diffSum)}\n`;
+
+        // Trigger file download
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", `診所營收評估報告_${new Date().toISOString().slice(0,10)}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    }
+
+    // Share & Import Functions (Base64 State Compressor)
+    function getShareState() {
+        const state = {
+            docs: doctors.map(d => ({ name: d.name, daysOld: d.daysOld, daysNew: d.daysNew, patients: d.patients })),
+            config: {
+                oldDays: parseInt(document.getElementById('oldBaseDays').value),
+                newDays: parseInt(document.getElementById('newBaseDays').value),
+                rate: parseFloat(document.getElementById('pointRateInput').value),
+                mults: [
+                    parseInt(document.getElementById('newMultT1').value),
+                    parseInt(document.getElementById('newMultT2').value),
+                    parseInt(document.getElementById('newMultT3').value)
+                ],
+                pts: [
+                    parseInt(document.getElementById('ptT1').value),
+                    parseInt(document.getElementById('ptT2').value),
+                    parseInt(document.getElementById('ptT3').value),
+                    parseInt(document.getElementById('ptT4').value)
+                ]
+            }
+        };
+        // Encode state to Base64
+        return btoa(unescape(encodeURIComponent(JSON.stringify(state))));
+    }
+
+    function loadShareState(base64str) {
+        try {
+            const json = decodeURIComponent(escape(atob(base64str)));
+            const state = JSON.parse(json);
+            
+            // Restore config
+            document.getElementById('oldBaseDays').value = state.config.oldDays;
+            document.getElementById('newBaseDays').value = state.config.newDays;
+            document.getElementById('pointRateInput').value = state.config.rate;
+            document.getElementById('newMultT1').value = state.config.mults[0];
+            document.getElementById('newMultT2').value = state.config.mults[1];
+            document.getElementById('newMultT3').value = state.config.mults[2];
+            document.getElementById('ptT1').value = state.config.pts[0];
+            document.getElementById('ptT2').value = state.config.pts[1];
+            document.getElementById('ptT3').value = state.config.pts[2];
+            document.getElementById('ptT4').value = state.config.pts[3];
+            
+            // Restore doctors
+            doctors = state.docs.map((d, idx) => ({
+                id: idx + 1,
+                name: d.name,
+                daysOld: d.daysOld,
+                daysNew: d.daysNew,
+                patients: d.patients
+            }));
+            
+            renderDoctorsList();
+            syncClinicPatientsCount();
+            updateAll();
+            return true;
+        } catch (e) {
+            console.error("State restore failed:", e);
+            return false;
+        }
+    }
+
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.style.display = 'block';
+        setTimeout(() => {
+            t.style.display = 'none';
+        }, 2500);
+    }
+
+    function showShareModal() {
+        const code = getShareState();
+        // Generate shareable link
+        const baseLink = window.location.href.split('#')[0];
+        const shareUrl = `${baseLink}#state=${code}`;
+        
+        document.getElementById('shareUrlInput').value = shareUrl;
+        document.getElementById('shareCodeInput').value = code;
+        
+        document.getElementById('shareModal').style.display = 'flex';
+        
+        // Try writing to clipboard automatically
+        navigator.clipboard.writeText(shareUrl).then(() => {
+            showToast("分享連結已自動複製到剪貼簿！");
+        }).catch(() => {
+            // Fallback if browser blocks automatic copying
+        });
+    }
+
+    function copyShareText() {
+        const shareUrl = document.getElementById('shareUrlInput').value;
+        navigator.clipboard.writeText(shareUrl).then(() => {
+            showToast("已成功複製分享連結！");
+        });
+    }
+
+    function showImportModal() {
+        document.getElementById('importCodeInput').value = '';
+        document.getElementById('importModal').style.display = 'flex';
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).style.display = 'none';
+    }
+
+    function applyImport() {
+        let code = document.getElementById('importCodeInput').value.trim();
+        if (!code) return;
+        
+        // If it is a full URL, extract the state
+        if (code.includes('#state=')) {
+            code = code.split('#state=')[1];
+        } else if (code.includes('state=')) {
+            code = code.split('state=')[1].split('&')[0];
+        }
+        
+        if (loadShareState(code)) {
+            showToast("數據狀態匯入成功！");
+            closeModal('importModal');
+        } else {
+            alert("匯入失敗，請檢查代碼或網址是否正確且完整。");
+        }
+    }
+
+    // Master update function
+    function updateAll() {
+        calculateAndRender();
+    }
+
+    // Page Load Setup
+    window.addEventListener('resize', updateCharts);
+    
+    // Initial Load Hash Parsing
+    window.addEventListener('DOMContentLoaded', () => {
+        // 讀取主題設定（與 Portal 共用同一組設定，會自動同步）
+        const savedTheme = localStorage.getItem(THEME_KEY);
+        setTheme(['light', 'dark', 'antique'].includes(savedTheme) ? savedTheme : 'light');
+
+        // 讀取文字縮放設定
+        const savedScale = parseFloat(localStorage.getItem(SCALE_KEY));
+        applyScale(!isNaN(savedScale) ? savedScale : 1.0);
+
+        // Check for hash state
+        const hash = window.location.hash;
+        if (hash.startsWith('#state=')) {
+            const code = hash.substring(7);
+            if (loadShareState(code)) {
+                setTimeout(() => showToast("已自動載入分享的試算狀態！"), 400);
+            }
+        }
+    });
+
+    // Initial Render
+    renderDoctorsList();
+    updateAll();
+</script>
+
+</body>
+</html>
