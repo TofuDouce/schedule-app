@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>百寶箱</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0D0B08">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="百寶箱">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" href="icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;500;600;700&family=Cinzel:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root { --fs:17px; --font:'Noto Serif TC',serif; }
+
+/* ══ 七大主題（與 SoulDream / 緣起不滅 同源）══ */
+body.theme-ningen {
+  --bg:#EDEAE3; --bg2:#E3DFD4; --bg-card:#F7F5EF; --bg-in:#FDFCF8;
+  --border:#D6D1C2; --border-h:#B3AB92; --text:#242320; --text-muted:#726B5C;
+  --gold:#3E4C6E; --gold-l:#2E3A56;
+  --chip-bg:#F0EDE4; --chip-active:#DEE0E8; --chip-act-t:#2E3A56;
+  --btn-bg:linear-gradient(135deg,#D8D8E2,#EDEAE3); --btn-bg-h:linear-gradient(135deg,#C2C4D6,#D8D8E2);
+  --panel-bg:#F5F2EA; --header-line:#B3AB92;
+  --crest-color:#3E4C6E; --title-color:#2E3A56; --out-bg:#FBF9F3; --glow:rgba(62,76,110,0.16);
+  --danger:#A44A38; --hairline:#C4BCA4;
+}
+body.theme-reikai {
+  --bg:#EEEBF1; --bg2:#E5E0EA; --bg-card:#F7F4F9; --bg-in:#FCFAFD;
+  --border:#DAD3E2; --border-h:#B4A9C4; --text:#2F2A38; --text-muted:#77708A;
+  --gold:#7A6B94; --gold-l:#655878;
+  --chip-bg:#EFEBF3; --chip-active:#E2DCE9; --chip-act-t:#5C5074;
+  --btn-bg:linear-gradient(135deg,#DCD4E4,#EEE8F2); --btn-bg-h:linear-gradient(135deg,#CCC1D8,#DCD4E4);
+  --panel-bg:#F2EEF6; --header-line:#B4A9C4;
+  --crest-color:#7A6B94; --title-color:#5C5074; --out-bg:#F9F6FB; --glow:rgba(122,107,148,0.14);
+  --danger:#A8465A; --hairline:#CDC4D8;
+}
+body.theme-rose {
+  --bg:#F4E7E2; --bg2:#EBD6CE; --bg-card:#FAF0EC; --bg-in:#FEF9F7;
+  --border:#E4CABF; --border-h:#CFA593; --text:#3A241E; --text-muted:#8A6A5E;
+  --gold:#A44A38; --gold-l:#883A2A;
+  --chip-bg:#F5E8E2; --chip-active:#EED2C6; --chip-act-t:#7A3020;
+  --btn-bg:linear-gradient(135deg,#EED6CB,#F6E7DF); --btn-bg-h:linear-gradient(135deg,#E2BCAB,#EED6CB);
+  --panel-bg:#F7ECE7; --header-line:#CFA593;
+  --crest-color:#A44A38; --title-color:#7A3020; --out-bg:#FBF3EF; --glow:rgba(164,74,56,0.15);
+  --danger:#A44A38; --hairline:#D8B8AC;
+}
+body.theme-parch {
+  --bg:#F5EDD8; --bg2:#EFE5CC; --bg-card:#FBF6EA; --bg-in:#FFFCF5;
+  --border:#DDD0B8; --border-h:#BFA988; --text:#2C2620; --text-muted:#7A6F5F;
+  --gold:#8B5E1A; --gold-l:#6E4A12;
+  --chip-bg:#F3ECDE; --chip-active:#EAD9BE; --chip-act-t:#5A3E10;
+  --btn-bg:linear-gradient(135deg,#E8D6B8,#F4EBD8); --btn-bg-h:linear-gradient(135deg,#DCC49E,#E8D6B8);
+  --panel-bg:#F7F1E4; --header-line:#BFA988;
+  --crest-color:#8B5E1A; --title-color:#5A3E10; --out-bg:#FDFAF2; --glow:rgba(139,94,26,0.16);
+  --danger:#A44A38; --hairline:#CBB790;
+}
+body.theme-ivory {
+  --bg:#F5F3EC; --bg2:#EBE8DD; --bg-card:#FBFAF5; --bg-in:#FFFFFF;
+  --border:#DDD8CA; --border-h:#BAB29E; --text:#2E2B24; --text-muted:#78715F;
+  --gold:#7A6A44; --gold-l:#5E5232;
+  --chip-bg:#F2F0E7; --chip-active:#E4DFCE; --chip-act-t:#4E4228;
+  --btn-bg:linear-gradient(135deg,#E6E1D0,#F2EEE0); --btn-bg-h:linear-gradient(135deg,#D6CFB8,#E6E1D0);
+  --panel-bg:#F6F4EC; --header-line:#BAB29E;
+  --crest-color:#7A6A44; --title-color:#4E4228; --out-bg:#FAF9F3; --glow:rgba(122,106,68,0.13);
+  --danger:#A44A38; --hairline:#CFC7AE;
+}
+body.theme-dark {
+  --bg:#0D0B08; --bg2:#141009; --bg-card:#1A1510; --bg-in:#1E1912;
+  --border:#3A2E1C; --border-h:#5E4A30; --text:#F0E6D0; --text-muted:#9A8A6A;
+  --gold:#C89A48; --gold-l:#DCB262;
+  --chip-bg:#221B12; --chip-active:#3E301C; --chip-act-t:#F0D08A;
+  --btn-bg:linear-gradient(135deg,#3A2E1A,#2A2012); --btn-bg-h:linear-gradient(135deg,#4E3E24,#3A2E1A);
+  --panel-bg:#141009; --header-line:#C89A48;
+  --crest-color:#DCB262; --title-color:#DCB262; --out-bg:#161009; --glow:rgba(200,154,72,0.28);
+  --danger:#E0725C; --hairline:#5E4A30;
+}
+body.theme-obsidian {
+  --bg:#060606; --bg2:#0C0C0C; --bg-card:#141414; --bg-in:#1A1A1A;
+  --border:#2A2A2A; --border-h:#484848; --text:#E8E8E8; --text-muted:#888888;
+  --gold:#B0B0B0; --gold-l:#D0D0D0;
+  --chip-bg:#181818; --chip-active:#303030; --chip-act-t:#F0F0F0;
+  --btn-bg:linear-gradient(135deg,#2A2A2A,#1A1A1A); --btn-bg-h:linear-gradient(135deg,#3E3E3E,#2A2A2A);
+  --panel-bg:#0C0C0C; --header-line:#B0B0B0;
+  --crest-color:#D0D0D0; --title-color:#D0D0D0; --out-bg:#121212; --glow:rgba(180,180,180,0.22);
+  --danger:#D0D0D0; --hairline:#3A3A3A;
+}
+
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html { -webkit-text-size-adjust:100%; }
+body {
+  background:linear-gradient(170deg,var(--bg) 0%,var(--bg2) 100%) fixed;
+  color:var(--text); font-family:var(--font); font-size:var(--fs);
+  line-height:1.75; min-height:100vh;
+  padding:env(safe-area-inset-top) 0 calc(60px + env(safe-area-inset-bottom));
+  transition:color .3s;
+}
+body.viewer-open { overflow:hidden; }
+
+/* ══ 齒輪設定 ══ */
+.settings-fab { position:fixed; top:calc(14px + env(safe-area-inset-top)); right:16px; z-index:1000; }
+.fab-toggle {
+  width:46px; height:46px; border-radius:50%; background:var(--panel-bg);
+  border:1px solid var(--border-h); color:var(--gold-l); font-size:19px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 4px 18px rgba(0,0,0,.28); transition:transform .3s; margin-left:auto;
+}
+.fab-toggle.open { transform:rotate(120deg); }
+.settings-panel {
+  position:absolute; top:56px; right:0; width:290px; background:var(--panel-bg);
+  border:1px solid var(--border-h); border-radius:10px; padding:18px;
+  box-shadow:0 8px 40px rgba(0,0,0,.3); display:none; flex-direction:column; gap:16px;
+  max-height:76vh; overflow-y:auto;
+}
+.settings-panel.open { display:flex; animation:gpIn .22s ease; }
+@keyframes gpIn { from{opacity:0;transform:translateY(-10px);} to{opacity:1;transform:translateY(0);} }
+.sp-title { font-family:'Cinzel',serif; font-size:.68em; letter-spacing:3px; color:var(--gold);
+  text-transform:uppercase; padding-bottom:9px; border-bottom:1px solid var(--border); }
+.sp-row { display:flex; flex-direction:column; gap:7px; }
+.sp-label { font-size:.72em; letter-spacing:1px; color:var(--gold); font-weight:600; }
+.sp-select { background:var(--bg-in); border:1px solid var(--border); border-radius:4px; color:var(--text);
+  font-family:var(--font); font-size:.86em; padding:8px 10px; width:100%; outline:none; cursor:pointer; }
+.sp-select:focus { border-color:var(--border-h); }
+.sp-select option { background:var(--bg-card); color:var(--text); }
+.sp-note { font-size:.7em; color:var(--text-muted); font-style:italic; line-height:1.6; }
+.sp-btn { background:var(--btn-bg); border:1px solid var(--border-h); border-radius:5px; color:var(--text);
+  font-family:var(--font); font-size:.84em; padding:9px 12px; cursor:pointer; letter-spacing:.06em; transition:all .15s; }
+.sp-btn:active { background:var(--btn-bg-h); }
+.sp-btn.danger-line { border-color:var(--danger); color:var(--danger); background:transparent; }
+
+/* ══ HEADER ══ */
+.site-header { text-align:center; padding:50px 20px 18px; position:relative; }
+.header-orn { font-family:'Cinzel',serif; font-size:.62em; letter-spacing:6px; color:var(--gold);
+  opacity:.8; margin-bottom:14px; text-transform:uppercase; }
+.header-orn::before { content:'—— '; opacity:.5; }
+.header-orn::after { content:' ——'; opacity:.5; }
+.site-title { font-family:'Noto Serif TC',serif; font-size:clamp(38px,11vw,60px); font-weight:700;
+  color:var(--title-color); letter-spacing:.3em; line-height:1.2; text-indent:.3em;
+  text-shadow:0 2px 20px var(--glow); }
+.title-sub { margin-top:12px; font-size:.78em; color:var(--text-muted); letter-spacing:.14em; font-weight:300; }
+.divider-orn { display:flex; align-items:center; justify-content:center; gap:12px; margin:18px auto 0; max-width:220px; }
+.divider-orn::before, .divider-orn::after { content:''; flex:1; height:1px;
+  background:linear-gradient(to right,transparent,var(--header-line),transparent); }
+.divider-orn span { color:var(--gold); font-size:.7em; opacity:.7; }
+
+/* ══ 分類 CHIPS ══ */
+.tab-nav-wrap { position:sticky; top:0; z-index:100;
+  background:linear-gradient(180deg,var(--bg) 60%,transparent);
+  padding:calc(10px + env(safe-area-inset-top)) 0 8px; margin-bottom:4px; }
+.tab-nav { display:flex; gap:6px; overflow-x:auto; padding:2px 16px;
+  -webkit-overflow-scrolling:touch; scrollbar-width:thin; }
+.tab-btn { flex-shrink:0; background:var(--chip-bg); border:1px solid var(--border); border-radius:20px;
+  color:var(--text-muted); cursor:pointer; font-family:var(--font); font-size:.82em; padding:8px 16px;
+  transition:all .18s; white-space:nowrap; user-select:none; -webkit-user-select:none; }
+.tab-btn.active { background:var(--chip-active); border-color:var(--gold); color:var(--chip-act-t);
+  font-weight:600; box-shadow:0 0 12px var(--glow); }
+.tab-num { font-family:'Cinzel',serif; font-size:.82em; opacity:.7; margin-left:6px; }
+
+.container { max-width:820px; margin:0 auto; padding:0 16px; }
+
+/* ══ 匯入卡 ══ */
+.import-card { border:1px dashed var(--border-h); border-radius:6px; background:transparent;
+  width:100%; padding:18px; text-align:center; color:var(--gold); font-family:var(--font);
+  font-size:.92em; letter-spacing:.1em; cursor:pointer; margin:8px 0 18px; transition:all .15s; }
+.import-card:active { background:var(--chip-active); }
+.import-card .big { font-size:1.4em; display:block; margin-bottom:2px; }
+
+/* ══ 藏品卡 ══ */
+.item-card { background:var(--bg-card); border:1px solid var(--border); border-radius:6px;
+  padding:20px 20px 16px; margin-bottom:14px; position:relative; animation:pageIn .25s ease; }
+@keyframes pageIn { from{opacity:0;transform:translateX(12px);} to{opacity:1;transform:translateX(0);} }
+.item-card::before { content:attr(data-rune); position:absolute; top:-10px; left:18px;
+  background:var(--bg-card); padding:0 10px; font-family:'Cinzel',serif; font-size:.58em;
+  letter-spacing:2px; color:var(--gold); }
+.item-name { font-family:'Noto Serif TC',serif; font-size:1.04em; font-weight:700;
+  letter-spacing:.04em; color:var(--text); line-height:1.5; word-break:break-all; }
+.item-meta { font-size:.72em; color:var(--text-muted); margin-top:4px; letter-spacing:.05em; }
+.item-meta .dot { opacity:.5; margin:0 6px; }
+.item-actions { display:flex; gap:8px; margin-top:12px; align-items:center; }
+.btn-open { flex:1; background:var(--btn-bg); border:1px solid var(--border-h); border-radius:5px;
+  color:var(--text); font-family:var(--font); font-size:.88em; font-weight:600; padding:9px 0;
+  cursor:pointer; letter-spacing:.2em; text-indent:.2em; transition:all .15s; }
+.btn-open:active { background:var(--btn-bg-h); box-shadow:0 0 12px var(--glow); }
+.btn-more { width:42px; background:var(--chip-bg); border:1px solid var(--border); border-radius:5px;
+  color:var(--text-muted); font-size:1em; padding:9px 0; cursor:pointer; }
+.btn-more.open { border-color:var(--gold); color:var(--gold); }
+.action-strip { display:none; gap:7px; margin-top:10px; flex-wrap:wrap; }
+.action-strip.open { display:flex; }
+.mini-btn { background:var(--chip-bg); border:1px solid var(--border); border-radius:16px;
+  color:var(--text-muted); font-family:var(--font); font-size:.76em; padding:6px 13px; cursor:pointer; transition:all .15s; }
+.mini-btn:active { border-color:var(--border-h); color:var(--text); }
+.mini-btn.danger { color:var(--danger); border-color:var(--danger); }
+.rename-row { display:none; gap:7px; margin-top:10px; }
+.rename-row.open { display:flex; }
+.rename-row input { flex:1; background:var(--bg-in); border:1px solid var(--border); border-radius:4px;
+  color:var(--text); font-family:var(--font); font-size:.86em; padding:8px 10px; outline:none; min-width:0; }
+.rename-row input:focus { border-color:var(--border-h); }
+
+.empty-note { text-align:center; color:var(--text-muted); font-style:italic; font-size:.84em;
+  padding:36px 20px; line-height:2; }
+.empty-note .rune { font-family:'Cinzel',serif; font-size:1.3em; color:var(--gold); opacity:.6;
+  display:block; letter-spacing:4px; margin-bottom:8px; font-style:normal; }
+
+/* ══ 檢視器 ══ */
+.viewer { position:fixed; inset:0; z-index:2000; background:var(--bg); display:none; flex-direction:column; }
+.viewer.open { display:flex; }
+.viewer-bar { display:flex; align-items:center; gap:10px;
+  padding:calc(8px + env(safe-area-inset-top)) 12px 8px;
+  background:var(--panel-bg); border-bottom:1px solid var(--border-h); flex-shrink:0; }
+.viewer-back { background:var(--chip-bg); border:1px solid var(--border-h); border-radius:16px;
+  color:var(--gold-l); font-family:var(--font); font-size:.82em; padding:6px 14px; cursor:pointer;
+  white-space:nowrap; }
+.viewer-title { font-size:.86em; font-weight:600; color:var(--text); letter-spacing:.04em;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; }
+.viewer-frame { flex:1; border:none; width:100%; background:#fff; }
+
+/* ══ TOAST ══ */
+.toast { position:fixed; bottom:calc(30px + env(safe-area-inset-bottom)); left:50%;
+  transform:translateX(-50%) translateY(20px); background:var(--panel-bg);
+  border:1px solid var(--gold); border-radius:20px; color:var(--text); font-size:.8em;
+  padding:9px 20px; opacity:0; pointer-events:none; transition:all .25s; z-index:3000;
+  box-shadow:0 4px 20px rgba(0,0,0,.3); max-width:86vw; text-align:center; }
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+footer { text-align:center; margin-top:30px; font-family:'Cinzel',serif; font-size:.6em;
+  letter-spacing:3px; color:var(--text-muted); opacity:.7; text-transform:uppercase; }
+</style>
+</head>
+<body class="theme-dark">
+
+<!-- 齒輪設定 -->
+<div class="settings-fab">
+  <button class="fab-toggle" id="fabToggle" aria-label="設定">⚙</button>
+  <div class="settings-panel" id="settingsPanel">
+    <div class="sp-title">✦ Settings</div>
+    <div class="sp-row">
+      <span class="sp-label">主題配色</span>
+      <select class="sp-select" id="themeSelect">
+        <option value="theme-dark">暗金 · 夜藏</option>
+        <option value="theme-obsidian">黑曜 · 玄冰</option>
+        <option value="theme-ningen">人間 · 靛青</option>
+        <option value="theme-reikai">靈界 · 薰紫</option>
+        <option value="theme-rose">薔薇 · 緋紅</option>
+        <option value="theme-parch">羊皮紙 · 古卷</option>
+        <option value="theme-ivory">象牙 · 素白</option>
+      </select>
+    </div>
+    <div class="sp-row">
+      <span class="sp-label">儲存空間</span>
+      <span class="sp-note" id="storageInfo">計算中⋯</span>
+    </div>
+    <div class="sp-row">
+      <span class="sp-label">備份與匯出</span>
+      <button class="sp-btn" id="btnExportZip">匯出全部 HTML（.zip）</button>
+      <button class="sp-btn" id="btnExportJson">匯出完整備份（.json）</button>
+      <button class="sp-btn" id="btnImportJson">匯入備份（.json）</button>
+      <span class="sp-note">.json 備份含所有藏品與分類，可在新裝置一鍵還原。</span>
+    </div>
+    <div class="sp-row">
+      <span class="sp-note" style="text-align:center;">百寶箱 v1.0 · 全離線 · 資料僅存於此機</span>
+    </div>
+  </div>
+</div>
+
+<!-- 標題 -->
+<header class="site-header">
+  <div class="header-orn">Treasury</div>
+  <h1 class="site-title">百寶箱</h1>
+  <div class="title-sub">私藏工具庫 ── 完全離線・僅存於此機</div>
+  <div class="divider-orn"><span>✦</span></div>
+</header>
+
+<!-- 分類列 -->
+<nav class="tab-nav-wrap">
+  <div class="tab-nav" id="catNav"></div>
+</nav>
+
+<main class="container">
+  <button class="import-card" id="btnImport">
+    <span class="big">＋</span>匯入 HTML 檔案（可多選）
+  </button>
+  <input type="file" id="fileInput" accept=".html,.htm,text/html" multiple hidden>
+  <input type="file" id="jsonInput" accept=".json,application/json" hidden>
+  <div id="itemList"></div>
+  <footer>✦ Omnia Mea Mecum Porto ✦</footer>
+</main>
+
+<!-- 檢視器 -->
+<div class="viewer" id="viewer">
+  <div class="viewer-bar">
+    <button class="viewer-back" id="viewerBack">← 返回書庫</button>
+    <div class="viewer-title" id="viewerTitle"></div>
+  </div>
+  <iframe class="viewer-frame" id="viewerFrame"></iframe>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+/* ═══════════ 常數 ═══════════ */
+const CATS = ['模擬器','工具','其他'];
+const CAT_RUNE = { '模擬器':'SIMULATOR', '工具':'TOOL', '其他':'MISC' };
+let currentCat = '全部';
+let items = [];          // 記憶體快取（不含 content，開啟時才讀）
+let db = null;
+
+/* ═══════════ IndexedDB ═══════════ */
+function openDB() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open('treasury_db', 1);
+    req.onupgradeneeded = e => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains('items')) {
+        const st = d.createObjectStore('items', { keyPath:'id', autoIncrement:true });
+        st.createIndex('name', 'name', { unique:false });
+      }
+    };
+    req.onsuccess = e => res(e.target.result);
+    req.onerror = () => rej(req.error);
+  });
+}
+function tx(mode) { return db.transaction('items', mode).objectStore('items'); }
+function dbAdd(item)    { return new Promise((res,rej)=>{ const r=tx('readwrite').add(item);    r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+function dbPut(item)    { return new Promise((res,rej)=>{ const r=tx('readwrite').put(item);    r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+function dbDel(id)      { return new Promise((res,rej)=>{ const r=tx('readwrite').delete(id);   r.onsuccess=()=>res();         r.onerror=()=>rej(r.error); }); }
+function dbGet(id)      { return new Promise((res,rej)=>{ const r=tx('readonly').get(id);       r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+function dbAll()        { return new Promise((res,rej)=>{ const r=tx('readonly').getAll();      r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+
+/* ═══════════ 工具 ═══════════ */
+const $ = id => document.getElementById(id);
+function toast(msg) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._h); t._h = setTimeout(()=>t.classList.remove('show'), 2200);
+}
+function fmtSize(n) {
+  if (n > 1048576) return (n/1048576).toFixed(1)+' MB';
+  if (n > 1024) return Math.round(n/1024)+' KB';
+  return n+' B';
+}
+function fmtDate(ts) {
+  const d = new Date(ts);
+  return d.getFullYear()+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0');
+}
+function esc(s) { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+function saveBlob(blob, filename) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+}
+
+/* ═══════════ 渲染 ═══════════ */
+function renderNav() {
+  const counts = { '全部':items.length };
+  CATS.forEach(c => counts[c] = items.filter(i=>i.category===c).length);
+  $('catNav').innerHTML = ['全部',...CATS].map(c =>
+    `<button class="tab-btn${c===currentCat?' active':''}" data-cat="${c}">${c}<span class="tab-num">${counts[c]}</span></button>`
+  ).join('');
+}
+function renderList() {
+  const list = $('itemList');
+  const show = currentCat==='全部' ? items : items.filter(i=>i.category===currentCat);
+  if (!show.length) {
+    list.innerHTML = `<div class="empty-note"><span class="rune">✦ EMPTY ✦</span>
+      此處尚無藏品。<br>點擊上方「匯入」，選取你的 HTML 作品即可入庫。</div>`;
+    return;
+  }
+  list.innerHTML = show.map(i => `
+    <div class="item-card" data-rune="${CAT_RUNE[i.category]||'MISC'}" data-id="${i.id}">
+      <div class="item-name">${esc(i.name)}</div>
+      <div class="item-meta">${esc(i.category)}<span class="dot">·</span>${fmtSize(i.size)}<span class="dot">·</span>入庫 ${fmtDate(i.addedAt)}</div>
+      <div class="item-actions">
+        <button class="btn-open" data-act="open">開 啟</button>
+        <button class="btn-more" data-act="more">⋯</button>
+      </div>
+      <div class="action-strip">
+        <button class="mini-btn" data-act="rename">改名</button>
+        <button class="mini-btn" data-act="cat">分類：${esc(i.category)}</button>
+        <button class="mini-btn" data-act="download">下載</button>
+        <button class="mini-btn danger" data-act="delete">刪除</button>
+      </div>
+      <div class="rename-row">
+        <input type="text" value="${esc(i.name)}">
+        <button class="mini-btn" data-act="rename-ok">✓</button>
+        <button class="mini-btn" data-act="rename-cancel">✕</button>
+      </div>
+    </div>`).join('');
+}
+function refresh() { renderNav(); renderList(); updateStorage(); }
+
+async function updateStorage() {
+  const total = items.reduce((s,i)=>s+i.size, 0);
+  let text = `藏品 ${items.length} 件，共 ${fmtSize(total)}`;
+  try {
+    if (navigator.storage && navigator.storage.estimate) {
+      const est = await navigator.storage.estimate();
+      if (est.quota) text += `（裝置配額 ${fmtSize(est.quota)}）`;
+    }
+  } catch(e) {}
+  $('storageInfo').textContent = text;
+}
+
+/* ═══════════ 匯入 ═══════════ */
+$('btnImport').addEventListener('click', ()=> $('fileInput').click());
+$('fileInput').addEventListener('change', async e => {
+  const files = [...e.target.files];
+  if (!files.length) return;
+  const defaultCat = (currentCat!=='全部') ? currentCat : '其他';
+  let ok = 0;
+  for (const f of files) {
+    try {
+      const content = await f.text();
+      let name = f.name.replace(/\.html?$/i,'');
+      const dup = items.find(i=>i.name===name);
+      if (dup) {
+        if (confirm(`「${name}」已存在，要覆蓋舊版嗎？\n（取消＝以「${name}(新)」另存）`)) {
+          dup.content = content; dup.size = content.length; dup.addedAt = Date.now();
+          await dbPut(dup); ok++; continue;
+        } else { name = name+'(新)'; }
+      }
+      const item = { name, category:defaultCat, content, size:content.length, addedAt:Date.now() };
+      item.id = await dbAdd(item);
+      items.push(item); ok++;
+    } catch(err) { toast(`「${f.name}」讀取失敗`); }
+  }
+  e.target.value = '';
+  refresh();
+  toast(`已入庫 ${ok} 件藏品${currentCat!=='全部'?`（分類：${defaultCat}）`:''}`);
+});
+
+/* ═══════════ 卡片操作 ═══════════ */
+$('itemList').addEventListener('click', async e => {
+  const btn = e.target.closest('[data-act]');
+  if (!btn) return;
+  const card = btn.closest('.item-card');
+  const id = Number(card.dataset.id);
+  const item = items.find(i=>i.id===id);
+  if (!item) return;
+  const act = btn.dataset.act;
+
+  if (act==='open') return openViewer(item);
+
+  if (act==='more') {
+    btn.classList.toggle('open');
+    card.querySelector('.action-strip').classList.toggle('open');
+    card.querySelector('.rename-row').classList.remove('open');
+    return;
+  }
+  if (act==='rename') {
+    card.querySelector('.rename-row').classList.add('open');
+    card.querySelector('.rename-row input').focus();
+    return;
+  }
+  if (act==='rename-cancel') {
+    card.querySelector('.rename-row').classList.remove('open');
+    return;
+  }
+  if (act==='rename-ok') {
+    const v = card.querySelector('.rename-row input').value.trim();
+    if (v) { item.name = v; await dbPut(item); refresh(); toast('已改名'); }
+    return;
+  }
+  if (act==='cat') {
+    const idx = CATS.indexOf(item.category);
+    item.category = CATS[(idx+1) % CATS.length];
+    await dbPut(item); refresh(); toast(`分類改為：${item.category}`);
+    return;
+  }
+  if (act==='download') {
+    const full = await dbGet(id);
+    saveBlob(new Blob([full.content], {type:'text/html'}), item.name+'.html');
+    toast('已產生下載');
+    return;
+  }
+  if (act==='delete') {
+    if (!btn.dataset.armed) {
+      btn.dataset.armed = '1'; btn.textContent = '確定刪除？';
+      setTimeout(()=>{ btn.dataset.armed=''; btn.textContent='刪除'; }, 3000);
+      return;
+    }
+    await dbDel(id);
+    items = items.filter(i=>i.id!==id);
+    refresh(); toast('已刪除');
+    return;
+  }
+});
+
+/* ═══════════ 分類切換 ═══════════ */
+$('catNav').addEventListener('click', e => {
+  const b = e.target.closest('.tab-btn'); if (!b) return;
+  currentCat = b.dataset.cat;
+  renderNav(); renderList();
+});
+
+/* ═══════════ 檢視器 ═══════════ */
+let currentBlobUrl = null;
+async function openViewer(item) {
+  let full;
+  try { full = await dbGet(item.id); } catch(e) {}
+  if (!full || !full.content) { toast('讀取失敗,找不到內容'); return; }
+  $('viewerTitle').textContent = item.name;
+  // 改用 Blob URL 載入（相容性優於 srcdoc，Documents 等第三方瀏覽引擎較能正確支援）
+  if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null; }
+  const blob = new Blob([full.content], { type:'text/html' });
+  currentBlobUrl = URL.createObjectURL(blob);
+  $('viewerFrame').src = currentBlobUrl;
+  $('viewer').classList.add('open');
+  document.body.classList.add('viewer-open');
+  history.pushState({viewer:1}, '');
+}
+function closeViewer(fromPop) {
+  $('viewer').classList.remove('open');
+  $('viewerFrame').src = 'about:blank';
+  if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null; }
+  document.body.classList.remove('viewer-open');
+  if (!fromPop && history.state && history.state.viewer) history.back();
+}
+$('viewerBack').addEventListener('click', ()=>closeViewer(false));
+window.addEventListener('popstate', ()=> {
+  if ($('viewer').classList.contains('open')) closeViewer(true);
+});
+
+/* ═══════════ ZIP（store 模式，無壓縮，零依賴）═══════════ */
+const CRC_TABLE = (() => {
+  const t = new Uint32Array(256);
+  for (let n=0;n<256;n++){ let c=n; for (let k=0;k<8;k++) c = (c&1)?(0xEDB88320^(c>>>1)):(c>>>1); t[n]=c; }
+  return t;
+})();
+function crc32(buf) {
+  let c = 0xFFFFFFFF;
+  for (let i=0;i<buf.length;i++) c = CRC_TABLE[(c^buf[i])&0xFF] ^ (c>>>8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+function makeZip(files) { // files: [{name, data:Uint8Array}]
+  const enc = new TextEncoder();
+  const chunks = [], central = [];
+  let offset = 0;
+  const now = new Date();
+  const dosTime = (now.getHours()<<11)|(now.getMinutes()<<5)|(now.getSeconds()>>1);
+  const dosDate = ((now.getFullYear()-1980)<<9)|((now.getMonth()+1)<<5)|now.getDate();
+  const u16=v=>[v&255,(v>>8)&255], u32=v=>[v&255,(v>>8)&255,(v>>16)&255,(v>>24)&255];
+  for (const f of files) {
+    const nameB = enc.encode(f.name);
+    const crc = crc32(f.data);
+    const local = new Uint8Array([
+      0x50,0x4B,0x03,0x04, ...u16(20), ...u16(0x0800), ...u16(0),
+      ...u16(dosTime), ...u16(dosDate), ...u32(crc),
+      ...u32(f.data.length), ...u32(f.data.length),
+      ...u16(nameB.length), ...u16(0)
+    ]);
+    chunks.push(local, nameB, f.data);
+    central.push(new Uint8Array([
+      0x50,0x4B,0x01,0x02, ...u16(20), ...u16(20), ...u16(0x0800), ...u16(0),
+      ...u16(dosTime), ...u16(dosDate), ...u32(crc),
+      ...u32(f.data.length), ...u32(f.data.length),
+      ...u16(nameB.length), ...u16(0), ...u16(0), ...u16(0), ...u16(0),
+      ...u32(0), ...u32(offset)
+    ]), nameB);
+    offset += local.length + nameB.length + f.data.length;
+  }
+  let centralSize = 0;
+  central.forEach(c=>centralSize+=c.length);
+  const end = new Uint8Array([
+    0x50,0x4B,0x05,0x06, ...u16(0), ...u16(0),
+    ...u16(files.length), ...u16(files.length),
+    ...u32(centralSize), ...u32(offset), ...u16(0)
+  ]);
+  return new Blob([...chunks, ...central, end], {type:'application/zip'});
+}
+
+/* ═══════════ 備份 ═══════════ */
+$('btnExportZip').addEventListener('click', async () => {
+  if (!items.length) return toast('書庫是空的');
+  const enc = new TextEncoder();
+  const all = await dbAll();
+  const zip = makeZip(all.map(i=>({ name:i.name+'.html', data:enc.encode(i.content) })));
+  saveBlob(zip, '百寶箱_'+fmtDate(Date.now()).replace(/\./g,'')+'.zip');
+  toast('已產生 .zip');
+});
+$('btnExportJson').addEventListener('click', async () => {
+  if (!items.length) return toast('書庫是空的');
+  const all = await dbAll();
+  const data = { app:'treasury', version:1, exportedAt:Date.now(),
+    items: all.map(i=>({name:i.name, category:i.category, content:i.content, addedAt:i.addedAt})) };
+  saveBlob(new Blob([JSON.stringify(data)], {type:'application/json'}),
+    '百寶箱備份_'+fmtDate(Date.now()).replace(/\./g,'')+'.json');
+  toast('已產生 .json 備份');
+});
+$('btnImportJson').addEventListener('click', ()=> $('jsonInput').click());
+$('jsonInput').addEventListener('change', async e => {
+  const f = e.target.files[0]; e.target.value='';
+  if (!f) return;
+  try {
+    const data = JSON.parse(await f.text());
+    if (data.app!=='treasury' || !Array.isArray(data.items)) throw 0;
+    let n = 0;
+    for (const it of data.items) {
+      const dup = items.find(x=>x.name===it.name);
+      if (dup) {
+        dup.content = it.content; dup.size = it.content.length;
+        dup.category = it.category||'其他';
+        await dbPut(dup);
+      } else {
+        const item = { name:it.name, category:it.category||'其他', content:it.content,
+          size:it.content.length, addedAt:it.addedAt||Date.now() };
+        item.id = await dbAdd(item);
+        items.push(item);
+      }
+      n++;
+    }
+    refresh(); toast(`已還原 ${n} 件藏品`);
+  } catch(err) { toast('備份檔格式不正確'); }
+});
+
+/* ═══════════ 設定面板 ═══════════ */
+$('fabToggle').addEventListener('click', () => {
+  $('fabToggle').classList.toggle('open');
+  $('settingsPanel').classList.toggle('open');
+});
+document.addEventListener('click', e => {
+  if (!e.target.closest('.settings-fab')) {
+    $('fabToggle').classList.remove('open');
+    $('settingsPanel').classList.remove('open');
+  }
+});
+$('themeSelect').addEventListener('change', e => {
+  document.body.className = e.target.value;
+  localStorage.setItem('treasury_theme', e.target.value);
+});
+
+/* ═══════════ 啟動 ═══════════ */
+(async function init() {
+  const theme = localStorage.getItem('treasury_theme') || 'theme-dark';
+  document.body.className = theme;
+  $('themeSelect').value = theme;
+  db = await openDB();
+  const all = await dbAll();
+  items = all.map(i=>({ id:i.id, name:i.name, category:i.category, size:i.size, addedAt:i.addedAt }));
+  items.sort((a,b)=>b.addedAt-a.addedAt);
+  refresh();
+  // 要求持久性儲存，降低系統清除 IndexedDB 的機率
+  if (navigator.storage && navigator.storage.persist) {
+    try { await navigator.storage.persist(); } catch(e) {}
+  }
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  }
+})();
+</script>
+</body>
+</html>
