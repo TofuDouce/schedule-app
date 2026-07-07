@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<title>每日行程</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700;900&family=LXGW+WenKai+TC:wght@400;700&family=Zen+Maru+Gothic:wght@500;700;900&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --paper:#FAF7F1;
+  --paper-deep:#F1EBDD;
+  --card-bg:#FFFFFF;
+  --ink:#23262B;
+  --ink-soft:#6B6E68;
+  --line:#DDD5C2;
+  --accent:#2E5D59;
+  --accent-soft:#DCE8E4;
+  --danger:#B5533B;
+  --danger-soft:#F3E1DB;
+  --radius:16px;
+  --base-size:18px;
+  --font-active:'Noto Sans TC',-apple-system,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{-webkit-text-size-adjust:100%;font-size:var(--base-size);}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--font-active);
+  font-size:1rem;
+  line-height:1.6;
+  min-height:100vh;
+  padding:18px 14px 60px;
+  transition:background .25s ease, color .25s ease;
+}
+.app{max-width:520px;margin:0 auto;}
+
+/* 頂欄 */
+.top-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:10px;margin-bottom:18px;flex-wrap:wrap;
+}
+.top-title{
+  font-weight:900;font-size:1.5rem;letter-spacing:.5px;color:var(--ink);
+  display:flex;align-items:center;gap:8px;
+}
+.top-title .dot{width:10px;height:10px;border-radius:50%;background:var(--accent);display:inline-block;}
+.top-controls{display:flex;align-items:center;gap:8px;}
+.date-input{
+  border:1px solid var(--line);background:var(--card-bg);color:var(--ink);
+  border-radius:10px;padding:7px 10px;font-family:inherit;font-size:.85rem;
+}
+
+/* 卡片 */
+.card{
+  background:var(--card-bg);border:1px solid var(--line);border-radius:var(--radius);
+  padding:18px;margin-bottom:14px;box-shadow:0 2px 10px rgba(0,0,0,0.06);
+}
+.card-title{
+  font-weight:700;font-size:1.05rem;
+  color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:8px;
+}
+
+/* 外觀設定 */
+.setting-row{margin-bottom:16px;}
+.setting-row:last-child{margin-bottom:0;}
+.setting-label{
+  font-size:.85rem;color:var(--ink-soft);font-weight:700;margin-bottom:8px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.setting-label .val{font-family:'IBM Plex Mono',monospace;color:var(--accent);}
+.font-select{
+  width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+  padding:11px 12px;border-radius:10px;font-size:.95rem;font-family:var(--font-active);
+  outline:none;
+}
+.font-select:focus{border-color:var(--accent);}
+.size-slider{
+  width:100%;height:6px;border-radius:6px;-webkit-appearance:none;appearance:none;
+  background:var(--line);outline:none;
+}
+.size-slider::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;width:26px;height:26px;border-radius:50%;
+  background:var(--accent);cursor:pointer;border:3px solid var(--card-bg);box-shadow:0 1px 4px rgba(0,0,0,0.3);
+}
+.size-slider::-moz-range-thumb{
+  width:26px;height:26px;border-radius:50%;background:var(--accent);cursor:pointer;
+  border:3px solid var(--card-bg);box-shadow:0 1px 4px rgba(0,0,0,0.3);
+}
+.size-preview{
+  margin-top:10px;padding:12px;background:var(--paper);border:1px dashed var(--line);
+  border-radius:10px;font-size:1rem;color:var(--ink);
+}
+.theme-row{display:flex;gap:12px;flex-wrap:wrap;}
+.theme-swatch-wrap{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;}
+.theme-swatch{
+  width:38px;height:38px;border-radius:50%;border:3px solid transparent;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,0.08);transition:.15s;
+}
+.theme-swatch-wrap.active .theme-swatch{border-color:var(--accent);transform:scale(1.08);}
+.theme-swatch-wrap span{font-size:.7rem;color:var(--ink-soft);}
+.theme-swatch-wrap.active span{color:var(--accent);font-weight:700;}
+.card-title .idx{
+  width:22px;height:22px;border-radius:6px;background:var(--accent-soft);color:var(--accent);
+  display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;
+  font-family:'IBM Plex Mono',monospace;
+}
+
+/* 快速新增 */
+.row{display:flex;gap:8px;margin-bottom:10px;}
+.time-picker{display:flex;gap:6px;align-items:center;}
+select{
+  background:var(--paper);border:1px solid var(--line);color:var(--ink);
+  padding:10px 8px;border-radius:10px;font-size:.95rem;font-family:'IBM Plex Mono',monospace;
+  font-weight:600;outline:none;
+}
+select:focus{border-color:var(--accent);}
+.colon{color:var(--ink-soft);font-weight:700;}
+input[type="text"]{
+  flex:1;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+  padding:10px 12px;border-radius:10px;font-size:.95rem;font-family:inherit;outline:none;min-width:0;
+}
+input[type="text"]:focus{border-color:var(--accent);}
+.btn{
+  border:none;border-radius:10px;padding:11px 16px;font-size:.95rem;font-weight:700;
+  cursor:pointer;font-family:var(--font-active);transition:.15s;white-space:nowrap;
+}
+.btn-main{background:var(--accent);color:#fff;}
+.btn-main:hover{background:#254e4a;}
+.btn-block{width:100%;margin-top:2px;}
+.btn-ghost{background:var(--paper);color:var(--ink);border:1px solid var(--line);}
+.btn-ghost:hover{background:var(--paper-deep);}
+.btn-danger{background:var(--danger-soft);color:var(--danger);}
+.btn-danger:hover{background:#ecd0c7;}
+
+/* 常用標籤 */
+.tag-section{margin-top:4px;}
+.tag-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:8px;
+}
+.tag-header span{font-size:.85rem;color:var(--ink-soft);font-weight:700;}
+.tag-edit-btn{
+  border:none;background:none;color:var(--accent);font-size:.8rem;font-weight:700;
+  cursor:pointer;font-family:var(--font-active);padding:2px 6px;
+}
+.tag-row{display:flex;flex-wrap:wrap;gap:8px;}
+.tag-pill{
+  border:1px solid var(--line);background:var(--accent-soft);color:var(--accent);
+  padding:8px 14px;border-radius:20px;font-size:.9rem;font-weight:600;
+  cursor:pointer;font-family:var(--font-active);transition:.15s;
+}
+.tag-pill:active{transform:scale(0.95);}
+.tag-pill.edit{background:var(--danger-soft);color:var(--danger);border-color:var(--danger-soft);}
+.tag-pill.tag-add{background:var(--paper);color:var(--ink-soft);border:1px dashed var(--line);}
+
+/* 批次貼上 */
+details.card{padding:0;}
+details.card summary{
+  list-style:none;cursor:pointer;padding:18px;
+  font-weight:700;font-size:1.05rem;display:flex;align-items:center;gap:8px;
+}
+details.card summary::-webkit-details-marker{display:none;}
+details.card summary::after{content:'展開 ▾';margin-left:auto;font-size:.75rem;color:var(--ink-soft);font-weight:500;}
+details[open].card summary::after{content:'收合 ▴';}
+.details-body{padding:0 18px 18px;}
+textarea{
+  width:100%;min-height:96px;background:var(--paper);border:1px solid var(--line);
+  color:var(--ink);padding:12px;border-radius:10px;font-family:'IBM Plex Mono',monospace;
+  font-size:.85rem;line-height:1.6;resize:vertical;outline:none;
+}
+textarea:focus{border-color:var(--accent);}
+.hint{font-size:.78rem;color:var(--ink-soft);margin:8px 0 10px;line-height:1.6;}
+.hint code{background:var(--paper-deep);padding:1px 5px;border-radius:5px;font-family:'IBM Plex Mono',monospace;}
+
+/* 時間軸卡片 */
+.timeline-head{
+  display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px;
+}
+.timeline-date{font-weight:900;font-size:1.25rem;}
+.timeline-count{font-size:.78rem;color:var(--ink-soft);font-family:'IBM Plex Mono',monospace;}
+.timeline{margin-top:14px;}
+.seg-label{
+  font-size:.75rem;color:var(--ink-soft);font-weight:700;letter-spacing:2px;
+  margin:16px 0 6px 40px;
+}
+.entry-row{
+  display:flex;align-items:flex-start;gap:12px;padding:8px 0;position:relative;
+}
+.entry-time{
+  font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:.92rem;color:var(--accent);
+  width:44px;flex-shrink:0;text-align:right;padding-top:2px;
+}
+.entry-line{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+.entry-dot{width:9px;height:9px;border-radius:50%;background:var(--accent);margin-top:6px;}
+.entry-body{flex:1;min-width:0;}
+.entry-task{
+  font-size:.95rem;color:var(--ink);word-break:break-word;cursor:text;
+  border-bottom:1px dashed transparent;padding-bottom:2px;
+}
+.entry-task:hover{border-bottom-color:var(--line);}
+.entry-task-input{
+  width:100%;font-size:.95rem;font-family:inherit;color:var(--ink);border:none;
+  border-bottom:1px solid var(--accent);background:transparent;outline:none;padding:0 0 2px;
+}
+.entry-del{
+  color:var(--ink-soft);cursor:pointer;font-size:.85rem;flex-shrink:0;padding:2px 4px;
+  border-radius:6px;
+}
+.entry-del:hover{color:var(--danger);background:var(--danger-soft);}
+.empty-state{
+  text-align:center;color:var(--ink-soft);padding:34px 10px;font-size:.9rem;
+}
+.empty-state .big{font-size:1.8rem;margin-bottom:8px;}
+
+.timeline-actions{display:flex;gap:8px;margin-top:16px;}
+.timeline-actions .btn{flex:1;}
+
+/* 匯出區 */
+.export-wrap{display:none;text-align:center;}
+.export-wrap.show{display:block;}
+#exportCanvas{
+  max-width:100%;border-radius:14px;border:1px solid var(--line);
+  box-shadow:0 8px 26px rgba(35,38,43,0.12);margin-bottom:14px;
+}
+.footer-note{
+  text-align:center;font-size:.75rem;color:var(--ink-soft);margin-top:26px;letter-spacing:1px;
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <div class="top-bar">
+    <div class="top-title"><span class="dot"></span>每日行程</div>
+    <div class="top-controls">
+      <input type="date" id="dateInput" class="date-input">
+    </div>
+  </div>
+
+  <!-- 外觀設定 -->
+  <div class="card">
+    <div class="card-title"><span class="idx">✎</span>外觀設定</div>
+
+    <div class="setting-row">
+      <div class="setting-label">字級 <span class="val" id="fontSizeVal">18px</span></div>
+      <input type="range" id="sizeSlider" class="size-slider" min="14" max="28" step="1" value="18">
+      <div class="size-preview" id="sizePreview">8:15　防曬　喝水　出門</div>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-label">字體</div>
+      <select id="fontSelect" class="font-select">
+        <option value="serif">Noto Serif TC（思源明體）</option>
+        <option value="sans" selected>思源黑體</option>
+        <option value="wenkai">霞鶩文楷</option>
+        <option value="maru">圓體</option>
+        <option value="pingfang">蘋方</option>
+      </select>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-label">主題色</div>
+      <div class="theme-row" id="themeRow"></div>
+    </div>
+  </div>
+
+  <!-- 快速新增 -->
+  <div class="card">
+    <div class="card-title"><span class="idx">1</span>新增一筆行程</div>
+    <div class="row">
+      <div class="time-picker">
+        <select id="hourSel"></select>
+        <span class="colon">:</span>
+        <select id="minSel">
+          <option value="00">00</option>
+          <option value="15">15</option>
+          <option value="30">30</option>
+          <option value="45">45</option>
+        </select>
+      </div>
+      <input type="text" id="taskInput" placeholder="例如：喝水、防曬、出門" maxlength="30">
+    </div>
+    <button class="btn btn-main btn-block" onclick="addSingle()">加入行程</button>
+
+    <div class="tag-section">
+      <div class="tag-header">
+        <span>常用標籤（點選直接以上方時間加入）</span>
+        <button class="tag-edit-btn" id="tagEditBtn" onclick="toggleTagEdit()">編輯</button>
+      </div>
+      <div class="tag-row" id="tagRow"></div>
+    </div>
+  </div>
+
+  <!-- 批次貼上 -->
+  <details class="card">
+    <summary>批次貼上（一行一筆，快速輸入）</summary>
+    <div class="details-body">
+      <div class="hint">
+        每行一筆，格式為「時間 內容」，例如：<br>
+        <code>8:15 防曬</code><br>
+        <code>9:30 喝水</code><br>
+        <code>10:30 喝水</code>
+      </div>
+      <textarea id="batchInput" placeholder="8:15 防曬
+9:30 喝水
+10:30 喝水"></textarea>
+      <button class="btn btn-main btn-block" style="margin-top:10px;" onclick="addBatch()">批次加入</button>
+    </div>
+  </details>
+
+  <!-- 時間軸 -->
+  <div class="card">
+    <div class="timeline-head">
+      <div class="timeline-date" id="timelineDate">今日行程</div>
+      <div class="timeline-count" id="timelineCount">0 筆</div>
+    </div>
+    <div class="timeline" id="timeline"></div>
+    <div class="timeline-actions">
+      <button class="btn btn-ghost" onclick="clearDay()">清空今日</button>
+      <button class="btn btn-main" onclick="renderExport()">產生今日圖片</button>
+    </div>
+  </div>
+
+  <!-- 匯出圖片 -->
+  <div class="card export-wrap" id="exportWrap">
+    <div class="card-title"><span class="idx">✓</span>今日行程圖片</div>
+    <canvas id="exportCanvas" width="1080" height="1920"></canvas>
+    <button class="btn btn-main btn-block" onclick="downloadImage()">下載圖片</button>
+  </div>
+
+  <div class="footer-note">每日行程 · 本機儲存，僅存在這台裝置上</div>
+</div>
+
+<script>
+/* ---------- 基礎工具 ---------- */
+function pad(n){return String(n).padStart(2,'0');}
+function todayStr(){
+  const d=new Date();
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+}
+function minutesOf(t){const [h,m]=t.split(':').map(Number);return h*60+m;}
+function segmentOf(mins){
+  const h=Math.floor(mins/60);
+  if(h<6)return '凌晨';
+  if(h<12)return '上午';
+  if(h<18)return '下午';
+  return '晚上';
+}
+const WEEKDAY=['週日','週一','週二','週三','週四','週五','週六'];
+function formatDateNice(dateStr){
+  const d=new Date(dateStr+'T00:00:00');
+  return `${d.getMonth()+1}月${d.getDate()}日 ${WEEKDAY[d.getDay()]}`;
+}
+
+/* ---------- 字體與主題設定 ---------- */
+const FONTS={
+  serif:  {name:'Noto Serif TC（思源明體）', css:"'Noto Serif TC', serif"},
+  sans:   {name:'思源黑體', css:"'Noto Sans TC', -apple-system, sans-serif"},
+  wenkai: {name:'霞鶩文楷', css:"'LXGW WenKai TC', serif"},
+  maru:   {name:'圓體', css:"'Zen Maru Gothic', 'Noto Sans TC', sans-serif"},
+  pingfang:{name:'蘋方', css:"-apple-system, 'PingFang TC', 'Noto Sans TC', sans-serif"}
+};
+const THEMES={
+  parchment:{name:'羊皮紙', paper:'#FAF7F1', paperDeep:'#F1EBDD', cardBg:'#FFFFFF', ink:'#23262B', inkSoft:'#6B6E68', line:'#DDD5C2', accent:'#2E5D59', accentSoft:'#DCE8E4', danger:'#B5533B', dangerSoft:'#F3E1DB'},
+  rose:{name:'莫蘭迪玫瑰', paper:'#F7EEEC', paperDeep:'#F0DEDB', cardBg:'#FFFFFF', ink:'#4A3B3B', inkSoft:'#9C8481', line:'#E3CFC9', accent:'#B98080', accentSoft:'#F1DEDA', danger:'#A85C4A', dangerSoft:'#F1DED2'},
+  ivory:{name:'象牙白', paper:'#FDFDFB', paperDeep:'#F2F1EB', cardBg:'#FFFFFF', ink:'#26282B', inkSoft:'#7A7D78', line:'#E4E3DA', accent:'#40506B', accentSoft:'#E4E8EF', danger:'#A24A3E', dangerSoft:'#F1DFDA'},
+  gold:{name:'暗金', paper:'#1C1712', paperDeep:'#2A251C', cardBg:'#241F17', ink:'#EFE6D2', inkSoft:'#B8AD92', line:'#4A4030', accent:'#D8A94A', accentSoft:'#3A331F', danger:'#E2836A', dangerSoft:'#3A241C'},
+  black:{name:'純黑', paper:'#101112', paperDeep:'#1B1C1E', cardBg:'#18191B', ink:'#F2F2F0', inkSoft:'#9A9C9F', line:'#303234', accent:'#4FBBA0', accentSoft:'#16302A', danger:'#E2705C', dangerSoft:'#3A1E1A'}
+};
+
+function applyFontSize(px){
+  document.documentElement.style.setProperty('--base-size', px+'px');
+  document.getElementById('fontSizeVal').textContent=px+'px';
+  localStorage.setItem('daily_schedule_fontsize', px);
+}
+
+function applyFont(key){
+  const f=FONTS[key]||FONTS.sans;
+  document.documentElement.style.setProperty('--font-active', f.css);
+  currentFont=key;
+  localStorage.setItem('daily_schedule_font', key);
+}
+
+let currentTheme='parchment';
+function applyTheme(key){
+  const t=THEMES[key]||THEMES.parchment;
+  const root=document.documentElement.style;
+  root.setProperty('--paper', t.paper);
+  root.setProperty('--paper-deep', t.paperDeep);
+  root.setProperty('--card-bg', t.cardBg);
+  root.setProperty('--ink', t.ink);
+  root.setProperty('--ink-soft', t.inkSoft);
+  root.setProperty('--line', t.line);
+  root.setProperty('--accent', t.accent);
+  root.setProperty('--accent-soft', t.accentSoft);
+  root.setProperty('--danger', t.danger);
+  root.setProperty('--danger-soft', t.dangerSoft);
+  currentTheme=key;
+  localStorage.setItem('daily_schedule_theme', key);
+  renderThemeRow();
+}
+
+function renderThemeRow(){
+  const row=document.getElementById('themeRow');
+  row.innerHTML='';
+  Object.keys(THEMES).forEach(key=>{
+    const t=THEMES[key];
+    const wrap=document.createElement('div');
+    wrap.className='theme-swatch-wrap'+(key===currentTheme?' active':'');
+    wrap.innerHTML=`<div class="theme-swatch" style="background:linear-gradient(135deg, ${t.paper} 50%, ${t.accent} 50%);"></div><span>${t.name}</span>`;
+    wrap.addEventListener('click', ()=>applyTheme(key));
+    row.appendChild(wrap);
+  });
+}
+
+let currentFont='sans';
+
+/* ---------- 常用標籤 ---------- */
+let tags=JSON.parse(localStorage.getItem('daily_schedule_tags')||'null') || ['喝水','防曬','出門','運動','整理','休息','吃藥','伸展'];
+let tagEditMode=false;
+
+function saveTags(){localStorage.setItem('daily_schedule_tags', JSON.stringify(tags));}
+
+function toggleTagEdit(){
+  tagEditMode=!tagEditMode;
+  document.getElementById('tagEditBtn').textContent = tagEditMode ? '完成' : '編輯';
+  renderTags();
+}
+
+function renderTags(){
+  const row=document.getElementById('tagRow');
+  row.innerHTML='';
+  tags.forEach((tag,idx)=>{
+    const pill=document.createElement('button');
+    pill.type='button';
+    pill.className='tag-pill'+(tagEditMode?' edit':'');
+    pill.textContent = tagEditMode ? (tag+' ✕') : tag;
+    pill.addEventListener('click', ()=>{
+      if(tagEditMode){
+        if(confirm(`刪除標籤「${tag}」？`)){ tags.splice(idx,1); saveTags(); renderTags(); }
+      }else{
+        quickAddTag(tag);
+      }
+    });
+    row.appendChild(pill);
+  });
+  const addBtn=document.createElement('button');
+  addBtn.type='button';
+  addBtn.className='tag-pill tag-add';
+  addBtn.textContent='+ 新增標籤';
+  addBtn.addEventListener('click', ()=>{
+    if(tagEditMode) return;
+    const val=prompt('輸入新的常用標籤（例如：吃飯、澆花）：');
+    if(val && val.trim()){
+      tags.push(val.trim().slice(0,10));
+      saveTags();
+      renderTags();
+    }
+  });
+  row.appendChild(addBtn);
+}
+
+function quickAddTag(tag){
+  const h=hourSel.value, m=document.getElementById('minSel').value;
+  addEntry(currentDate, `${h}:${m}`, tag);
+  render();
+}
+
+renderTags();
+
+/* ---------- 小時分鐘選單 ---------- */
+const hourSel=document.getElementById('hourSel');
+for(let i=0;i<24;i++){
+  const opt=document.createElement('option');
+  opt.value=pad(i); opt.textContent=pad(i);
+  if(i===8) opt.selected=true;
+  hourSel.appendChild(opt);
+}
+
+/* ---------- 資料層 ---------- */
+let db=JSON.parse(localStorage.getItem('daily_schedule_v1')||'{}');
+let currentDate=todayStr();
+document.getElementById('dateInput').value=currentDate;
+
+/* ---------- 外觀設定：初始化與事件 ---------- */
+const savedSize=parseInt(localStorage.getItem('daily_schedule_fontsize'),10) || 18;
+const savedFont=localStorage.getItem('daily_schedule_font') || 'sans';
+const savedTheme=localStorage.getItem('daily_schedule_theme') || 'parchment';
+
+document.getElementById('sizeSlider').value=savedSize;
+applyFontSize(savedSize);
+
+document.getElementById('fontSelect').value=savedFont;
+applyFont(savedFont);
+
+applyTheme(savedTheme);
+
+document.getElementById('sizeSlider').addEventListener('input', e=>{
+  applyFontSize(parseInt(e.target.value,10));
+});
+document.getElementById('fontSelect').addEventListener('change', e=>{
+  applyFont(e.target.value);
+});
+
+function saveDb(){localStorage.setItem('daily_schedule_v1', JSON.stringify(db));}
+function getEntries(date){
+  return (db[date]||[]).slice().sort((a,b)=>a.time.localeCompare(b.time));
+}
+function addEntry(date,time,task){
+  if(!db[date]) db[date]=[];
+  db[date].push({id:Date.now()+Math.random().toString(36).slice(2), time, task});
+  saveDb();
+}
+function deleteEntry(date,id){
+  db[date]=(db[date]||[]).filter(e=>e.id!==id);
+  saveDb();
+}
+function updateEntryTask(date,id,task){
+  const arr=db[date]||[];
+  const item=arr.find(e=>e.id===id);
+  if(item) item.task=task;
+  saveDb();
+}
+function clearDay(){
+  if(!confirm('確定要清空今天的所有行程嗎？')) return;
+  db[currentDate]=[];
+  saveDb();
+  render();
+  document.getElementById('exportWrap').classList.remove('show');
+}
+
+/* ---------- 新增操作 ---------- */
+function addSingle(){
+  const h=hourSel.value, m=document.getElementById('minSel').value;
+  const taskInput=document.getElementById('taskInput');
+  const task=taskInput.value.trim();
+  if(!task){ alert('請輸入行程內容'); return; }
+  addEntry(currentDate, `${h}:${m}`, task);
+  taskInput.value='';
+  render();
+}
+
+function parseBatchLine(line){
+  const m=line.trim().match(/^(\d{1,2})[:：](\d{1,2})\s*(.+)$/);
+  if(!m) return null;
+  let h=parseInt(m[1],10), min=parseInt(m[2],10);
+  if(isNaN(h)||isNaN(min)) return null;
+  h=Math.max(0,Math.min(23,h));
+  min=Math.round(min/15)*15;
+  if(min>=60){min=0; h=(h+1)%24;}
+  const task=m[3].trim();
+  if(!task) return null;
+  return {time:`${pad(h)}:${pad(min)}`, task};
+}
+
+function addBatch(){
+  const ta=document.getElementById('batchInput');
+  const lines=ta.value.split('\n');
+  let count=0;
+  lines.forEach(line=>{
+    if(!line.trim()) return;
+    const parsed=parseBatchLine(line);
+    if(parsed){ addEntry(currentDate, parsed.time, parsed.task); count++; }
+  });
+  if(count===0){
+    alert('沒有辨識到有效的行程格式，請確認每行是「時間 內容」，例如 8:15 防曬');
+    return;
+  }
+  ta.value='';
+  render();
+}
+
+/* ---------- 畫面渲染 ---------- */
+document.getElementById('dateInput').addEventListener('change', e=>{
+  currentDate=e.target.value || todayStr();
+  document.getElementById('exportWrap').classList.remove('show');
+  render();
+});
+
+function render(){
+  document.getElementById('timelineDate').textContent = formatDateNice(currentDate);
+  const entries=getEntries(currentDate);
+  document.getElementById('timelineCount').textContent = `${entries.length} 筆`;
+
+  const box=document.getElementById('timeline');
+  box.innerHTML='';
+
+  if(entries.length===0){
+    box.innerHTML=`<div class="empty-state"><div class="big">🗒️</div>今天還沒有安排行程<br>從上方新增第一筆吧</div>`;
+    return;
+  }
+
+  let lastSeg=null;
+  entries.forEach(item=>{
+    const seg=segmentOf(minutesOf(item.time));
+    if(seg!==lastSeg){
+      const segEl=document.createElement('div');
+      segEl.className='seg-label';
+      segEl.textContent=seg;
+      box.appendChild(segEl);
+      lastSeg=seg;
+    }
+    const row=document.createElement('div');
+    row.className='entry-row';
+    row.innerHTML=`
+      <div class="entry-time">${item.time}</div>
+      <div class="entry-line"><div class="entry-dot"></div></div>
+      <div class="entry-body"><span class="entry-task" data-id="${item.id}">${escapeHtml(item.task)}</span></div>
+      <div class="entry-del" data-id="${item.id}">✕</div>
+    `;
+    box.appendChild(row);
+  });
+
+  box.querySelectorAll('.entry-del').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      deleteEntry(currentDate, el.dataset.id);
+      render();
+      document.getElementById('exportWrap').classList.remove('show');
+    });
+  });
+
+  box.querySelectorAll('.entry-task').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const id=el.dataset.id;
+      const current=el.textContent;
+      const input=document.createElement('input');
+      input.type='text'; input.value=current; input.className='entry-task-input'; input.maxLength=30;
+      el.replaceWith(input);
+      input.focus();
+      input.select();
+      const commit=()=>{
+        const val=input.value.trim() || current;
+        updateEntryTask(currentDate, id, val);
+        render();
+      };
+      input.addEventListener('blur', commit);
+      input.addEventListener('keydown', e=>{ if(e.key==='Enter') input.blur(); });
+    });
+  });
+}
+
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ---------- 圖片匯出 ---------- */
+async function renderExport(){
+  const entries=getEntries(currentDate);
+  if(entries.length===0){
+    alert('今天還沒有任何行程，請先新增至少一筆再產生圖片');
+    return;
+  }
+  const t=THEMES[currentTheme]||THEMES.parchment;
+  const fontCss=(FONTS[currentFont]||FONTS.sans).css;
+  const displayFont=`"${fontCss.split(',')[0].replace(/['"]/g,'').trim()}"`+', '+fontCss.split(',').slice(1).join(',');
+
+  /* 圖片字級跟著「字級」滑桿一起放大，滑桿設越大，圖片文字也越大 */
+  const sliderVal=parseInt(document.getElementById('sizeSlider').value,10)||18;
+  const sizeScale=Math.max(0.9, Math.min(1.9, sliderVal/18));
+
+  const eyebrowSize=Math.round(30*sizeScale);
+  const dateSize=Math.round(96*sizeScale);
+  const countSize=Math.round(36*sizeScale);
+  const timeSize=Math.round(46*sizeScale);
+  const taskSize=Math.round(52*sizeScale);
+  const footerSize=Math.round(28*sizeScale);
+  const lineHeight=Math.round(60*sizeScale);
+  const baseGap=Math.round(130*sizeScale);
+
+  function hexToRgba(hex, alpha){
+    const h=hex.replace('#','');
+    const r=parseInt(h.substring(0,2),16), g=parseInt(h.substring(2,4),16), b=parseInt(h.substring(4,6),16);
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+
+  try{
+    await document.fonts.load(`900 ${dateSize}px ${displayFont}`);
+    await document.fonts.load(`700 40px ${displayFont}`);
+    await document.fonts.load(`500 ${taskSize}px ${displayFont}`);
+    await document.fonts.load(`700 ${timeSize}px "IBM Plex Mono"`);
+    await document.fonts.ready;
+  }catch(e){}
+
+  const canvas=document.getElementById('exportCanvas');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height;
+
+  /* 背景 */
+  ctx.fillStyle=t.paper;
+  ctx.fillRect(0,0,W,H);
+
+  /* 淡淡橫向格線，紙感 */
+  ctx.strokeStyle=hexToRgba(t.line,0.5);
+  ctx.lineWidth=1;
+  for(let y=0;y<H;y+=44){
+    ctx.beginPath(); ctx.moveTo(0,y+0.5); ctx.lineTo(W,y+0.5); ctx.stroke();
+  }
+
+  /* 左側直線做為裝訂邊感 */
+  ctx.strokeStyle=t.accent;
+  ctx.lineWidth=6;
+  ctx.beginPath(); ctx.moveTo(56,0); ctx.lineTo(56,H); ctx.stroke();
+
+  /* 頂部標頭（動態排版，避免大字級時互相重疊） */
+  ctx.textAlign='left';
+  let headY=90+eyebrowSize;
+  ctx.fillStyle=t.accent;
+  ctx.font=`700 ${eyebrowSize}px "IBM Plex Mono", monospace`;
+  ctx.fillText('DAILY SCHEDULE', 96, headY);
+
+  headY+=dateSize*0.95+16;
+  ctx.fillStyle=t.ink;
+  ctx.font=`900 ${dateSize}px ${displayFont}`;
+  ctx.fillText(formatDateNice(currentDate), 96, headY);
+
+  headY+=countSize+28;
+  ctx.fillStyle=t.inkSoft;
+  ctx.font=`500 ${countSize}px ${displayFont}`;
+  ctx.fillText(`共 ${entries.length} 筆安排`, 96, headY);
+
+  headY+=36;
+  ctx.strokeStyle=t.line;
+  ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(96,headY); ctx.lineTo(W-80,headY); ctx.stroke();
+  headY+=54;
+
+  /* 時間軸區域配置：時間欄寬度依字級自動加大，避免大字時被切到 */
+  const topY=headY;
+  const bottomPad=100+footerSize*2;
+  const available=H-topY-bottomPad;
+
+  const timeColWidth=Math.round(timeSize*3.1);
+  const timeX=96+timeColWidth;
+  const dotX=timeX+56;
+  const taskX=dotX+64;
+  const maxTextWidth=W-taskX-80;
+
+  ctx.font=`500 ${taskSize}px ${displayFont}`;
+  const wrapped=entries.map(item=>{
+    const words=item.task.split('');
+    let lines=[]; let line='';
+    words.forEach(ch=>{
+      const test=line+ch;
+      if(ctx.measureText(test).width>maxTextWidth && line){
+        lines.push(line); line=ch;
+      }else{
+        line=test;
+      }
+    });
+    if(line) lines.push(line);
+    if(lines.length===0) lines=[''];
+    return {...item, lines};
+  });
+
+  const factor=0.55;
+  const maxExtra=Math.round(340*sizeScale);
+
+  let gaps=[];
+  for(let i=0;i<wrapped.length;i++){
+    if(i===0){ gaps.push(Math.round(70*sizeScale)); continue; }
+    const diff=minutesOf(wrapped[i].time)-minutesOf(wrapped[i-1].time);
+    const extraFromPrevLines=(wrapped[i-1].lines.length-1)*lineHeight;
+    gaps.push(baseGap+Math.min(maxExtra, Math.max(0,diff)*factor)+extraFromPrevLines);
+  }
+  const lastExtra=(wrapped[wrapped.length-1].lines.length-1)*lineHeight;
+  let total=gaps.reduce((a,b)=>a+b,0)+lastExtra+40;
+
+  let fitScale=1;
+  if(total>available){
+    fitScale=Math.max(0.32, available/total);
+  }
+  gaps=gaps.map((g,i)=> i===0 ? g : Math.max(60, g*fitScale));
+
+  let y=topY;
+  ctx.textAlign='left';
+  wrapped.forEach((item,i)=>{
+    y+=gaps[i];
+
+    ctx.fillStyle=t.accent;
+    ctx.font=`700 ${timeSize}px "IBM Plex Mono", monospace`;
+    ctx.textAlign='right';
+    ctx.fillText(item.time, timeX, y+2);
+
+    ctx.textAlign='left';
+    ctx.beginPath();
+    ctx.fillStyle=t.accent;
+    ctx.arc(dotX, y-Math.round(timeSize*0.28), Math.round(9*sizeScale), 0, Math.PI*2);
+    ctx.fill();
+
+    ctx.fillStyle=t.ink;
+    ctx.font=`500 ${taskSize}px ${displayFont}`;
+    item.lines.forEach((ln,li)=>{
+      ctx.fillText(ln, taskX, y+2+li*lineHeight);
+    });
+
+    if(i<wrapped.length-1){
+      ctx.strokeStyle=hexToRgba(t.line,0.9);
+      ctx.lineWidth=1;
+      const nextTop=y+(item.lines.length-1)*lineHeight+lineHeight*0.72;
+      ctx.beginPath();
+      ctx.moveTo(taskX, nextTop);
+      ctx.lineTo(W-80, nextTop);
+      ctx.stroke();
+    }
+  });
+
+  /* 底部落款 */
+  ctx.textAlign='center';
+  ctx.fillStyle=t.inkSoft;
+  ctx.font=`500 ${footerSize}px "IBM Plex Mono", monospace`;
+  const now=new Date();
+  ctx.fillText(`產生於 ${pad(now.getHours())}:${pad(now.getMinutes())}`, W/2, H-70);
+
+  document.getElementById('exportWrap').classList.add('show');
+  document.getElementById('exportWrap').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function downloadImage(){
+  const canvas=document.getElementById('exportCanvas');
+  const link=document.createElement('a');
+  link.download=`每日行程_${currentDate}.png`;
+  link.href=canvas.toDataURL('image/png');
+  link.click();
+}
+
+/* ---------- 初始化 ---------- */
+render();
+</script>
+</body>
+</html>
