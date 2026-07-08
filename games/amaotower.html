@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
-<title>阿毛之塔｜9999層之約</title>
+<title>阿毛之塔｜9999層的鮮茶道之約</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Chiron+Gorund+TC:wght@400;700;900&family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Serif+TC:ital,wght@0,700;0,900;1,700;1,900&display=swap" rel="stylesheet">
@@ -94,6 +94,10 @@ body{
 .progress-bar-mini{width:120px;height:5px;border-radius:3px;background:var(--panel-2);overflow:hidden;}
 .progress-bar-mini i{display:block;height:100%;background:var(--sage);border-radius:3px;transition:width .3s;}
 
+.stat-row{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;justify-content:center;z-index:2;}
+.stat-chip{font-size:0.66em;color:var(--ivory);background:var(--panel);border:1px solid var(--line);padding:3px 9px;border-radius:10px;font-weight:700;display:flex;align-items:center;gap:3px;}
+.stat-chip b{color:var(--honey);font-weight:900;}
+
 #idle-view{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:2;}
 
 #battle-arena{
@@ -124,6 +128,7 @@ body{
 .log-entry.loot{border-left-color:var(--sage);}
 .log-entry.gold{border-left-color:var(--honey);}
 .log-entry.milestone{border-left-color:var(--blush);background:linear-gradient(90deg, rgba(227,184,201,0.10), var(--panel) 40%);}
+.log-entry.angel{border-left-color:var(--honey);background:linear-gradient(90deg, rgba(239,195,114,0.16), rgba(227,184,201,0.10) 60%, var(--panel));box-shadow:0 0 0 1px rgba(239,195,114,0.15) inset;}
 .log-entry.mood{border-left-color:var(--line);opacity:0.85;font-style:italic;}
 @keyframes slideIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
 .log-ico{font-size:1.15em;flex-shrink:0;}
@@ -389,6 +394,7 @@ body{
         <span id="progress-text">距離下個里程碑還有 9 層</span>
         <div class="progress-bar-mini"><i id="progress-bar" style="width:10%"></i></div>
       </div>
+      <div class="stat-row" id="stat-row"></div>
     </div>
 
     <div id="battle-arena" style="display:none;">
@@ -540,6 +546,26 @@ var STAT_META = {
   heal:{ico:"💗",label:"回復"}, def:{ico:"🛡️",label:"防禦"}, atk:{ico:"⚔️",label:"攻擊"},
   luck:{ico:"🍀",label:"幸運"}, gold:{ico:"💰",label:"招財"}, crit:{ico:"✨",label:"爆擊"}
 };
+
+/* ---- 食材：對應品質/風味/本體三個標籤池，用來烹飪出完整的美食組合 ---- */
+var MAT_QUALITY = [
+  {id:"mq_平價的", tag:"平價的", ico:"🪙", w:30},
+  {id:"mq_家常的", tag:"家常的", ico:"🧂", w:26},
+  {id:"mq_美味的", tag:"美味的", ico:"✨", w:20},
+  {id:"mq_講究的", tag:"講究的", ico:"🎀", w:15},
+  {id:"mq_絕品的", tag:"絕品的", ico:"💎", w:7},
+  {id:"mq_傳說的", tag:"傳說的", ico:"🌟", w:2}
+];
+var MAT_AROMA = [
+  {id:"ma_蜂蜜香氣", tag:"蜂蜜香氣", ico:"🍯", w:16},
+  {id:"ma_薄荷香氣", tag:"薄荷香氣", ico:"🌿", w:16},
+  {id:"ma_焦糖香氣", tag:"焦糖香氣", ico:"🍮", w:16},
+  {id:"ma_奶香",     tag:"奶香",     ico:"🥛", w:16},
+  {id:"ma_花香",     tag:"花香",     ico:"🌸", w:16},
+  {id:"ma_辛香",     tag:"辛香",     ico:"🌶️", w:16}
+];
+var MAT_BASE = BASE.map(function(b){ return {id:"mb_"+b.name, tag:b.name, ico:b.ico, w:14}; });
+var MATERIALS = MAT_QUALITY.concat(MAT_AROMA).concat(MAT_BASE);
 
 var TITLES = [
   {floor:0,    name:"新手爬塔狗",     desc:"最基礎的狀態，充滿好奇心。",       hpMax:100, atk:8,  def:0,  goldRate:1.00, luck:0.00, crit:0.05},
@@ -707,8 +733,43 @@ var MINIGAME_ITEMS = [
   {id:"cards",     name:"神秘的紙牌",   ico:"🃏", type:"match", desc:"攤開是一疊圖案卡片，翻牌配對，翻越少次獎勵越高。"},
   {id:"slidepuzzle",name:"老舊的推盤玩具", ico:"🧩", type:"slide", desc:"滑動小方塊拼回順序，步數越少獎勵越高。"}
 ];
-var JUNK_POOL = JUNK_ITEMS.concat(MINIGAME_ITEMS);
+
+/* ---- 遺跡雜物：500層後解鎖的標籤生成系統，10形容詞x15本體=150種，跟32個經典款做風格區隔 ---- */
+var RUIN_ADJ = ["鏽蝕的","發光的","破碎的","沉睡的","古老的","微光的","龜裂的","塵封的","共鳴的","失落的"];
+var RUIN_BASE = [
+  {name:"齒輪", ico:"⚙️"}, {name:"符文", ico:"🔯"}, {name:"殘片", ico:"🧱"}, {name:"晶片", ico:"💠"},
+  {name:"石板", ico:"🪨"}, {name:"卷軸", ico:"📜"}, {name:"透鏡", ico:"🔎"}, {name:"鏈環", ico:"⛓️"},
+  {name:"骨笛", ico:"🪈"}, {name:"陶片", ico:"🏺"}, {name:"銅幣", ico:"🪙"}, {name:"貝符", ico:"🐚"},
+  {name:"木牌", ico:"🪧"}, {name:"織錦", ico:"🧵"}, {name:"星圖", ico:"🗺️"}
+];
+var RUIN_DESC_TPL = [
+  "從舊時代流傳下來的{n}，還殘留著一絲{a}的氣息。",
+  "在陰暗角落發現的{n}，被歲月侵蝕成{a}的樣子。",
+  "不知道用途的{n}，摸起來有種{a}的觸感。",
+  "某個文明留下的{n}，{a}得讓人不敢直視。",
+  "阿毛在瓦礫堆裡挖出的{n}，看起來很{a}。",
+  "塔壁縫隙裡卡著的{n}，散發著{a}的氣場。"
+];
+function ruinHash(str){
+  var h = 0;
+  for(var i=0;i<str.length;i++){ h = (h*31 + str.charCodeAt(i)) | 0; }
+  return Math.abs(h);
+}
+var RUIN_ITEMS = [];
+RUIN_ADJ.forEach(function(adj, ai){
+  RUIN_BASE.forEach(function(base, bi){
+    var id = "ruin_"+ai+"_"+bi;
+    var tpl = RUIN_DESC_TPL[ruinHash(id) % RUIN_DESC_TPL.length];
+    RUIN_ITEMS.push({
+      id: id, name: adj+base.name, ico: base.ico, w: 10,
+      desc: tpl.replace("{n}", base.name).replace("{a}", adj)
+    });
+  });
+});
+
+var JUNK_POOL = JUNK_ITEMS.concat(MINIGAME_ITEMS).concat(RUIN_ITEMS);
 var MINIGAME_CHANCE = 0.09; // 每次觸發「戰利品事件」時，獨立判定是否為小遊戲道具（不受JUNK_ITEMS數量影響）
+var RUIN_UNLOCK_FLOOR = 500; // 遺跡雜物要爬到這一層以後才會開始出現
 
 /* =========================================================
    狀態管理（單一事實來源）
@@ -725,6 +786,7 @@ var Game = {
       bonusHpMax: 0, bonusLuck: 0, bonusDef: 0, bonusGoldRate: 0, bonusAtk: 0,
       buffs: [],              // {stat, magnitude, floorsLeft}
       foodDex: {},            // key -> {count, quality, aroma, base}
+      materialInv: {},        // materialId -> count（食材庫存，用來烹飪）
       junkDex: {},            // id -> {count}
       shopOwned: {},          // id -> count
       lastMilestone: 0,
@@ -895,6 +957,43 @@ var Game = {
     return {key:key, entry:entry, isNew: entry.count===1};
   },
 
+  addMaterial: function(id){
+    this.state.materialInv[id] = (this.state.materialInv[id]||0)+1;
+    this.state.unseenFood = true;
+    return this.state.materialInv[id];
+  },
+  rollMaterial: function(){
+    var def = this.weightedPick(MATERIALS);
+    var count = this.addMaterial(def.id);
+    return {def:def, count:count};
+  },
+  findMaterialDef: function(id){
+    return MATERIALS.filter(function(m){return m.id===id;})[0];
+  },
+
+  craftFood: function(qId, aId, bId){
+    var inv = this.state.materialInv;
+    if((inv[qId]||0)<=0 || (inv[aId]||0)<=0 || (inv[bId]||0)<=0) return null;
+    var qDef = this.findMaterialDef(qId), aDef = this.findMaterialDef(aId), bDef = this.findMaterialDef(bId);
+    if(!qDef || !aDef || !bDef) return null;
+
+    inv[qId]--; inv[aId]--; inv[bId]--;
+
+    var qFull = QUALITY.filter(function(x){return x.name===qDef.tag;})[0];
+    var aFull = AROMA.filter(function(x){return x.name===aDef.tag;})[0];
+    var key = qDef.tag+"|"+aDef.tag+"|"+bDef.tag;
+    var entry = this.state.foodDex[key];
+    if(!entry){
+      entry = {count:0, quality:qDef.tag, aroma:aDef.tag, base:bDef.tag, tier:qFull.tier, stat:aFull.stat, ico:bDef.ico};
+      this.state.foodDex[key] = entry;
+    }
+    entry.count++;
+    this.state.unseenFood = true;
+    this.save();
+    UI.renderStatus();
+    return {key:key, entry:entry, isNew: entry.count===1};
+  },
+
   effectMagnitude: function(tier){
     return tier===1?0.05:(tier===2?0.10:0.18);
   },
@@ -954,8 +1053,11 @@ var Game = {
     }
     return {entry:entry, isNew: entry.count===1, wasKnown:wasKnown};
   },
+  currentJunkPool: function(){
+    return this.state.floor >= RUIN_UNLOCK_FLOOR ? JUNK_ITEMS.concat(RUIN_ITEMS) : JUNK_ITEMS;
+  },
   rollJunk: function(){
-    var def = this.weightedPick(JUNK_ITEMS);
+    var def = this.weightedPick(this.currentJunkPool());
     var r = this.addJunk(def.id);
     return {id:def.id, def:def, entry:r.entry, isNew:r.isNew};
   },
@@ -984,12 +1086,13 @@ var Game = {
     }
     for(id in counts){ this.state.junkDex[id].count -= counts[id]; }
 
-    var undiscovered = JUNK_ITEMS.filter(function(d){ return !self.state.junkDex[d.id]; });
+    var pool = this.currentJunkPool();
+    var undiscovered = pool.filter(function(d){ return !self.state.junkDex[d.id]; });
     var resultDef;
     if(undiscovered.length>0 && Math.random()<0.7){
       resultDef = undiscovered[Math.floor(Math.random()*undiscovered.length)];
     } else {
-      resultDef = this.weightedPick(JUNK_ITEMS);
+      resultDef = this.weightedPick(pool);
     }
     var wasOwnedBefore = !!(this.state.junkDex[resultDef.id] && this.state.junkDex[resultDef.id].count>0);
     var r = this.addJunk(resultDef.id);
@@ -1461,12 +1564,17 @@ var Game = {
   },
 
   lootEvent: function(){
-    var r = this.rollFood();
-    var e = r.entry;
-    var meta = STAT_META[e.stat];
-    var fullName = e.quality+e.aroma+e.base;
-    UI.log("loot", e.ico, "阿毛在轉角發現了 <b class='hl-sage'>"+fullName+"</b>"+(r.isNew?"（圖鑑新紀錄！）":"")+"。");
-    UI.toast(e.ico, (r.isNew?"新發現":"獲得食材"), fullName);
+    if(Math.random() < 0.70){
+      var m = this.rollMaterial();
+      UI.log("loot", m.def.ico, "阿毛翻到了食材：<b class='hl-sage'>"+m.def.tag+"</b>（持有 x"+m.count+"），可以拿去烹飪。");
+      UI.toast(m.def.ico, "獲得食材", m.def.tag);
+    } else {
+      var r = this.rollFood();
+      var e = r.entry;
+      var fullName = e.quality+e.aroma+e.base;
+      UI.log("loot", e.ico, "阿毛幸運地發現了現成的 <b class='hl-sage'>"+fullName+"</b>"+(r.isNew?"（圖鑑新紀錄！）":"")+"！");
+      UI.toast(e.ico, (r.isNew?"新發現":"獲得美食"), fullName);
+    }
   },
 
   junkLootEvent: function(){
@@ -1554,10 +1662,40 @@ var Game = {
       setTimeout(function(){ UI.showEnding(); }, 400);
     }
 
+    this.tryChocolateAngel();
+
     this.save();
     UI.renderStatus();
     UI.renderBuffs();
     this.checkAchievements();
+  },
+
+  tryChocolateAngel: function(){
+    if(this.state.hp<=0) return; // 瀕死救援畫面自己處理，這裡不重複打擾
+    var c = this.computed();
+    var hpPct = this.state.hp / c.hpMax;
+    var chance = hpPct < 0.30 ? 0.18 : 0.025;
+    if(Math.random() >= chance) return;
+
+    var self = this;
+    var isComfort = hpPct < 0.30;
+    var roll = Math.random();
+
+    if(isComfort || roll < 0.45){
+      var healAmt = Math.round(c.hpMax * 0.35);
+      this.state.hp = Math.min(c.hpMax, this.state.hp + healAmt);
+      UI.log("angel","🐾","巧克力悄悄飛了過來，用鼻子輕輕頂了頂阿毛，體力回復了 <b class='hl'>"+healAmt+"</b> 點。她總是知道什麼時候該出現。");
+      UI.toast("🐾", "巧克力來看你了", "體力 +"+healAmt);
+    } else if(roll < 0.75){
+      var r = this.rollJunk();
+      UI.log("angel","🎁","巧克力叼來了一份小禮物放在阿毛腳邊：<b class='hl-sage'>"+r.def.name+"</b>，然後又悄悄離開了。");
+      UI.toast(r.def.ico, "巧克力的禮物", r.def.name);
+    } else {
+      var gAmt = Math.round((30+Math.random()*40) * c.goldRate);
+      this.state.gold += gAmt;
+      UI.log("angel","✨","一枚金幣不知從哪裡滾了過來，阿毛總覺得巧克力剛剛路過這裡。獲得 <b class='hl'>"+gAmt+"</b> 金幣。");
+      UI.toast("✨", "巧克力路過", "金幣 +"+gAmt);
+    }
   },
 
   itemCost: function(item){
@@ -1723,6 +1861,14 @@ var UI = {
     document.getElementById("bag-badge").style.display = st.unseenFood ? "block" : "none";
     document.getElementById("loot-badge").style.display = st.unseenLoot ? "block" : "none";
 
+    var statRow = document.getElementById("stat-row");
+    statRow.innerHTML =
+      '<span class="stat-chip">⚔️ <b>'+Math.round(c.atk)+'</b></span>'+
+      '<span class="stat-chip">🛡️ <b>'+Math.round(c.def*100)+'%</b></span>'+
+      '<span class="stat-chip">🍀 <b>'+Math.round(c.luck*100)+'%</b></span>'+
+      '<span class="stat-chip">✨ <b>'+Math.round(c.crit*100)+'%</b></span>'+
+      '<span class="stat-chip">💰 <b>x'+c.goldRate.toFixed(2)+'</b></span>';
+
     var diceBtn = document.getElementById("dice-btn");
     diceBtn.disabled = st.hp<=0 || Game.busy;
   },
@@ -1792,13 +1938,19 @@ var UI = {
       var invBtn = document.createElement("div");
       invBtn.className = "food-tab-btn"+(this.foodTab==="inv"?" active":"");
       invBtn.innerText = "庫存";
+      var craftBtn = document.createElement("div");
+      craftBtn.className = "food-tab-btn"+(this.foodTab==="craft"?" active":"");
+      craftBtn.innerText = "🍳 烹飪";
       var dexBtn = document.createElement("div");
       dexBtn.className = "food-tab-btn"+(this.foodTab==="dex"?" active":"");
       dexBtn.innerText = "圖鑑（"+foundCount+" / "+totalCombos+"）";
       invBtn.onclick = function(){ UI.foodTab="inv"; UI.renderModal("food"); };
+      craftBtn.onclick = function(){ UI.foodTab="craft"; UI.renderModal("food"); };
       dexBtn.onclick = function(){ UI.foodTab="dex"; UI.renderModal("food"); };
-      tabWrap.appendChild(invBtn); tabWrap.appendChild(dexBtn);
+      tabWrap.appendChild(invBtn); tabWrap.appendChild(craftBtn); tabWrap.appendChild(dexBtn);
       body.appendChild(tabWrap);
+
+      if(this.foodTab==="craft"){ UI.renderCraftTab(body); return; }
 
       var grid = document.createElement("div"); grid.className="grid4";
       var keys = this.foodTab==="inv"
@@ -1859,8 +2011,11 @@ var UI = {
 
     if(type==="loot"){
       title.innerText = "🎒 阿毛的戰利品";
-      var totalJunk = JUNK_ITEMS.length;
-      var foundJunk = Object.keys(Game.state.junkDex).filter(function(k){return JUNK_ITEMS.some(function(j){return j.id===k;});}).length;
+      var pool = Game.currentJunkPool();
+      var totalJunk = pool.length;
+      var poolIds = {}; pool.forEach(function(p){ poolIds[p.id]=true; });
+      var foundJunk = Object.keys(Game.state.junkDex).filter(function(k){return poolIds[k];}).length;
+      var ruinUnlocked = Game.state.floor >= RUIN_UNLOCK_FLOOR;
 
       var tabWrap2 = document.createElement("div");
       tabWrap2.className = "food-tabs";
@@ -1874,6 +2029,13 @@ var UI = {
       dexBtn2.onclick = function(){ UI.lootTab="dex"; UI.recycleMode=false; UI.recycleSelected={}; UI.renderModal("loot"); };
       tabWrap2.appendChild(invBtn2); tabWrap2.appendChild(dexBtn2);
       body.appendChild(tabWrap2);
+
+      if(!ruinUnlocked){
+        var ruinHint = document.createElement("div");
+        ruinHint.style = "font-size:0.66em;color:var(--muted);text-align:center;margin-bottom:10px;";
+        ruinHint.innerText = "🗿 爬到第 "+RUIN_UNLOCK_FLOOR+" 層後，會開始出現全新的「遺跡雜物」系列";
+        body.appendChild(ruinHint);
+      }
 
       var jkeys = this.lootTab==="inv"
         ? Object.keys(Game.state.junkDex).filter(function(k){return Game.state.junkDex[k].count>0;})
@@ -2160,6 +2322,82 @@ var UI = {
       return;
     }
   },
+
+  craftSelect: {q:null, a:null, b:null},
+
+  renderCraftTab: function(body){
+    var self = this;
+    var sel = this.craftSelect;
+
+    var hint = document.createElement("div");
+    hint.style = "font-size:0.72em;color:var(--muted);text-align:center;margin-bottom:12px;line-height:1.6;";
+    hint.innerText = "各選一個品質、風味、本體食材，湊成你想要的那道菜！沒有的食材會爬塔途中掉落。";
+    body.appendChild(hint);
+
+    function renderMatRow(label, list, key){
+      var wrap = document.createElement("div");
+      wrap.style = "margin-bottom:14px;";
+      var lbl = document.createElement("div");
+      lbl.style = "font-size:0.76em;font-weight:900;color:var(--sage);margin-bottom:8px;";
+      lbl.innerText = label;
+      wrap.appendChild(lbl);
+
+      var row = document.createElement("div");
+      row.style = "display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;";
+      list.forEach(function(def){
+        var count = Game.state.materialInv[def.id]||0;
+        var chip = document.createElement("div");
+        var isSel = sel[key]===def.id;
+        chip.style.cssText =
+          "flex-shrink:0;min-width:58px;padding:8px 6px;border-radius:11px;text-align:center;cursor:pointer;"+
+          "background:"+(isSel?"var(--sage)":"var(--panel)")+";"+
+          "border:1px solid "+(isSel?"var(--sage-deep)":"var(--line)")+";"+
+          "opacity:"+(count>0?"1":"0.35")+";";
+        chip.innerHTML =
+          '<div style="font-size:1.4em;">'+def.ico+'</div>'+
+          '<div style="font-size:0.6em;font-weight:700;color:'+(isSel?"#1A2318":"var(--ivory)")+';margin-top:2px;">'+def.tag.slice(0,3)+'</div>'+
+          '<div style="font-size:0.6em;color:'+(isSel?"#1A2318":"var(--muted)")+';">x'+count+'</div>';
+        if(count>0){
+          chip.onclick = function(){ sel[key] = (sel[key]===def.id) ? null : def.id; UI.renderModal("food"); };
+        }
+        row.appendChild(chip);
+      });
+      wrap.appendChild(row);
+      body.appendChild(wrap);
+    }
+
+    renderMatRow("① 品質食材", MAT_QUALITY, "q");
+    renderMatRow("② 風味食材", MAT_AROMA, "a");
+    renderMatRow("③ 本體食材", MAT_BASE, "b");
+
+    var ready = sel.q && sel.a && sel.b;
+    var previewName = "";
+    if(ready){
+      var qd = this.findMaterialDefSafe(sel.q), ad = this.findMaterialDefSafe(sel.a), bd = this.findMaterialDefSafe(sel.b);
+      previewName = qd.tag + ad.tag + bd.tag;
+    }
+
+    var preview = document.createElement("div");
+    preview.style = "text-align:center;font-size:0.85em;font-weight:900;color:var(--honey);margin:10px 0;min-height:1.3em;";
+    preview.innerText = ready ? ("即將烹飪：" + previewName) : "選滿三種食材即可烹飪";
+    body.appendChild(preview);
+
+    var craftBtn = document.createElement("button");
+    craftBtn.className = "eat-btn";
+    craftBtn.disabled = !ready;
+    craftBtn.innerText = ready ? "🍳 開始烹飪" : "還缺食材";
+    craftBtn.onclick = function(){
+      var result = Game.craftFood(sel.q, sel.a, sel.b);
+      if(result){
+        UI.log("loot", result.entry.ico, "阿毛親手烹飪出了 <b class='hl-sage'>"+result.entry.quality+result.entry.aroma+result.entry.base+"</b>"+(result.isNew?"（圖鑑新紀錄！）":"")+"！");
+        UI.toast(result.entry.ico, "烹飪成功", result.entry.quality+result.entry.base);
+        sel.q = sel.a = sel.b = null;
+        UI.renderModal("food");
+      }
+    };
+    body.appendChild(craftBtn);
+  },
+  findMaterialDefSafe: function(id){ return Game.findMaterialDef(id); },
 
   openFoodDetail: function(key){
     var e = Game.state.foodDex[key];
