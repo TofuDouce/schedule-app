@@ -2,7 +2,7 @@
 <html lang="zh-Hant" data-theme="light" data-card="glass" data-font="pingfang" data-texture="none">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>中正診所 Portal</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;900&family=Noto+Sans+TC:wght@500;700;900&family=Noto+Serif+TC:wght@600;700;900&family=LXGW+WenKai+TC:wght@400;500;700&family=Chiron+GoRound+TC:wght@500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -54,6 +54,26 @@
   --hdr: rgba(241,232,216,.95);
 }
 
+/* 雅灰 — 取自小說樣板「人間夜色」：暖灰紙面＋靛藍主色 */
+:root[data-theme="ash"] {
+  --A:#3E4C6E; --A2:#55668E; --Alt:#7385AC;
+  --bg:#EDEAE3; --surf:#F7F5F0; --surf2:#EFECE5;
+  --border:#D6D1C2; --shadow:rgba(62,76,110,.10); --shadowH:rgba(62,76,110,.20);
+  --text:#242320; --sub:#3E4C6E; --muted:#726B5C;
+  --danger:#A44A38; --warn:#8B5E1A; --warnBg:#F5EDD8; --warnBdr:#C9974A;
+  --hdr: rgba(237,234,227,.95);
+}
+
+/* 暗金 — 取自小說樣板「暗金」：深褐夜幕＋鎏金主色 */
+:root[data-theme="gold"] {
+  --A:#C9A24A; --A2:#E0BC64; --Alt:#EBD08A;
+  --bg:#1C1812; --surf:#26211A; --surf2:#2E2820;
+  --border:#3E3626; --shadow:rgba(0,0,0,.35); --shadowH:rgba(0,0,0,.55);
+  --text:#E8DFC8; --sub:#D8B96A; --muted:#9C9074;
+  --danger:#E0564A; --warn:#E8A33D; --warnBg:#2A2008; --warnBdr:#B45309;
+  --hdr: rgba(28,24,18,.96);
+}
+
 /* fonts — 五種字型 */
 :root[data-font="pingfang"]    { --ff:"PingFang TC","PingFang SC",-apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif; }
 :root[data-font="sourcesans"]  { --ff:"Noto Sans TC","Source Han Sans TC",sans-serif; }
@@ -70,6 +90,8 @@
 :root[data-card="glass"] .card { background:rgba(255,255,255,.72); backdrop-filter:blur(16px); }
 :root[data-theme="dark"][data-card="glass"] .card { background:rgba(22,36,53,.72); }
 :root[data-theme="antique"][data-card="glass"] .card { background:rgba(251,246,236,.78); }
+:root[data-theme="ash"][data-card="glass"] .card { background:rgba(247,245,240,.78); }
+:root[data-theme="gold"][data-card="glass"] .card { background:rgba(38,33,26,.75); }
 :root[data-card="flat"]  .card { background:var(--surf); box-shadow:none; border-width:2px; }
 :root[data-card="solid"] .card { background:var(--surf2); border-color:transparent; box-shadow:var(--shadow); }
 
@@ -724,7 +746,7 @@ body::after {
     完成後請至
     <a href="https://docs.google.com/spreadsheets/d/1uYBA_CncbEAydmzNC1SRnsKJdswNgQh3zg1x6TKo0UU/edit#gid=646869954"
        target="_blank" rel="noopener">Google Sheet</a>
-    更新完成日期
+    更新完成日期，並在 G 欄「本期完成」打 ✓、H 欄填「本次到期日」
   </div>
 </div>
 
@@ -820,6 +842,8 @@ body::after {
         <button class="tog" id="theme-light"   onclick="setTheme('light')">☀️ 明亮</button>
         <button class="tog" id="theme-dark"    onclick="setTheme('dark')">🌙 夜間</button>
         <button class="tog" id="theme-antique" onclick="setTheme('antique')">📜 仿舊</button>
+        <button class="tog" id="theme-ash"     onclick="setTheme('ash')">🌫️ 雅灰</button>
+        <button class="tog" id="theme-gold"    onclick="setTheme('gold')">✨ 暗金</button>
       </div>
 
       <label class="plabel">卡片風格</label>
@@ -852,13 +876,13 @@ body::after {
 
       <label class="plabel">卡片標題大小</label>
       <div class="srow">
-        <input type="range" id="tsSlider" min="16" max="30" value="24" oninput="applySize()">
+        <input type="range" id="tsSlider" min="16" max="48" value="24" oninput="applySize()">
         <span class="sval" id="tsVal">24px</span>
       </div>
 
       <label class="plabel">說明文字大小</label>
       <div class="srow">
-        <input type="range" id="dsSlider" min="13" max="22" value="17" oninput="applySize()">
+        <input type="range" id="dsSlider" min="13" max="36" value="17" oninput="applySize()">
         <span class="sval" id="dsVal">17px</span>
       </div>
 
@@ -910,20 +934,24 @@ let recent   = JSON.parse(localStorage.getItem(LS.recent)) || [];
 /* ═══════════════════════════════════════════════
    THEME / FONT / CARD / TEXTURE
 ═══════════════════════════════════════════════ */
+const THEME_ORDER = ['light','dark','antique','ash','gold'];
+/* 浮動按鈕圖示＝「下一個主題」的預告 */
+const THEME_NEXT_ICON = { light:'🌙', dark:'📜', antique:'🌫️', ash:'✨', gold:'☀️' };
+
 function setTheme(t) {
+  if (!THEME_ORDER.includes(t)) t = 'light';
   document.documentElement.setAttribute('data-theme', t);
-  ['light','dark','antique'].forEach(x => {
+  THEME_ORDER.forEach(x => {
     const el = document.getElementById('theme-'+x);
     if (el) el.classList.toggle('on', x === t);
   });
-  document.getElementById('themeBtn').textContent = t === 'light' ? '🌙' : t === 'dark' ? '📜' : '☀️';
+  document.getElementById('themeBtn').textContent = THEME_NEXT_ICON[t];
   localStorage.setItem(LS.theme, t);
 }
 
 function toggleTheme() {
-  const order = ['light','dark','antique'];
   const cur = document.documentElement.getAttribute('data-theme') || 'light';
-  setTheme(order[(order.indexOf(cur) + 1) % order.length]);
+  setTheme(THEME_ORDER[(THEME_ORDER.indexOf(cur) + 1) % THEME_ORDER.length]);
 }
 
 function setCard(s) {
