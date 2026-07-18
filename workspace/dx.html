@@ -1,27 +1,43 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-Hant" data-theme="light" data-font="pingfang">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-<title>中正診所 門診病代速查 v2</title>
+<title>門診病代速查 v4</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&family=Noto+Serif+TC:wght@600;700;900&family=LXGW+WenKai+TC:wght@400;500;700&family=Chiron+GoRound+TC:wght@500;700;900&display=swap" rel="stylesheet">
 
 <style>
 
+/* ═══════════════════════════════════════════════════
+   TOKENS — 與主網站（clinic_portal）完全同一套三主題
+   明亮 / 夜間 / 仿舊，並共用 localStorage key：cz_theme_v6
+   在主網站切主題，這裡會自動同步
+═══════════════════════════════════════════════════ */
 :root {
-  /* 中正診所 Portal 經典藍天白雲風格變數 */
-  --bg: linear-gradient(135deg, #f0f4f8 0%, #e6eff9 100%);
-  --card: rgba(255, 255, 255, 0.9);
-  --card-hover: #ffffff;
-  --text: #0f172a; 
-  --sub: #475569;  
-  --accent: #0284c7; 
-  --accent-light: #e0f2fe;
-  --border: rgba(203, 213, 225, 0.9); 
-  --shadow: 0 10px 32px rgba(31, 38, 135, 0.06);
-  --card-shadow: 0 4px 16px rgba(2, 132, 199, 0.08);
-  --backdrop: blur(12px);
-  --sticky-bg: rgba(240, 244, 248, 0.92);
+  /* 明亮（預設）— 主網站原始色票 */
+  --A:   #2C5F8A;
+  --A2:  #3A7AB5;
+  --Alt: #5A96C8;
+  --bg-solid: #EDF2F7;
+  --surf:     #FFFFFF;
+  --surf2:    #F0F5FA;
+  --border:   #C8D9EC;
+  --text:     #1A3550;
+  --sub:      #2C5F8A;
+  --muted:    #5A7FA0;
+  --hdr:      rgba(237,242,247,.95);
+
+  /* 由主網站 token 衍生的本頁用途變數 */
+  --bg: var(--bg-solid);
+  --card: rgba(255,255,255,.72);
+  --card-hover: var(--surf);
+  --accent: var(--A);
+  --accent-light: #E0EDF8;
+  --shadow: 0 10px 32px rgba(44, 95, 138, 0.10);
+  --card-shadow: 0 4px 16px rgba(44, 95, 138, 0.10);
+  --backdrop: blur(16px);
+  --sticky-bg: var(--hdr);
 
   /* 專屬筆記區塊的質感翡翠綠變數（用於區隔） */
   --note-accent: #0d9488;
@@ -30,29 +46,103 @@
   /* 回到最上方按鈕配色 */
   --top-btn-a: #64748b;
   --top-btn-b: #475569;
+
+  /* 卡片字級（診間字體大小滑桿控制） */
+  --fs-card: 16px;
 }
 
-body.dark {
-  --bg: #0f172a;
-  --card: rgba(30, 41, 59, 0.85);
-  --card-hover: #1e293b;
-  --text: #ffffff; 
-  --sub: #cbd5e1;
-  --accent: #38bdf8;
-  --accent-light: #0c4a6e;
-  --border: rgba(71, 85, 105, 0.7);
-  --shadow: 0 10px 28px rgba(0, 0, 0, 0.4);
-  --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  --backdrop: blur(12px);
-  --sticky-bg: rgba(15, 23, 42, 0.92);
+/* 夜間 — 主網站原始色票 */
+:root[data-theme="dark"] {
+  --A:#3A7AB5; --A2:#5BA0DA; --Alt:#7BBCEE;
+  --bg-solid:#0E1C2C; --surf:#162435; --surf2:#1C2E40;
+  --border:#2A4060;
+  --text:#E2EDF8; --sub:#7BADD8; --muted:#5A82A8;
+  --hdr:rgba(14,28,44,.96);
 
-  /* 專屬筆記區塊的質感翡翠綠變數（夜間） */
+  --card: rgba(22,36,53,.80);
+  --accent: var(--A2);
+  --accent-light: #163852;
+  --shadow: 0 10px 28px rgba(0, 0, 0, 0.40);
+  --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+
   --note-accent: #2dd4bf;
   --note-accent-light: #115e59;
 
   --top-btn-a: #475569;
   --top-btn-b: #334155;
 }
+
+/* 仿舊 — 主網站原始羊皮紙暖色票 */
+:root[data-theme="antique"] {
+  --A:#9C6B30; --A2:#B98A4C; --Alt:#D1A86C;
+  --bg-solid:#F1E8D8; --surf:#FBF6EC; --surf2:#F5ECDA;
+  --border:#D9C6A0;
+  --text:#4A3826; --sub:#8B5E34; --muted:#9C8868;
+  --hdr:rgba(241,232,216,.95);
+
+  --card: rgba(251,246,236,.82);
+  --accent: var(--A);
+  --accent-light: #F0E2C6;
+  --shadow: 0 10px 32px rgba(120, 90, 40, 0.14);
+  --card-shadow: 0 4px 16px rgba(120, 90, 40, 0.14);
+
+  /* 仿舊主題下改用苔蘚綠，避免翡翠綠與暖棕互相打架 */
+  --note-accent: #5E7A34;
+  --note-accent-light: #E8EDD2;
+
+  --top-btn-a: #9C8868;
+  --top-btn-b: #7A6A4E;
+}
+
+/* 雅灰 — 小說樣板「人間夜色」：暖灰紙面＋靛藍主色 */
+:root[data-theme="ash"] {
+  --A:#3E4C6E; --A2:#55668E; --Alt:#7385AC;
+  --bg-solid:#EDEAE3; --surf:#F7F5F0; --surf2:#EFECE5;
+  --border:#D6D1C2;
+  --text:#242320; --sub:#3E4C6E; --muted:#726B5C;
+  --hdr:rgba(237,234,227,.95);
+
+  --card: rgba(247,245,240,.80);
+  --accent: var(--A);
+  --accent-light: #DFE3ED;
+  --shadow: 0 10px 32px rgba(62, 76, 110, 0.10);
+  --card-shadow: 0 4px 16px rgba(62, 76, 110, 0.10);
+
+  --note-accent: #0F766E;
+  --note-accent-light: #CDEEE6;
+
+  --top-btn-a: #726B5C;
+  --top-btn-b: #57513F;
+}
+
+/* 暗金 — 小說樣板「暗金」：深褐夜幕＋鎏金主色 */
+:root[data-theme="gold"] {
+  --A:#C9A24A; --A2:#E0BC64; --Alt:#EBD08A;
+  --bg-solid:#1C1812; --surf:#26211A; --surf2:#2E2820;
+  --border:#3E3626;
+  --text:#E8DFC8; --sub:#D8B96A; --muted:#9C9074;
+  --hdr:rgba(28,24,18,.96);
+
+  --card: rgba(38,33,26,.80);
+  --accent: var(--A2);
+  --accent-light: #3A2F14;
+  --shadow: 0 10px 28px rgba(0, 0, 0, 0.40);
+  --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+
+  /* 暗金主題下改用玉青，避免與鎏金主色互搶 */
+  --note-accent: #6FAE8F;
+  --note-accent-light: #1E3A2E;
+
+  --top-btn-a: #57513F;
+  --top-btn-b: #3E3626;
+}
+
+/* 字型 — 與主網站同五種，讀取主網站 cz_cfg_v6 自動套用 */
+:root[data-font="pingfang"]    { --ff:"PingFang TC","PingFang SC",-apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif; }
+:root[data-font="sourcesans"]  { --ff:"Noto Sans TC","Source Han Sans TC",sans-serif; }
+:root[data-font="sourceserif"] { --ff:"Noto Serif TC","Source Han Serif TC",serif; }
+:root[data-font="wenkai"]      { --ff:"LXGW WenKai TC","Noto Serif TC",serif; }
+:root[data-font="goround"]     { --ff:"Chiron GoRound TC","Noto Sans TC",sans-serif; }
 
 * {
   box-sizing: border-box;
@@ -63,10 +153,19 @@ body {
   background: var(--bg);
   background-attachment: fixed;
   color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--ff,"Noto Sans TC",sans-serif);
   padding: 0 20px 100px;
   transition: background 0.3s, color 0.3s;
   min-height: 100vh;
+  position: relative;
+}
+
+/* 與主網站相同的背景柔光暈 */
+body::before {
+  content:''; position:fixed; inset:0; z-index:-1; pointer-events:none;
+  background:
+    radial-gradient(ellipse 55% 40% at 5%  5%,  color-mix(in srgb,var(--A) 8%,transparent) 0%,transparent 70%),
+    radial-gradient(ellipse 40% 35% at 95% 90%, color-mix(in srgb,var(--A2) 6%,transparent) 0%,transparent 70%);
 }
 
 /* ===================================================
@@ -131,11 +230,11 @@ body {
   height: 54px;
   border: none;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent), #0284c7);
+  background: linear-gradient(135deg, var(--A), var(--A2));
   color: white;
   font-size: 22px;
   cursor: pointer;
-  box-shadow: 0 8px 20px rgba(2, 132, 199, 0.35);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--A) 35%, transparent);
   z-index: 1100;
   display: flex;
   align-items: center;
@@ -148,7 +247,7 @@ body {
 }
 
 .search-toggle-btn.active {
-  box-shadow: 0 0 0 4px var(--accent-light), 0 8px 20px rgba(2, 132, 199, 0.35);
+  box-shadow: 0 0 0 4px var(--accent-light), 0 8px 20px color-mix(in srgb, var(--A) 35%, transparent);
 }
 
 .search-float-panel {
@@ -187,7 +286,7 @@ body {
 
 .search:focus {
   background: var(--card-hover);
-  box-shadow: 0 8px 24px rgba(2, 132, 199, 0.25);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--A) 25%, transparent);
 }
 
 /* v2 新增：快速跳轉大字按鈕列 */
@@ -210,7 +309,7 @@ body {
   color: var(--accent);
   font-size: 21px;
   font-weight: 900;
-  font-family: -apple-system, "PingFang TC", "Heiti TC", "Microsoft JhengHei", BlinkMacSystemFont, sans-serif;
+  font-family: inherit;
   -webkit-text-stroke: 0.4px currentColor; /* 中文字型 900 有時看起來不夠粗，用描邊補足視覺粗度 */
   padding: 10px 20px;
   border-radius: 14px;
@@ -255,7 +354,7 @@ body {
   font-size: 20px; 
   font-weight: 900; 
   margin-bottom: 16px;
-  box-shadow: 0 2px 10px rgba(2, 132, 199, 0.1);
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--A) 10%, transparent);
   letter-spacing: 0.5px;
 }
 
@@ -298,7 +397,7 @@ body {
 .card:hover {
   transform: translateY(-4px);
   background: var(--card-hover);
-  box-shadow: 0 12px 24px rgba(2, 132, 199, 0.18);
+  box-shadow: 0 12px 24px color-mix(in srgb, var(--A) 18%, transparent);
 }
 
 .card:hover::before {
@@ -309,14 +408,14 @@ body {
   font-weight: 900; 
   color: var(--accent);
   margin-bottom: 6px;
-  font-size: 18px;
+  font-size: calc(var(--fs-card) + 2px);
   letter-spacing: 0.5px;
 }
 
 .name {
   line-height: 1.4;
   word-break: break-word;
-  font-size: 16px;
+  font-size: var(--fs-card);
   font-weight: 800; 
   color: var(--text);
 }
@@ -325,13 +424,11 @@ body {
 .small-note {
   font-size: 85%;
   font-weight: 600;
-  color: #64748b;
+  color: var(--muted);
   display: block;
   margin-top: 4px;
 }
-body.dark .small-note {
-  color: #94a3b8;
-}
+
 
 /* ===================================================
    專屬色系區隔：手寫筆記獨立翡翠綠 CSS
@@ -346,7 +443,7 @@ body.dark .small-note {
 }
 
 .section.note-section .card:hover {
-  box-shadow: 0 12px 24px rgba(13, 148, 136, 0.18);
+  box-shadow: 0 12px 24px color-mix(in srgb, var(--note-accent) 18%, transparent);
 }
 
 .section.note-section .code {
@@ -360,7 +457,7 @@ body.dark .small-note {
   left: 50%;
   transform: translateX(-50%);
   background: var(--text);
-  color: var(--card);
+  color: var(--bg-solid);
   padding: 14px 28px;
   border-radius: 999px;
   font-size: 16px;
@@ -386,11 +483,11 @@ body.dark .small-note {
   height: 60px;
   border: none;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent), #0284c7);
+  background: linear-gradient(135deg, var(--A), var(--A2));
   color: white;
   font-size: 26px;
   cursor: pointer;
-  box-shadow: 0 8px 24px rgba(2, 132, 199, 0.4);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--A) 40%, transparent);
   transition: transform 0.2s, box-shadow 0.2s;
   z-index: 1000;
   display: flex;
@@ -441,7 +538,7 @@ body.dark .small-note {
   position: fixed;
   right: 24px;
   bottom: 96px;
-  width: 260px;
+  width: 300px;
   background: var(--card);
   backdrop-filter: var(--backdrop);
   -webkit-backdrop-filter: var(--backdrop);
@@ -477,22 +574,36 @@ body.dark .small-note {
   accent-color: var(--accent);
 }
 
-.mode-btn {
-  width: 100%;
-  border: none;
-  border-radius: 16px;
-  padding: 12px;
-  font-size: 15px;
-  background: var(--accent);
-  color: white;
-  cursor: pointer;
-  font-weight: 800;
-  transition: opacity 0.2s;
-  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.2);
+.theme-group {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
 }
 
-.mode-btn:hover {
-  opacity: 0.9;
+.theme-tog {
+  flex: 1;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 4px;
+  font-size: 14px;
+  font-weight: 800;
+  font-family: inherit;
+  background: var(--card);
+  color: var(--sub);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.theme-tog:hover {
+  border-color: var(--A);
+}
+
+.theme-tog.on {
+  background: linear-gradient(135deg, var(--A), var(--A2));
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--A) 30%, transparent);
 }
 
 .container-wrap {
@@ -547,12 +658,19 @@ body.dark .small-note {
   <input
     type="range"
     min="14"
-    max="32"
+    max="40"
     value="16"
     class="range"
     id="fontSlider"
   />
-  <button class="mode-btn" id="modeBtn">切換深色模式</button>
+  <div class="setting-title">🎨 佈景主題（與主網站同步）</div>
+  <div class="theme-group">
+    <button class="theme-tog" id="theme-light"   data-theme-val="light">☀️ 明亮</button>
+    <button class="theme-tog" id="theme-dark"    data-theme-val="dark">🌙 夜間</button>
+    <button class="theme-tog" id="theme-antique" data-theme-val="antique">📜 仿舊</button>
+    <button class="theme-tog" id="theme-ash"     data-theme-val="ash">🌫️ 雅灰</button>
+    <button class="theme-tog" id="theme-gold"    data-theme-val="gold">✨ 暗金</button>
+  </div>
 </div>
 
 <div class="footer-space"></div>
@@ -698,7 +816,7 @@ const data = {
   ["J0391","急性復發性扁桃腺炎"],
   ["J040","急性喉炎"],
   ["J069","✨急性上呼吸道感染"],
-  ["JR070","喉嚨痛"],
+  ["R070","喉嚨痛"],
   ["J0410","急性氣管炎－未伴有阻塞"]
 ],
 
@@ -801,8 +919,7 @@ function render(keyword=""){
         if (cleanCode.includes("]")) {
           cleanCode = cleanCode.split("]").pop().trim();
         }
-        navigator.clipboard.writeText(cleanCode);
-        showToast(cleanCode);
+        copyText(cleanCode);
       };
 
       grid.appendChild(card);
@@ -824,14 +941,7 @@ function showToast(code){
 }
 
 function applyFontSize(size){
-  document.querySelectorAll(".code").forEach(el => {
-    el.style.fontSize = size + "px";
-  });
-  document.querySelectorAll(".name").forEach(el => {
-    if (!el.classList.contains("small-note")) {
-      el.style.fontSize = size + "px";
-    }
-  });
+  document.documentElement.style.setProperty("--fs-card", size + "px");
 }
 
 const savedFont = localStorage.getItem("fontSize");
@@ -947,7 +1057,6 @@ document.addEventListener("keydown", (e) => {
 
 const settingsBtn = document.getElementById("settingsBtn");
 const settingsPanel = document.getElementById("settingsPanel");
-const modeBtn = document.getElementById("modeBtn");
 
 settingsBtn.addEventListener("click", (e) => {
   e.stopPropagation();
@@ -962,24 +1071,93 @@ document.addEventListener("click", () => {
   settingsPanel.classList.remove("show");
 });
 
-const savedTheme = localStorage.getItem("theme");
-if (savedTheme === "dark") {
-  document.body.classList.add("dark");
-  modeBtn.innerText = "☀️ 切換日間模式";
-} else {
-  modeBtn.innerText = "🌙 切換深色模式";
+/* ===================================================
+   v4 新增：主題與字型「跟主網站共用同一份設定」
+   ‧ 主題：共用 localStorage key「cz_theme_v6」
+   ‧ 字型：讀主網站設定「cz_cfg_v6」裡的 font 值
+   ‧ 若主網站在另一分頁改設定，這裡透過 storage 事件即時跟著換
+   注意：localStorage 以「網域」為單位，兩個網頁必須放在
+   同一個 GitHub Pages 網域下才會同步；不同網域時，
+   本頁會用自己記住的上次選擇。
+   =================================================== */
+const THEME_KEY = "cz_theme_v6";
+const CFG_KEY   = "cz_cfg_v6";
+const VALID_THEMES = ["light", "dark", "antique", "ash", "gold"];
+const VALID_FONTS  = ["pingfang", "sourcesans", "sourceserif", "wenkai", "goround"];
+
+function applyTheme(t) {
+  if (!VALID_THEMES.includes(t)) t = "light";
+  document.documentElement.setAttribute("data-theme", t);
+  document.querySelectorAll(".theme-tog").forEach(b =>
+    b.classList.toggle("on", b.dataset.themeVal === t)
+  );
 }
 
-modeBtn.addEventListener("click", () => {
-  document.body.classList.toggle("dark");
-  if (document.body.classList.contains("dark")) {
-    localStorage.setItem("theme", "dark");
-    modeBtn.innerText = "☀️ 切換日間模式";
-  } else {
-    localStorage.setItem("theme", "light");
-    modeBtn.innerText = "🌙 切換深色模式";
+function applyPortalFont() {
+  try {
+    const cfg = JSON.parse(localStorage.getItem(CFG_KEY) || "{}");
+    if (cfg.font && VALID_FONTS.includes(cfg.font)) {
+      document.documentElement.setAttribute("data-font", cfg.font);
+    }
+  } catch (e) { /* 保持預設蘋方黑體 */ }
+}
+
+/* 初始化：優先吃 cz_theme_v6；沒有的話沿用本頁 v3 舊的 theme 設定 */
+(function initTheme() {
+  let t = localStorage.getItem(THEME_KEY);
+  if (!t) {
+    const legacy = localStorage.getItem("theme");
+    if (legacy === "dark") t = "dark";
   }
+  applyTheme(t || "light");
+  applyPortalFont();
+})();
+
+document.querySelectorAll(".theme-tog").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const t = btn.dataset.themeVal;
+    applyTheme(t);
+    localStorage.setItem(THEME_KEY, t);
+  });
 });
+
+/* 主網站分頁改了主題／字型，這頁即時跟著換 */
+window.addEventListener("storage", (e) => {
+  if (e.key === THEME_KEY) applyTheme(e.newValue);
+  if (e.key === CFG_KEY)   applyPortalFont();
+});
+
+/* ===================================================
+   v4 新增：複製病代（含舊瀏覽器 fallback 與失敗提示）
+   =================================================== */
+function copyText(code) {
+  const done = () => showToast(code);
+  const fail = () => {
+    const toast = document.getElementById("toast");
+    toast.innerText = "⚠️ 複製失敗，請手動輸入：" + code;
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 2500);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(code).then(done).catch(() => legacyCopy(code) ? done() : fail());
+  } else {
+    legacyCopy(code) ? done() : fail();
+  }
+}
+
+function legacyCopy(text) {
+  try {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand("copy");
+    document.body.removeChild(ta);
+    return ok;
+  } catch (e) { return false; }
+}
 
 buildQuickNav();
 render();
