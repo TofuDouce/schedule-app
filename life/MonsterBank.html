@@ -1,0 +1,2097 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#F7F4EB">
+<title>小怪獸存錢罐</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@500;700;900&family=LXGW+WenKai+TC&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   小怪獸存錢罐　MONSTER PIGGY BANK v1
+   由「小怪獸咖啡館」的模板長出來的單檔網站
+   ------------------------------------------------------------
+   1. 換顏色 → 下面 :root 十六個變數，全站跟著變
+   2. 版式與表格變數一律寫在 body{}，不可寫進 :root
+   3. 換專案 → 改最下面的 APP_NS，資料才不會互相打架
+============================================================ */
+:root{
+  --bg:#F7F4EB;
+  --dot:#E7E1CE;
+  --card:#FFFDF6;
+  --card-edge:#DDD3B8;
+  --card-under:#CFC3A4;
+  --ink:#4A4030;
+  --ink-soft:#8A7C5F;
+  --ink-faint:#B4A784;
+  --accent:#C98A3E;
+  --accent-dk:#A36A24;
+  --accent-pale:#F4E4C8;
+  --on-accent:#FFFFFF;
+  --input-bg:#FBF7EC;
+  --danger:#C4614A;
+  --danger-dk:#A34A35;
+  --scrim:#3A3324;
+  --r:24px;
+  --fs:16px;
+  --font:'Zen Maru Gothic','Noto Sans TC','PingFang TC',sans-serif;
+  /* 小怪獸自己的顏色，跟介面主色分開 */
+  --monster:#8C6FC6;
+  --monster-dk:#6B4FA6;
+  --monster-eye:#FFFDF6;
+  --monster-cheek:#F3A9B8;
+}
+
+/* ---------- 存錢罐裡的配色 ---------- */
+[data-theme="coin"]{
+  --bg:#E9EAEC; --dot:#D6D8DB; --card:#FEFEFE; --card-edge:#CBCED2; --card-under:#B7BBC0;
+  --ink:#262A2E; --ink-soft:#6E747A; --ink-faint:#A0A6AC;
+  --accent:#5B6B7A; --accent-dk:#44515E; --accent-pale:#DEE4E9; --on-accent:#FFFFFF;
+  --input-bg:#F5F6F7; --danger:#B4574B; --danger-dk:#8E4136; --scrim:#2A2F34;
+}
+[data-theme="lucky"]{
+  --bg:#F2E4E0; --dot:#E2CFCA; --card:#FFFAF8; --card-edge:#E0C9C3; --card-under:#CFB2AB;
+  --ink:#33201C; --ink-soft:#7B6259; --ink-faint:#AE9088;
+  --accent:#C0392B; --accent-dk:#96271B; --accent-pale:#F7DDD7; --on-accent:#FFF7EF;
+  --input-bg:#FCF3F0; --danger:#A9791F; --danger-dk:#875D12; --scrim:#3E211B;
+}
+[data-theme="matcha"]{
+  --bg:#EDF1E6; --dot:#DBE2D0; --card:#FCFDF9; --card-edge:#CBD5BC; --card-under:#B7C4A5;
+  --ink:#2C3327; --ink-soft:#6E7A63; --ink-faint:#9EAA91;
+  --accent:#5FA47A; --accent-dk:#437B5A; --accent-pale:#DEEEE0; --on-accent:#FFFFFF;
+  --input-bg:#F6F9F1; --danger:#C4785B; --danger-dk:#A05B41; --scrim:#2C3327;
+}
+[data-theme="book"]{
+  --bg:#E7EBF1; --dot:#D3D9E3; --card:#FCFDFE; --card-edge:#C6CEDB; --card-under:#B0BACA;
+  --ink:#222833; --ink-soft:#666F7E; --ink-faint:#98A1B0;
+  --accent:#3E5C8C; --accent-dk:#2C446B; --accent-pale:#DCE4F0; --on-accent:#FFFFFF;
+  --input-bg:#F4F7FB; --danger:#B05A3E; --danger-dk:#8E432B; --scrim:#222833;
+}
+[data-theme="rose"]{
+  --bg:#EFE3E4; --dot:#DFCFD1; --card:#FEFCFC; --card-edge:#D8C4C6; --card-under:#C6AFB2;
+  --ink:#2E2224; --ink-soft:#786A6C; --ink-faint:#A79597;
+  --accent:#B37784; --accent-dk:#8E5766; --accent-pale:#F2DFE2; --on-accent:#FFFFFF;
+  --input-bg:#FBF4F5; --danger:#9A5C3C; --danger-dk:#7C462B; --scrim:#3A2A2C;
+}
+[data-theme="paper"]{
+  --bg:#E6DCC8; --dot:#D5C9B1; --card:#F7F1E3; --card-edge:#CFC0A2; --card-under:#BCAB89;
+  --ink:#40372A; --ink-soft:#7E7259; --ink-faint:#A99A7C;
+  --accent:#7A5C3E; --accent-dk:#5C4229; --accent-pale:#E5D8BE; --on-accent:#FDF8EE;
+  --input-bg:#F1E9D8; --danger:#A24B3C; --danger-dk:#84392C; --scrim:#342C20;
+}
+[data-theme="night"]{
+  --bg:#23262B; --dot:#2E333A; --card:#2C3037; --card-edge:#3F454F; --card-under:#171A1E;
+  --ink:#EDEAE3; --ink-soft:#A9AEB6; --ink-faint:#767C85;
+  --accent:#6FA8CC; --accent-dk:#93C8E6; --accent-pale:#33414C; --on-accent:#16191D;
+  --input-bg:#262A30; --danger:#D98A72; --danger-dk:#EEA88F; --scrim:#000000;
+}
+[data-theme="ink"]{
+  --bg:#121212; --dot:#1E1E1E; --card:#1A1A1A; --card-edge:#343434; --card-under:#000000;
+  --ink:#F0EDE6; --ink-soft:#A9A399; --ink-faint:#726C63;
+  --accent:#C9A227; --accent-dk:#E0BC49; --accent-pale:#3A3220; --on-accent:#14120A;
+  --input-bg:#1F1F1F; --danger:#C96A4A; --danger-dk:#E08A6B; --scrim:#000000;
+}
+
+/* ---------- 版式與表格變數 ----------
+   必須宣告在 body：data-theme 掛在 body，若寫成 :root，var(--accent)
+   會在 html 上就先結算成預設色，換配色時表格與淡彩底不會跟著變。 */
+body{
+  --pnl-r:22px;
+  --pnl-bw:2px;
+  --pnl-bs:solid;
+  --pnl-bg:var(--card);
+  --pnl-tint:var(--accent-pale);
+  --pnl-sh:none;
+  --tbl-head-bg:var(--accent);
+  --tbl-head-ink:var(--on-accent);
+  --tbl-bg:var(--card);
+  --tbl-edge:var(--accent);
+  --tbl-tag-bg:var(--accent-pale);
+  --tbl-tag-ink:var(--accent-dk);
+}
+
+/* ---------- 骨架 ---------- */
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0; padding:0;}
+body{
+  font-family:var(--font);
+  background:var(--bg);
+  background-image:radial-gradient(var(--dot) 1.5px, transparent 1.5px);
+  background-size:21px 21px;
+  color:var(--ink); min-height:100svh;
+  padding-bottom:calc(96px + env(safe-area-inset-bottom));
+  font-size:var(--fs); line-height:1.65;
+}
+button{font-family:inherit; color:inherit; border:none; background:none; cursor:pointer; font-size:1rem; padding:0;}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--accent); outline-offset:2px;}
+input,select,textarea{
+  font-family:inherit; font-size:1rem; color:var(--ink);
+  background:var(--input-bg); border:2px solid var(--card-edge); border-radius:16px;
+  padding:12px 14px; width:100%; outline:none;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--accent); background:var(--card);}
+textarea{resize:vertical; min-height:70px;}
+label.f{display:block; font-size:.8rem; font-weight:900; color:var(--ink-soft); margin:14px 0 6px;}
+label.f:first-child{margin-top:0;}
+.press{transition:transform .12s ease;}
+.press:active{transform:scale(.94);}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.001ms !important; transition-duration:.001ms !important;}}
+
+header.top{
+  position:sticky; top:0; z-index:60; background:var(--bg);
+  padding:11px 15px 9px; border-bottom:2px dashed var(--card-edge);
+  display:flex; align-items:center; gap:11px;
+}
+.app-name{font-size:1.24rem; font-weight:900; color:var(--accent-dk); margin:0; line-height:1.2;
+  font-family:'Noto Serif TC',serif; letter-spacing:.02em;}
+.app-sub{font-size:.66rem; color:var(--ink-soft); font-weight:900; margin-top:2px; letter-spacing:.09em;}
+.head-tools{display:flex; gap:8px; flex:none; margin-left:auto;}
+.head-btn{
+  width:44px; height:44px; border-radius:15px; background:var(--card); border:2px solid var(--card-edge);
+  font-size:19px; box-shadow:3px 3px 0 var(--card-under);
+  display:flex; align-items:center; justify-content:center;
+}
+.head-btn.hot{background:var(--accent-pale); border-color:var(--accent);}
+
+main{max-width:560px; margin:0 auto; padding:16px 15px 0;}
+.card{
+  background:var(--card); border:2px solid var(--card-edge); border-radius:var(--r);
+  box-shadow:4px 4px 0 var(--card-under);
+  padding:17px; margin-bottom:16px;
+}
+.sec-title{display:flex; align-items:center; gap:9px; font-size:1.06rem; font-weight:900; margin:2px 2px 13px;}
+.sec-title .bdg{flex:none; width:30px; height:30px; border-radius:11px; background:var(--accent-pale);
+  display:flex; align-items:center; justify-content:center; font-size:16px;}
+.sec-title .spacer{flex:1;}
+.sec-title .cnt{font-size:.72rem; font-weight:900; color:var(--ink-faint);}
+.hint{font-size:.81rem; color:var(--ink-soft); line-height:1.75;}
+.hint b{color:var(--ink);}
+.hint code{font-family:ui-monospace,Menlo,monospace; font-size:.76rem; background:var(--input-bg);
+  border:1.5px solid var(--card-edge); border-radius:6px; padding:1px 5px;}
+.btn-main{display:block; width:100%; text-align:center; background:var(--accent); color:var(--on-accent);
+  font-weight:900; font-size:1.02rem; padding:14px; border-radius:18px; box-shadow:4px 4px 0 var(--accent-dk);}
+.btn-line{display:block; width:100%; text-align:center; background:var(--card); color:var(--ink-soft);
+  border:2px solid var(--card-edge); font-weight:900; font-size:1rem; padding:12px; border-radius:16px;}
+.btn-line.on{border-color:var(--accent); background:var(--accent-pale); color:var(--accent-dk);}
+.btn-danger{display:block; width:100%; text-align:center; background:var(--danger); color:#FFFFFF;
+  font-weight:900; font-size:1rem; padding:12px; border-radius:16px; box-shadow:4px 4px 0 var(--danger-dk);}
+.btn-gap{margin-top:11px;}
+.btn-row{display:flex; gap:9px; margin-top:11px;}
+.btn-row > *{flex:1; margin-top:0; min-width:0;}
+
+/* ============================================================
+   🐾 小怪獸（吉祥物）
+============================================================ */
+.mascot{display:block; position:relative; flex:none; line-height:0; cursor:pointer;}
+.mascot svg{display:block; width:100%; height:auto; overflow:visible;}
+.mascot .m-body{animation:mbob 3.4s ease-in-out infinite;}
+.mascot .m-eye{animation:mblink 5.2s infinite; transform-box:fill-box; transform-origin:center;}
+.mascot .m-eye.d2{animation-delay:.08s;}
+.mascot .m-arm-r{transform-box:fill-box; transform-origin:top left;}
+.mascot .m-coin{animation:mcoin 2.8s ease-in-out infinite; transform-box:fill-box; transform-origin:center;}
+.mascot .m-spark{animation:mspark 2.2s ease-in-out infinite; transform-box:fill-box; transform-origin:center;}
+.mascot .m-spark.d2{animation-delay:.7s;}
+.mascot .m-spark.d3{animation-delay:1.4s;}
+@keyframes mbob{0%,100%{transform:translateY(0);} 50%{transform:translateY(-2.5px);}}
+@keyframes mblink{0%,92%,100%{transform:scaleY(1);} 95%{transform:scaleY(.1);}}
+@keyframes mcoin{0%,100%{transform:translateY(0) rotate(-6deg);} 50%{transform:translateY(-4px) rotate(6deg);}}
+@keyframes mspark{0%,100%{opacity:.2; transform:scale(.7);} 50%{opacity:1; transform:scale(1.15);}}
+.mascot.wiggle{animation:mwig .55s ease;}
+.mascot.hop{animation:mhop .6s ease;}
+@keyframes mwig{0%,100%{transform:rotate(0);} 25%{transform:rotate(-10deg);} 60%{transform:rotate(8deg);}}
+@keyframes mhop{0%,100%{transform:translateY(0) scale(1);} 30%{transform:translateY(-14px) scale(1.04,.96);} 60%{transform:translateY(0) scale(.96,1.04);}}
+.mascot.mini{width:42px;}
+
+/* 首頁大舞台 */
+.mstage{
+  position:relative; display:flex; flex-direction:column; align-items:center;
+  padding:6px 0 2px;
+}
+.mstage .mascot{width:132px;}
+.mstage .ground{
+  position:absolute; left:50%; bottom:6px; transform:translateX(-50%);
+  width:118px; height:13px; border-radius:50%; background:var(--card-under); opacity:.42;
+}
+.bubble{
+  position:relative; margin:0 auto 8px; max-width:88%;
+  background:var(--accent-pale); color:var(--accent-dk);
+  border:2px solid var(--accent); border-radius:16px;
+  padding:8px 14px; font-size:.84rem; font-weight:900; text-align:center;
+  animation:bpop .3s ease;
+}
+.bubble::after{
+  content:''; position:absolute; left:50%; bottom:-9px; margin-left:-7px;
+  width:12px; height:12px; background:var(--accent-pale);
+  border-right:2px solid var(--accent); border-bottom:2px solid var(--accent);
+  transform:rotate(45deg);
+}
+@keyframes bpop{0%{opacity:0; transform:translateY(6px) scale(.94);} 100%{opacity:1; transform:none;}}
+
+/* 造型與顏色挑選 */
+.pick-grid{display:flex; flex-wrap:wrap; gap:9px;}
+.pick-grid button{
+  flex:1 1 88px; display:flex; flex-direction:column; align-items:center; gap:5px;
+  padding:9px 6px; border-radius:16px; background:var(--input-bg);
+  border:2px solid var(--card-edge); font-size:.74rem; font-weight:900; color:var(--ink-soft);
+}
+.pick-grid button.on{border-color:var(--accent); background:var(--accent-pale); color:var(--accent-dk);}
+.pick-grid .mascot{width:44px; pointer-events:none;}
+.color-grid{display:flex; flex-wrap:wrap; gap:9px;}
+.color-grid button{
+  flex:none; width:44px; height:44px; border-radius:15px;
+  border:2.5px solid var(--card-edge); box-shadow:3px 3px 0 var(--card-under);
+}
+.color-grid button.on{border-color:var(--ink); transform:scale(1.06);}
+
+/* ============================================================
+   💰 存錢元件
+============================================================ */
+.big-num{font-size:2.05rem; font-weight:900; color:var(--accent-dk); line-height:1.1; letter-spacing:-.01em;}
+.big-num small{font-size:.9rem; font-weight:900; color:var(--ink-soft); margin-left:4px; letter-spacing:0;}
+.stat-row{display:flex; gap:9px; flex-wrap:wrap;}
+.stat{
+  flex:1 1 96px; min-width:0; background:var(--input-bg);
+  border:2px solid var(--card-edge); border-radius:16px; padding:10px 11px; text-align:center;
+}
+.stat .k{font-size:.68rem; font-weight:900; color:var(--ink-faint); letter-spacing:.04em;}
+.stat .v{font-size:1.02rem; font-weight:900; color:var(--ink); margin-top:2px; word-break:break-all;}
+.stat.hot{background:var(--accent-pale); border-color:var(--accent);}
+.stat.hot .v{color:var(--accent-dk);}
+
+.bar{height:15px; border-radius:999px; background:var(--input-bg);
+  border:2px solid var(--card-edge); overflow:hidden; margin:9px 0 6px;}
+.bar > i{display:block; height:100%; background:var(--accent); border-radius:999px;
+  transition:width .5s cubic-bezier(.3,1.2,.5,1);}
+.bar.full > i{background:var(--accent-dk);}
+.bar-note{display:flex; align-items:baseline; gap:6px; font-size:.74rem; font-weight:900; color:var(--ink-faint);}
+.bar-note .pct{margin-left:auto; color:var(--accent-dk); font-size:.86rem;}
+
+.goal{
+  background:var(--card); border:2px solid var(--card-edge); border-radius:var(--pnl-r);
+  box-shadow:3px 3px 0 var(--card-under);
+  padding:13px 14px; margin-bottom:13px;
+}
+.goal:last-child{margin-bottom:0;}
+.goal.done{border-color:var(--accent); background:var(--accent-pale);}
+.goal.late{border-color:var(--danger);}
+.goal-head{display:flex; align-items:flex-start; gap:10px;}
+.goal-head .mascot{width:40px; margin-top:1px;}
+.goal-head .tt{flex:1; min-width:0;}
+.goal-name{font-size:1rem; font-weight:900; line-height:1.35; word-break:break-all;}
+.goal-when{font-size:.72rem; font-weight:900; color:var(--ink-faint); margin-top:1px;}
+.goal-kind{
+  flex:none; font-size:.66rem; font-weight:900; padding:3px 9px; border-radius:999px;
+  background:var(--accent-pale); color:var(--accent-dk); border:2px solid var(--accent);
+}
+.goal-kind.late{background:var(--danger); color:#FFF; border-color:var(--danger-dk);}
+.goal-need{
+  display:flex; align-items:baseline; gap:7px; margin-top:10px;
+  background:var(--input-bg); border:2px dashed var(--card-edge); border-radius:14px; padding:9px 12px;
+}
+.goal-need .lb{font-size:.72rem; font-weight:900; color:var(--ink-soft);}
+.goal-need .vv{margin-left:auto; font-size:1.24rem; font-weight:900; color:var(--accent-dk);}
+.goal-need .vv small{font-size:.72rem; color:var(--ink-soft); margin-left:3px;}
+.goal-acts{display:flex; gap:7px; margin-top:10px; flex-wrap:wrap;}
+.goal-acts button{
+  flex:1 1 auto; font-size:.78rem; font-weight:900; padding:8px 6px; border-radius:13px;
+  background:var(--input-bg); border:2px solid var(--card-edge); color:var(--ink-soft);
+}
+.goal-acts button.pri{background:var(--accent); border-color:var(--accent-dk); color:var(--on-accent);}
+
+.mini-list{margin-top:10px;}
+.mini-row{
+  display:flex; align-items:center; gap:8px; font-size:.82rem; font-weight:700;
+  padding:6px 0; border-bottom:1.5px dashed var(--card-edge);
+}
+.mini-row:last-child{border-bottom:none;}
+.mini-row .nm{flex:1; min-width:0; word-break:break-all;}
+.mini-row .am{flex:none; font-weight:900; color:var(--accent-dk);}
+.mini-row .del{flex:none; width:28px; height:28px; border-radius:9px; background:var(--input-bg);
+  border:2px solid var(--card-edge); font-size:13px; color:var(--danger);
+  display:flex; align-items:center; justify-content:center;}
+
+.quick{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;}
+.quick button{
+  flex:1 1 68px; font-size:.84rem; font-weight:900; padding:10px 4px; border-radius:14px;
+  background:var(--accent-pale); border:2px solid var(--accent); color:var(--accent-dk);
+}
+.seg{display:flex; gap:0; background:var(--input-bg); border:2px solid var(--card-edge);
+  border-radius:16px; padding:4px; margin-bottom:2px;}
+.seg button{flex:1; font-size:.82rem; font-weight:900; padding:8px 4px; border-radius:12px; color:var(--ink-soft);}
+.seg button.on{background:var(--accent); color:var(--on-accent); box-shadow:2px 2px 0 var(--accent-dk);}
+.duo{display:flex; gap:9px;}
+.duo > *{flex:1; min-width:0;}
+.empty{
+  text-align:center; padding:22px 10px; color:var(--ink-faint);
+  font-size:.86rem; font-weight:900; line-height:1.9;
+}
+.empty .mascot{width:76px; margin:0 auto 10px;}
+.coin-fly{
+  position:fixed; z-index:280; font-size:26px; pointer-events:none;
+  animation:cfly .9s ease-out forwards;
+}
+@keyframes cfly{
+  0%{opacity:0; transform:translateY(0) scale(.6);}
+  25%{opacity:1;}
+  100%{opacity:0; transform:translateY(-92px) scale(1.25) rotate(22deg);}
+}
+
+/* ============================================================
+   🧱 積木（沿用小怪獸咖啡館的類別）
+============================================================ */
+.pnl{background:var(--pnl-bg); border:var(--pnl-bw) var(--pnl-bs) var(--card-edge);
+  border-radius:var(--pnl-r); box-shadow:var(--pnl-sh); padding:14px 15px; margin-bottom:12px; color:var(--ink);}
+.pnl:last-child{margin-bottom:0;}
+.pnl-dash{background:transparent; border:var(--pnl-bw) dashed var(--card-edge);
+  border-radius:var(--pnl-r); padding:14px 15px; margin-bottom:12px; color:var(--ink);}
+.pnl-dash:last-child{margin-bottom:0;}
+.pnl-left{background:var(--pnl-bg); border:var(--pnl-bw) var(--pnl-bs) var(--card-edge);
+  border-left:6px solid var(--accent); border-radius:var(--pnl-r); box-shadow:var(--pnl-sh);
+  padding:14px 15px; margin-bottom:12px; color:var(--ink);}
+.pnl-left:last-child{margin-bottom:0;}
+.pnl-tint{background:var(--pnl-tint); border:var(--pnl-bw) var(--pnl-bs) var(--accent);
+  border-radius:var(--pnl-r); box-shadow:var(--pnl-sh); padding:14px 15px; margin-bottom:12px; color:var(--ink);}
+.pnl-tint:last-child{margin-bottom:0;}
+.pnl-tint-danger{background:var(--pnl-tint); border:var(--pnl-bw) var(--pnl-bs) var(--danger);
+  border-radius:var(--pnl-r); padding:14px 15px; margin-bottom:12px; color:var(--ink); font-weight:900;}
+.pnl-tint-danger:last-child{margin-bottom:0;}
+.pnl-fill{background:var(--accent); color:var(--on-accent);
+  border:var(--pnl-bw) var(--pnl-bs) var(--accent-dk); border-radius:var(--pnl-r);
+  box-shadow:var(--pnl-sh); padding:14px 15px; margin-bottom:12px;}
+.pnl-fill:last-child{margin-bottom:0;}
+.pnl-bar{display:flex; align-items:center; gap:9px; background:var(--ink); color:var(--bg);
+  border-radius:var(--pnl-r); padding:10px 14px; margin-bottom:12px; font-weight:900;}
+.pnl-bar:last-child{margin-bottom:0;}
+.pnl-bar .pnl-bartag{margin-left:auto; font-size:.72rem; font-weight:900;
+  padding:3px 10px; border-radius:999px; background:var(--bg); color:var(--ink);}
+.pnl-chip{display:inline-block; padding:5px 16px; border-radius:999px;
+  background:var(--accent); color:var(--on-accent); border:2px solid var(--accent-dk);
+  font-size:.78rem; font-weight:900; letter-spacing:.04em;}
+.pnl-chip-soft{display:inline-block; padding:5px 16px; border-radius:999px;
+  background:var(--accent-pale); color:var(--accent-dk); border:2px solid var(--accent);
+  font-size:.78rem; font-weight:900; letter-spacing:.04em;}
+.pnl-noted{position:relative; background:transparent; border:var(--pnl-bw) dashed var(--card-edge);
+  border-radius:var(--pnl-r); padding:20px 15px 14px; margin:24px 0 12px; color:var(--ink);}
+.pnl-noted:last-child{margin-bottom:0;}
+.pnl-noted > .pnl-chip, .pnl-noted > .pnl-chip-soft{position:absolute; top:-15px; left:50%;
+  transform:translateX(-50%); white-space:nowrap;}
+.tbl{background:var(--tbl-bg); border:2px solid var(--tbl-edge); border-radius:var(--pnl-r);
+  overflow:hidden; margin-bottom:12px; box-shadow:var(--pnl-sh);}
+.tbl:last-child{margin-bottom:0;}
+.tbl-head{display:flex; align-items:center; gap:8px; background:var(--tbl-head-bg);
+  color:var(--tbl-head-ink); font-weight:900; font-size:.95rem; padding:10px 14px;}
+.tbl-body{background:var(--tbl-bg); padding:12px 14px; color:var(--ink);}
+.tbl-badge{margin-left:auto; font-size:.72rem; font-weight:900; padding:3px 10px; border-radius:999px;
+  background:var(--tbl-head-ink); color:var(--tbl-head-bg);}
+.tbl-row{display:flex; align-items:baseline; gap:8px; font-size:.88rem; font-weight:700; padding:4px 0; color:var(--ink);}
+.tbl-row::before{content:'\2192'; flex:none; font-weight:900; color:var(--ink-soft);}
+.tbl-row .tbl-t{flex:none; font-weight:900;}
+.pnl-sep{height:0; border-top:2px dashed var(--card-edge); margin:12px 0;}
+.pnl-foot{text-align:center; font-size:.72rem; font-weight:900; letter-spacing:.42em;
+  text-indent:.42em; color:var(--ink-faint); padding:10px 0 4px;}
+
+/* ---------- 設定頁小零件 ---------- */
+.fs-row{display:flex; align-items:center; gap:11px;}
+.fs-row input[type=range]{-webkit-appearance:none; appearance:none; flex:1; min-width:0; height:26px;
+  background:transparent; border:none; padding:0; margin:0;}
+.fs-row input[type=range]::-webkit-slider-runnable-track{height:8px; border-radius:99px; background:var(--card-edge);}
+.fs-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:26px; height:26px; margin-top:-9px;
+  border-radius:50%; background:var(--accent); border:2.5px solid var(--accent-dk);}
+.fs-row input[type=range]::-moz-range-track{height:8px; border-radius:99px; background:var(--card-edge);}
+.fs-row input[type=range]::-moz-range-thumb{width:22px; height:22px; border-radius:50%; background:var(--accent); border:2.5px solid var(--accent-dk);}
+.fs-a{flex:none; font-weight:900; color:var(--ink-soft); line-height:1;}
+.fs-a.sm{font-size:.78rem;} .fs-a.lg{font-size:1.34rem;}
+.fs-now{text-align:center; font-size:.74rem; font-weight:900; color:var(--ink-faint); margin-top:8px;}
+.theme-grid,.font-list{display:flex; flex-wrap:wrap; gap:9px;}
+.theme-grid button,.font-list button{
+  flex:1 1 132px; display:flex; align-items:center; gap:9px; padding:10px 12px;
+  border-radius:16px; background:var(--input-bg); border:2px solid var(--card-edge);
+  font-size:.85rem; font-weight:900; text-align:left;}
+.theme-grid button.on,.font-list button.on{border-color:var(--accent); background:var(--accent-pale); color:var(--accent-dk);}
+.theme-grid .sw{flex:none; width:26px; height:26px; border-radius:9px; border:2px solid var(--card-edge); display:flex; overflow:hidden;}
+.theme-grid .sw i{flex:1;}
+
+nav.bottom{
+  position:fixed; left:0; right:0; bottom:0; z-index:70;
+  background:var(--card); border-top:2px solid var(--card-edge);
+  display:flex; padding:7px 6px calc(7px + env(safe-area-inset-bottom));
+  box-shadow:0 -3px 0 var(--card-under);
+}
+nav.bottom button{flex:1; display:flex; flex-direction:column; align-items:center; gap:2px;
+  font-size:.65rem; font-weight:900; color:var(--ink-faint); padding:6px 2px; border-radius:14px;}
+nav.bottom button .ic{font-size:19px; line-height:1.15;}
+nav.bottom button.on{color:var(--accent-dk); background:var(--accent-pale);}
+
+#modalWrap{display:none;} #modalWrap.on{display:block;}
+#modalScrim{position:fixed; inset:0; background:var(--scrim); opacity:.55; z-index:100;}
+#modalBox{position:fixed; left:50%; top:50%; transform:translate(-50%,-50%); z-index:110;
+  width:min(440px,92vw); max-height:86svh; overflow:auto; -webkit-overflow-scrolling:touch;
+  background:var(--card); border:2px solid var(--card-edge); border-radius:var(--r);
+  box-shadow:5px 5px 0 var(--card-under); padding:18px;}
+#modalHead{display:flex; align-items:center; gap:10px; margin-bottom:12px; position:sticky; top:-18px;
+  background:var(--card); padding:4px 0 6px; z-index:2;}
+#modalHead b{font-size:1.04rem; font-weight:900; flex:1;}
+#modalClose{width:34px; height:34px; border-radius:11px; border:2px solid var(--card-edge); background:var(--input-bg);}
+
+#toast{position:fixed; left:50%; bottom:calc(96px + env(safe-area-inset-bottom));
+  transform:translateX(-50%) translateY(14px);
+  background:var(--ink); color:var(--bg); font-size:.85rem; font-weight:900;
+  padding:11px 20px; border-radius:999px; z-index:300; opacity:0; pointer-events:none;
+  transition:opacity .22s ease, transform .22s ease; max-width:88vw; text-align:center;}
+#toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+.prev-img{width:100%; height:auto; display:block; border:2px solid var(--card-edge);
+  border-radius:14px; background:#FFF; margin-bottom:11px;}
+.prev-tip{font-size:.78rem; font-weight:900; color:var(--ink-soft); line-height:1.8; margin-bottom:10px;}
+.busy{display:flex; align-items:center; justify-content:center; gap:10px; padding:26px 0;
+  font-size:.9rem; font-weight:900; color:var(--ink-soft);}
+.busy .sp{width:22px; height:22px; border-radius:50%; border:3px solid var(--card-edge);
+  border-top-color:var(--accent); animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="mascot mini" id="mascotTop" title="摸摸小怪獸"></div>
+  <div>
+    <h1 class="app-name">小怪獸存錢罐</h1>
+    <div class="app-sub">MONSTER PIGGY BANK</div>
+  </div>
+  <div class="head-tools">
+    <button class="head-btn hot press" id="btnNew" title="開一個新目標">➕</button>
+    <button class="head-btn press" id="btnGoOut" title="輸出圖片與 PDF">🖼️</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============ 總覽 ============ -->
+  <section id="tab-home">
+    <div class="card">
+      <div class="mstage">
+        <div class="bubble" id="mBubble">今天也一起存吧</div>
+        <span class="ground"></span>
+        <div class="mascot" id="mascotBig" title="摸摸小怪獸"></div>
+      </div>
+      <div class="pnl-sep"></div>
+      <div style="text-align:center;">
+        <div class="hint" style="font-weight:900; letter-spacing:.06em;">這個月總共要存</div>
+        <div class="big-num" id="sumMonthly">0<small>元</small></div>
+        <div class="hint" id="sumMonthlyNote" style="margin-top:2px;"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="sec-title"><span class="bdg">📊</span>整體進度<span class="spacer"></span><span class="cnt" id="cntGoals"></span></div>
+      <div class="bar" id="allBar"><i style="width:0%"></i></div>
+      <div class="bar-note"><span id="allNote"></span><span class="pct" id="allPct">0%</span></div>
+      <div class="stat-row" style="margin-top:13px;">
+        <div class="stat"><div class="k">總預算</div><div class="v" id="stBudget">0</div></div>
+        <div class="stat"><div class="k">已存</div><div class="v" id="stSaved">0</div></div>
+        <div class="stat hot"><div class="k">還差</div><div class="v" id="stLeft">0</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="sec-title"><span class="bdg">⏳</span>最近要用到的錢<span class="spacer"></span><span class="cnt">前三個</span></div>
+      <div id="homeList"></div>
+    </div>
+
+    <div class="card">
+      <div class="sec-title"><span class="bdg">🌱</span>再開一個目標</div>
+      <div class="hint">要去哪裡玩、想買什麼、過年紅包要包多少，先寫下來，小怪獸幫你算每個月要存多少。</div>
+      <button class="btn-main press btn-gap" id="btnNew2">新增一個存錢目標</button>
+    </div>
+  </section>
+
+  <!-- ============ 目標 ============ -->
+  <section id="tab-goals" style="display:none;">
+    <div class="card">
+      <div class="seg" id="segFilter">
+        <button data-f="all" class="on">全部</button>
+        <button data-f="run">進行中</button>
+        <button data-f="done">已達成</button>
+      </div>
+      <div class="hint" style="margin-top:10px;" id="filterNote"></div>
+    </div>
+    <div class="card">
+      <div class="sec-title"><span class="bdg">🎯</span>存錢目標<span class="spacer"></span><span class="cnt" id="cntList"></span></div>
+      <div id="goalList"></div>
+      <button class="btn-main press btn-gap" id="btnNew3">新增目標</button>
+    </div>
+  </section>
+
+  <!-- ============ 輸出 ============ -->
+  <section id="tab-out" style="display:none;">
+    <div class="card">
+      <div class="sec-title"><span class="bdg">🖼️</span>輸出成圖片或 PDF</div>
+      <div class="hint">產生 A4 直式滿版的存錢表。圖片可以存進相簿，PDF 可以存進檔案或列印出來貼在牆上。</div>
+      <label class="f">表單標題</label>
+      <input type="text" id="outTitle" placeholder="我的存錢計畫" autocomplete="off">
+      <label class="f">要放哪些目標</label>
+      <div class="seg" id="segOut">
+        <button data-o="run" class="on">只放進行中</button>
+        <button data-o="all">全部都放</button>
+      </div>
+      <label class="f">畫質</label>
+      <div class="seg" id="segQ">
+        <button data-q="1" class="on">一般（檔案小）</button>
+        <button data-q="2">高畫質（可列印）</button>
+      </div>
+      <button class="btn-main press btn-gap" id="btnImg">輸出成 A4 圖片</button>
+      <button class="btn-line press btn-gap" id="btnPdf">輸出成 PDF</button>
+    </div>
+    <div class="card">
+      <div class="sec-title"><span class="bdg">📱</span>怎麼存進相簿</div>
+      <div class="hint">
+        按下輸出後會跳出預覽。<br>
+        · iPhone：按<b>「儲存 / 分享」</b>，在分享單裡選「儲存影像」，就會進相簿。<br>
+        · 如果沒有跳出分享單，<b>長按預覽圖</b>選「加入照片」也可以。<br>
+        · 目標很多時會自動分頁，一頁一張圖。
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 主題 ============ -->
+  <section id="tab-pal" style="display:none;">
+    <div class="card">
+      <div class="sec-title"><span class="bdg">🎨</span>配色</div>
+      <div class="hint" style="margin-bottom:12px;">選好會記在這台裝置上，下次打開還在。</div>
+      <div class="theme-grid" id="palGrid"></div>
+    </div>
+    <div class="card">
+      <div class="sec-title"><span class="bdg">🐾</span>招牌小怪獸</div>
+      <div class="hint" style="margin-bottom:11px;">這隻是站在招牌上的那一位。每個目標還可以各養一隻。</div>
+      <div class="mstage" style="padding-bottom:14px;">
+        <span class="ground"></span>
+        <div class="mascot" id="mascotPreview" style="width:112px;"></div>
+      </div>
+      <label class="f">造型</label>
+      <div class="pick-grid" id="shapeGrid"></div>
+      <label class="f">顏色</label>
+      <div class="color-grid" id="colorGrid"></div>
+    </div>
+  </section>
+
+  <!-- ============ 設定 ============ -->
+  <section id="tab-set" style="display:none;">
+    <div class="card">
+      <div class="sec-title"><span class="bdg">✒️</span>字體</div>
+      <div class="font-list" id="fontList"></div>
+    </div>
+    <div class="card">
+      <div class="sec-title"><span class="bdg">🔠</span>字體大小</div>
+      <div class="fs-row">
+        <span class="fs-a sm">A</span>
+        <input type="range" id="fsRange" min="14" max="22" step="1" value="16">
+        <span class="fs-a lg">A</span>
+      </div>
+      <div class="fs-now" id="fsNow"></div>
+    </div>
+    <div class="card">
+      <div class="sec-title"><span class="bdg">📅</span>今天</div>
+      <div class="pnl-tint" style="text-align:center; font-weight:900;" id="todayBox"></div>
+      <div class="hint" style="margin-top:10px;">全站的年份都用民國年，輸入 <code>115</code> 就是民國 115 年。</div>
+    </div>
+    <div class="card">
+      <div class="sec-title"><span class="bdg">💾</span>備份與還原</div>
+      <div class="hint">資料只存在這台裝置的瀏覽器裡。換手機或清快取前，記得先備份。</div>
+      <button class="btn-line press btn-gap" id="btnExport">下載備份檔</button>
+      <button class="btn-line press btn-gap" id="btnImport">匯入備份檔</button>
+      <input type="file" id="fileImport" accept="application/json,.json" style="display:none;">
+      <button class="btn-danger press btn-gap" id="btnWipe">清空所有目標</button>
+    </div>
+    <div class="card">
+      <div class="sec-title"><span class="bdg">📦</span>關於這份檔案</div>
+      <div class="hint">單檔 HTML，沒有框架也沒有後端，丟進 GitHub Pages 就會動。<br>
+      資料存在 <code>localStorage</code>，換專案時記得改最下面的 <code>APP_NS</code>。</div>
+      <div class="pnl-foot">MONSTER PIGGY BANK</div>
+    </div>
+  </section>
+
+</main>
+
+<nav class="bottom" id="navBar">
+  <button class="press on" data-tab="home"><span class="ic">🏠</span>總覽</button>
+  <button class="press" data-tab="goals"><span class="ic">🎯</span>目標</button>
+  <button class="press" data-tab="out"><span class="ic">🖼️</span>輸出</button>
+  <button class="press" data-tab="pal"><span class="ic">🎨</span>主題</button>
+  <button class="press" data-tab="set"><span class="ic">⚙️</span>設定</button>
+</nav>
+
+<div id="modalWrap">
+  <div id="modalScrim"></div>
+  <div id="modalBox">
+    <div id="modalHead"><b id="modalTitle">標題</b><button id="modalClose" class="press">✕</button></div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<!-- ============ 目標表單樣板 ============ -->
+<div id="tplGoalForm" style="display:none;">
+  <label class="f">這是什麼</label>
+  <div class="seg" id="fKind">
+    <button data-k="trip">旅行</button>
+    <button data-k="buy">想買</button>
+    <button data-k="red">紅包</button>
+    <button data-k="etc">其他</button>
+  </div>
+  <label class="f">名字</label>
+  <input type="text" id="fName" placeholder="例如：三月去日本" autocomplete="off">
+
+  <label class="f">怎麼算</label>
+  <div class="seg" id="fMode">
+    <button data-m="date">訂日期，算月存</button>
+    <button data-m="monthly">訂月存，算日期</button>
+  </div>
+
+  <div id="fDateWrap">
+    <label class="f">要在民國幾年幾月前存到</label>
+    <div class="duo">
+      <input type="number" id="fY" inputmode="numeric" placeholder="115">
+      <select id="fM"></select>
+    </div>
+  </div>
+
+  <div id="fMonthlyWrap" style="display:none;">
+    <label class="f">每個月最多可以存多少</label>
+    <input type="number" id="fMonthly" inputmode="numeric" placeholder="3000">
+  </div>
+
+  <label class="f">預算怎麼來</label>
+  <div class="seg" id="fBudMode">
+    <button data-b="num">直接填總額</button>
+    <button data-b="items">列明細加總</button>
+  </div>
+
+  <div id="fBudNumWrap">
+    <label class="f">總預算</label>
+    <input type="number" id="fBudget" inputmode="numeric" placeholder="35000">
+  </div>
+
+  <div id="fItemsWrap" style="display:none;">
+    <label class="f">明細（給誰的紅包、要買的東西）</label>
+    <div id="fItemList"></div>
+    <div class="duo" style="margin-top:9px;">
+      <input type="text" id="fItemName" placeholder="名目" autocomplete="off">
+      <input type="number" id="fItemAmt" inputmode="numeric" placeholder="金額">
+    </div>
+    <button class="btn-line press btn-gap" id="fItemAdd">加一筆明細</button>
+    <div class="pnl-tint" style="margin-top:11px; text-align:center; font-weight:900;" id="fItemSum">合計 0 元</div>
+  </div>
+
+  <label class="f">已經存了多少</label>
+  <input type="number" id="fSaved" inputmode="numeric" placeholder="0">
+
+  <label class="f">小怪獸造型</label>
+  <div class="pick-grid" id="fShape"></div>
+  <label class="f">小怪獸顏色</label>
+  <div class="color-grid" id="fColor"></div>
+
+  <label class="f">備註</label>
+  <textarea id="fNote" rows="2" placeholder="想寫什麼都可以"></textarea>
+
+  <div class="pnl-tint" id="fPreview" style="margin-top:14px; text-align:center;"></div>
+
+  <button class="btn-main press btn-gap" id="fSave">存起來</button>
+  <button class="btn-line press btn-gap" id="fCancel">取消</button>
+  <button class="btn-danger press btn-gap" id="fDelete" style="display:none;">刪掉這個目標</button>
+</div>
+
+<script>
+/* 換專案時改這一行就好 */
+var APP_NS = 'monsterbank_v1';
+var LS_DATA = APP_NS + '_data', LS_THEME = APP_NS + '_theme';
+var LS_FONT = APP_NS + '_font', LS_FS = APP_NS + '_fs';
+
+function $(id){ return document.getElementById(id); }
+function num(v){ var n = parseFloat(v); return isFinite(n) ? n : 0; }
+function esc(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+function money(v){
+  var n = Math.round(num(v)), s = Math.abs(n).toString(), o = '', c = 0, i;
+  for(i = s.length - 1; i >= 0; i--){
+    o = s.charAt(i) + o; c++;
+    if(c % 3 === 0 && i > 0) o = ',' + o;
+  }
+  return (n < 0 ? '-' : '') + o;
+}
+var tTimer = null;
+function toast(m){
+  var t = $('toast'); t.textContent = m; t.className = 'show';
+  clearTimeout(tTimer); tTimer = setTimeout(function(){ t.className = ''; }, 2200);
+}
+function openModal(title, html){
+  $('modalTitle').textContent = title;
+  $('modalBody').innerHTML = html;
+  $('modalWrap').className = 'on';
+  $('modalBox').scrollTop = 0;
+}
+function openModalNode(title, node){
+  $('modalTitle').textContent = title;
+  var b = $('modalBody'); b.innerHTML = ''; b.appendChild(node);
+  $('modalWrap').className = 'on';
+  $('modalBox').scrollTop = 0;
+}
+function closeModal(){ $('modalWrap').className = ''; }
+
+/* ---------- 民國年月 ---------- */
+function ymIndex(y, m){ return y * 12 + (m - 1); }
+function fromIndex(i){ return { y: Math.floor(i / 12), m: i % 12 + 1 }; }
+function nowYM(){
+  var d = new Date();
+  return { y: d.getFullYear() - 1911, m: d.getMonth() + 1, d: d.getDate() };
+}
+function pad2(n){ return (n < 10 ? '0' : '') + n; }
+function ymText(y, m){ return y + ' 年 ' + m + ' 月'; }
+function todayText(){
+  var n = nowYM();
+  return '民國 ' + n.y + '.' + pad2(n.m) + '.' + pad2(n.d);
+}
+
+/* ============================================================
+   🐾 小怪獸產生器
+============================================================ */
+var M_COLORS = [
+  { id:'grape',  label:'葡萄',   c:'#8C6FC6' },
+  { id:'mint',   label:'薄荷',   c:'#63B3A4' },
+  { id:'peach',  label:'蜜桃',   c:'#E68C82' },
+  { id:'butter', label:'奶油',   c:'#DFAE4E' },
+  { id:'sky',    label:'天藍',   c:'#6C9BD2' },
+  { id:'berry',  label:'莓果',   c:'#C97BA8' },
+  { id:'grass',  label:'青草',   c:'#7FA85E' },
+  { id:'stone',  label:'灰石',   c:'#8B8B95' }
+];
+var M_SHAPES = [
+  { id:'blob',   label:'圓圓' },
+  { id:'drop',   label:'水滴' },
+  { id:'fluffy', label:'毛毛' },
+  { id:'cat',    label:'貓耳' },
+  { id:'uni',    label:'獨角' },
+  { id:'ghost',  label:'幽幽' }
+];
+function shade(hex, amt){
+  var c = String(hex).replace('#', '');
+  if(c.length === 3) c = c.charAt(0)+c.charAt(0)+c.charAt(1)+c.charAt(1)+c.charAt(2)+c.charAt(2);
+  var n = parseInt(c, 16), r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  r = Math.max(0, Math.min(255, r + amt));
+  g = Math.max(0, Math.min(255, g + amt));
+  b = Math.max(0, Math.min(255, b + amt));
+  return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
+function colorOf(id){
+  for(var i = 0; i < M_COLORS.length; i++){ if(M_COLORS[i].id === id) return M_COLORS[i].c; }
+  return M_COLORS[0].c;
+}
+function moodOf(pct, late, empty){
+  if(empty) return 'sleep';
+  if(late) return 'panic';
+  if(pct >= 100) return 'party';
+  if(pct >= 75) return 'star';
+  if(pct >= 45) return 'happy';
+  if(pct >= 15) return 'ok';
+  return 'sleep';
+}
+/* 身體輪廓：全部都是一顆圓滾滾的麻糬，靠頭頂的東西分種類 */
+var M_BODY = {
+  blob:   'M50 23 C73 23 87 38 87 56 C87 76 71 88 50 88 C29 88 13 76 13 56 C13 38 27 23 50 23 Z',
+  drop:   'M50 11 C56 30 72 36 80 45 C86 52 88 60 88 66 C88 79 71 89 50 89 C29 89 12 79 12 66 C12 60 14 52 20 45 C28 36 44 30 50 11 Z',
+  fluffy: 'M50 19 C58 19 64 24 65 31 C73 27 81 33 80 42 C88 45 90 55 85 62 C87 77 70 88 50 88 C30 88 13 77 15 62 C10 55 12 45 20 42 C19 33 27 27 35 31 C36 24 42 19 50 19 Z',
+  cat:    'M50 23 C73 23 87 38 87 56 C87 76 71 88 50 88 C29 88 13 76 13 56 C13 38 27 23 50 23 Z',
+  uni:    'M50 23 C73 23 87 38 87 56 C87 76 71 88 50 88 C29 88 13 76 13 56 C13 38 27 23 50 23 Z',
+  ghost:  'M13 57 C13 32 87 32 87 57 L87 81 A9.25 9.25 0 0 1 68.5 81 A9.25 9.25 0 0 1 50 81 A9.25 9.25 0 0 1 31.5 81 A9.25 9.25 0 0 1 13 81 Z'
+};
+function monsterSVG(o){
+  o = o || {};
+  var shape = M_BODY[o.shape] ? o.shape : 'blob';
+  var col = (o.color && String(o.color).charAt(0) === '#') ? o.color : colorOf(o.color || 'grape');
+  var mood = o.mood || 'ok';
+  var dk = shade(col, -54), lt = shade(col, 40);
+  var pupil = '#42364C', white = '#FFFFFF', gold = '#F4CC64';
+  var sw = 3.4;
+  var up = (mood === 'party' || mood === 'star');
+  var s = [];
+  var sz = o.px ? (' width="' + o.px + '" height="' + Math.round(o.px * 1.06) + '"') : '';
+  s.push('<svg viewBox="0 0 100 106"' + sz + ' xmlns="http://www.w3.org/2000/svg" font-family="sans-serif" aria-hidden="true">');
+  s.push('<g class="m-body">');
+
+  /* 地上的影子 */
+  s.push('<ellipse cx="50" cy="97" rx="26" ry="4.6" fill="' + dk + '" opacity=".16"/>');
+
+  /* ---- 以下都畫在身體後面，只露出一點點 ---- */
+  if(shape === 'blob'){
+    s.push('<circle cx="27" cy="30" r="10.5" fill="' + col + '" stroke="' + dk + '" stroke-width="' + sw + '"/>');
+    s.push('<circle cx="73" cy="30" r="10.5" fill="' + col + '" stroke="' + dk + '" stroke-width="' + sw + '"/>');
+  }else if(shape === 'cat'){
+    s.push('<path d="M22 40 L25 12 L46 27 Z" fill="' + col + '" stroke="' + dk + '" stroke-width="' + sw + '" stroke-linejoin="round"/>');
+    s.push('<path d="M78 40 L75 12 L54 27 Z" fill="' + col + '" stroke="' + dk + '" stroke-width="' + sw + '" stroke-linejoin="round"/>');
+    s.push('<path d="M28 36 L29 21 L39 28 Z" fill="#FF9DB0" opacity=".85"/>');
+    s.push('<path d="M72 36 L71 21 L61 28 Z" fill="#FF9DB0" opacity=".85"/>');
+  }else if(shape === 'uni'){
+    s.push('<circle cx="26" cy="33" r="8.5" fill="' + col + '" stroke="' + dk + '" stroke-width="' + sw + '"/>');
+    s.push('<circle cx="74" cy="33" r="8.5" fill="' + col + '" stroke="' + dk + '" stroke-width="' + sw + '"/>');
+    s.push('<path d="M50 4 L58 30 L42 30 Z" fill="' + gold + '" stroke="' + shade(gold, -80) + '" stroke-width="3" stroke-linejoin="round"/>');
+    s.push('<path d="M45 24 L55 24 M46.5 16 L53.5 16" stroke="' + shade(gold, -80) + '" stroke-width="2.4" stroke-linecap="round"/>');
+  }
+
+  /* 短短的手 */
+  if(up){
+    s.push('<ellipse cx="14" cy="46" rx="8" ry="7.5" fill="' + col + '" stroke="' + dk + '" stroke-width="' + sw + '" transform="rotate(-24 14 46)"/>');
+    s.push('<ellipse cx="86" cy="46" rx="8" ry="7.5" fill="' + col + '" stroke="' + dk + '" stroke-width="' + sw + '" transform="rotate(24 86 46)"/>');
+  }else{
+    s.push('<ellipse cx="12" cy="66" rx="8" ry="7.5" fill="' + col + '" stroke="' + dk + '" stroke-width="' + sw + '"/>');
+    s.push('<ellipse cx="88" cy="66" rx="8" ry="7.5" fill="' + col + '" stroke="' + dk + '" stroke-width="' + sw + '"/>');
+  }
+
+  /* 圓圓的腳（幽幽沒有腳） */
+  if(shape !== 'ghost'){
+    s.push('<ellipse cx="34" cy="90" rx="12" ry="7.5" fill="' + col + '" stroke="' + dk + '" stroke-width="' + sw + '"/>');
+    s.push('<ellipse cx="66" cy="90" rx="12" ry="7.5" fill="' + col + '" stroke="' + dk + '" stroke-width="' + sw + '"/>');
+  }
+
+  /* 身體 */
+  s.push('<path d="' + M_BODY[shape] + '" fill="' + col + '" stroke="' + dk + '" stroke-width="' + (sw + .6) + '" stroke-linejoin="round"/>');
+  /* 左上角的光 */
+  s.push('<ellipse cx="33" cy="40" rx="12" ry="7.5" fill="#FFFFFF" opacity=".16" transform="rotate(-20 33 40)"/>');
+
+  /* ---- 臉 ---- */
+  if(mood === 'sleep'){
+    s.push('<path d="M25 54 q9 8 18 0" stroke="' + pupil + '" stroke-width="4" fill="none" stroke-linecap="round"/>');
+    s.push('<path d="M57 54 q9 8 18 0" stroke="' + pupil + '" stroke-width="4" fill="none" stroke-linecap="round"/>');
+  }else if(mood === 'party'){
+    s.push('<path d="M25 56 q9 -10 18 0" stroke="' + pupil + '" stroke-width="4.2" fill="none" stroke-linecap="round"/>');
+    s.push('<path d="M57 56 q9 -10 18 0" stroke="' + pupil + '" stroke-width="4.2" fill="none" stroke-linecap="round"/>');
+  }else{
+    s.push('<g class="m-eye"><ellipse cx="34" cy="53" rx="9.6" ry="10.6" fill="' + white + '"/>');
+    if(mood === 'star'){
+      s.push('<path d="M34 46.5 L36.6 52.4 L43 53.2 L38.2 57.4 L39.6 63.6 L34 60.4 L28.4 63.6 L29.8 57.4 L25 53.2 L31.4 52.4 Z" fill="' + gold + '"/>');
+    }else{
+      s.push('<circle cx="35.4" cy="55" r="' + (mood === 'panic' ? 3.4 : 5.2) + '" fill="' + pupil + '"/>');
+      s.push('<circle cx="33.2" cy="51.4" r="2.2" fill="' + white + '"/>');
+    }
+    s.push('</g><g class="m-eye d2"><ellipse cx="66" cy="53" rx="9.6" ry="10.6" fill="' + white + '"/>');
+    if(mood === 'star'){
+      s.push('<path d="M66 46.5 L68.6 52.4 L75 53.2 L70.2 57.4 L71.6 63.6 L66 60.4 L60.4 63.6 L61.8 57.4 L57 53.2 L63.4 52.4 Z" fill="' + gold + '"/>');
+    }else{
+      s.push('<circle cx="67.4" cy="55" r="' + (mood === 'panic' ? 3.4 : 5.2) + '" fill="' + pupil + '"/>');
+      s.push('<circle cx="65.2" cy="51.4" r="2.2" fill="' + white + '"/>');
+    }
+    s.push('</g>');
+  }
+
+  /* 腮紅 */
+  if(mood !== 'panic'){
+    s.push('<ellipse cx="21" cy="66" rx="6.4" ry="4.2" fill="#FF8FA8" opacity=".5"/>');
+    s.push('<ellipse cx="79" cy="66" rx="6.4" ry="4.2" fill="#FF8FA8" opacity=".5"/>');
+  }
+
+  /* 嘴巴 */
+  if(mood === 'panic'){
+    s.push('<path d="M42 71 q4 -4.5 8 0 q4 4.5 8 0" stroke="' + pupil + '" stroke-width="3.2" fill="none" stroke-linecap="round"/>');
+  }else if(mood === 'party' || mood === 'star'){
+    s.push('<path d="M41 67 q9 13 18 0 Z" fill="' + pupil + '"/>');
+    s.push('<path d="M45.5 73.2 q4.5 4.6 9 0 Z" fill="#FF8FA8"/>');
+  }else if(mood === 'happy'){
+    s.push('<path d="M42 68 q8 8 16 0" stroke="' + pupil + '" stroke-width="3.4" fill="none" stroke-linecap="round"/>');
+  }else if(mood === 'sleep'){
+    s.push('<path d="M46 68 q4 4 8 0" stroke="' + pupil + '" stroke-width="3" fill="none" stroke-linecap="round"/>');
+  }else{
+    s.push('<path d="M44 68 q3 3.6 6 0 q3 3.6 6 0" stroke="' + pupil + '" stroke-width="3" fill="none" stroke-linecap="round"/>');
+  }
+  s.push('</g>');
+
+  /* 配件 */
+  if(mood === 'party'){
+    s.push('<path d="M32 22 L39 32 L50 18 L61 32 L68 22 L68 35 L32 35 Z" fill="' + gold + '" stroke="' + shade(gold, -85) + '" stroke-width="3" stroke-linejoin="round"/>');
+    s.push('<circle cx="50" cy="26" r="2.6" fill="#FF8FA8"/>');
+    s.push('<path class="m-spark" d="M9 26 l2.6 6 6 2.6 -6 2.6 -2.6 6 -2.6 -6 -6 -2.6 6 -2.6 Z" fill="' + gold + '"/>');
+    s.push('<path class="m-spark d2" d="M91 22 l2.2 5 5 2.2 -5 2.2 -2.2 5 -2.2 -5 -5 -2.2 5 -2.2 Z" fill="' + gold + '"/>');
+    s.push('<path class="m-spark d3" d="M90 78 l2 4.6 4.6 2 -4.6 2 -2 4.6 -2 -4.6 -4.6 -2 4.6 -2 Z" fill="' + gold + '"/>');
+  }else if(mood === 'sleep'){
+    s.push('<text x="80" y="26" font-size="16" font-weight="900" fill="' + dk + '" opacity=".8">z</text>');
+    s.push('<text x="89" y="14" font-size="11" font-weight="900" fill="' + dk + '" opacity=".55">z</text>');
+  }else if(mood === 'panic'){
+    s.push('<path d="M86 38 C86 32 82 27 82 27 C82 27 78 32 78 38 C78 41.4 79.8 43.5 82 43.5 C84.2 43.5 86 41.4 86 38 Z" fill="#93C7EA" stroke="#5E93B8" stroke-width="2"/>');
+  }else{
+    s.push('<g class="m-coin"><circle cx="88" cy="76" r="10" fill="' + gold + '" stroke="' + shade(gold, -85) + '" stroke-width="3"/>');
+    s.push('<text x="88" y="81.5" text-anchor="middle" font-size="12" font-weight="900" fill="' + shade(gold, -95) + '">$</text></g>');
+  }
+  s.push('</svg>');
+  return s.join('');
+}
+function paintMascot(el, o){ if(el) el.innerHTML = monsterSVG(o); }
+function bounce(el, cls){
+  if(!el) return;
+  var base = el.className.replace(/\s*(wiggle|hop)/g, '');
+  el.className = base;
+  void el.offsetWidth;
+  el.className = base + ' ' + (cls || 'wiggle');
+}
+
+/* ============================================================
+   📦 資料
+============================================================ */
+var state = {
+  goals: [],
+  mascot: { shape:'blob', color:'grape' },
+  outTitle: ''
+};
+function saveData(){
+  try{
+    localStorage.setItem(LS_DATA, JSON.stringify(state));
+    return true;
+  }catch(e){
+    var b = $('modalBody');
+    toast('存不進去，空間可能滿了');
+    if(b) b.insertAdjacentHTML('afterbegin',
+      '<div class="pnl-fill" style="background:var(--danger); border-color:var(--danger-dk); color:#FFF;">資料沒有存成功，請先備份再清一些空間。</div>');
+    return false;
+  }
+}
+function loadData(){
+  var raw = null;
+  try{ raw = localStorage.getItem(LS_DATA); }catch(e){}
+  if(!raw) return;
+  try{
+    var d = JSON.parse(raw);
+    if(d && d.goals) state.goals = d.goals;
+    if(d && d.mascot) state.mascot = d.mascot;
+    if(d && typeof d.outTitle === 'string') state.outTitle = d.outTitle;
+  }catch(e){}
+}
+function uid(){ return 'g' + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36); }
+var KIND = {
+  trip:{ label:'旅行', ic:'✈️' },
+  buy: { label:'想買', ic:'🛍️' },
+  red: { label:'紅包', ic:'🧧' },
+  etc: { label:'其他', ic:'🌿' }
+};
+
+/* ============================================================
+   🧮 計算
+============================================================ */
+function goalBudget(g){
+  if(g.budMode === 'items'){
+    var t = 0, i;
+    for(i = 0; i < (g.items || []).length; i++) t += num(g.items[i].amt);
+    return t;
+  }
+  return num(g.budget);
+}
+function calcGoal(g){
+  var n = nowYM();
+  var budget = goalBudget(g);
+  var saved = num(g.saved);
+  var left = Math.max(0, budget - saved);
+  var r = {
+    budget: budget, saved: saved, left: left,
+    pct: budget > 0 ? Math.min(100, Math.floor(saved / budget * 100)) : 0,
+    done: budget > 0 && saved >= budget
+  };
+  if(g.mode === 'monthly'){
+    var mo = Math.max(0, num(g.monthly));
+    r.monthly = mo;
+    r.months = (mo > 0 && left > 0) ? Math.ceil(left / mo) : 0;
+    var t = fromIndex(ymIndex(n.y, n.m) + r.months);
+    r.ty = t.y; r.tm = t.m;
+    r.late = false;
+  }else{
+    var d = ymIndex(num(g.ty), num(g.tm)) - ymIndex(n.y, n.m);
+    r.months = d;
+    r.late = (d < 0) && !r.done;
+    var eff = Math.max(d, 1);
+    r.monthly = left > 0 ? Math.ceil(left / eff / 10) * 10 : 0;
+    r.ty = num(g.ty); r.tm = num(g.tm);
+  }
+  if(r.done) r.monthly = 0;
+  r.weekly = Math.ceil(r.monthly / 4.3 / 10) * 10;
+  r.daily = Math.ceil(r.monthly / 30 / 5) * 5;
+  r.mood = moodOf(r.pct, r.late, false);
+  return r;
+}
+function monthsText(r, g){
+  if(r.done) return '已經存滿了';
+  if(g.mode === 'monthly'){
+    if(r.monthly <= 0) return '還沒填每月存多少';
+    if(r.months <= 0) return '這個月就可以了';
+    return '大約 ' + r.months + ' 個月後：' + ymText(r.ty, r.tm);
+  }
+  if(r.months < 0) return '已經過了 ' + (-r.months) + ' 個月';
+  if(r.months === 0) return '就是這個月';
+  return '還有 ' + r.months + ' 個月';
+}
+function totals(list){
+  var t = { budget:0, saved:0, left:0, monthly:0, cnt:0, done:0 }, i;
+  for(i = 0; i < list.length; i++){
+    var r = calcGoal(list[i]);
+    t.budget += r.budget; t.saved += r.saved; t.left += r.left;
+    if(!r.done) t.monthly += r.monthly; else t.done++;
+    t.cnt++;
+  }
+  t.pct = t.budget > 0 ? Math.min(100, Math.floor(t.saved / t.budget * 100)) : 0;
+  return t;
+}
+function sortedGoals(){
+  var arr = state.goals.slice();
+  arr.sort(function(a, b){
+    var ra = calcGoal(a), rb = calcGoal(b);
+    if(ra.done !== rb.done) return ra.done ? 1 : -1;
+    return ymIndex(ra.ty, ra.tm) - ymIndex(rb.ty, rb.tm);
+  });
+  return arr;
+}
+
+/* ============================================================
+   🖌️ 畫面
+============================================================ */
+var TABS = ['home', 'goals', 'out', 'pal', 'set'];
+function go(id){
+  TABS.forEach(function(k){ var s = $('tab-' + k); if(s) s.style.display = (k === id) ? '' : 'none'; });
+  var bs = document.querySelectorAll('#navBar button'), i;
+  for(i = 0; i < bs.length; i++){
+    bs[i].className = 'press' + (bs[i].getAttribute('data-tab') === id ? ' on' : '');
+  }
+  window.scrollTo(0, 0);
+}
+function findGoal(id){
+  for(var i = 0; i < state.goals.length; i++){ if(state.goals[i].id === id) return state.goals[i]; }
+  return null;
+}
+function goalCardHTML(g){
+  var r = calcGoal(g), k = KIND[g.kind] || KIND.etc;
+  var cls = 'goal' + (r.done ? ' done' : (r.late ? ' late' : ''));
+  var h = [];
+  h.push('<div class="' + cls + '" data-id="' + esc(g.id) + '">');
+  h.push('<div class="goal-head">');
+  h.push('<div class="mascot" data-tap="' + esc(g.id) + '">' + monsterSVG({ shape:g.shape, color:g.color, mood:r.mood }) + '</div>');
+  h.push('<div class="tt"><div class="goal-name">' + k.ic + ' ' + esc(g.name || '沒有名字的目標') + '</div>');
+  h.push('<div class="goal-when">' + ymText(r.ty, r.tm) + ' · ' + monthsText(r, g) + '</div></div>');
+  h.push('<span class="goal-kind' + (r.late ? ' late' : '') + '">' + (r.late ? '過期' : k.label) + '</span>');
+  h.push('</div>');
+  if(r.done){
+    h.push('<div class="goal-need"><span class="lb">存滿了</span><span class="vv">' + money(r.budget) + '<small>元</small></span></div>');
+  }else{
+    h.push('<div class="goal-need"><span class="lb">' + (g.mode === 'monthly' ? '每個月存' : '每月最少存') + '</span><span class="vv">' + money(r.monthly) + '<small>元</small></span></div>');
+  }
+  h.push('<div class="bar' + (r.pct >= 100 ? ' full' : '') + '"><i style="width:' + r.pct + '%"></i></div>');
+  h.push('<div class="bar-note"><span>已存 ' + money(r.saved) + ' / ' + money(r.budget) + '</span><span class="pct">' + r.pct + '%</span></div>');
+  if(g.budMode === 'items' && (g.items || []).length){
+    h.push('<div class="mini-list">');
+    for(var i = 0; i < g.items.length; i++){
+      h.push('<div class="mini-row"><span class="nm">' + esc(g.items[i].name || '—') + '</span><span class="am">' + money(g.items[i].amt) + '</span></div>');
+    }
+    h.push('</div>');
+  }
+  h.push('<div class="goal-acts">');
+  h.push('<button class="pri" data-act="add" data-id="' + esc(g.id) + '">＋ 存錢</button>');
+  h.push('<button data-act="detail" data-id="' + esc(g.id) + '">細節</button>');
+  h.push('<button data-act="edit" data-id="' + esc(g.id) + '">編輯</button>');
+  h.push('</div></div>');
+  return h.join('');
+}
+var BUBBLES = {
+  empty: ['先開一個目標吧', '想去哪裡玩呢', '寫下來就不會忘記'],
+  sleep: ['慢慢來，有開始就好', '今天也一起存吧', '一點一點就會變多'],
+  ok:    ['有在前進了', '這個月也記得存', '存錢罐開始有重量了'],
+  happy: ['一半囉，很不錯', '維持這個節奏就好', '存錢罐晃起來有聲音了'],
+  star:  ['快到了，再撐一下', '剩最後一段路', '看得到終點了'],
+  party: ['全部存滿了', '可以出發了', '辛苦了，這是你存的'],
+  panic: ['有目標超過期限了', '要不要調一下日期', '別急，重新排就好']
+};
+function pickBubble(key){
+  var a = BUBBLES[key] || BUBBLES.ok;
+  return a[Math.floor(Math.random() * a.length)];
+}
+function renderHome(){
+  var list = sortedGoals(), t = totals(state.goals);
+  var late = false, i;
+  for(i = 0; i < state.goals.length; i++){ if(calcGoal(state.goals[i]).late) late = true; }
+  var mood = state.goals.length ? moodOf(t.pct, late, false) : 'sleep';
+
+  paintMascot($('mascotBig'), { shape:state.mascot.shape, color:state.mascot.color, mood:mood });
+  paintMascot($('mascotTop'), { shape:state.mascot.shape, color:state.mascot.color, mood:mood });
+  $('mBubble').textContent = pickBubble(state.goals.length ? mood : 'empty');
+
+  $('sumMonthly').innerHTML = money(t.monthly) + '<small>元</small>';
+  $('sumMonthlyNote').textContent = t.monthly > 0
+    ? ('平均每週 ' + money(Math.ceil(t.monthly / 4.3 / 10) * 10) + ' 元 · 每天 ' + money(Math.ceil(t.monthly / 30 / 5) * 5) + ' 元')
+    : (state.goals.length ? '目前沒有需要存的錢' : '還沒有任何目標');
+
+  $('cntGoals').textContent = t.cnt ? (t.cnt + ' 個目標 · 完成 ' + t.done) : '';
+  $('allBar').className = 'bar' + (t.pct >= 100 ? ' full' : '');
+  $('allBar').firstChild.style.width = t.pct + '%';
+  $('allNote').textContent = t.cnt ? '全部目標合計' : '先新增一個目標';
+  $('allPct').textContent = t.pct + '%';
+  $('stBudget').textContent = money(t.budget);
+  $('stSaved').textContent = money(t.saved);
+  $('stLeft').textContent = money(t.left);
+
+  var near = [], n = 0;
+  for(i = 0; i < list.length && n < 3; i++){
+    if(!calcGoal(list[i]).done){ near.push(goalCardHTML(list[i])); n++; }
+  }
+  $('homeList').innerHTML = near.length ? near.join('') :
+    '<div class="empty"><div class="mascot">' + monsterSVG({ shape:state.mascot.shape, color:state.mascot.color, mood:'sleep' }) + '</div>還沒有進行中的目標<br>按右上角的 ➕ 開一個</div>';
+}
+var filterNow = 'all';
+function renderList(){
+  var list = sortedGoals(), out = [], i;
+  for(i = 0; i < list.length; i++){
+    var d = calcGoal(list[i]).done;
+    if(filterNow === 'run' && d) continue;
+    if(filterNow === 'done' && !d) continue;
+    out.push(goalCardHTML(list[i]));
+  }
+  $('goalList').innerHTML = out.length ? out.join('') :
+    '<div class="empty"><div class="mascot">' + monsterSVG({ shape:state.mascot.shape, color:state.mascot.color, mood:'sleep' }) + '</div>這裡還是空的</div>';
+  $('cntList').textContent = out.length + ' 個';
+  var t = totals(state.goals);
+  $('filterNote').innerHTML = '總共 <b>' + t.cnt + '</b> 個目標，已達成 <b>' + t.done + '</b> 個，本月合計要存 <b>' + money(t.monthly) + '</b> 元。';
+}
+function renderAll(){ renderHome(); renderList(); }
+
+/* 點卡片 */
+function bindCardTaps(box){
+  box.addEventListener('click', function(ev){
+    var b = ev.target.closest ? ev.target.closest('button[data-act]') : null;
+    if(b){
+      var act = b.getAttribute('data-act'), id = b.getAttribute('data-id');
+      if(act === 'add') openDeposit(id);
+      else if(act === 'edit') openGoalForm(id);
+      else if(act === 'detail') openDetail(id);
+      return;
+    }
+    var m = ev.target.closest ? ev.target.closest('.mascot[data-tap]') : null;
+    if(m){
+      bounce(m, 'hop');
+      var g = findGoal(m.getAttribute('data-tap'));
+      if(g){ var r = calcGoal(g); toast(pickBubble(r.mood)); }
+    }
+  });
+}
+
+/* ---------- 存錢 ---------- */
+function openDeposit(id){
+  var g = findGoal(id); if(!g) return;
+  var r = calcGoal(g);
+  var h = [];
+  h.push('<div class="pnl-tint" style="text-align:center;"><b>' + esc(g.name || '目標') + '</b><br>');
+  h.push('<span class="hint">還差 ' + money(r.left) + ' 元 · 建議這次存 ' + money(r.monthly) + ' 元</span></div>');
+  h.push('<label class="f">這次要存多少</label>');
+  h.push('<input type="number" id="dpAmt" inputmode="numeric" value="' + (r.monthly > 0 ? r.monthly : '') + '" placeholder="0">');
+  h.push('<div class="quick" id="dpQuick">');
+  ['100','500','1000','2000','5000'].forEach(function(v){
+    h.push('<button data-v="' + v + '">+' + money(v) + '</button>');
+  });
+  h.push('</div>');
+  h.push('<button class="btn-main press btn-gap" id="dpOk">存進去</button>');
+  h.push('<div class="pnl-sep"></div>');
+  h.push('<label class="f">或是直接改成總共已存</label>');
+  h.push('<input type="number" id="dpSet" inputmode="numeric" value="' + r.saved + '">');
+  h.push('<button class="btn-line press btn-gap" id="dpSetOk">改成這個數字</button>');
+  openModal('存錢進 ' + (g.name || '目標'), h.join(''));
+
+  $('dpQuick').addEventListener('click', function(ev){
+    var b = ev.target.closest ? ev.target.closest('button[data-v]') : null;
+    if(!b) return;
+    var cur = num($('dpAmt').value);
+    $('dpAmt').value = cur + num(b.getAttribute('data-v'));
+  });
+  $('dpOk').addEventListener('click', function(){
+    var a = num($('dpAmt').value);
+    if(a <= 0){ toast('金額要大於 0'); return; }
+    g.saved = num(g.saved) + a;
+    g.logs = g.logs || [];
+    g.logs.push({ t: todayText(), a: a });
+    if(!saveData()) return;
+    closeModal(); renderAll(); coinRain();
+    var rr = calcGoal(g);
+    toast(rr.done ? '存滿了，小怪獸在跳' : ('存進 ' + money(a) + ' 元'));
+    bounce($('mascotBig'), 'hop');
+  });
+  $('dpSetOk').addEventListener('click', function(){
+    g.saved = Math.max(0, num($('dpSet').value));
+    if(!saveData()) return;
+    closeModal(); renderAll(); toast('已存金額改好了');
+  });
+}
+function coinRain(){
+  var i;
+  for(i = 0; i < 7; i++){
+    (function(k){
+      setTimeout(function(){
+        var d = document.createElement('div');
+        d.className = 'coin-fly';
+        d.textContent = '🪙';
+        d.style.left = (12 + Math.random() * 74) + 'vw';
+        d.style.top = (44 + Math.random() * 18) + 'vh';
+        document.body.appendChild(d);
+        setTimeout(function(){ if(d.parentNode) d.parentNode.removeChild(d); }, 1000);
+      }, k * 70);
+    })(i);
+  }
+}
+
+/* ---------- 細節 ---------- */
+function openDetail(id){
+  var g = findGoal(id); if(!g) return;
+  var r = calcGoal(g), k = KIND[g.kind] || KIND.etc, h = [];
+  h.push('<div class="mstage" style="padding-bottom:12px;"><span class="ground"></span><div class="mascot" style="width:104px;">' + monsterSVG({ shape:g.shape, color:g.color, mood:r.mood }) + '</div></div>');
+  h.push('<div class="tbl"><div class="tbl-head">' + k.ic + ' ' + esc(g.name || '目標') + '<span class="tbl-badge">' + k.label + '</span></div><div class="tbl-body">');
+  h.push('<div class="tbl-row"><span class="tbl-t">目標</span>' + ymText(r.ty, r.tm) + '（' + monthsText(r, g) + '）</div>');
+  h.push('<div class="tbl-row"><span class="tbl-t">預算</span>' + money(r.budget) + ' 元</div>');
+  h.push('<div class="tbl-row"><span class="tbl-t">已存</span>' + money(r.saved) + ' 元（' + r.pct + '%）</div>');
+  h.push('<div class="tbl-row"><span class="tbl-t">還差</span>' + money(r.left) + ' 元</div>');
+  if(!r.done){
+    h.push('<div class="tbl-row"><span class="tbl-t">每月</span>' + money(r.monthly) + ' 元</div>');
+    h.push('<div class="tbl-row"><span class="tbl-t">每週</span>約 ' + money(r.weekly) + ' 元</div>');
+    h.push('<div class="tbl-row"><span class="tbl-t">每天</span>約 ' + money(r.daily) + ' 元</div>');
+  }
+  h.push('</div></div>');
+  if(g.budMode === 'items' && (g.items || []).length){
+    h.push('<div class="tbl"><div class="tbl-head">明細<span class="tbl-badge">' + g.items.length + ' 筆</span></div><div class="tbl-body"><div class="mini-list">');
+    g.items.forEach(function(it){
+      h.push('<div class="mini-row"><span class="nm">' + esc(it.name || '—') + '</span><span class="am">' + money(it.amt) + '</span></div>');
+    });
+    h.push('</div></div></div>');
+  }
+  if(g.note) h.push('<div class="pnl-dash">' + esc(g.note).replace(/\n/g, '<br>') + '</div>');
+  if((g.logs || []).length){
+    var lg = g.logs.slice(-8).reverse();
+    h.push('<div class="tbl"><div class="tbl-head">最近存款<span class="tbl-badge">' + g.logs.length + ' 次</span></div><div class="tbl-body"><div class="mini-list">');
+    lg.forEach(function(l){
+      h.push('<div class="mini-row"><span class="nm">' + esc(l.t) + '</span><span class="am">+' + money(l.a) + '</span></div>');
+    });
+    h.push('</div></div></div>');
+  }
+  h.push('<button class="btn-main press btn-gap" id="dtAdd">存錢進去</button>');
+  h.push('<button class="btn-line press btn-gap" id="dtEdit">編輯這個目標</button>');
+  openModal('目標細節', h.join(''));
+  $('dtAdd').addEventListener('click', function(){ openDeposit(id); });
+  $('dtEdit').addEventListener('click', function(){ openGoalForm(id); });
+}
+
+/* ============================================================
+   📝 目標表單
+============================================================ */
+var FORM = null, draft = null, editingId = '';
+/* FORM 會被移出 document，所以它裡面的欄位一律用 querySelector，不能用 getElementById */
+function F(id){ return FORM ? FORM.querySelector('#' + id) : null; }
+function segSet(box, attr, val){
+  var bs = box.querySelectorAll('button'), i;
+  for(i = 0; i < bs.length; i++){
+    bs[i].className = (bs[i].getAttribute(attr) === val) ? 'on' : '';
+  }
+}
+function segBind(box, attr, fn){
+  box.addEventListener('click', function(ev){
+    var b = ev.target.closest ? ev.target.closest('button[' + attr + ']') : null;
+    if(!b) return;
+    segSet(box, attr, b.getAttribute(attr));
+    fn(b.getAttribute(attr));
+  });
+}
+function renderPickers(shapeBox, colorBox, get, set){
+  shapeBox.innerHTML = '';
+  M_SHAPES.forEach(function(sp){
+    var b = document.createElement('button');
+    b.className = (get().shape === sp.id) ? 'on' : '';
+    b.innerHTML = '<span class="mascot">' + monsterSVG({ shape:sp.id, color:get().color, mood:'happy' }) + '</span>' + sp.label;
+    b.addEventListener('click', function(){ set({ shape:sp.id }); });
+    shapeBox.appendChild(b);
+  });
+  colorBox.innerHTML = '';
+  M_COLORS.forEach(function(cl){
+    var b = document.createElement('button');
+    b.className = (get().color === cl.id) ? 'on' : '';
+    b.style.background = cl.c;
+    b.title = cl.label;
+    b.addEventListener('click', function(){ set({ color:cl.id }); });
+    colorBox.appendChild(b);
+  });
+}
+function readForm(){
+  var g = {
+    id: draft.id, kind: draft.kind, mode: draft.mode, budMode: draft.budMode,
+    shape: draft.shape, color: draft.color, items: draft.items || [],
+    logs: draft.logs || [],
+    name: F('fName').value.trim(),
+    ty: Math.round(num(F('fY').value)) || nowYM().y,
+    tm: Math.round(num(F('fM').value)) || nowYM().m,
+    monthly: num(F('fMonthly').value),
+    budget: num(F('fBudget').value),
+    saved: Math.max(0, num(F('fSaved').value)),
+    note: F('fNote').value
+  };
+  return g;
+}
+function syncForm(){
+  F('fDateWrap').style.display = (draft.mode === 'date') ? '' : 'none';
+  F('fMonthlyWrap').style.display = (draft.mode === 'monthly') ? '' : 'none';
+  F('fBudNumWrap').style.display = (draft.budMode === 'num') ? '' : 'none';
+  F('fItemsWrap').style.display = (draft.budMode === 'items') ? '' : 'none';
+  renderItems();
+  var g = readForm(), r = calcGoal(g);
+  var p = [];
+  if(r.budget <= 0){
+    p.push('<b>先填預算，小怪獸才知道要存多少</b>');
+  }else if(g.mode === 'monthly'){
+    p.push('<b>每個月存 ' + money(r.monthly) + ' 元</b><br><span class="hint">' + monthsText(r, g) + '</span>');
+  }else{
+    p.push('<b>每月最少存 ' + money(r.monthly) + ' 元</b><br><span class="hint">' + ymText(r.ty, r.tm) + ' · ' + monthsText(r, g) + '</span>');
+  }
+  F('fPreview').innerHTML = p.join('');
+}
+function renderItems(){
+  var box = F('fItemList');
+  if(draft.budMode !== 'items'){ box.innerHTML = ''; return; }
+  var h = [], t = 0;
+  (draft.items || []).forEach(function(it, i){
+    t += num(it.amt);
+    h.push('<div class="mini-row"><span class="nm">' + esc(it.name || '—') + '</span><span class="am">' + money(it.amt) + '</span><button class="del press" data-i="' + i + '">✕</button></div>');
+  });
+  box.innerHTML = h.length ? '<div class="mini-list">' + h.join('') + '</div>' : '<div class="hint">還沒有明細，下面加一筆。</div>';
+  F('fItemSum').textContent = '合計 ' + money(t) + ' 元';
+}
+function refreshFormPickers(){
+  renderPickers(F('fShape'), F('fColor'), function(){ return draft; }, function(o){
+    if(o.shape) draft.shape = o.shape;
+    if(o.color) draft.color = o.color;
+    refreshFormPickers();
+  });
+}
+function openGoalForm(id){
+  var n = nowYM(), g = id ? findGoal(id) : null;
+  editingId = id || '';
+  if(g){
+    draft = JSON.parse(JSON.stringify(g));
+  }else{
+    var t = fromIndex(ymIndex(n.y, n.m) + 3);
+    draft = {
+      id:'', kind:'trip', name:'', mode:'date', ty:t.y, tm:t.m, monthly:3000,
+      budMode:'num', budget:'', items:[], saved:0, note:'', logs:[],
+      shape: state.mascot.shape, color: state.mascot.color
+    };
+  }
+  F('fName').value = draft.name || '';
+  F('fY').value = draft.ty || n.y;
+  F('fM').value = draft.tm || n.m;
+  F('fMonthly').value = draft.monthly || '';
+  F('fBudget').value = (draft.budMode === 'items') ? '' : (draft.budget || '');
+  F('fSaved').value = draft.saved || 0;
+  F('fNote').value = draft.note || '';
+  F('fItemName').value = ''; F('fItemAmt').value = '';
+  segSet(F('fKind'), 'data-k', draft.kind);
+  segSet(F('fMode'), 'data-m', draft.mode);
+  segSet(F('fBudMode'), 'data-b', draft.budMode);
+  refreshFormPickers();
+  F('fDelete').style.display = id ? '' : 'none';
+  syncForm();
+  openModalNode(id ? '編輯目標' : '新增目標', FORM);
+}
+function bindForm(){
+  FORM = $('tplGoalForm');
+  FORM.parentNode.removeChild(FORM);
+  FORM.style.display = '';
+  var msel = F('fM'), i;
+  for(i = 1; i <= 12; i++){
+    var op = document.createElement('option');
+    op.value = i; op.textContent = i + ' 月';
+    msel.appendChild(op);
+  }
+  segBind(F('fKind'), 'data-k', function(v){
+    draft.kind = v;
+    if(v === 'red' && draft.budMode !== 'items'){
+      draft.budMode = 'items'; segSet(F('fBudMode'), 'data-b', 'items');
+    }
+    if(!F('fName').value.trim()){
+      F('fName').placeholder = v === 'trip' ? '例如：三月去日本' : v === 'buy' ? '例如：新的耳機' : v === 'red' ? '例如：過年紅包' : '例如：換冷氣';
+    }
+    syncForm();
+  });
+  segBind(F('fMode'), 'data-m', function(v){ draft.mode = v; syncForm(); });
+  segBind(F('fBudMode'), 'data-b', function(v){ draft.budMode = v; syncForm(); });
+  ['fName','fY','fM','fMonthly','fBudget','fSaved'].forEach(function(k){
+    F(k).addEventListener('input', syncForm);
+    F(k).addEventListener('change', syncForm);
+  });
+  F('fItemAdd').addEventListener('click', function(){
+    var nm = F('fItemName').value.trim(), am = num(F('fItemAmt').value);
+    if(!nm && am <= 0){ toast('先填名目跟金額'); return; }
+    draft.items = draft.items || [];
+    draft.items.push({ name: nm || '未命名', amt: am });
+    F('fItemName').value = ''; F('fItemAmt').value = '';
+    syncForm();
+    F('fItemName').focus();
+  });
+  F('fItemList').addEventListener('click', function(ev){
+    var b = ev.target.closest ? ev.target.closest('button[data-i]') : null;
+    if(!b) return;
+    draft.items.splice(parseInt(b.getAttribute('data-i'), 10), 1);
+    syncForm();
+  });
+  F('fCancel').addEventListener('click', closeModal);
+  F('fDelete').addEventListener('click', function(){
+    if(!editingId) return;
+    if(!window.confirm('確定要刪掉這個目標嗎？刪了就回不來了。')) return;
+    for(var i = 0; i < state.goals.length; i++){
+      if(state.goals[i].id === editingId){ state.goals.splice(i, 1); break; }
+    }
+    if(!saveData()) return;
+    closeModal(); renderAll(); toast('刪掉了');
+  });
+  F('fSave').addEventListener('click', function(){
+    var g = readForm();
+    if(!g.name) g.name = (KIND[g.kind] || KIND.etc).label + '目標';
+    if(goalBudget(g) <= 0){ toast('預算要大於 0'); return; }
+    if(g.mode === 'date'){
+      var n = nowYM();
+      if(g.ty < 90 || g.ty > 250){ toast('民國年份怪怪的'); return; }
+      if(ymIndex(g.ty, g.tm) < ymIndex(n.y, n.m) - 240){ toast('日期太久以前了'); return; }
+    }else if(g.monthly <= 0){ toast('每月可存要大於 0'); return; }
+    if(editingId){
+      g.id = editingId;
+      for(var i = 0; i < state.goals.length; i++){
+        if(state.goals[i].id === editingId){ state.goals[i] = g; break; }
+      }
+    }else{
+      g.id = uid();
+      state.goals.push(g);
+    }
+    if(!saveData()) return;
+    closeModal(); renderAll();
+    toast(editingId ? '改好了' : '新目標開好了');
+    bounce($('mascotTop'), 'wiggle');
+  });
+}
+
+/* ============================================================
+   🎨 配色 · 字體 · 小怪獸
+============================================================ */
+var THEMES = [
+  { id:'',       label:'奶油撲滿', sw:['#F7F4EB','#C98A3E','#4A4030'] },
+  { id:'coin',   label:'銅板銀',   sw:['#E9EAEC','#5B6B7A','#B4574B'] },
+  { id:'lucky',  label:'紅包喜氣', sw:['#F2E4E0','#C0392B','#A9791F'] },
+  { id:'matcha', label:'抹茶零錢', sw:['#EDF1E6','#5FA47A','#C4785B'] },
+  { id:'book',   label:'存摺藍',   sw:['#E7EBF1','#3E5C8C','#B05A3E'] },
+  { id:'rose',   label:'玫瑰儲金', sw:['#EFE3E4','#B37784','#9A5C3C'] },
+  { id:'paper',  label:'牛皮帳本', sw:['#E6DCC8','#7A5C3E','#A24B3C'] },
+  { id:'night',  label:'夜間記帳', sw:['#23262B','#6FA8CC','#EDEAE3'] },
+  { id:'ink',    label:'墨黑金庫', sw:['#121212','#C9A227','#F0EDE6'] }
+];
+function applyTheme(id){
+  if(id) document.body.setAttribute('data-theme', id);
+  else document.body.removeAttribute('data-theme');
+  try{ localStorage.setItem(LS_THEME, id); }catch(e){}
+  var mt = document.querySelector('meta[name="theme-color"]');
+  if(mt){
+    var th = THEMES[0], i;
+    for(i = 0; i < THEMES.length; i++){ if(THEMES[i].id === id) th = THEMES[i]; }
+    mt.setAttribute('content', th.sw[0]);
+  }
+  renderPalGrid();
+}
+function renderPalGrid(){
+  var wrap = $('palGrid'); if(!wrap) return;
+  var now = document.body.getAttribute('data-theme') || '';
+  wrap.innerHTML = '';
+  THEMES.forEach(function(th){
+    var b = document.createElement('button');
+    b.className = 'press' + (th.id === now ? ' on' : '');
+    b.innerHTML = '<span class="sw">' + th.sw.map(function(c){
+      return '<i style="background:' + c + '"></i>';
+    }).join('') + '</span>' + th.label;
+    b.addEventListener('click', function(){ applyTheme(th.id); toast('換成「' + th.label + '」'); });
+    wrap.appendChild(b);
+  });
+}
+function renderMascotPanel(){
+  paintMascot($('mascotPreview'), { shape:state.mascot.shape, color:state.mascot.color, mood:'happy' });
+  renderPickers($('shapeGrid'), $('colorGrid'), function(){ return state.mascot; }, function(o){
+    if(o.shape) state.mascot.shape = o.shape;
+    if(o.color) state.mascot.color = o.color;
+    saveData();
+    renderMascotPanel();
+    renderAll();
+  });
+}
+var FONTS = [
+  { id:'maru', label:'圓體', stack:"'Zen Maru Gothic','Noto Sans TC','PingFang TC',sans-serif" },
+  { id:'sans', label:'黑體', stack:"'Noto Sans TC','PingFang TC',sans-serif" },
+  { id:'serif', label:'明體', stack:"'Noto Serif TC','Songti TC',serif" },
+  { id:'kai', label:'文楷', stack:"'LXGW WenKai TC','Kaiti TC',serif" },
+  { id:'pingfang', label:'蘋方', stack:"'PingFang TC','Heiti TC',sans-serif" }
+];
+function applyFont(id){
+  var f = FONTS[0], i;
+  for(i = 0; i < FONTS.length; i++){ if(FONTS[i].id === id) f = FONTS[i]; }
+  document.documentElement.style.setProperty('--font', f.stack);
+  try{ localStorage.setItem(LS_FONT, f.id); }catch(e){}
+  renderFontList(f.id);
+}
+function renderFontList(now){
+  var wrap = $('fontList'); if(!wrap) return;
+  wrap.innerHTML = '';
+  FONTS.forEach(function(f){
+    var b = document.createElement('button');
+    b.className = 'press' + (f.id === now ? ' on' : '');
+    b.textContent = f.label;
+    b.style.fontFamily = f.stack;
+    b.addEventListener('click', function(){ applyFont(f.id); });
+    wrap.appendChild(b);
+  });
+}
+function applyFontSize(px){
+  px = Math.max(14, Math.min(22, parseInt(px, 10) || 16));
+  document.documentElement.style.setProperty('--fs', px + 'px');
+  var r = $('fsRange'); if(r) r.value = px;
+  var n = $('fsNow'); if(n) n.textContent = px + 'px';
+  try{ localStorage.setItem(LS_FS, px); }catch(e){}
+}
+
+/* ============================================================
+   🖼️ A4 輸出（自己畫，不靠外部套件）
+============================================================ */
+var PW = 1240, PH = 1754;      /* A4 直式，150dpi 的座標系 */
+var TOP_FIRST = 596, TOP_NEXT = 90;
+var outMode = 'run', outQ = 1;
+
+function cvv(name){
+  var v = getComputedStyle(document.body).getPropertyValue(name);
+  return (v || '').trim() || '#000000';
+}
+function rr(ctx, x, y, w, h, r){
+  r = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y); ctx.arcTo(x + w, y, x + w, y + r, r);
+  ctx.lineTo(x + w, y + h - r); ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+  ctx.lineTo(x + r, y + h); ctx.arcTo(x, y + h, x, y + h - r, r);
+  ctx.lineTo(x, y + r); ctx.arcTo(x, y, x + r, y, r);
+  ctx.closePath();
+}
+function clipText(ctx, s, max){
+  s = String(s == null ? '' : s);
+  if(ctx.measureText(s).width <= max) return s;
+  while(s.length > 1 && ctx.measureText(s + '…').width > max) s = s.slice(0, -1);
+  return s + '…';
+}
+function svgToImage(svgStr){
+  return new Promise(function(res){
+    var img = new Image();
+    img.onload = function(){ res(img); };
+    img.onerror = function(){ res(null); };
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgStr);
+  });
+}
+function fontStack(){
+  var f = getComputedStyle(document.documentElement).getPropertyValue('--font').trim();
+  return f || "'Zen Maru Gothic','Noto Sans TC','PingFang TC',sans-serif";
+}
+function preloadFonts(text){
+  var jobs = [], stack = fontStack();
+  var names = stack.match(/'[^']+'/g) || [];
+  names.forEach(function(n){
+    try{ jobs.push(document.fonts.load('900 40px ' + n, text)); }catch(e){}
+    try{ jobs.push(document.fonts.load('700 40px ' + n, text)); }catch(e){}
+  });
+  try{ jobs.push(document.fonts.load("900 40px 'Noto Serif TC'", text)); }catch(e){}
+  return Promise.all(jobs).catch(function(){ return null; });
+}
+
+/* 把目標排成一頁一頁 */
+function layoutPages(list){
+  var blocks = [], i;
+  for(i = 0; i < list.length; i++){
+    var g = list[i];
+    var items = (g.budMode === 'items' && (g.items || []).length) ? g.items.length : 0;
+    blocks.push({ g: g, h: 252 + (items ? items * 38 + 14 : 0) });
+  }
+  var pages = [], cur = [], y = TOP_FIRST, foot = 100;
+  var first = true;
+  for(i = 0; i < blocks.length; i++){
+    if(y + blocks[i].h > PH - foot && cur.length){
+      pages.push({ items: cur, first: first });
+      first = false; cur = []; y = TOP_NEXT;
+    }
+    cur.push(blocks[i]);
+    y += blocks[i].h + 22;
+  }
+  pages.push({ items: cur, first: first });
+  return pages;
+}
+
+function drawBackdrop(ctx){
+  ctx.fillStyle = cvv('--bg');
+  ctx.fillRect(0, 0, PW, PH);
+  ctx.fillStyle = cvv('--dot');
+  var step = 21, x, y;
+  for(y = 10; y < PH; y += step){
+    for(x = 10; x < PW; x += step){
+      ctx.beginPath(); ctx.arc(x, y, 1.5, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+}
+function drawCard(ctx, x, y, w, h, opt){
+  opt = opt || {};
+  ctx.fillStyle = cvv('--card-under');
+  rr(ctx, x + 5, y + 5, w, h, 22); ctx.fill();
+  ctx.fillStyle = opt.bg || cvv('--card');
+  rr(ctx, x, y, w, h, 22); ctx.fill();
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = opt.edge || cvv('--card-edge');
+  rr(ctx, x, y, w, h, 22); ctx.stroke();
+}
+
+function drawPage(canvas, page, meta){
+  var q = meta.q, ctx = canvas.getContext('2d');
+  canvas.width = PW * q; canvas.height = PH * q;
+  ctx.setTransform(q, 0, 0, q, 0, 0);
+  var FS = fontStack();
+  var ink = cvv('--ink'), soft = cvv('--ink-soft'), faint = cvv('--ink-faint');
+  var acc = cvv('--accent'), accDk = cvv('--accent-dk'), pale = cvv('--accent-pale');
+  var edge = cvv('--card-edge'), input = cvv('--input-bg'), danger = cvv('--danger');
+  var M = 70, CW = PW - M * 2;
+
+  drawBackdrop(ctx);
+  ctx.textBaseline = 'alphabetic';
+  var y = M;
+
+  if(page.first){
+    /* 招牌 */
+    drawCard(ctx, M, y, CW, 156);
+    if(meta.mascotImg) ctx.drawImage(meta.mascotImg, M + 26, y + 14, 116, 134);
+    ctx.fillStyle = accDk;
+    ctx.font = '900 48px ' + FS;
+    ctx.fillText(clipText(ctx, meta.title, CW - 200), M + 158, y + 72);
+    ctx.fillStyle = soft;
+    ctx.font = '900 23px ' + FS;
+    ctx.fillText('MONSTER PIGGY BANK · ' + meta.today, M + 160, y + 110);
+    ctx.fillStyle = faint;
+    ctx.font = '900 22px ' + FS;
+    ctx.fillText('共 ' + meta.count + ' 個目標', M + 160, y + 142);
+    y += 176;
+
+    /* 這個月要存 */
+    drawCard(ctx, M, y, CW, 200, { bg: pale, edge: acc });
+    ctx.textAlign = 'center';
+    ctx.fillStyle = accDk;
+    ctx.font = '900 26px ' + FS;
+    ctx.fillText('這個月總共要存', PW / 2, y + 52);
+    ctx.font = '900 80px ' + FS;
+    ctx.fillText(money(meta.t.monthly) + ' 元', PW / 2, y + 132);
+    ctx.fillStyle = soft;
+    ctx.font = '900 23px ' + FS;
+    ctx.fillText('每週約 ' + money(Math.ceil(meta.t.monthly / 4.3 / 10) * 10) +
+                 ' 元　每天約 ' + money(Math.ceil(meta.t.monthly / 30 / 5) * 5) + ' 元', PW / 2, y + 174);
+    ctx.textAlign = 'left';
+    y += 220;
+
+    /* 三格統計 */
+    var bw = (CW - 24) / 3, i2;
+    var st = [['總預算', money(meta.t.budget)], ['已存', money(meta.t.saved)], ['還差', money(meta.t.left)]];
+    for(i2 = 0; i2 < 3; i2++){
+      var bx = M + i2 * (bw + 12);
+      ctx.fillStyle = cvv('--card');
+      rr(ctx, bx, y, bw, 92, 18); ctx.fill();
+      ctx.lineWidth = 3; ctx.strokeStyle = edge;
+      rr(ctx, bx, y, bw, 92, 18); ctx.stroke();
+      ctx.textAlign = 'center';
+      ctx.fillStyle = faint; ctx.font = '900 21px ' + FS;
+      ctx.fillText(st[i2][0], bx + bw / 2, y + 36);
+      ctx.fillStyle = ink; ctx.font = '900 30px ' + FS;
+      ctx.fillText(clipText(ctx, st[i2][1] + ' 元', bw - 20), bx + bw / 2, y + 74);
+      ctx.textAlign = 'left';
+    }
+    y += 114;
+  }else{
+    y = TOP_NEXT;
+  }
+
+  /* 目標卡 */
+  page.items.forEach(function(bk){
+    var g = bk.g, r = calcGoal(g), k = KIND[g.kind] || KIND.etc;
+    var h = bk.h, x = M;
+    drawCard(ctx, x, y, CW, h, r.done ? { bg: pale, edge: acc } : (r.late ? { edge: danger } : {}));
+    var img = meta.imgs[g.id];
+    if(img) ctx.drawImage(img, x + 20, y + 18, 76, 88);
+
+    ctx.fillStyle = ink; ctx.font = '900 32px ' + FS;
+    ctx.fillText(clipText(ctx, k.ic + ' ' + (g.name || '沒有名字的目標'), CW - 260), x + 108, y + 54);
+    ctx.fillStyle = faint; ctx.font = '900 21px ' + FS;
+    ctx.fillText(ymText(r.ty, r.tm) + ' · ' + monthsText(r, g), x + 108, y + 88);
+
+    /* 類別籤 */
+    var tag = r.late ? '過期' : k.label;
+    ctx.font = '900 20px ' + FS;
+    var tw = ctx.measureText(tag).width + 30;
+    ctx.fillStyle = r.late ? danger : pale;
+    rr(ctx, x + CW - tw - 20, y + 22, tw, 36, 18); ctx.fill();
+    ctx.lineWidth = 2.5; ctx.strokeStyle = r.late ? danger : acc;
+    rr(ctx, x + CW - tw - 20, y + 22, tw, 36, 18); ctx.stroke();
+    ctx.fillStyle = r.late ? '#FFFFFF' : accDk;
+    ctx.textAlign = 'center';
+    ctx.fillText(tag, x + CW - tw / 2 - 20, y + 47);
+    ctx.textAlign = 'left';
+
+    /* 每月要存 */
+    var ny = y + 108;
+    ctx.fillStyle = input;
+    rr(ctx, x + 20, ny, CW - 40, 62, 15); ctx.fill();
+    ctx.setLineDash([9, 7]); ctx.lineWidth = 2.5; ctx.strokeStyle = edge;
+    rr(ctx, x + 20, ny, CW - 40, 62, 15); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = soft; ctx.font = '900 22px ' + FS;
+    ctx.fillText(r.done ? '已經存滿' : (g.mode === 'monthly' ? '每個月存' : '每月最少存'), x + 42, ny + 40);
+    ctx.fillStyle = accDk; ctx.font = '900 36px ' + FS;
+    ctx.textAlign = 'right';
+    ctx.fillText(money(r.done ? r.budget : r.monthly) + ' 元', x + CW - 42, ny + 42);
+    ctx.textAlign = 'left';
+
+    /* 進度條 */
+    var by2 = ny + 82, bw2 = CW - 40;
+    ctx.fillStyle = input;
+    rr(ctx, x + 20, by2, bw2, 26, 13); ctx.fill();
+    ctx.lineWidth = 2.5; ctx.strokeStyle = edge;
+    rr(ctx, x + 20, by2, bw2, 26, 13); ctx.stroke();
+    if(r.pct > 0){
+      ctx.fillStyle = r.pct >= 100 ? accDk : acc;
+      rr(ctx, x + 21.5, by2 + 1.5, Math.max(10, (bw2 - 3) * r.pct / 100), 23, 12); ctx.fill();
+    }
+    ctx.fillStyle = faint; ctx.font = '900 21px ' + FS;
+    ctx.fillText('已存 ' + money(r.saved) + ' / ' + money(r.budget) + ' 元', x + 22, by2 + 54);
+    ctx.fillStyle = accDk; ctx.textAlign = 'right';
+    ctx.fillText(r.pct + '%', x + CW - 22, by2 + 54);
+    ctx.textAlign = 'left';
+
+    /* 明細 */
+    if(g.budMode === 'items' && (g.items || []).length){
+      var iy = by2 + 76;
+      g.items.forEach(function(it){
+        ctx.strokeStyle = edge; ctx.lineWidth = 1.6;
+        ctx.setLineDash([6, 5]);
+        ctx.beginPath(); ctx.moveTo(x + 22, iy + 26); ctx.lineTo(x + CW - 22, iy + 26); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = ink; ctx.font = '700 23px ' + FS;
+        ctx.fillText(clipText(ctx, it.name || '—', CW - 240), x + 24, iy + 20);
+        ctx.fillStyle = accDk; ctx.font = '900 23px ' + FS;
+        ctx.textAlign = 'right';
+        ctx.fillText(money(it.amt) + ' 元', x + CW - 24, iy + 20);
+        ctx.textAlign = 'left';
+        iy += 38;
+      });
+    }
+    y += h + 22;
+  });
+
+  /* 頁尾 */
+  ctx.fillStyle = faint;
+  ctx.font = '900 20px ' + FS;
+  ctx.textAlign = 'center';
+  ctx.fillText('小怪獸存錢罐 · ' + meta.today + ' · 第 ' + meta.page + ' / ' + meta.pages + ' 頁', PW / 2, PH - 48);
+  ctx.textAlign = 'left';
+}
+
+function outList(){
+  var list = sortedGoals(), out = [], i;
+  for(i = 0; i < list.length; i++){
+    if(outMode === 'run' && calcGoal(list[i]).done) continue;
+    out.push(list[i]);
+  }
+  return out;
+}
+function buildPages(q){
+  var list = outList();
+  if(!list.length) return Promise.resolve([]);
+  var title = ($('outTitle').value || '').trim() || '我的存錢計畫';
+  var t = totals(list);
+  var meta = { title: title, today: todayText(), t: t, count: list.length, q: q, imgs: {} };
+  var txt = title + '小怪獸存錢罐這個月總共要存每週約每天元共個目標已存還差總預算過期第頁' +
+            todayText() + list.map(function(g){
+              return (g.name || '') + (g.note || '') + ((g.items || []).map(function(i){ return i.name; }).join(''));
+            }).join('') + '0123456789,%年月日';
+  var jobs = [preloadFonts(txt)];
+  jobs.push(svgToImage(monsterSVG({ shape: state.mascot.shape, color: state.mascot.color, mood: moodOf(t.pct, false, false), px: 260 })).then(function(im){ meta.mascotImg = im; }));
+  list.forEach(function(g){
+    var r = calcGoal(g);
+    jobs.push(svgToImage(monsterSVG({ shape: g.shape, color: g.color, mood: r.mood, px: 200 })).then(function(im){ meta.imgs[g.id] = im; }));
+  });
+  return Promise.all(jobs).then(function(){
+    var pages = layoutPages(list), canvases = [];
+    pages.forEach(function(p, i){
+      var cv = document.createElement('canvas');
+      meta.page = i + 1; meta.pages = pages.length;
+      drawPage(cv, p, meta);
+      canvases.push(cv);
+    });
+    return canvases;
+  });
+}
+
+/* ---------- 交付檔案 ---------- */
+function deliver(blob, filename, title){
+  var file = null;
+  try{ file = new File([blob], filename, { type: blob.type }); }catch(e){}
+  if(file && navigator.canShare && navigator.share){
+    var ok = false;
+    try{ ok = navigator.canShare({ files: [file] }); }catch(e){}
+    if(ok){
+      navigator.share({ files: [file], title: title || filename })
+        .then(function(){ toast('已開啟分享單'); })
+        .catch(function(){});
+      return;
+    }
+  }
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){
+    if(a.parentNode) a.parentNode.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 1600);
+  toast('已產生檔案');
+}
+function canvasBlob(cv, type, quality){
+  return new Promise(function(res){
+    if(cv.toBlob){
+      cv.toBlob(function(b){ res(b); }, type, quality);
+    }else{
+      var d = cv.toDataURL(type, quality), s = atob(d.split(',')[1]);
+      var u = new Uint8Array(s.length), i;
+      for(i = 0; i < s.length; i++) u[i] = s.charCodeAt(i);
+      res(new Blob([u], { type: type }));
+    }
+  });
+}
+function blobBytes(b){
+  if(b.arrayBuffer) return b.arrayBuffer().then(function(ab){ return new Uint8Array(ab); });
+  return new Promise(function(res, rej){
+    var fr = new FileReader();
+    fr.onload = function(){ res(new Uint8Array(fr.result)); };
+    fr.onerror = function(){ rej(new Error('讀不到檔案')); };
+    fr.readAsArrayBuffer(b);
+  });
+}
+function previewURL(cv){
+  var w = 620, h = Math.round(cv.height * w / cv.width);
+  var c2 = document.createElement('canvas');
+  c2.width = w; c2.height = h;
+  var x = c2.getContext('2d');
+  x.fillStyle = '#FFFFFF'; x.fillRect(0, 0, w, h);
+  x.drawImage(cv, 0, 0, w, h);
+  return c2.toDataURL('image/jpeg', 0.82);
+}
+function busy(msg){
+  openModal('請稍等', '<div class="busy"><span class="sp"></span>' + esc(msg) + '</div>');
+}
+
+var lastCanvases = [];
+function doImage(){
+  var list = outList();
+  if(!list.length){ toast('沒有可以輸出的目標'); return; }
+  busy('小怪獸正在畫圖…');
+  setTimeout(function(){
+    buildPages(outQ).then(function(cvs){
+      var h = [], i;
+      h.push('<div class="prev-tip">A4 直式滿版。按下面的按鈕會跳出分享單，選「儲存影像」就會進相簿；也可以長按圖片存下來。</div>');
+      for(i = 0; i < cvs.length; i++){
+        h.push('<img class="prev-img" src="' + previewURL(cvs[i]) + '" alt="第 ' + (i + 1) + ' 頁">');
+        h.push('<button class="btn-main press" data-p="' + i + '" style="margin-bottom:14px;">儲存 / 分享　第 ' + (i + 1) + ' 頁</button>');
+      }
+      lastCanvases = cvs;
+      openModal('A4 圖片（' + cvs.length + ' 頁）', h.join(''));
+    }).catch(function(e){
+      openModal('出了點問題', '<div class="pnl-tint-danger">畫圖失敗了：' + esc(String(e && e.message ? e.message : e)) + '</div>');
+    });
+  }, 60);
+}
+
+/* ---------- 手工組一份 PDF（單頁一張 JPEG） ---------- */
+function strBytes(s){
+  var u = new Uint8Array(s.length), i;
+  for(i = 0; i < s.length; i++) u[i] = s.charCodeAt(i) & 0xFF;
+  return u;
+}
+function buildPdf(jpegs){
+  var parts = [], total = 0, offsets = [];
+  function push(u8){ parts.push(u8); total += u8.length; }
+  function pushStr(s){ push(strBytes(s)); }
+  var nObj = 2 + jpegs.length * 3;
+  pushStr('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n');
+  offsets[1] = total;
+  var kids = [], i;
+  for(i = 0; i < jpegs.length; i++) kids.push((3 + i * 3) + ' 0 R');
+  pushStr('1 0 obj\n<</Type/Catalog/Pages 2 0 R>>\nendobj\n');
+  offsets[2] = total;
+  pushStr('2 0 obj\n<</Type/Pages/Kids[' + kids.join(' ') + ']/Count ' + jpegs.length + '>>\nendobj\n');
+  for(i = 0; i < jpegs.length; i++){
+    var pg = 3 + i * 3, im = 4 + i * 3, ct = 5 + i * 3;
+    var content = 'q 595.28 0 0 841.89 0 0 cm /Im0 Do Q\n';
+    offsets[pg] = total;
+    pushStr(pg + ' 0 obj\n<</Type/Page/Parent 2 0 R/MediaBox[0 0 595.28 841.89]' +
+            '/Resources<</XObject<</Im0 ' + im + ' 0 R>>>>/Contents ' + ct + ' 0 R>>\nendobj\n');
+    offsets[im] = total;
+    pushStr(im + ' 0 obj\n<</Type/XObject/Subtype/Image/Width ' + jpegs[i].w +
+            '/Height ' + jpegs[i].h + '/ColorSpace/DeviceRGB/BitsPerComponent 8' +
+            '/Filter/DCTDecode/Length ' + jpegs[i].bytes.length + '>>\nstream\n');
+    push(jpegs[i].bytes);
+    pushStr('\nendstream\nendobj\n');
+    offsets[ct] = total;
+    pushStr(ct + ' 0 obj\n<</Length ' + content.length + '>>\nstream\n' + content + 'endstream\nendobj\n');
+  }
+  var xref = total;
+  var x = ['xref\n0 ' + (nObj + 1) + '\n0000000000 65535 f \n'];
+  for(i = 1; i <= nObj; i++){
+    var o = String(offsets[i] || 0);
+    while(o.length < 10) o = '0' + o;
+    x.push(o + ' 00000 n \n');
+  }
+  pushStr(x.join(''));
+  pushStr('trailer\n<</Size ' + (nObj + 1) + '/Root 1 0 R>>\nstartxref\n' + xref + '\n%%EOF\n');
+  return new Blob(parts, { type: 'application/pdf' });
+}
+function doPdf(){
+  var list = outList();
+  if(!list.length){ toast('沒有可以輸出的目標'); return; }
+  busy('小怪獸正在裝訂 PDF…');
+  setTimeout(function(){
+    buildPages(outQ).then(function(cvs){
+      var jobs = cvs.map(function(cv){
+        return canvasBlob(cv, 'image/jpeg', 0.92).then(function(b){
+          return blobBytes(b).then(function(u8){
+            return { bytes: u8, w: cv.width, h: cv.height };
+          });
+        });
+      });
+      return Promise.all(jobs);
+    }).then(function(jpegs){
+      var blob = buildPdf(jpegs);
+      var name = '存錢計畫_' + todayText().replace(/[民國 ]/g, '') + '.pdf';
+      var h = [];
+      h.push('<div class="prev-tip">已經做好 ' + jpegs.length + ' 頁的 A4 PDF。按下面存起來，iPhone 可以選「儲存到檔案」。</div>');
+      h.push('<button class="btn-main press" id="pdfGet">儲存 / 分享 PDF</button>');
+      openModal('PDF 做好了', h.join(''));
+      $('pdfGet').addEventListener('click', function(){ deliver(blob, name, '存錢計畫'); });
+    }).catch(function(e){
+      openModal('出了點問題', '<div class="pnl-tint-danger">PDF 失敗了：' + esc(String(e && e.message ? e.message : e)) + '</div>');
+    });
+  }, 60);
+}
+
+/* ============================================================
+   💾 備份
+============================================================ */
+function doExport(){
+  var blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  deliver(blob, '小怪獸存錢罐_備份_' + todayText().replace(/[民國 ]/g, '') + '.json', '存錢罐備份');
+}
+function doImport(file){
+  var fr = new FileReader();
+  fr.onload = function(){
+    try{
+      var d = JSON.parse(fr.result);
+      if(!d || !d.goals) throw new Error('這不是備份檔');
+      state.goals = d.goals;
+      if(d.mascot) state.mascot = d.mascot;
+      if(!saveData()) return;
+      renderAll(); renderMascotPanel();
+      toast('匯入了 ' + state.goals.length + ' 個目標');
+    }catch(e){
+      toast('讀不懂這個檔案');
+    }
+  };
+  fr.readAsText(file);
+}
+
+/* ============================================================
+   🔌 接線
+============================================================ */
+function bindAll(){
+  var bs = document.querySelectorAll('#navBar button'), i;
+  for(i = 0; i < bs.length; i++){
+    bs[i].addEventListener('click', function(){ go(this.getAttribute('data-tab')); });
+  }
+  $('modalClose').addEventListener('click', closeModal);
+  $('modalBody').addEventListener('click', function(ev){
+    var b = ev.target.closest ? ev.target.closest('button[data-p]') : null;
+    if(!b) return;
+    var idx = parseInt(b.getAttribute('data-p'), 10);
+    if(!lastCanvases[idx]) return;
+    canvasBlob(lastCanvases[idx], 'image/png').then(function(bl){
+      deliver(bl, '存錢計畫_' + todayText().replace(/[民國 ]/g, '') + '_P' + (idx + 1) + '.png', '存錢計畫');
+    });
+  });
+  $('modalScrim').addEventListener('click', closeModal);
+  $('btnNew').addEventListener('click', function(){ openGoalForm(''); });
+  $('btnNew2').addEventListener('click', function(){ openGoalForm(''); });
+  $('btnNew3').addEventListener('click', function(){ openGoalForm(''); });
+  $('btnGoOut').addEventListener('click', function(){ go('out'); });
+  $('mascotTop').addEventListener('click', function(){
+    bounce($('mascotTop'), 'wiggle');
+    var t = totals(state.goals);
+    toast(pickBubble(state.goals.length ? moodOf(t.pct, false, false) : 'empty'));
+  });
+  $('mascotBig').addEventListener('click', function(){
+    bounce($('mascotBig'), 'hop');
+    var t = totals(state.goals);
+    $('mBubble').textContent = pickBubble(state.goals.length ? moodOf(t.pct, false, false) : 'empty');
+    if(Math.random() < .35) coinRain();
+  });
+  bindCardTaps($('homeList'));
+  bindCardTaps($('goalList'));
+  segBind($('segFilter'), 'data-f', function(v){ filterNow = v; renderList(); });
+  segBind($('segOut'), 'data-o', function(v){ outMode = v; });
+  segBind($('segQ'), 'data-q', function(v){ outQ = parseInt(v, 10) || 1; });
+  $('btnImg').addEventListener('click', doImage);
+  $('btnPdf').addEventListener('click', doPdf);
+  $('outTitle').addEventListener('input', function(){
+    state.outTitle = this.value; saveData();
+  });
+  $('fsRange').addEventListener('input', function(){ applyFontSize(this.value); });
+  $('btnExport').addEventListener('click', doExport);
+  $('btnImport').addEventListener('click', function(){ $('fileImport').click(); });
+  $('fileImport').addEventListener('change', function(){
+    if(this.files && this.files[0]) doImport(this.files[0]);
+    this.value = '';
+  });
+  $('btnWipe').addEventListener('click', function(){
+    if(!window.confirm('確定要清空全部目標嗎？建議先下載備份。')) return;
+    state.goals = [];
+    if(!saveData()) return;
+    renderAll(); toast('清空了');
+  });
+}
+
+/* ---------- 開場 ---------- */
+(function(){
+  loadData();
+  var th = null, fn = null, fs = null;
+  try{
+    th = localStorage.getItem(LS_THEME);
+    fn = localStorage.getItem(LS_FONT);
+    fs = localStorage.getItem(LS_FS);
+  }catch(e){}
+  applyTheme(th || '');
+  applyFont(fn || 'maru');
+  applyFontSize(fs || 16);
+  bindForm();
+  bindAll();
+  renderMascotPanel();
+  $('outTitle').value = state.outTitle || '';
+  $('todayBox').textContent = todayText();
+  renderAll();
+  go('home');
+})();
+</script>
+</body>
+</html>
