@@ -1,0 +1,2540 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>小怪獸咖啡館 ☕ 網站模板產生器</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700;900&family=LXGW+WenKai+TC&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   ☕ 小怪獸咖啡館 Little Monster Café v1
+   ------------------------------------------------------------
+   版型積木 2.0 × 色彩糖果罐 Pro v12 的合流版。
+   一條產線：選料 → 調味 → 試喝 → 外帶。
+
+   核心設計：整份工具只有「一個」網站產生函式 buildSite()。
+   試喝頁的 iframe 吃它，外帶頁的程式碼也吃它。
+   看到什麼就是什麼，不再有預覽版／匯出版兩套 CSS。
+
+   ▼ 想改咖啡館本身的長相，只要動下面這塊 :root
+============================================================ */
+:root{
+  --bg:#F5F1E4; --dot:#E6DDC7;
+  --card:#FFFCF3; --card-edge:#D9CDB0; --card-under:#DDE3CE;
+  --ink:#453A28; --ink-soft:#8A7B5C; --ink-faint:#B6A886;
+  --accent:#5F9E6E; --accent-dk:#477F58; --accent-pale:#E3EFDD;
+  --on-accent:#FFFFFF;
+  --input-bg:#FBF7EA; --danger:#D4826A; --danger-dk:#B36249;
+  --scrim:#3A3223; --r:24px;
+  /* 招牌小怪獸自己的顏色，跟介面主色分開 */
+  --monster:#8C6FC6; --monster-dk:#6B4FA6; --monster-eye:#FFFDF6;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0; padding:0;}
+body{
+  font-family:'Zen Maru Gothic','Noto Sans TC','PingFang TC',sans-serif;
+  background:var(--bg);
+  background-image:radial-gradient(var(--dot) 1.5px, transparent 1.5px);
+  background-size:21px 21px;
+  color:var(--ink); min-height:100svh; padding-bottom:104px;
+  font-size:16px; line-height:1.6;
+}
+button{font-family:inherit; color:inherit; border:none; background:none; cursor:pointer; font-size:1rem; padding:0;}
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{
+  outline:3px solid var(--accent); outline-offset:2px;
+}
+input,select,textarea{
+  font-family:inherit; font-size:1rem; color:var(--ink);
+  background:var(--input-bg); border:2px solid var(--card-edge); border-radius:16px;
+  padding:12px 14px; width:100%; outline:none;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--accent); background:var(--card);}
+textarea{resize:vertical; min-height:130px; font-size:.74rem; line-height:1.7;
+  font-family:ui-monospace,Menlo,Consolas,monospace;}
+label.f{display:block; font-size:.8rem; font-weight:900; color:var(--ink-soft); margin:14px 0 6px;}
+label.f:first-child{margin-top:0;}
+.press{transition:transform .12s ease;}
+.press:active{transform:scale(.94);}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms !important; transition-duration:.001ms !important;}
+}
+
+/* ---------- 招牌 ---------- */
+header.top{
+  position:sticky; top:0; z-index:60; background:var(--bg);
+  padding:11px 16px 9px; border-bottom:2px dashed var(--card-edge);
+  display:flex; align-items:center; gap:11px;
+}
+.app-name{font-size:1.28rem; font-weight:900; color:var(--accent-dk); margin:0; line-height:1.2;
+  font-family:'Noto Serif TC',serif; letter-spacing:.02em;}
+.app-sub{font-size:.68rem; color:var(--ink-soft); font-weight:900; margin-top:2px; letter-spacing:.1em;}
+.head-tools{display:flex; gap:8px; flex:none; margin-left:auto;}
+.head-btn{
+  width:44px; height:44px; border-radius:15px; background:var(--card); border:2px solid var(--card-edge);
+  font-size:19px; box-shadow:3px 3px 0 var(--card-under);
+  display:flex; align-items:center; justify-content:center;
+}
+.head-btn.hot{background:var(--accent-pale); border-color:var(--accent);}
+
+/* ---------- 招牌小怪獸（本店吉祥物） ---------- */
+.mascot{flex:none; width:42px; height:44px; position:relative; cursor:pointer;}
+.mascot .body{
+  position:absolute; inset:6px 0 0; border-radius:18px 18px 12px 12px;
+  background:var(--monster); border:2.5px solid var(--monster-dk);
+  box-shadow:2px 3px 0 var(--card-under);
+}
+.mascot .ear{position:absolute; top:0; width:9px; height:11px; border-radius:50% 50% 0 0;
+  background:var(--monster); border:2.5px solid var(--monster-dk); border-bottom:none;}
+.mascot .ear.l{left:6px; transform:rotate(-14deg);}
+.mascot .ear.r{right:6px; transform:rotate(14deg);}
+.mascot .eye{position:absolute; top:18px; width:6px; height:6px; border-radius:50%; background:var(--monster-eye);
+  animation:blink 5.2s infinite;}
+.mascot .eye.l{left:11px;} .mascot .eye.r{right:11px;}
+.mascot .mouth{position:absolute; top:27px; left:50%; margin-left:-5px; width:10px; height:5px;
+  border:2px solid var(--monster-eye); border-top:none; border-radius:0 0 9px 9px;}
+.mascot .steam{position:absolute; top:-5px; left:50%; margin-left:-1px; width:3px; height:8px;
+  border-radius:2px; background:var(--card-edge); opacity:.85; animation:steam 2.6s ease-in-out infinite;}
+@keyframes blink{0%,92%,100%{transform:scaleY(1);} 95%{transform:scaleY(.12);}}
+@keyframes steam{0%,100%{transform:translateY(0); opacity:.25;} 50%{transform:translateY(-5px); opacity:.9;}}
+.mascot.wiggle{animation:wig .5s ease;}
+@keyframes wig{0%,100%{transform:rotate(0);} 25%{transform:rotate(-9deg);} 60%{transform:rotate(7deg);}}
+
+/* ---------- 卡片 ---------- */
+main{max-width:540px; margin:0 auto; padding:16px 15px 0;}
+.card{
+  background:var(--card); border:2px solid var(--card-edge); border-radius:var(--r);
+  box-shadow:4px 4px 0 var(--card-under);
+  padding:17px; margin-bottom:16px;
+}
+.sec-title{display:flex; align-items:center; gap:9px; font-size:1.1rem; font-weight:900; margin:2px 2px 13px;}
+.sec-title .bdg{flex:none; width:30px; height:30px; border-radius:11px; background:var(--accent-pale);
+  display:flex; align-items:center; justify-content:center; font-size:16px;}
+.sec-title .spacer{flex:1;}
+.sec-title .cnt{font-size:.74rem; font-weight:900; color:var(--ink-faint);}
+.hint{font-size:.81rem; color:var(--ink-soft); line-height:1.75;}
+.hint b{color:var(--ink);}
+.hint code{font-family:ui-monospace,Menlo,monospace; font-size:.76rem; background:var(--input-bg);
+  border:1.5px solid var(--card-edge); border-radius:6px; padding:1px 5px;}
+
+.btn-main{display:block; width:100%; text-align:center; background:var(--accent); color:var(--on-accent);
+  font-weight:900; font-size:1.02rem; padding:14px; border-radius:18px; box-shadow:4px 4px 0 var(--accent-dk);}
+.btn-line{display:block; width:100%; text-align:center; background:var(--card); color:var(--ink-soft);
+  border:2px solid var(--card-edge); font-weight:900; font-size:1rem; padding:12px; border-radius:16px;
+  box-shadow:3px 3px 0 var(--card-under);}
+.btn-line.on{border-color:var(--accent); background:var(--accent-pale); color:var(--accent-dk);}
+.btn-warn{display:block; width:100%; text-align:center; background:var(--card); color:var(--danger-dk);
+  border:2px solid var(--danger); font-weight:900; font-size:.92rem; padding:11px; border-radius:16px;}
+.btn-sm{font-size:.86rem; padding:10px;}
+.btn-gap{margin-top:11px;}
+.row2{display:flex; gap:9px;} .row2 > *{flex:1; min-width:0;}
+
+/* ---------- 分組標頭 ---------- */
+.grp{display:flex; align-items:center; gap:8px; margin:18px 0 9px; font-size:.74rem; font-weight:900;
+  letter-spacing:.09em; color:var(--ink-soft);}
+.grp:first-child{margin-top:0;}
+.grp::after{content:''; flex:1; height:0; border-top:2px dashed var(--card-edge);}
+.grp button{font-size:.67rem; font-weight:900; color:var(--accent-dk); padding:3px 10px; border-radius:999px;
+  background:var(--accent-pale); flex:none;}
+
+/* ---------- 勾選列 ---------- */
+.pk{display:flex; align-items:flex-start; gap:11px; width:100%; text-align:left;
+  padding:11px 12px; margin-bottom:8px; border-radius:16px; background:var(--input-bg); border:2px solid var(--card-edge);}
+.pk.on{border-color:var(--accent); background:var(--accent-pale);}
+.pk .bx{flex:none; width:22px; height:22px; border-radius:8px; margin-top:2px; border:2px solid var(--card-edge);
+  background:var(--card); font-size:13px; font-weight:900; color:var(--on-accent);
+  display:flex; align-items:center; justify-content:center;}
+.pk.on .bx{background:var(--accent); border-color:var(--accent-dk);}
+.pk .tx{flex:1; min-width:0;}
+.pk .tx b{font-size:.93rem; font-weight:900;}
+.pk .tx small{display:block; font-size:.71rem; font-weight:700; color:var(--ink-soft); margin-top:1px;}
+.pk .tx code{display:inline-block; margin-top:4px; font-size:.67rem; font-family:ui-monospace,Menlo,monospace;
+  background:var(--card); border:1.5px solid var(--card-edge); border-radius:6px; padding:1px 6px; color:var(--ink-soft);}
+
+/* ---------- 折疊段 ---------- */
+.fold{border:2px solid var(--card-edge); border-radius:18px; overflow:hidden; margin-bottom:11px; background:var(--input-bg);}
+.fold-head{display:flex; align-items:center; gap:9px; width:100%; text-align:left;
+  padding:13px 14px; font-weight:900; font-size:.92rem;}
+.fold-head .arw{margin-left:auto; font-size:.72rem; color:var(--ink-faint); transition:transform .16s ease;}
+.fold.open .fold-head .arw{transform:rotate(90deg);}
+.fold-body{display:none; padding:0 14px 15px;}
+.fold.open .fold-body{display:block;}
+
+/* ---------- 分段按鈕 ---------- */
+.seg{display:flex; gap:7px; flex-wrap:wrap;}
+.seg button{flex:1 1 auto; min-width:64px; padding:9px 8px; border-radius:13px; background:var(--card);
+  border:2px solid var(--card-edge); font-size:.8rem; font-weight:900; color:var(--ink-soft);}
+.seg button.on{background:var(--accent); border-color:var(--accent-dk); color:var(--on-accent);}
+
+/* ---------- 種子色 ---------- */
+.seed{display:flex; align-items:center; gap:11px; padding:9px 11px; margin-bottom:8px;
+  border-radius:16px; background:var(--input-bg); border:2px solid var(--card-edge);}
+.seed .sw{flex:none; width:42px; height:42px; border-radius:13px; border:2px solid var(--card-edge); position:relative; overflow:hidden;}
+.seed .sw input{position:absolute; inset:-8px; width:200%; height:200%; opacity:0; border:none; padding:0; cursor:pointer;}
+.seed .tx{flex:1; min-width:0;}
+.seed .tx b{display:block; font-size:.85rem; font-weight:900;}
+.seed .tx span{font-size:.72rem; font-family:ui-monospace,Menlo,monospace; color:var(--ink-soft); letter-spacing:.04em;}
+.seed .lock{flex:none; width:38px; height:38px; border-radius:12px; border:2px solid var(--card-edge);
+  background:var(--card); font-size:15px; display:flex; align-items:center; justify-content:center;}
+.seed .lock.on{background:var(--accent-pale); border-color:var(--accent);}
+
+/* ---------- 健康度 ---------- */
+.hp{display:flex; align-items:center; gap:9px; padding:8px 11px; margin-bottom:7px; border-radius:13px;
+  background:var(--input-bg); border:2px solid var(--card-edge); font-size:.79rem; font-weight:900;}
+.hp .dot{flex:none; width:11px; height:11px; border-radius:50%;}
+.hp .val{margin-left:auto; font-family:ui-monospace,Menlo,monospace; font-size:.75rem; color:var(--ink-soft);}
+.hp.bad{border-color:var(--danger); background:#FBEDE7;}
+
+/* ---------- 微調格 ---------- */
+.adv{display:flex; align-items:center; gap:10px; padding:7px 10px; margin-bottom:6px; border-radius:12px;
+  background:var(--input-bg); border:2px solid var(--card-edge);}
+.adv .sw{flex:none; width:32px; height:32px; border-radius:10px; border:2px solid var(--card-edge); position:relative; overflow:hidden;}
+.adv .sw input{position:absolute; inset:-8px; width:200%; height:200%; opacity:0; border:none; padding:0;}
+.adv b{font-size:.78rem; font-weight:900; flex:1; min-width:0;}
+.adv span{font-size:.68rem; font-family:ui-monospace,Menlo,monospace; color:var(--ink-faint);}
+
+/* ---------- 滑桿 ---------- */
+.rng-row{display:flex; align-items:center; font-size:.82rem; font-weight:900; margin:14px 0 5px;}
+.rng-row .v{margin-left:auto; font-family:ui-monospace,Menlo,monospace; font-size:.76rem; color:var(--ink-soft);}
+input[type=range]{-webkit-appearance:none; appearance:none; width:100%; height:26px; background:transparent;
+  border:none; padding:0; margin:0;}
+input[type=range]::-webkit-slider-runnable-track{height:8px; border-radius:99px; background:var(--card-edge);}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:26px; height:26px; margin-top:-9px;
+  border-radius:50%; background:var(--accent); border:2.5px solid var(--accent-dk);}
+input[type=range]::-moz-range-track{height:8px; border-radius:99px; background:var(--card-edge);}
+input[type=range]::-moz-range-thumb{width:22px; height:22px; border-radius:50%; background:var(--accent); border:2.5px solid var(--accent-dk);}
+
+/* ---------- 字級滑桿 ---------- */
+.fs-row{display:flex; align-items:center; gap:11px;}
+.fs-row input[type=range]{flex:1; min-width:0;}
+.fs-a{flex:none; font-weight:900; color:var(--ink-soft); line-height:1;}
+.fs-a.sm{font-size:.78rem;} .fs-a.lg{font-size:1.34rem;}
+
+/* ---------- 風格選單 ---------- */
+.st-card{display:flex; align-items:center; gap:12px; padding:11px; border-radius:16px;
+  background:var(--input-bg); border:2px solid var(--card-edge); margin-top:10px;}
+.st-card .sw{flex:none; width:46px; height:46px; border-radius:14px; border:2px solid var(--card-edge);}
+.st-card .tx b{display:block; font-size:.88rem; font-weight:900;}
+.st-card .tx span{font-size:.73rem; color:var(--ink-soft);}
+
+/* ---------- 表格設定列 ---------- */
+.crow{display:flex; align-items:center; gap:10px; padding:9px 11px; margin-bottom:7px;
+  border-radius:14px; background:var(--input-bg); border:2px solid var(--card-edge);}
+.crow .cn{flex:1; min-width:0;}
+.crow .cn b{display:block; font-size:.83rem; font-weight:900;}
+.crow .cn small{font-size:.65rem; font-family:ui-monospace,Menlo,monospace; color:var(--ink-faint); letter-spacing:.02em;}
+.crow select{flex:none; width:auto; max-width:54%; padding:8px 10px; font-size:.78rem; border-radius:11px;}
+.crow .auto-val{flex:none; font-size:.75rem; font-weight:900; color:var(--accent-dk);
+  background:var(--accent-pale); border:2px solid var(--accent); border-radius:999px; padding:3px 13px;}
+.crow .cbox{flex:none; width:44px; height:38px; border-radius:12px; border:2px solid var(--card-edge);
+  position:relative; overflow:hidden;}
+.crow .cbox input{position:absolute; inset:-8px; width:200%; height:200%; opacity:0; border:none; padding:0; cursor:pointer;}
+.crow .chex{flex:none; font-size:.7rem; font-family:ui-monospace,Menlo,monospace; color:var(--ink-soft);}
+
+/* ---------- 圖片吸色 ---------- */
+.img-thumb{width:100%; max-height:150px; object-fit:cover; border-radius:14px; border:2px solid var(--card-edge);}
+.img-sw{display:flex; gap:6px; margin:10px 0;}
+.img-sw div{flex:1; height:38px; border-radius:10px; border:2px solid var(--card-edge);}
+
+/* ---------- 試喝（獨立分頁） ---------- */
+.pv-bar{display:flex; gap:7px; align-items:center; margin-bottom:12px;}
+.pv-bar .seg{flex:1;}
+.pv-wrap{background:var(--dot); border:2px solid var(--card-edge); border-radius:20px; padding:10px;
+  box-shadow:inset 0 2px 6px rgba(0,0,0,.06);}
+.pv-frame{
+  width:100%; max-width:100%; margin:0 auto; display:block; border:none; border-radius:13px;
+  background:#fff; box-shadow:0 3px 12px rgba(0,0,0,.13);
+  height:min(72svh, 720px);
+}
+.pv-note{text-align:center; font-size:.72rem; color:var(--ink-faint); font-weight:900; margin-top:9px; letter-spacing:.05em;}
+
+/* 全螢幕試喝 */
+#full{position:fixed; inset:0; z-index:200; background:var(--scrim); display:none; flex-direction:column;}
+#full.on{display:flex;}
+#full .fbar{flex:none; display:flex; align-items:center; gap:8px; padding:10px 12px;
+  padding-top:calc(10px + env(safe-area-inset-top)); background:var(--bg); border-bottom:2px dashed var(--card-edge);}
+#full .fbar b{font-size:.86rem; font-weight:900; flex:1; min-width:0;}
+#full .fbar button{flex:none; padding:8px 15px; border-radius:13px; background:var(--card);
+  border:2px solid var(--card-edge); font-weight:900; font-size:.84rem;}
+#full iframe{flex:1; width:100%; border:none; background:#fff;}
+
+/* ---------- 食譜櫃 ---------- */
+.rcp{display:flex; align-items:center; gap:11px; padding:10px 11px; margin-bottom:8px; border-radius:16px;
+  background:var(--input-bg); border:2px solid var(--card-edge);}
+.rcp .sw{flex:none; width:40px; height:40px; border-radius:13px; border:2px solid var(--card-edge); display:flex; overflow:hidden;}
+.rcp .sw i{flex:1;}
+.rcp .tx{flex:1; min-width:0;}
+.rcp .tx b{display:block; font-size:.86rem; font-weight:900; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.rcp .tx span{font-size:.68rem; font-family:ui-monospace,Menlo,monospace; color:var(--ink-faint);}
+.rcp button.act{flex:none; width:34px; height:34px; border-radius:11px; border:2px solid var(--card-edge);
+  background:var(--card); font-size:14px; display:flex; align-items:center; justify-content:center;}
+.rcp.on{border-color:var(--accent); background:var(--accent-pale);}
+
+/* ---------- 底部導覽 ---------- */
+nav.bottom{
+  position:fixed; left:0; right:0; bottom:0; z-index:70;
+  background:var(--card); border-top:2px solid var(--card-edge);
+  display:flex; padding:7px 6px calc(7px + env(safe-area-inset-bottom));
+  box-shadow:0 -3px 0 var(--card-under);
+}
+nav.bottom button{flex:1; display:flex; flex-direction:column; align-items:center; gap:2px;
+  font-size:.66rem; font-weight:900; color:var(--ink-faint); padding:6px 2px; border-radius:14px;}
+nav.bottom button .ic{font-size:20px; line-height:1.15;}
+nav.bottom button.on{color:var(--accent-dk); background:var(--accent-pale);}
+
+/* ---------- 吐司 ---------- */
+#toast{
+  position:fixed; left:50%; bottom:96px; transform:translateX(-50%) translateY(14px);
+  background:var(--ink); color:var(--bg); font-size:.85rem; font-weight:900;
+  padding:11px 20px; border-radius:999px; z-index:300; opacity:0; pointer-events:none;
+  transition:opacity .22s ease, transform .22s ease; max-width:88vw; text-align:center;
+}
+#toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="mascot" id="mascot" title="摸摸小怪獸">
+    <span class="steam"></span>
+    <span class="ear l"></span><span class="ear r"></span>
+    <span class="body"></span>
+    <span class="eye l"></span><span class="eye r"></span>
+    <span class="mouth"></span>
+  </div>
+  <div>
+    <h1 class="app-name">小怪獸咖啡館</h1>
+    <div class="app-sub">LITTLE MONSTER CAFÉ</div>
+  </div>
+  <div class="head-tools">
+    <button class="head-btn hot press" id="btnDice" title="搖一杯新的">🎲</button>
+    <button class="head-btn press" id="btnPeek" title="馬上試喝">👀</button>
+  </div>
+</header>
+
+<main>
+
+<!-- ============ ① 選料 ============ -->
+<section id="tab-pick">
+
+  <div class="card">
+    <div class="sec-title"><span class="bdg">🪧</span>招牌</div>
+    <label class="f">店名（網站標題）</label>
+    <input type="text" id="fName" value="我的小站" autocomplete="off" maxlength="24">
+    <label class="f">副標</label>
+    <input type="text" id="fSub" value="LITTLE SHOP" autocomplete="off" maxlength="30">
+    <label class="f">localStorage 命名空間（換專案記得改）</label>
+    <input type="text" id="fNs" value="myshop_v1" autocomplete="off" maxlength="30">
+    <div class="hint" style="margin-top:9px;">同一個 GitHub Pages 網域下的每個作品都要用不同的命名空間，資料才不會互相蓋掉。</div>
+  </div>
+
+  <div class="card">
+    <div class="sec-title"><span class="bdg">📑</span>要幾張桌子<span class="spacer"></span><span class="cnt" id="pageCount"></span></div>
+    <div class="hint" style="margin-bottom:11px;">底部導覽會照這裡的順序長出來。至少留一張。</div>
+    <div id="pageList"></div>
+  </div>
+
+  <div class="card">
+    <div class="sec-title"><span class="bdg">🧺</span>選料<span class="spacer"></span><span class="cnt" id="pickCount"></span></div>
+    <div class="seg" style="margin-bottom:13px;">
+      <button class="press" id="pickAll">全選</button>
+      <button class="press" id="pickCommon">常用組</button>
+      <button class="press" id="pickNone">清空</button>
+    </div>
+    <div id="pickList"></div>
+    <div class="hint" style="margin-top:12px;">勾了會自動幫你補上相依的零件（例如「掛標題的虛線框」需要「膠囊小標」）。</div>
+  </div>
+
+</section>
+
+<!-- ============ ② 調味 ============ -->
+<section id="tab-mix" style="display:none;">
+
+  <div class="card">
+    <div class="sec-title"><span class="bdg">🎨</span>基底</div>
+    <label class="f">明亮還是深色</label>
+    <div class="seg" id="modeRow">
+      <button class="press" data-m="light">☀️ 明亮</button>
+      <button class="press" data-m="dark">🌙 深色</button>
+    </div>
+    <label class="f">特調（12 款收藏配色）</label>
+    <select id="mixSelect"></select>
+    <div class="st-card" id="mixCard" style="display:none;">
+      <div class="sw" id="mixSw"></div>
+      <div class="tx"><b id="mixName"></b><span id="mixTag"></span></div>
+    </div>
+
+    <label class="f">風味</label>
+    <select id="styleSelect"></select>
+    <div class="st-card">
+      <div class="sw" id="stSw"></div>
+      <div class="tx"><b id="stName"></b><span id="stDesc"></span></div>
+    </div>
+    <label class="f">警示色怎麼決定</label>
+    <div class="seg" id="dngRow"></div>
+    <button class="btn-main press btn-gap" id="btnRandom">🎲 搖一杯</button>
+    <button class="btn-line press btn-gap" id="btnTwin">🌗 做出明暗雙生版</button>
+  </div>
+
+  <div class="card">
+    <div class="sec-title"><span class="bdg">🧊</span>四顆基底色</div>
+    <div id="seedList"></div>
+    <div class="hint" style="margin-top:6px;">按鎖頭可以固定某個顏色，搖一杯的時候它不會被換掉。</div>
+  </div>
+
+  <div class="card">
+    <div class="sec-title"><span class="bdg">🩺</span>看得清楚嗎</div>
+    <div id="hpList"></div>
+  </div>
+
+  <div class="card">
+    <div class="sec-title"><span class="bdg">🧁</span>版式手感</div>
+
+    <div class="rng-row"><div>圓角</div><div class="v" id="pnlRadiusV"></div></div>
+    <input type="range" id="pnlRadius" min="0" max="34" step="1">
+
+    <div class="rng-row"><div>框線粗細</div><div class="v" id="pnlBwV"></div></div>
+    <input type="range" id="pnlBw" min="1" max="6" step="1">
+
+    <label class="f">框線樣式</label>
+    <div class="seg" id="pnlBorderRow"></div>
+
+    <label class="f">陰影</label>
+    <div class="seg" id="pnlShadowRow"></div>
+
+    <label class="f">字體</label>
+    <div class="seg" id="fontRow"></div>
+
+    <div class="rng-row"><div>字體大小</div><div class="v" id="fsV"></div></div>
+    <div class="fs-row">
+      <span class="fs-a sm">A</span>
+      <input type="range" id="fsRange" min="14" max="22" step="1">
+      <span class="fs-a lg">A</span>
+    </div>
+    <div class="hint" style="margin-top:7px;">這是產出網站的預設字級。設定頁也會有同一支拉桿，讀的人可以自己再調。</div>
+  </div>
+
+  <div class="card">
+    <div class="sec-title"><span class="bdg">📋</span>表格家族</div>
+    <label class="f">配色來源</label>
+    <div class="seg" id="tblModeRow"></div>
+    <div class="hint" id="tblModeHint" style="margin-top:11px;"></div>
+    <div id="tblColors" style="margin-top:13px;"></div>
+  </div>
+
+  <div class="fold" id="foldImg">
+    <button class="fold-head press" data-fold="foldImg"><span>🖼️</span>從圖片吸色<span class="arw">▶</span></button>
+    <div class="fold-body">
+      <button class="btn-line press" id="btnPickImg">📂 挑一張圖</button>
+      <input type="file" id="imgFile" accept="image/*" style="display:none">
+      <div id="imgAnalyzing" class="hint" style="display:none; margin-top:10px;">分析中…</div>
+      <div id="imgResult" style="display:none; margin-top:12px;">
+        <img id="imgThumb" class="img-thumb" alt="剛剛挑的那張圖">
+        <div class="img-sw" id="imgSwatches"></div>
+        <button class="btn-main press" id="btnApplyImg">🌈 就用這些顏色</button>
+      </div>
+      <div class="hint" style="margin-top:10px;">整張圖在你的手機裡算完，不會上傳。</div>
+    </div>
+  </div>
+
+  <div class="fold" id="foldAdv">
+    <button class="fold-head press" data-fold="foldAdv"><span>🔧</span>逐格微調（16 格）<span class="arw">▶</span></button>
+    <div class="fold-body" id="advBody"></div>
+  </div>
+
+</section>
+
+<!-- ============ ③ 試喝 ============ -->
+<section id="tab-taste" style="display:none;">
+  <div class="card">
+    <div class="sec-title"><span class="bdg">☕</span>試喝<span class="spacer"></span>
+      <button class="head-btn press" id="btnFull" title="全螢幕" style="width:36px; height:36px; font-size:15px;">⛶</button>
+    </div>
+    <div class="pv-bar">
+      <div class="seg" id="pvSizeRow"></div>
+    </div>
+    <div class="pv-wrap">
+      <iframe class="pv-frame" id="pvFrame" title="網站預覽"></iframe>
+    </div>
+    <div class="pv-note">這裡跑的就是外帶頁那份程式碼本人</div>
+    <button class="btn-line press btn-gap btn-sm" id="btnReload">🔄 重新沖一次</button>
+  </div>
+</section>
+
+<!-- ============ ④ 外帶 ============ -->
+<section id="tab-out" style="display:none;">
+
+  <div class="card">
+    <div class="sec-title"><span class="bdg">📒</span>食譜櫃<span class="spacer"></span><span class="cnt" id="rcpCount"></span></div>
+    <div class="hint" style="margin-bottom:11px;">存起來的每一杯，都會變成產出網站裡可以切換的一個主題。</div>
+    <label class="f">這杯叫什麼名字</label>
+    <input type="text" id="rcpLabel" placeholder="例如：抹茶奶蓋" autocomplete="off" maxlength="20">
+    <label class="f">代號（英數，網站內部用）</label>
+    <input type="text" id="rcpId" placeholder="例如：matcha-foam" autocomplete="off" maxlength="24">
+    <button class="btn-line press btn-gap btn-sm" id="btnNameIdea">✨ 幫我取一個</button>
+    <button class="btn-main press btn-gap" id="btnSaveRcp">📥 收進食譜櫃</button>
+    <div id="rcpList" style="margin-top:14px;"></div>
+  </div>
+
+  <div class="card">
+    <div class="sec-title"><span class="bdg">🥡</span>外帶</div>
+    <button class="btn-main press" id="btnBuild">產生整份網站</button>
+    <div class="row2 btn-gap">
+      <button class="btn-line press btn-sm" id="btnCopy">📋 複製</button>
+      <button class="btn-line press btn-sm" id="btnDl">⬇️ 下載 .html</button>
+    </div>
+    <label class="f">程式碼</label>
+    <textarea id="outCode" rows="10" readonly placeholder="按上面的「產生整份網站」，這裡就會出現可以直接丟上 GitHub Pages 的完整檔案。"></textarea>
+    <div class="hint" id="outSize" style="margin-top:8px;"></div>
+  </div>
+
+  <div class="card">
+    <div class="sec-title"><span class="bdg">💾</span>備份</div>
+    <div class="hint" style="margin-bottom:11px;">目前的設定與整櫃食譜都存在這台裝置的瀏覽器裡。換手機、清快取之前記得匯出一份。</div>
+    <div class="row2">
+      <button class="btn-line press btn-sm" id="btnBackup">⬇️ 匯出 JSON</button>
+      <button class="btn-line press btn-sm" id="btnRestore">⬆️ 匯入 JSON</button>
+    </div>
+    <input type="file" id="jsonFile" style="display:none">
+    <button class="btn-warn press btn-gap" id="btnWipe">🗑️ 全部重來</button>
+  </div>
+
+</section>
+
+</main>
+
+<nav class="bottom" id="navBar">
+  <button class="press on" data-tab="pick"><span class="ic">🧺</span>選料</button>
+  <button class="press" data-tab="mix"><span class="ic">🎨</span>調味</button>
+  <button class="press" data-tab="taste"><span class="ic">☕</span>試喝</button>
+  <button class="press" data-tab="out"><span class="ic">🥡</span>外帶</button>
+</nav>
+
+<div id="full">
+  <div class="fbar">
+    <b>☕ 試喝中</b>
+    <button class="press" id="fullReload">🔄</button>
+    <button class="press" id="fullClose">✕ 關閉</button>
+  </div>
+  <iframe id="fullFrame" title="全螢幕預覽"></iframe>
+</div>
+
+<div id="toast"></div>
+<script>
+/* ============================================================
+   小工具
+============================================================ */
+function $(id){ return document.getElementById(id); }
+var toastTimer=null;
+function toast(m){
+  var t=$('toast'); t.textContent=m; t.className='show';
+  clearTimeout(toastTimer); toastTimer=setTimeout(function(){ t.className=''; }, 2100);
+}
+function escHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ============================================================
+   🧱 積木圖鑑（沿用「版型積木 2.0」的 ITEMS，一格一積木）
+   ------------------------------------------------------------
+   欄位：id 代號／cls 類別名／grp 分組／label 名稱／note 說明
+        css 規則本體／demo 示範用 HTML／dep 相依的其他積木
+   要加第 25 塊？照抄一格補進陣列，選料頁與產出會自動吃到。
+============================================================ */
+var ITEMS=[
+
+{id:'base', cls:'pnl', grp:'框', label:'基本框', note:'底色、框線、圓角、陰影跟著主題走',
+ css:'.pnl{\n  background:var(--pnl-bg);\n  border:var(--pnl-bw) var(--pnl-bs) var(--card-edge);\n  border-radius:var(--pnl-r);\n  box-shadow:var(--pnl-sh);\n  padding:14px 15px; margin-bottom:12px; color:var(--ink);\n}\n.pnl:last-child{ margin-bottom:0; }',
+ demo:'<div class="pnl">基本框</div>'},
+
+{id:'thick', cls:'pnl-thick', grp:'框', label:'粗框白底', note:'框線加倍，份量最重',
+ css:'.pnl-thick{\n  background:var(--card);\n  border:calc(var(--pnl-bw) * 2) var(--pnl-bs) var(--card-edge);\n  border-radius:var(--pnl-r);\n  box-shadow:var(--pnl-sh);\n  padding:14px 15px; margin-bottom:12px; color:var(--ink);\n}\n.pnl-thick:last-child{ margin-bottom:0; }',
+ demo:'<div class="pnl-thick">粗框白底</div>'},
+
+{id:'dash', cls:'pnl-dash', grp:'框', label:'虛線框', note:'留白、備註、補充說明',
+ css:'.pnl-dash{\n  background:transparent;\n  border:var(--pnl-bw) dashed var(--card-edge);\n  border-radius:var(--pnl-r);\n  box-shadow:none;\n  padding:14px 15px; margin-bottom:12px; color:var(--ink);\n}\n.pnl-dash:last-child{ margin-bottom:0; }',
+ demo:'<div class="pnl-dash">虛線框</div>'},
+
+{id:'left', cls:'pnl-left', grp:'框', label:'左槓重點', note:'左側粗色條，適合條列段落',
+ css:'.pnl-left{\n  background:var(--pnl-bg);\n  border:var(--pnl-bw) var(--pnl-bs) var(--card-edge);\n  border-left:6px solid var(--accent);\n  border-radius:var(--pnl-r);\n  box-shadow:var(--pnl-sh);\n  padding:14px 15px; margin-bottom:12px; color:var(--ink);\n}\n.pnl-left:last-child{ margin-bottom:0; }',
+ demo:'<div class="pnl-left"><b>左槓重點</b><br>副說明</div>'},
+
+{id:'leftDanger', cls:'pnl-left-danger', grp:'框', label:'左槓・警示', note:'左側粗條換成危險色',
+ css:'.pnl-left-danger{\n  background:var(--pnl-bg);\n  border:var(--pnl-bw) var(--pnl-bs) var(--card-edge);\n  border-left:6px solid var(--danger);\n  border-radius:var(--pnl-r);\n  box-shadow:var(--pnl-sh);\n  padding:14px 15px; margin-bottom:12px; color:var(--ink);\n}\n.pnl-left-danger:last-child{ margin-bottom:0; }',
+ demo:'<div class="pnl-left-danger"><b>左槓・警示</b><br>副說明</div>'},
+
+{id:'tint', cls:'pnl-tint', grp:'框', label:'淡彩底', note:'主色的淡色背景',
+ css:'.pnl-tint{\n  background:var(--pnl-tint);\n  border:var(--pnl-bw) var(--pnl-bs) var(--accent);\n  border-radius:var(--pnl-r);\n  box-shadow:var(--pnl-sh);\n  padding:14px 15px; margin-bottom:12px; color:var(--ink);\n}\n.pnl-tint:last-child{ margin-bottom:0; }',
+ demo:'<div class="pnl-tint">淡彩底</div>'},
+
+{id:'tintDanger', cls:'pnl-tint-danger', grp:'框', label:'淡彩・警示', note:'一樣的淡底，框線換成危險色',
+ css:'.pnl-tint-danger{\n  background:var(--pnl-tint);\n  border:var(--pnl-bw) var(--pnl-bs) var(--danger);\n  border-radius:var(--pnl-r);\n  box-shadow:var(--pnl-sh);\n  padding:14px 15px; margin-bottom:12px; color:var(--ink);\n}\n.pnl-tint-danger:last-child{ margin-bottom:0; }',
+ demo:'<div class="pnl-tint-danger">淡彩・警示</div>'},
+
+{id:'fill', cls:'pnl-fill', grp:'框', label:'實心強調', note:'整塊填滿主色，用來下結論',
+ css:'.pnl-fill{\n  background:var(--accent);\n  color:var(--on-accent);\n  border:var(--pnl-bw) var(--pnl-bs) var(--accent-dk);\n  border-radius:var(--pnl-r);\n  box-shadow:var(--pnl-sh);\n  padding:14px 15px; margin-bottom:12px;\n}\n.pnl-fill:last-child{ margin-bottom:0; }',
+ demo:'<div class="pnl-fill">實心強調</div>'},
+
+{id:'fillDanger', cls:'pnl-fill-danger', grp:'框', label:'實心・警示', note:'整塊填滿危險色',
+ css:'.pnl-fill-danger{\n  background:var(--danger);\n  color:#FFFFFF;\n  border:var(--pnl-bw) var(--pnl-bs) var(--danger-dk);\n  border-radius:var(--pnl-r);\n  box-shadow:var(--pnl-sh);\n  padding:14px 15px; margin-bottom:12px;\n}\n.pnl-fill-danger:last-child{ margin-bottom:0; }',
+ demo:'<div class="pnl-fill-danger">實心・警示</div>'},
+
+{id:'frame', cls:'pnl-frame', grp:'框', label:'外框內襯', note:'外層粗色框包住內層白卡',
+ css:'.pnl-frame{\n  background:var(--accent);\n  border-radius:calc(var(--pnl-r) + 8px);\n  padding:10px; margin-bottom:12px;\n}\n.pnl-frame:last-child{ margin-bottom:0; }\n.pnl-frame > .pnl-frame-in{\n  background:var(--card);\n  border:var(--pnl-bw) var(--pnl-bs) var(--card-edge);\n  border-radius:var(--pnl-r);\n  box-shadow:none;\n  padding:14px 15px; margin:0; color:var(--ink);\n}',
+ demo:'<div class="pnl-frame"><div class="pnl-frame-in">外框內襯</div></div>'},
+
+{id:'hatch', cls:'pnl-hatch', grp:'框', label:'斜紋邊條', note:'斜線紋理，用來分段',
+ css:'.pnl-hatch{\n  background:repeating-linear-gradient(45deg,\n    var(--accent-pale) 0 7px, var(--card) 7px 14px);\n  border:var(--pnl-bw) var(--pnl-bs) var(--card-edge);\n  border-radius:var(--pnl-r);\n  padding:14px 15px; margin-bottom:12px;\n  color:var(--ink); font-weight:900; text-align:center;\n}\n.pnl-hatch:last-child{ margin-bottom:0; }',
+ demo:'<div class="pnl-hatch">斜紋邊條</div>'},
+
+{id:'duo', cls:'pnl-duo', grp:'框', label:'淡彩雙欄', note:'兩欄並排，窄螢幕自動疊成一欄', dep:['tint'],
+ css:'.pnl-duo{ display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap; }\n.pnl-duo > *{ flex:1 1 140px; min-width:0; margin-bottom:0; }\n.pnl-duo:last-child{ margin-bottom:0; }',
+ demo:'<div class="pnl-duo"><div class="pnl-tint">左欄</div><div class="pnl-tint">右欄</div></div>'},
+
+{id:'bar', cls:'pnl-bar', grp:'標題', label:'深色標題條', note:'深底淺字，右側可掛標籤',
+ css:'.pnl-bar{\n  display:flex; align-items:center; gap:9px;\n  background:var(--ink); color:var(--bg);\n  border:none; border-radius:var(--pnl-r);\n  box-shadow:var(--pnl-sh);\n  padding:10px 14px; margin-bottom:12px;\n  font-weight:900;\n}\n.pnl-bar:last-child{ margin-bottom:0; }\n.pnl-bar .pnl-bartag{\n  margin-left:auto; font-size:.72rem; font-weight:900;\n  padding:3px 10px; border-radius:999px;\n  background:var(--bg); color:var(--ink);\n}',
+ demo:'<div class="pnl-bar"><span>深色標題條</span><span class="pnl-bartag">標籤</span></div>'},
+
+{id:'chip', cls:'pnl-chip', grp:'標題', label:'膠囊小標', note:'實心版，可單獨用也可掛在框上',
+ css:'.pnl-chip{\n  display:inline-block; padding:5px 16px; border-radius:999px;\n  background:var(--accent); color:var(--on-accent);\n  border:2px solid var(--accent-dk);\n  font-size:.78rem; font-weight:900; letter-spacing:.04em;\n}',
+ demo:'<div style="text-align:center; margin-bottom:12px;"><span class="pnl-chip">膠囊小標</span></div>'},
+
+{id:'chipSoft', cls:'pnl-chip-soft', grp:'標題', label:'膠囊小標・淡彩', note:'淡底深字版',
+ css:'.pnl-chip-soft{\n  display:inline-block; padding:5px 16px; border-radius:999px;\n  background:var(--accent-pale); color:var(--accent-dk);\n  border:2px solid var(--accent);\n  font-size:.78rem; font-weight:900; letter-spacing:.04em;\n}',
+ demo:'<div style="text-align:center; margin-bottom:12px;"><span class="pnl-chip-soft">膠囊小標・淡彩</span></div>'},
+
+{id:'noted', cls:'pnl-noted', grp:'標題', label:'掛標題的虛線框', note:'標題片浮在框線上緣・需要膠囊小標', dep:['chip'],
+ css:'.pnl-noted{\n  position:relative;\n  background:transparent;\n  border:var(--pnl-bw) dashed var(--card-edge);\n  border-radius:var(--pnl-r);\n  box-shadow:none;\n  padding:20px 15px 14px; margin:24px 0 12px; color:var(--ink);\n}\n.pnl-noted:last-child{ margin-bottom:0; }\n.pnl-noted > .pnl-chip,\n.pnl-noted > .pnl-chip-soft{\n  position:absolute; top:-15px; left:50%;\n  transform:translateX(-50%); white-space:nowrap;\n}',
+ demo:'<div class="pnl-noted"><span class="pnl-chip">掛在框上的標題</span>內容區</div>'},
+
+{id:'tbl', cls:'tbl', grp:'表格', label:'深色標題表格', note:'深色標題列＋內容區，底色可自選',
+ css:'.tbl{\n  background:var(--tbl-bg);\n  border:2px solid var(--tbl-edge);\n  border-radius:var(--pnl-r);\n  overflow:hidden; margin-bottom:12px;\n  box-shadow:var(--pnl-sh);\n}\n.tbl:last-child{ margin-bottom:0; }\n.tbl-head{\n  display:flex; align-items:center; gap:8px;\n  background:var(--tbl-head-bg); color:var(--tbl-head-ink);\n  font-weight:900; font-size:.95rem; padding:10px 14px;\n}\n.tbl-body{\n  background:var(--tbl-bg); padding:12px 14px; color:var(--ink);\n}',
+ demo:'<div class="tbl"><div class="tbl-head">標題列</div><div class="tbl-body">內容區</div></div>'},
+
+{id:'tblBadge', cls:'tbl-badge', grp:'表格', label:'標題右側徽章', note:'掛在標題列最右邊的小牌子', dep:['tbl'],
+ css:'.tbl-badge{\n  margin-left:auto; font-size:.72rem; font-weight:900; letter-spacing:.02em;\n  padding:3px 10px; border-radius:999px;\n  background:var(--tbl-head-ink); color:var(--tbl-head-bg);\n}',
+ demo:'<div class="tbl"><div class="tbl-head">標題列<span class="tbl-badge">徽章</span></div><div class="tbl-body">內容區</div></div>'},
+
+{id:'tblTag', cls:'tbl-tag', grp:'表格', label:'小圓標籤', note:'內容區裡的小分段牌，像「當日日程」', dep:['tbl'],
+ css:'.tbl-tag{\n  display:inline-block;\n  background:var(--tbl-tag-bg); color:var(--tbl-tag-ink);\n  border:2px solid var(--tbl-edge); border-radius:10px;\n  font-size:.76rem; font-weight:900; padding:3px 12px; margin-bottom:8px;\n}',
+ demo:'<div class="tbl"><div class="tbl-head">標題列</div><div class="tbl-body"><span class="tbl-tag">小圓標籤</span><br>內容</div></div>'},
+
+{id:'tblRow', cls:'tbl-row', grp:'表格', label:'箭頭條列', note:'一行一項，前面自動長箭頭', dep:['tbl'],
+ css:'.tbl-row{\n  display:flex; align-items:baseline; gap:8px;\n  font-size:.9rem; font-weight:700; padding:4px 0; color:var(--ink);\n}\n.tbl-row::before{\n  content:\'\\2192\'; flex:none; font-weight:900; color:var(--ink-soft);\n}\n.tbl-row .tbl-t{ flex:none; font-weight:900; }',
+ demo:'<div class="tbl"><div class="tbl-head">標題列</div><div class="tbl-body"><div class="tbl-row"><span class="tbl-t">時間</span>項目一</div><div class="tbl-row"><span class="tbl-t">時間</span>項目二</div></div></div>'},
+
+{id:'tblStat', cls:'tbl-stat', grp:'表格', label:'統計徽章', note:'靠右浮動的數字牌', dep:['tbl'],
+ css:'.tbl-stat{\n  display:inline-flex; align-items:center; gap:6px; float:right;\n  font-size:.74rem; font-weight:900; padding:4px 12px; border-radius:999px;\n  background:var(--tbl-bg); color:var(--ink); border:2px solid var(--tbl-edge);\n}',
+ demo:'<div class="tbl"><div class="tbl-head">標題列</div><div class="tbl-body"><span class="tbl-stat">總計：0</span>統計項目</div></div>'},
+
+{id:'tblSep', cls:'tbl-sep', grp:'表格', label:'表格內虛線', note:'內容區的分段線', dep:['tbl'],
+ css:'.tbl-sep{ height:0; border-top:2px dashed var(--tbl-edge); margin:10px 0; opacity:.55; }',
+ demo:'<div class="tbl"><div class="tbl-head">標題列</div><div class="tbl-body">上段<div class="tbl-sep"></div>下段</div></div>'},
+
+{id:'sep', cls:'pnl-sep', grp:'零件', label:'虛線分隔', note:'一條虛線，段落之間用',
+ css:'.pnl-sep{ height:0; border-top:2px dashed var(--card-edge); margin:12px 0; }',
+ demo:'<div class="pnl-sep"></div>'},
+
+{id:'foot', cls:'pnl-foot', grp:'零件', label:'字距頁尾', note:'寬字距的頁尾字樣',
+ css:'.pnl-foot{\n  text-align:center; font-size:.72rem; font-weight:900;\n  letter-spacing:.42em; text-indent:.42em;\n  color:var(--ink-faint); padding:10px 0 4px;\n}',
+ demo:'<div class="pnl-foot">FOOTER</div>'}
+
+];
+
+var COMMON_PICK = ['base','dash','left','tint','fill','bar','chip','noted','tbl','tblTag','tblRow','sep','foot'];
+
+/* ============================================================
+   📑 桌子（產出網站的分頁）
+============================================================ */
+var PAGES = [
+  { id:'home', ic:'🏠', label:'首頁',  note:'放你選的積木示範，改成自己的內容' },
+  { id:'list', ic:'📋', label:'清單',  note:'表格家族的示範頁' },
+  { id:'form', ic:'📝', label:'表單',  note:'輸入框、下拉、按鈕、彈窗' },
+  { id:'pal',  ic:'🎨', label:'主題',  note:'切換你存進食譜櫃的配色' },
+  { id:'set',  ic:'⚙️', label:'設定',  note:'字體切換與說明' }
+];
+
+/* ============================================================
+   🥤 特調：12 款收藏配色
+   ------------------------------------------------------------
+   直接從「版型積木 2.0」搬過來的整組 16 個變數，一格都沒改。
+   選了就整杯換掉；之後動任何一顆基底色或搖一杯，就會脫離特調、
+   回到自己調的狀態。
+   要加第 13 款？照格式補一格，選單會自動吃到。
+============================================================ */
+var PALETTES=[
+  {id:'ningen', name:'人間夜色', tag:'原站主題 · 靛藍', dot:'#3E4C6E', fav:true,
+   v:{'bg':'#EDEAE3','dot':'#E3DFD4','card':'#F7F5EF','card-edge':'#D6D1C2','card-under':'#C4BCA4',
+      'ink':'#242320','ink-soft':'#726B5C','ink-faint':'#B3AB92','accent':'#3E4C6E','accent-dk':'#2E3A56',
+      'accent-pale':'#DEE0E8','on-accent':'#FFFFFF','input-bg':'#FDFCF8','danger':'#A44A38','danger-dk':'#883A2A','scrim':'#242320'}},
+  {id:'reikai', name:'紫藤白霧', tag:'原站主題 · 紫', dot:'#6E4FA0', fav:true,
+   v:{'bg':'#EFEAF5','dot':'#E6DEF0','card':'#F8F4FC','card-edge':'#DCD0EA','card-under':'#CBB8E0',
+      'ink':'#2E2438','ink-soft':'#786A8C','ink-faint':'#B9A3D6','accent':'#6E4FA0','accent-dk':'#57398A',
+      'accent-pale':'#E0D0EE','on-accent':'#FFFFFF','input-bg':'#FDFBFE','danger':'#A8465A','danger-dk':'#883A4A','scrim':'#2E2438'}},
+  {id:'rose', name:'莫蘭迪玫瑰', tag:'原站主題 · 磚紅', dot:'#A44A38', fav:true,
+   v:{'bg':'#F4E7E2','dot':'#EBD6CE','card':'#FAF0EC','card-edge':'#E4CABF','card-under':'#D8B8AC',
+      'ink':'#3A241E','ink-soft':'#8A6A5E','ink-faint':'#CFA593','accent':'#A44A38','accent-dk':'#883A2A',
+      'accent-pale':'#EED2C6','on-accent':'#FFFFFF','input-bg':'#FEF9F7','danger':'#A44A38','danger-dk':'#7A3020','scrim':'#3A241E'}},
+  {id:'parch', name:'羊皮紙', tag:'原站主題 · 古金', dot:'#8B5E1A', fav:true,
+   v:{'bg':'#F5EDD8','dot':'#EFE5CC','card':'#FBF6EA','card-edge':'#DDD0B8','card-under':'#D2C29E',
+      'ink':'#2C2620','ink-soft':'#7A6F5F','ink-faint':'#BFA988','accent':'#8B5E1A','accent-dk':'#6E4A12',
+      'accent-pale':'#EAD9BE','on-accent':'#FFFFFF','input-bg':'#FFFCF5','danger':'#A44A38','danger-dk':'#883A2A','scrim':'#2C2620'}},
+  {id:'ivory', name:'象牙白', tag:'原站主題 · 大地', dot:'#7A6A4A', fav:true,
+   v:{'bg':'#F2EFE9','dot':'#E9E4DA','card':'#FAF8F3','card-edge':'#DEDACE','card-under':'#D0C9B6',
+      'ink':'#2A2823','ink-soft':'#79746A','ink-faint':'#BFB8A4','accent':'#7A6A4A','accent-dk':'#5E5138',
+      'accent-pale':'#E4DDC9','on-accent':'#FFFFFF','input-bg':'#FFFEFB','danger':'#A44A38','danger-dk':'#883A2A','scrim':'#2A2823'}},
+  {id:'dark', name:'暗金', tag:'原站主題 · 深色', dot:'#C9A24A', fav:true,
+   v:{'bg':'#1C1812','dot':'#161310','card':'#241F17','card-edge':'#3E3626','card-under':'#120F09',
+      'ink':'#E8DFC8','ink-soft':'#9C9074','ink-faint':'#5C5038','accent':'#C9A24A','accent-dk':'#A9853A',
+      'accent-pale':'#3E3320','on-accent':'#1C1812','input-bg':'#2A241A','danger':'#C9704A','danger-dk':'#A9503F','scrim':'#000000'}},
+  {id:'obsidian', name:'純黑', tag:'原站主題 · 純黑', dot:'#B0B0B0', fav:true,
+   v:{'bg':'#060606','dot':'#0C0C0C','card':'#141414','card-edge':'#2A2A2A','card-under':'#000000',
+      'ink':'#E8E8E8','ink-soft':'#888888','ink-faint':'#484848','accent':'#B0B0B0','accent-dk':'#8A8A8A',
+      'accent-pale':'#303030','on-accent':'#060606','input-bg':'#1A1A1A','danger':'#C96A58','danger-dk':'#A04A3A','scrim':'#000000'}},
+  {id:'ac', name:'動物森友會', tag:'葉綠 × 沙米，暖暖的島嶼感', dot:'#5FA47A',
+   v:{'bg':'#F7F4EB','dot':'#E7E1CE','card':'#FFFDF6','card-edge':'#DDD3B8','card-under':'#E0E5D5',
+      'ink':'#4A4030','ink-soft':'#8A7C5F','ink-faint':'#B4A784','accent':'#5FA47A','accent-dk':'#4A8462',
+      'accent-pale':'#DDEEDF','on-accent':'#FFFFFF','input-bg':'#FBF7EC','danger':'#D98B6A','danger-dk':'#B96C4E','scrim':'#3A3324'}},
+  {id:'morandi', name:'莫蘭迪', tag:'灰調柔和，安靜不搶眼', dot:'#8A9A8B',
+   v:{'bg':'#E9E6E0','dot':'#D8D3CA','card':'#F7F5F1','card-edge':'#CFC8BD','card-under':'#C9C1B4',
+      'ink':'#4B463F','ink-soft':'#857E73','ink-faint':'#ABA396','accent':'#8A9A8B','accent-dk':'#6F7F70',
+      'accent-pale':'#DEE3DC','on-accent':'#FFFFFF','input-bg':'#F2EFEA','danger':'#B08A86','danger-dk':'#957270','scrim':'#3E3A34'}},
+  {id:'macaron', name:'馬卡龍', tag:'薄荷 × 草莓，粉嫩糖果色', dot:'#86C7B8',
+   v:{'bg':'#FBF3F5','dot':'#F3E1E7','card':'#FFFFFF','card-edge':'#F0D8DE','card-under':'#EBCFD8',
+      'ink':'#5A4650','ink-soft':'#9C8590','ink-faint':'#C6B4BD','accent':'#86C7B8','accent-dk':'#66A99A',
+      'accent-pale':'#DFF2ED','on-accent':'#FFFFFF','input-bg':'#FDF7F9','danger':'#F2A0B4','danger-dk':'#D97E94','scrim':'#4A3A44'}},
+  {id:'ikea', name:'質感 IKEA 風', tag:'北歐藍 × 原木，乾淨俐落', dot:'#3E6B8C',
+   v:{'bg':'#F1EEE7','dot':'#E0DACD','card':'#FFFFFF','card-edge':'#D6CFC0','card-under':'#CFC7B6',
+      'ink':'#33302A','ink-soft':'#757064','ink-faint':'#A49E8E','accent':'#3E6B8C','accent-dk':'#2F5573',
+      'accent-pale':'#DCE6EC','on-accent':'#FFFFFF','input-bg':'#F8F6F0','danger':'#C46A52','danger-dk':'#A5513C','scrim':'#2A2822'}},
+  {id:'moon', name:'美少女戰士', tag:'月光粉 × 蝴蝶結紅，夢幻少女', dot:'#E48CB4',
+   v:{'bg':'#F6EFF4','dot':'#ECDDE9','card':'#FFFFFF','card-edge':'#E6D3E0','card-under':'#E0C9D3',
+      'ink':'#3A2E45','ink-soft':'#806A8E','ink-faint':'#B4A0BE','accent':'#E48CB4','accent-dk':'#C96C97',
+      'accent-pale':'#FBDDEB','on-accent':'#FFFFFF','input-bg':'#FBF4F8','danger':'#E15A6B','danger-dk':'#C23F50','scrim':'#3A2E45'}}
+];
+
+function paletteOf(id){
+  for(var i = 0; i < PALETTES.length; i++){ if(PALETTES[i].id === id) return PALETTES[i]; }
+  return null;
+}
+
+/* ============================================================
+   📋 表格家族的六個格子
+   ------------------------------------------------------------
+   沿用「版型積木 2.0」的 COLOR_FIELDS。
+   三種配色來源：
+     auto  主題色   → 直接綁主色，換配色整桌跟著變
+     theme 綁主題變數 → 每一格自己指定要綁哪個變數
+     fixed 自訂色碼   → 寫死，不管主題怎麼換都一樣
+============================================================ */
+var COLOR_FIELDS = [
+  { k:'head',    name:'標題列底色',   v:'--tbl-head-bg',
+    opts:[['var(--ink)','墨色（最深）'],['var(--accent)','主色'],['var(--accent-dk)','深主色'],['var(--card-under)','卡片陰影色']] },
+  { k:'headInk', name:'標題列文字',   v:'--tbl-head-ink',
+    opts:[['var(--bg)','背景色'],['var(--card)','白卡色'],['var(--on-accent)','主色對比字'],['var(--accent-pale)','淡彩']] },
+  { k:'bg',      name:'內容區底色',   v:'--tbl-bg',
+    opts:[['var(--card)','白卡'],['var(--accent-pale)','淡彩'],['var(--bg)','頁面底色'],['var(--input-bg)','輸入框底色']] },
+  { k:'edge',    name:'框線色',       v:'--tbl-edge',
+    opts:[['var(--ink)','墨色'],['var(--card-edge)','卡片框線'],['var(--accent)','主色'],['var(--accent-dk)','深主色']] },
+  { k:'tagBg',   name:'小圓標籤底色', v:'--tbl-tag-bg',
+    opts:[['var(--accent-pale)','淡彩'],['var(--card)','白卡'],['var(--bg)','頁面底色'],['var(--accent)','主色']] },
+  { k:'tagInk',  name:'小圓標籤文字', v:'--tbl-tag-ink',
+    opts:[['var(--accent-dk)','深主色'],['var(--ink)','墨色'],['var(--on-accent)','主色對比字'],['var(--ink-soft)','淡墨']] }
+];
+
+var TBL_AUTO = { head:'var(--accent)', headInk:'var(--on-accent)', bg:'var(--card)',
+                 edge:'var(--accent)', tagBg:'var(--accent-pale)', tagInk:'var(--accent-dk)' };
+var TBL_AUTO_SHOW = { head:'主色', headInk:'主色對比字', bg:'白卡',
+                      edge:'主色', tagBg:'淡彩', tagInk:'深主色' };
+
+var TBL_MODES = [
+  { id:'auto',  label:'主題色' },
+  { id:'theme', label:'綁主題變數' },
+  { id:'fixed', label:'自訂色碼' }
+];
+
+/* ============================================================
+   ✒️ 字體
+============================================================ */
+var FONTS = [
+  { id:'maru',     label:'圓體', stack:"'Zen Maru Gothic','Noto Sans TC','PingFang TC',sans-serif", g:'Zen+Maru+Gothic:wght@500;700;900' },
+  { id:'sans',     label:'黑體', stack:"'Noto Sans TC','PingFang TC',sans-serif",                   g:'Noto+Sans+TC:wght@400;500;700;900' },
+  { id:'serif',    label:'明體', stack:"'Noto Serif TC','Songti TC',serif",                         g:'Noto+Serif+TC:wght@500;700;900' },
+  { id:'kai',      label:'文楷', stack:"'LXGW WenKai TC','Kaiti TC',serif",                         g:'LXGW+WenKai+TC' },
+  { id:'pingfang', label:'蘋方', stack:"'PingFang TC','Heiti TC',sans-serif",                       g:null }
+];
+function fontOf(id){ for(var i=0;i<FONTS.length;i++){ if(FONTS[i].id===id) return FONTS[i]; } return FONTS[0]; }
+
+/* ============================================================
+   🎨 色彩工具（沿用「色彩糖果罐」的算式）
+============================================================ */
+function hexToRgb(hex){
+  hex = String(hex).replace('#','');
+  if(hex.length===3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+  return { r:parseInt(hex.slice(0,2),16), g:parseInt(hex.slice(2,4),16), b:parseInt(hex.slice(4,6),16) };
+}
+function rgbToHex(r,g,b){
+  function c(x){ x=Math.max(0,Math.min(255,Math.round(x))); var s=x.toString(16); return s.length===1?'0'+s:s; }
+  return ('#'+c(r)+c(g)+c(b)).toUpperCase();
+}
+function rgbToHsl(r,g,b){
+  r/=255; g/=255; b/=255;
+  var max=Math.max(r,g,b), min=Math.min(r,g,b), h=0, s=0, l=(max+min)/2, d=max-min;
+  if(d!==0){
+    s = l>0.5 ? d/(2-max-min) : d/(max+min);
+    if(max===r) h=((g-b)/d + (g<b?6:0));
+    else if(max===g) h=((b-r)/d + 2);
+    else h=((r-g)/d + 4);
+    h*=60;
+  }
+  return { h:h, s:s*100, l:l*100 };
+}
+function hslToRgb(h,s,l){
+  h=((h%360)+360)%360; s/=100; l/=100;
+  var c=(1-Math.abs(2*l-1))*s, x=c*(1-Math.abs((h/60)%2-1)), m=l-c/2, r=0,g=0,b=0;
+  if(h<60){ r=c; g=x; }
+  else if(h<120){ r=x; g=c; }
+  else if(h<180){ g=c; b=x; }
+  else if(h<240){ g=x; b=c; }
+  else if(h<300){ r=x; b=c; }
+  else { r=c; b=x; }
+  return { r:(r+m)*255, g:(g+m)*255, b:(b+m)*255 };
+}
+function hexToHsl(hex){ var o=hexToRgb(hex); return rgbToHsl(o.r,o.g,o.b); }
+function hslToHex(h,s,l){
+  s=Math.max(0,Math.min(100,s)); l=Math.max(0,Math.min(100,l));
+  var o=hslToRgb(h,s,l); return rgbToHex(o.r,o.g,o.b);
+}
+function adjust(hex,d){ d=d||{}; var c=hexToHsl(hex); return hslToHex(c.h+(d.h||0), c.s+(d.s||0), c.l+(d.l||0)); }
+function mix(hex1,hex2,weight){
+  var a=hexToRgb(hex1), b=hexToRgb(hex2), w=weight/100;
+  return rgbToHex(a.r+(b.r-a.r)*w, a.g+(b.g-a.g)*w, a.b+(b.b-a.b)*w);
+}
+function lum(hex){
+  var o=hexToRgb(hex);
+  function f(x){ x/=255; return x<=0.03928 ? x/12.92 : Math.pow((x+0.055)/1.055, 2.4); }
+  return 0.2126*f(o.r) + 0.7152*f(o.g) + 0.0722*f(o.b);
+}
+function contrast(a,b){ var L1=lum(a), L2=lum(b); return (Math.max(L1,L2)+0.05)/(Math.min(L1,L2)+0.05); }
+function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+function pickOne(arr){ return arr[randInt(0,arr.length-1)]; }
+function pickRange(pools){ var p=pickOne(pools); return ((randInt(p[0],p[1])%360)+360)%360; }
+function randIn(r){ return randInt(r[0],r[1]); }
+function hueDist(a,b){ var d=Math.abs(a-b)%360; return d>180 ? 360-d : d; }
+
+/* ============================================================
+   🌈 風味圖鑑（沿用「色彩糖果罐」的 STYLE_LIST）
+   ------------------------------------------------------------
+   要新增一種風味？照格式補一格，選單與搖一杯會自動吃到。
+============================================================ */
+var STYLE_LIST = [
+
+  /* ───────── 不設限 ───────── */
+  {
+    key:'any', label:'🎰 隨心', group:'free', desc:'完全隨機，什麼都可能跑出來',
+    nativeMode:null,
+    sw:'conic-gradient(from 0deg,#E35,#EE5,#5E5,#5EE,#55E,#E5E,#E35)',
+    hue:{ bg:null, acc:null, dng:null },
+    light:{ bg:{s:[10,32], l:[88,94]}, acc:{s:[38,66], l:[32,50]}, dng:{s:[46,66], l:[42,54]} },
+    dark: { bg:{s:[12,30], l:[7,13]},  acc:{s:[42,70], l:[48,64]}, dng:{s:[54,72], l:[54,64]} }
+  },
+
+  /* ───────── 都會感 ───────── */
+  {
+    key:'neon', label:'🌃 霓虹夜都市', group:'urban', desc:'高對比、科技感、賽博夜景',
+    nativeMode:'dark',
+    sw:'linear-gradient(135deg,#0B0B18,#00E5FF,#FF2FD0)',
+    hue:{ bg:[[228,278]], acc:[[168,198],[288,325],[78,108]], dng:[[318,345]] },
+    light:{ bg:{s:[4,12],  l:[96,99]}, acc:{s:[78,94],  l:[38,48]}, dng:{s:[72,90], l:[46,56]} },
+    dark: { bg:{s:[18,34], l:[5,10]},  acc:{s:[85,100], l:[80,90]}, dng:{s:[78,94], l:[70,80]} }
+  },
+  {
+    key:'academia', label:'📚 墨韻學派', group:'urban', desc:'沈穩、英倫學院、舊書與黃銅',
+    nativeMode:'dark',
+    sw:'linear-gradient(135deg,#1E1810,#8C6A3F,#6E2B2B)',
+    hue:{ bg:[[22,42]], acc:[[28,48],[344,358],[88,120]], dng:[[344,358]] },
+    light:{ bg:{s:[16,30], l:[81,88]}, acc:{s:[34,52], l:[22,32]}, dng:{s:[40,54], l:[34,44]} },
+    dark: { bg:{s:[10,22], l:[10,20]}, acc:{s:[30,50], l:[40,60]}, dng:{s:[40,55], l:[45,55]} }
+  },
+  {
+    key:'nordic', label:'🪟 北歐極簡', group:'urban', desc:'乾淨、灰階、冷色、留白',
+    nativeMode:'light',
+    sw:'linear-gradient(135deg,#F2F5F7,#B7C2CC,#4A5A68)',
+    hue:{ bg:[[190,220]], acc:[[196,226],[210,240]], dng:[[4,20]] },
+    light:{ bg:{s:[2,8],   l:[94,98]}, acc:{s:[10,24], l:[20,34]}, dng:{s:[26,40], l:[44,54]} },
+    dark: { bg:{s:[6,14],  l:[8,13]},  acc:{s:[14,30], l:[56,70]}, dng:{s:[30,44], l:[54,64]} }
+  },
+  {
+    key:'vintage', label:'📷 復古底片', group:'urban', desc:'暖灰、低飽和、懷舊顆粒',
+    nativeMode:'light',
+    sw:'linear-gradient(135deg,#E8DCC8,#B99A78,#6E8A86)',
+    hue:{ bg:[[28,46]], acc:[[14,40],[168,196]], dng:[[8,24]] },
+    light:{ bg:{s:[14,28], l:[75,84]}, acc:{s:[22,38], l:[32,46]}, dng:{s:[30,44], l:[40,50]} },
+    dark: { bg:{s:[14,26], l:[9,15]},  acc:{s:[24,40], l:[52,64]}, dng:{s:[32,46], l:[52,62]} }
+  },
+  {
+    key:'memphis', label:'🕹️ 孟菲斯', group:'urban', desc:'八〇年代、原色亂撞、玩具感',
+    nativeMode:'light',
+    sw:'linear-gradient(135deg,#FF4B6E,#FFD23F,#3ABEFF)',
+    hue:{ bg:null, acc:null, dng:null },
+    light:{ bg:{s:[2,9],   l:[96,99]}, acc:{s:[76,95], l:[46,56]}, dng:{s:[78,95], l:[50,58]} },
+    dark: { bg:{s:[6,16],  l:[7,12]},  acc:{s:[76,95], l:[56,66]}, dng:{s:[78,95], l:[58,66]} }
+  },
+  {
+    key:'rococo', label:'🎀 洛可可', group:'urban', desc:'粉金、繁複、宮廷甜點',
+    nativeMode:'light',
+    sw:'linear-gradient(135deg,#F2D7E2,#E6D6A6,#CFE0EE)',
+    hue:{ bg:[[28,50],[326,352]], acc:[[318,352],[190,214],[36,50]], dng:[[338,356]] },
+    light:{ bg:{s:[22,36], l:[92,96]}, acc:{s:[30,46], l:[48,60]}, dng:{s:[38,52], l:[54,62]} },
+    dark: { bg:{s:[12,22], l:[10,15]}, acc:{s:[32,50], l:[58,70]}, dng:{s:[42,58], l:[60,68]} }
+  },
+  {
+    key:'luxury', label:'👑 奢華優雅', group:'urban', desc:'黑金、深寶石、低調貴氣',
+    nativeMode:'dark',
+    sw:'linear-gradient(135deg,#201C30,#C9A24A)',
+    hue:{ bg:[[30,48],[250,290],[196,218]], acc:[[36,50],[268,296],[196,216]], dng:[[344,360]] },
+    light:{ bg:{s:[8,18],  l:[89,94]}, acc:{s:[44,64], l:[26,36]}, dng:{s:[46,60], l:[40,48]} },
+    dark: { bg:{s:[8,20],  l:[5,9]},   acc:{s:[45,65], l:[48,60]}, dng:{s:[50,64], l:[52,60]} }
+  },
+  {
+    key:'macaron', label:'🧁 馬卡龍', group:'urban', desc:'粉嫩、甜點櫃、輕盈',
+    nativeMode:'light',
+    sw:'linear-gradient(135deg,#F7C6D8,#CFE8F2,#F6E9A8)',
+    hue:{ bg:null, acc:null, dng:null },
+    light:{ bg:{s:[30,48], l:[91,96]}, acc:{s:[48,68], l:[64,76]}, dng:{s:[54,70], l:[66,74]} },
+    dark: { bg:{s:[14,24], l:[11,16]}, acc:{s:[48,66], l:[66,76]}, dng:{s:[54,70], l:[66,74]} }
+  },
+
+  /* ───────── 自然感 ───────── */
+  {
+    key:'spring', label:'🌸 春之序曲', group:'nature', desc:'柔和、明亮、繁花初開',
+    nativeMode:'light',
+    sw:'linear-gradient(135deg,#FBE4EF,#CDEBB6,#F7D9E8)',
+    hue:{ bg:[[70,150],[330,355]], acc:[[300,350],[60,150]], dng:[[8,24]] },
+    light:{ bg:{s:[24,40], l:[90,95]}, acc:{s:[45,65], l:[60,80]}, dng:{s:[52,68], l:[60,70]} },
+    dark: { bg:{s:[14,26], l:[9,14]},  acc:{s:[46,66], l:[62,76]}, dng:{s:[54,70], l:[60,70]} }
+  },
+  {
+    key:'summer', label:'🏖️ 夏日狂想', group:'nature', desc:'活力、高對比、熱帶島嶼',
+    nativeMode:'light',
+    sw:'linear-gradient(135deg,#FFE9A8,#2FC7C0,#FF7B5A)',
+    hue:{ bg:[[170,200],[40,60]], acc:[[165,200],[25,50],[330,350]], dng:[[10,28]] },
+    light:{ bg:{s:[36,56], l:[84,92]}, acc:{s:[62,86], l:[48,64]}, dng:{s:[66,84], l:[50,60]} },
+    dark: { bg:{s:[20,34], l:[8,13]},  acc:{s:[62,84], l:[56,70]}, dng:{s:[66,84], l:[56,66]} }
+  },
+  {
+    key:'autumn', label:'🍂 秋之豐收', group:'nature', desc:'暖色、大地感、沈穩豐盈',
+    nativeMode:'light',
+    sw:'linear-gradient(135deg,#E9D3B0,#C2712C,#7A5A2E)',
+    hue:{ bg:[[25,45]], acc:[[10,42],[58,85]], dng:[[0,14]] },
+    light:{ bg:{s:[24,40], l:[77,86]}, acc:{s:[42,62], l:[28,42]}, dng:{s:[48,62], l:[38,48]} },
+    dark: { bg:{s:[18,30], l:[8,13]},  acc:{s:[42,62], l:[48,60]}, dng:{s:[50,64], l:[48,58]} }
+  },
+  {
+    key:'winter', label:'❄️ 冬之沈靜', group:'nature', desc:'冷冽、冰雪、無聲的深夜',
+    nativeMode:'dark',
+    sw:'linear-gradient(135deg,#0E1622,#9FD3E8,#C9D8F0)',
+    hue:{ bg:[[200,235]], acc:[[185,215],[215,245],[280,300]], dng:[[328,350]] },
+    light:{ bg:{s:[8,18],  l:[94,98]}, acc:{s:[32,50], l:[34,46]}, dng:{s:[42,56], l:[48,58]} },
+    dark: { bg:{s:[12,26], l:[5,15]},  acc:{s:[35,55], l:[60,80]}, dng:{s:[45,60], l:[62,72]} }
+  },
+  {
+    key:'animal', label:'🍃 動森自然', group:'nature', desc:'舒服、木質、島嶼午後',
+    nativeMode:'light',
+    sw:'linear-gradient(135deg,#9ED6A0,#F2E6BC)',
+    hue:{ bg:[[36,58],[86,118]], acc:[[70,150],[24,44],[176,196]], dng:[[6,20]] },
+    light:{ bg:{s:[26,40], l:[87,93]}, acc:{s:[40,58], l:[36,48]}, dng:{s:[52,66], l:[48,56]} },
+    dark: { bg:{s:[14,24], l:[9,14]},  acc:{s:[42,60], l:[52,64]}, dng:{s:[55,70], l:[56,64]} }
+  },
+  {
+    key:'earth', label:'🏺 大地', group:'nature', desc:'陶土、橄欖、粗糙質地',
+    nativeMode:'light',
+    sw:'linear-gradient(135deg,#C99A69,#7B855C)',
+    hue:{ bg:[[26,46]], acc:[[16,46],[68,108]], dng:[[8,22]] },
+    light:{ bg:{s:[20,34], l:[81,88]}, acc:{s:[34,52], l:[30,42]}, dng:{s:[44,58], l:[42,50]} },
+    dark: { bg:{s:[18,28], l:[8,13]},  acc:{s:[38,56], l:[46,58]}, dng:{s:[48,62], l:[50,60]} }
+  },
+  {
+    key:'mint', label:'🌿 薄荷曼波', group:'nature', desc:'清涼、通透、微微雀躍',
+    nativeMode:'light',
+    sw:'linear-gradient(135deg,#6FD3B8,#E6F6EE)',
+    hue:{ bg:[[138,176]], acc:[[142,180]], dng:[[336,352]] },
+    light:{ bg:{s:[28,44], l:[91,96]}, acc:{s:[42,60], l:[34,44]}, dng:{s:[48,64], l:[52,60]} },
+    dark: { bg:{s:[18,30], l:[8,13]},  acc:{s:[46,66], l:[52,64]}, dng:{s:[52,68], l:[58,66]} }
+  },
+  {
+    key:'warm', label:'🕯️ 溫馨明亮', group:'nature', desc:'燭光、烤麵包、被窩',
+    nativeMode:'light',
+    sw:'linear-gradient(135deg,#FFC978,#FF9A76)',
+    hue:{ bg:[[28,52]], acc:[[14,52],[352,372]], dng:[[352,368]] },
+    light:{ bg:{s:[34,54], l:[88,93]}, acc:{s:[55,75], l:[42,52]}, dng:{s:[58,74], l:[48,56]} },
+    dark: { bg:{s:[20,32], l:[9,14]},  acc:{s:[58,78], l:[54,64]}, dng:{s:[60,76], l:[56,64]} }
+  }
+];
+
+var STYLE_GROUPS = [
+  { id:'free',   label:'✨ 不設限' },
+  { id:'urban',  label:'🏙️ 都會感' },
+  { id:'nature', label:'🌿 自然感' }
+];
+function styleOf(key){
+  for(var i=0;i<STYLE_LIST.length;i++){ if(STYLE_LIST[i].key===key) return STYLE_LIST[i]; }
+  return STYLE_LIST[0];
+}
+function currentStyle(){ return styleOf(state.style); }
+
+var DANGER_MODES = [
+  { id:'style',    label:'🎨 跟著風味' },
+  { id:'contrast', label:'🔄 主色對比' },
+  { id:'red',      label:'🍓 經典紅' }
+];
+function rollDangerHue(st, accHue){
+  var m = state.dangerMode, h;
+  if(m==='red'){ h = randInt(350,368)%360; }
+  else if(m==='contrast' || !st.hue || !st.hue.dng){ h = (accHue+180+randInt(-25,25)+360)%360; }
+  else { h = pickRange(st.hue.dng); }
+  if(hueDist(h, accHue) < 40){ h = (accHue + 150 + randInt(0,60))%360; }
+  return h;
+}
+function rollHue(pools){ return pools ? pickRange(pools) : randInt(0,360); }
+
+/* ============================================================
+   16 個 CSS 變數
+============================================================ */
+var VAR_KEYS = ['bg','dot','card','card-edge','card-under','ink','ink-soft','ink-faint',
+  'accent','accent-dk','accent-pale','on-accent','input-bg','danger','danger-dk','scrim'];
+var VAR_LABELS = {
+  'bg':'背景','dot':'背景點點','card':'卡片底','card-edge':'卡片邊框','card-under':'陰影',
+  'ink':'文字','ink-soft':'次要文字','ink-faint':'淡文字',
+  'accent':'主色','accent-dk':'主色(深)','accent-pale':'主色淡底','on-accent':'主色上文字',
+  'input-bg':'輸入框底','danger':'警示色','danger-dk':'警示色(深)','scrim':'遮罩'
+};
+
+function pickOnAccent(accent, mode, ink, bg){
+  var darkCand = (mode==='dark') ? bg : ink;
+  return contrast(accent,'#FFFFFF') >= contrast(accent,darkCand) ? '#FFFFFF' : darkCand;
+}
+function deriveTheme(mode, seeds){
+  var bgHsl = hexToHsl(seeds.bg);
+  var ink = seeds.ink || (mode==='light'
+      ? hslToHex(bgHsl.h, Math.min(18, bgHsl.s*0.3+8), 14)
+      : hslToHex(bgHsl.h, Math.min(42, bgHsl.s+14), 86));
+  var v = {};
+  if(mode==='light'){
+    v['bg']=seeds.bg;
+    v['dot']=adjust(seeds.bg,{l:-7,s:-12});
+    v['card']=mix('#FFFFFF',seeds.bg,6);
+    v['card-edge']=adjust(seeds.bg,{l:-11,s:-19});
+    v['card-under']=adjust(seeds.bg,{l:-16,s:-21});
+    v['ink']=ink;
+    v['ink-soft']=mix(ink,seeds.bg,40);
+    v['ink-faint']=mix(ink,seeds.bg,62);
+    v['accent']=seeds.accent;
+    v['accent-dk']=adjust(seeds.accent,{l:-8,s:4});
+    v['accent-pale']=mix(seeds.bg,seeds.accent,8);
+    v['input-bg']=mix('#FFFFFF',seeds.bg,45);
+    v['danger']=seeds.danger;
+    v['danger-dk']=adjust(seeds.danger,{l:-11,s:3});
+    v['scrim']=adjust(ink,{l:7,s:10});
+  } else {
+    v['bg']=seeds.bg;
+    v['dot']=adjust(seeds.bg,{l:3.5,s:6});
+    v['card']=adjust(seeds.bg,{l:3});
+    v['card-edge']=adjust(seeds.bg,{l:11,s:4});
+    v['card-under']=adjust(seeds.bg,{l:-3,s:12});
+    v['ink']=ink;
+    v['ink-soft']=mix(ink,seeds.bg,44);
+    v['ink-faint']=mix(ink,seeds.bg,64);
+    v['accent']=seeds.accent;
+    v['accent-dk']=adjust(seeds.accent,{l:-10,s:-6});
+    v['accent-pale']=mix(seeds.bg,seeds.accent,17);
+    v['input-bg']=adjust(seeds.bg,{l:1.5,s:5});
+    v['danger']=seeds.danger;
+    v['danger-dk']=adjust(seeds.danger,{l:-14,s:-8});
+    v['scrim']=adjust(seeds.bg,{l:-9});
+  }
+  v['on-accent'] = pickOnAccent(seeds.accent, mode, ink, seeds.bg);
+  v.mode = mode;
+  return v;
+}
+
+/* ============================================================
+   狀態
+============================================================ */
+var LS = 'monstercafe_v1';
+
+var DEFAULT_SEEDS = {
+  light:{ bg:'#F3F0E2', ink:null, accent:'#5F9E6E', danger:'#D4826A' },
+  dark: { bg:'#171A14', ink:null, accent:'#7FC98C', danger:'#E0917A' }
+};
+
+var state = {
+  mode:'light',
+  seeds: JSON.parse(JSON.stringify(DEFAULT_SEEDS.light)),
+  theme: null,
+  advOverride:{},
+  style:'animal',
+  palette:'',
+  fontSize:16,
+  dangerMode:'style',
+  locks:{ bg:false, accent:false, danger:false },
+  font:'maru',
+  panel:{ radius:20, bw:2, border:'solid', shadow:'hard' },
+  tbl:{
+    mode:'auto',
+    theme:{ head:'var(--ink)', headInk:'var(--bg)', bg:'var(--card)',
+            edge:'var(--ink)', tagBg:'var(--accent-pale)', tagInk:'var(--accent-dk)' },
+    fixed:{ head:'#3E3A2E', headInk:'#FFFFFF', bg:'#FFFFFF',
+            edge:'#3E3A2E', tagBg:'#F2E4B8', tagInk:'#5A4A10' }
+  },
+  pick:{},
+  pages:{ home:true, list:true, form:true, pal:true, set:true },
+  meta:{ name:'我的小站', sub:'LITTLE SHOP', ns:'myshop_v1' },
+  recipes:[],
+  pvSize:'phone',
+  imgClusters:null
+};
+
+(function loadState(){
+  try{
+    var raw = localStorage.getItem(LS);
+    if(!raw) return;
+    var o = JSON.parse(raw);
+    if(o && typeof o === 'object'){
+      Object.keys(state).forEach(function(k){
+        if(o[k] !== undefined && k !== 'theme' && k !== 'imgClusters') state[k] = o[k];
+      });
+    }
+  }catch(e){}
+})();
+
+function save(){
+  try{ localStorage.setItem(LS, JSON.stringify(state)); }
+  catch(e){ toast('存不進去，瀏覽器空間可能滿了'); }
+}
+
+if(!state.pick || Object.keys(state.pick).length === 0){
+  state.pick = {};
+  COMMON_PICK.forEach(function(id){ state.pick[id] = true; });
+}
+
+function itemOf(id){ for(var i=0;i<ITEMS.length;i++){ if(ITEMS[i].id===id) return ITEMS[i]; } return null; }
+function picked(){ return ITEMS.filter(function(it){ return !!state.pick[it.id]; }); }
+function pickedIn(grp){ return picked().filter(function(it){ return it.grp===grp; }); }
+function has(id){ return !!state.pick[id]; }
+function activePages(){ return PAGES.filter(function(p){ return !!state.pages[p.id]; }); }
+
+/* ============================================================
+   版式變數
+============================================================ */
+function tblModeLabel(){
+  for(var i = 0; i < TBL_MODES.length; i++){ if(TBL_MODES[i].id === state.tbl.mode) return TBL_MODES[i].label; }
+  return TBL_MODES[0].label;
+}
+function shadowValue(kind){
+  if(kind==='none') return 'none';
+  if(kind==='lift') return '0 5px 0 var(--card-under)';
+  if(kind==='soft') return '0 7px 18px -8px var(--card-under)';
+  return '4px 4px 0 var(--card-under)';
+}
+function panelVars(){
+  var p = state.panel;
+  return [
+    ['--pnl-r',    p.radius + 'px'],
+    ['--pnl-bw',   p.bw + 'px'],
+    ['--pnl-bs',   p.border],
+    ['--pnl-bg',   'var(--card)'],
+    ['--pnl-tint', 'var(--accent-pale)'],
+    ['--pnl-sh',   shadowValue(p.shadow)]
+  ];
+}
+
+/* 表格六格：照目前的配色來源決定每一格的值 */
+function tblVal(k){
+  if(state.tbl.mode === 'auto')  return TBL_AUTO[k];
+  if(state.tbl.mode === 'fixed') return state.tbl.fixed[k];
+  return state.tbl.theme[k];
+}
+function tblVars(){
+  return COLOR_FIELDS.map(function(f){ return [f.v, tblVal(f.k)]; });
+}
+
+/* ============================================================
+   ☕ 唯一的網站產生函式
+   ------------------------------------------------------------
+   試喝頁的 iframe 與外帶頁的程式碼，吃的都是這一份的回傳值。
+   所以預覽跟成品永遠不會不一樣。
+============================================================ */
+var CT = '<' + '/script>';   /* 不能在這份檔案裡寫出完整的結束標籤 */
+
+function themeVarBlock(vars, indent){
+  var pad = indent || '  ';
+  return VAR_KEYS.map(function(k){ return pad + '--' + k + ':' + vars[k] + ';'; }).join('\n');
+}
+
+function fontLink(){
+  var fams = {}, out = [];
+  fams[fontOf(state.font).g] = 1;
+  if(state.pages.set){ FONTS.forEach(function(f){ if(f.g) fams[f.g] = 1; }); }
+  fams['Noto+Serif+TC:wght@500;700;900'] = 1;
+  Object.keys(fams).forEach(function(k){ if(k && k !== 'null') out.push('family=' + k); });
+  return 'https://fonts.googleapis.com/css2?' + out.join('&') + '&display=swap';
+}
+
+function buildSite(){
+  var t = state.theme, m = state.meta;
+  var name = m.name || '我的小站';
+  var sub  = m.sub  || '';
+  var ns   = (m.ns  || 'myapp_v1').replace(/[^A-Za-z0-9_]/g,'') || 'myapp_v1';
+  var pages = activePages();
+  if(pages.length === 0) pages = [PAGES[0]];
+  var L = [];
+
+  L.push('<!DOCTYPE html>');
+  L.push('<html lang="zh-Hant">');
+  L.push('<head>');
+  L.push('<meta charset="UTF-8">');
+  L.push('<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">');
+  L.push('<meta name="robots" content="noindex, nofollow">');
+  L.push('<meta name="apple-mobile-web-app-capable" content="yes">');
+  L.push('<title>' + escHtml(name) + '</title>');
+  L.push('<link rel="preconnect" href="https://fonts.googleapis.com">');
+  L.push('<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>');
+  L.push('<link href="' + fontLink() + '" rel="stylesheet">');
+  L.push('<style>');
+  L.push('/* ============================================================');
+  L.push('   ' + name + (sub ? '　' + sub : ''));
+  L.push('   由「小怪獸咖啡館」產生 · 單檔、無框架、丟上 GitHub Pages 就會動');
+  L.push('   ------------------------------------------------------------');
+  L.push('   1. 換顏色 → 改下面 :root 的 16 個變數，全站跟著變');
+  L.push('   2. 換版式 → --pnl-r 圓角 / --pnl-bw 框線 / --pnl-sh 陰影');
+  L.push('   3. 加分頁 → 複製一段 <section id="tab-XXX">，再到 nav 補一顆 data-tab="XXX"');
+  L.push('   4. 換專案 → 記得改最下面的 APP_NS，不然兩個作品的資料會打架');
+  L.push('============================================================ */');
+  L.push(':root{');
+  L.push(themeVarBlock(t, '  '));
+  L.push('  --r:24px;');
+  L.push('  --fs:' + (state.fontSize || 16) + 'px;');
+  L.push('  --font:' + fontOf(state.font).stack + ';');
+  L.push('}');
+
+  /* 存起來的每一杯 → 一個可切換的主題 */
+  if(state.recipes.length){
+    L.push('');
+    L.push('/* ---------- 食譜櫃裡的配色 ---------- */');
+    state.recipes.forEach(function(r){
+      L.push('[data-theme="' + r.id + '"]{');
+      L.push(themeVarBlock(r.vars, '  '));
+      L.push('}');
+    });
+  }
+
+  L.push('');
+  L.push('/* ---------- 版式與表格變數 ----------');
+  L.push('   必須宣告在 body：data-theme 掛在 body，若寫成 :root，var(--accent)');
+  L.push('   會在 html 上就先結算成預設色，換配色時表格與淡彩底不會跟著變。');
+  L.push('   要覆蓋這些值，也請一樣寫 body{ … } 而不是 :root{ … }。 */');
+  L.push('body{');
+  panelVars().forEach(function(p){ L.push('  ' + p[0] + ':' + p[1] + ';'); });
+  L.push('  /* 表格家族（配色來源：' + tblModeLabel() + '） */');
+  tblVars().forEach(function(p){ L.push('  ' + p[0] + ':' + p[1] + ';'); });
+  L.push('}');
+
+  L.push('');
+  L.push(baseCss());
+
+  var pcss = picked().map(function(it){ return it.css; }).join('\n\n');
+  if(pcss){
+    L.push('');
+    L.push('/* ============================================================');
+    L.push('   🧱 積木（在你的 HTML 裡直接寫 class 就會生效）');
+    L.push('============================================================ */');
+    L.push(pcss);
+  }
+  L.push('</style>');
+  L.push('</head>');
+  L.push('<body>');
+  L.push('');
+  L.push('<header class="top">');
+  L.push('  <div>');
+  L.push('    <h1 class="app-name">' + escHtml(name) + '</h1>');
+  if(sub) L.push('    <div class="app-sub">' + escHtml(sub) + '</div>');
+  L.push('  </div>');
+  L.push('  <button class="head-btn press" id="btnHead" title="打招呼">✦</button>');
+  L.push('</header>');
+  L.push('');
+  L.push('<main>');
+  pages.forEach(function(p, i){
+    L.push('  <section id="tab-' + p.id + '"' + (i ? ' style="display:none;"' : '') + '>');
+    L.push(pageBody(p.id));
+    L.push('  </section>');
+    L.push('');
+  });
+  L.push('</main>');
+  L.push('');
+  L.push('<nav class="bottom" id="navBar">');
+  pages.forEach(function(p, i){
+    L.push('  <button class="press' + (i ? '' : ' on') + '" data-tab="' + p.id + '">' +
+           '<span class="ic">' + p.ic + '</span>' + p.label + '</button>');
+  });
+  L.push('</nav>');
+  L.push('');
+  L.push('<div id="modalWrap">');
+  L.push('  <div id="modalScrim"></div>');
+  L.push('  <div id="modalBox">');
+  L.push('    <div id="modalHead"><b id="modalTitle">標題</b><button id="modalClose" class="press">✕</button></div>');
+  L.push('    <div id="modalBody"></div>');
+  L.push('  </div>');
+  L.push('</div>');
+  L.push('<div id="toast"></div>');
+  L.push('');
+  L.push('<script>');
+  L.push(siteScript(ns, pages));
+  L.push(CT);
+  L.push('</body>');
+  L.push('</html>');
+
+  return L.join('\n') + '\n';
+}
+
+/* ============================================================
+   產出網站：骨架 CSS
+============================================================ */
+function baseCss(){
+  var L = [];
+  L.push('/* ---------- 骨架 ---------- */');
+  L.push('*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}');
+  L.push('html,body{margin:0; padding:0;}');
+  L.push('body{');
+  L.push('  font-family:var(--font);');
+  L.push('  background:var(--bg);');
+  L.push('  background-image:radial-gradient(var(--dot) 1.5px, transparent 1.5px);');
+  L.push('  background-size:21px 21px;');
+  L.push('  color:var(--ink); min-height:100svh; padding-bottom:104px;');
+  L.push('  font-size:var(--fs); line-height:1.65;');
+  L.push('}');
+  L.push('button{font-family:inherit; color:inherit; border:none; background:none; cursor:pointer; font-size:1rem; padding:0;}');
+  L.push('button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--accent); outline-offset:2px;}');
+  L.push('input,select,textarea{');
+  L.push('  font-family:inherit; font-size:1rem; color:var(--ink);');
+  L.push('  background:var(--input-bg); border:2px solid var(--card-edge); border-radius:16px;');
+  L.push('  padding:12px 14px; width:100%; outline:none;');
+  L.push('}');
+  L.push('input:focus,select:focus,textarea:focus{border-color:var(--accent); background:var(--card);}');
+  L.push('label.f{display:block; font-size:.8rem; font-weight:900; color:var(--ink-soft); margin:14px 0 6px;}');
+  L.push('label.f:first-child{margin-top:0;}');
+  L.push('.press{transition:transform .12s ease;}');
+  L.push('.press:active{transform:scale(.94);}');
+  L.push('@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.001ms !important; transition-duration:.001ms !important;}}');
+  L.push('');
+  L.push('header.top{');
+  L.push('  position:sticky; top:0; z-index:60; background:var(--bg);');
+  L.push('  padding:14px 16px 11px; border-bottom:2px dashed var(--card-edge);');
+  L.push('  display:flex; align-items:center; justify-content:space-between; gap:10px;');
+  L.push('}');
+  L.push('.app-name{font-size:1.34rem; font-weight:900; color:var(--accent-dk); margin:0; line-height:1.2;}');
+  L.push(".app-sub{font-size:.7rem; color:var(--ink-soft); font-weight:900; margin-top:3px; letter-spacing:.1em;}");
+  L.push('.head-btn{');
+  L.push('  flex:none; width:46px; height:46px; border-radius:16px; background:var(--card);');
+  L.push('  border:2px solid var(--card-edge); font-size:19px; box-shadow:3px 3px 0 var(--card-under);');
+  L.push('  display:flex; align-items:center; justify-content:center;');
+  L.push('}');
+  L.push('');
+  L.push('main{max-width:540px; margin:0 auto; padding:16px 15px 0;}');
+  L.push('.card{');
+  L.push('  background:var(--card); border:2px solid var(--card-edge); border-radius:var(--r);');
+  L.push('  box-shadow:var(--pnl-sh); padding:17px; margin-bottom:16px;');
+  L.push('}');
+  L.push('.sec-title{display:flex; align-items:center; gap:9px; font-size:1.1rem; font-weight:900; margin:2px 2px 13px;}');
+  L.push('.sec-title .bdg{flex:none; width:30px; height:30px; border-radius:11px; background:var(--accent-pale);');
+  L.push('  display:flex; align-items:center; justify-content:center; font-size:16px;}');
+  L.push('.hint{font-size:.82rem; color:var(--ink-soft); line-height:1.75;}');
+  L.push('.hint b{color:var(--ink);}');
+  L.push('.hint code{font-family:ui-monospace,Menlo,monospace; font-size:.76rem; background:var(--input-bg);');
+  L.push('  border:1.5px solid var(--card-edge); border-radius:6px; padding:1px 5px;}');
+  L.push('.btn-main{display:block; width:100%; text-align:center; background:var(--accent); color:var(--on-accent);');
+  L.push('  font-weight:900; font-size:1.02rem; padding:14px; border-radius:18px; box-shadow:4px 4px 0 var(--accent-dk);}');
+  L.push('.btn-line{display:block; width:100%; text-align:center; background:var(--card); color:var(--ink-soft);');
+  L.push('  border:2px solid var(--card-edge); font-weight:900; font-size:1rem; padding:12px; border-radius:16px;}');
+  L.push('.btn-line.on{border-color:var(--accent); background:var(--accent-pale); color:var(--accent-dk);}');
+  L.push('.btn-gap{margin-top:11px;}');
+  L.push('');
+  L.push('.fs-row{display:flex; align-items:center; gap:11px;}');
+  L.push('.fs-row input[type=range]{-webkit-appearance:none; appearance:none; flex:1; min-width:0; height:26px;');
+  L.push('  background:transparent; border:none; padding:0; margin:0;}');
+  L.push('.fs-row input[type=range]::-webkit-slider-runnable-track{height:8px; border-radius:99px; background:var(--card-edge);}');
+  L.push('.fs-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:26px; height:26px; margin-top:-9px;');
+  L.push('  border-radius:50%; background:var(--accent); border:2.5px solid var(--accent-dk);}');
+  L.push('.fs-row input[type=range]::-moz-range-track{height:8px; border-radius:99px; background:var(--card-edge);}');
+  L.push('.fs-row input[type=range]::-moz-range-thumb{width:22px; height:22px; border-radius:50%; background:var(--accent); border:2.5px solid var(--accent-dk);}');
+  L.push('.fs-a{flex:none; font-weight:900; color:var(--ink-soft); line-height:1;}');
+  L.push('.fs-a.sm{font-size:.78rem;} .fs-a.lg{font-size:1.34rem;}');
+  L.push('.fs-now{text-align:center; font-size:.74rem; font-weight:900; color:var(--ink-faint); margin-top:8px;}');
+  L.push('.theme-grid,.font-list{display:flex; flex-wrap:wrap; gap:9px;}');
+  L.push('.theme-grid button,.font-list button{');
+  L.push('  flex:1 1 128px; display:flex; align-items:center; gap:9px; padding:10px 12px;');
+  L.push('  border-radius:16px; background:var(--input-bg); border:2px solid var(--card-edge);');
+  L.push('  font-size:.85rem; font-weight:900; text-align:left;');
+  L.push('}');
+  L.push('.theme-grid button.on,.font-list button.on{border-color:var(--accent); background:var(--accent-pale); color:var(--accent-dk);}');
+  L.push('.theme-grid .sw{flex:none; width:26px; height:26px; border-radius:9px; border:2px solid var(--card-edge); display:flex; overflow:hidden;}');
+  L.push('.theme-grid .sw i{flex:1;}');
+  L.push('');
+  L.push('nav.bottom{');
+  L.push('  position:fixed; left:0; right:0; bottom:0; z-index:70;');
+  L.push('  background:var(--card); border-top:2px solid var(--card-edge);');
+  L.push('  display:flex; padding:7px 6px calc(7px + env(safe-area-inset-bottom));');
+  L.push('  box-shadow:0 -3px 0 var(--card-under);');
+  L.push('}');
+  L.push('nav.bottom button{flex:1; display:flex; flex-direction:column; align-items:center; gap:2px;');
+  L.push('  font-size:.67rem; font-weight:900; color:var(--ink-faint); padding:6px 2px; border-radius:14px;}');
+  L.push('nav.bottom button .ic{font-size:20px; line-height:1.15;}');
+  L.push('nav.bottom button.on{color:var(--accent-dk); background:var(--accent-pale);}');
+  L.push('');
+  L.push('#modalWrap{display:none;} #modalWrap.on{display:block;}');
+  L.push('#modalScrim{position:fixed; inset:0; background:var(--scrim); opacity:.55; z-index:100;}');
+  L.push('#modalBox{position:fixed; left:50%; top:50%; transform:translate(-50%,-50%); z-index:110;');
+  L.push('  width:min(430px,90vw); max-height:80svh; overflow:auto; background:var(--card);');
+  L.push('  border:2px solid var(--card-edge); border-radius:var(--r); box-shadow:5px 5px 0 var(--card-under); padding:18px;}');
+  L.push('#modalHead{display:flex; align-items:center; gap:10px; margin-bottom:12px;}');
+  L.push('#modalHead b{font-size:1.05rem; font-weight:900; flex:1;}');
+  L.push('#modalClose{width:34px; height:34px; border-radius:11px; border:2px solid var(--card-edge); background:var(--input-bg);}');
+  L.push('');
+  L.push('#toast{position:fixed; left:50%; bottom:96px; transform:translateX(-50%) translateY(14px);');
+  L.push('  background:var(--ink); color:var(--bg); font-size:.85rem; font-weight:900;');
+  L.push('  padding:11px 20px; border-radius:999px; z-index:300; opacity:0; pointer-events:none;');
+  L.push('  transition:opacity .22s ease, transform .22s ease; max-width:88vw; text-align:center;}');
+  L.push('#toast.show{opacity:1; transform:translateX(-50%) translateY(0);}');
+  return L.join('\n');
+}
+
+/* ============================================================
+   產出網站：各頁內容
+============================================================ */
+function demoGroup(grp, icon, title){
+  var list = pickedIn(grp);
+  if(!list.length) return '';
+  var L = [];
+  L.push('    <div class="card">');
+  L.push('      <div class="sec-title"><span class="bdg">' + icon + '</span>' + title + '</div>');
+  list.forEach(function(it){ L.push('      ' + it.demo); });
+  L.push('    </div>');
+  return L.join('\n');
+}
+
+function pageBody(id){
+  var L = [];
+
+  if(id === 'home'){
+    L.push('    <div class="card">');
+    L.push('      <div class="sec-title"><span class="bdg">👋</span>歡迎光臨</div>');
+    L.push('      <div class="hint">這頁是示範。把下面的積木換成你自己的內容，整站的顏色與手感都會跟著 <code>:root</code> 走。</div>');
+    L.push('      <button class="btn-main press btn-gap" id="btnHello">按按看</button>');
+    L.push('    </div>');
+    var a = demoGroup('框','🧱','框'), b = demoGroup('標題','🏷️','標題'), c = demoGroup('零件','🔩','零件');
+    if(a) L.push(a);
+    if(b) L.push(b);
+    if(c) L.push(c);
+    if(!a && !b && !c){
+      L.push('    <div class="card"><div class="hint">還沒選任何積木。回到咖啡館的「選料」勾幾塊再回來。</div></div>');
+    }
+    return L.join('\n');
+  }
+
+  if(id === 'list'){
+    var t = demoGroup('表格','📋','表格家族');
+    if(t) return t;
+    return '    <div class="card">\n      <div class="sec-title"><span class="bdg">📋</span>清單</div>\n      <div class="hint">這頁留給表格家族。到「選料」勾起表格類的積木，這裡就會長出示範。</div>\n    </div>';
+  }
+
+  if(id === 'form'){
+    L.push('    <div class="card">');
+    L.push('      <div class="sec-title"><span class="bdg">📝</span>表單</div>');
+    L.push('      <label class="f">名字</label>');
+    L.push('      <input type="text" id="fmName" placeholder="輸入點什麼" autocomplete="off">');
+    L.push('      <label class="f">選一個</label>');
+    L.push('      <select id="fmPick"><option>第一個選項</option><option>第二個選項</option><option>第三個選項</option></select>');
+    L.push('      <label class="f">備註</label>');
+    L.push('      <textarea id="fmNote" rows="3" placeholder="多行文字"></textarea>');
+    L.push('      <button class="btn-main press btn-gap" id="btnSubmit">送出</button>');
+    L.push('      <button class="btn-line press btn-gap" id="btnModal">打開彈窗</button>');
+    L.push('    </div>');
+    return L.join('\n');
+  }
+
+  if(id === 'pal'){
+    L.push('    <div class="card">');
+    L.push('      <div class="sec-title"><span class="bdg">🎨</span>配色</div>');
+    if(state.recipes.length){
+      L.push('      <div class="hint" style="margin-bottom:12px;">選好會記在這台裝置上，下次打開還在。</div>');
+      L.push('      <div class="theme-grid" id="palGrid"></div>');
+    } else {
+      L.push('      <div class="hint">食譜櫃是空的，所以這頁只有預設配色。回咖啡館的「外帶」存幾杯，這裡就會出現切換按鈕。</div>');
+    }
+    L.push('    </div>');
+    return L.join('\n');
+  }
+
+  if(id === 'set'){
+    L.push('    <div class="card">');
+    L.push('      <div class="sec-title"><span class="bdg">✒️</span>字體</div>');
+    L.push('      <div class="font-list" id="fontList"></div>');
+    L.push('    </div>');
+    L.push('    <div class="card">');
+    L.push('      <div class="sec-title"><span class="bdg">🔠</span>字體大小</div>');
+    L.push('      <div class="fs-row">');
+    L.push('        <span class="fs-a sm">A</span>');
+    L.push('        <input type="range" id="fsRange" min="14" max="22" step="1" value="' + (state.fontSize || 16) + '">');
+    L.push('        <span class="fs-a lg">A</span>');
+    L.push('      </div>');
+    L.push('      <div class="fs-now" id="fsNow"></div>');
+    L.push('    </div>');
+    L.push('    <div class="card">');
+    L.push('      <div class="sec-title"><span class="bdg">📦</span>關於這份檔案</div>');
+    L.push('      <div class="hint">單檔 HTML，沒有框架也沒有後端。直接丟進 GitHub Pages 的資料夾就能用。<br>');
+    L.push('      顏色與字體的選擇存在 <code>localStorage</code>，換專案時記得改最下面的 <code>APP_NS</code>。</div>');
+    L.push('    </div>');
+    return L.join('\n');
+  }
+
+  return '    <div class="card"><div class="hint">空白頁</div></div>';
+}
+
+/* ============================================================
+   產出網站：腳本
+============================================================ */
+function siteScript(ns, pages){
+  var L = [];
+  L.push("/* 換專案時改這一行就好 */");
+  L.push("var APP_NS = '" + ns + "';");
+  L.push("var LS_THEME = APP_NS + '_theme', LS_FONT = APP_NS + '_font';");
+  L.push("");
+  L.push("function $(id){ return document.getElementById(id); }");
+  L.push("var tTimer = null;");
+  L.push("function toast(m){");
+  L.push("  var t = $('toast'); t.textContent = m; t.className = 'show';");
+  L.push("  clearTimeout(tTimer); tTimer = setTimeout(function(){ t.className = ''; }, 2000);");
+  L.push("}");
+  L.push("");
+  L.push("/* ---------- 分頁 ---------- */");
+  L.push("var TABS = " + JSON.stringify(pages.map(function(p){ return p.id; })) + ";");
+  L.push("function go(id){");
+  L.push("  TABS.forEach(function(k){ var s = $('tab-' + k); if(s) s.style.display = (k === id) ? '' : 'none'; });");
+  L.push("  var bs = document.querySelectorAll('#navBar button'), i;");
+  L.push("  for(i = 0; i < bs.length; i++){");
+  L.push("    bs[i].className = 'press' + (bs[i].getAttribute('data-tab') === id ? ' on' : '');");
+  L.push("  }");
+  L.push("  window.scrollTo(0, 0);");
+  L.push("}");
+  L.push("(function(){");
+  L.push("  var bs = document.querySelectorAll('#navBar button'), i;");
+  L.push("  for(i = 0; i < bs.length; i++){");
+  L.push("    bs[i].addEventListener('click', function(){ go(this.getAttribute('data-tab')); });");
+  L.push("  }");
+  L.push("})();");
+  L.push("");
+  L.push("/* ---------- 彈窗 ---------- */");
+  L.push("function openModal(title, html){");
+  L.push("  $('modalTitle').textContent = title;");
+  L.push("  $('modalBody').innerHTML = html;");
+  L.push("  $('modalWrap').className = 'on';");
+  L.push("}");
+  L.push("function closeModal(){ $('modalWrap').className = ''; }");
+  L.push("$('modalClose').addEventListener('click', closeModal);");
+  L.push("$('modalScrim').addEventListener('click', closeModal);");
+  L.push("");
+
+  if(state.recipes.length && state.pages.pal){
+    L.push("/* ---------- 配色 ---------- */");
+    L.push("var THEMES = " + JSON.stringify(
+      [{ id:'', label:'預設', sw:[state.theme.bg, state.theme.accent, state.theme.danger] }].concat(
+        state.recipes.map(function(r){
+          return { id:r.id, label:r.label, sw:[r.vars.bg, r.vars.accent, r.vars.danger] };
+        })
+      )
+    ) + ";");
+    L.push("function applyTheme(id){");
+    L.push("  if(id) document.body.setAttribute('data-theme', id);");
+    L.push("  else document.body.removeAttribute('data-theme');");
+    L.push("  try{ localStorage.setItem(LS_THEME, id); }catch(e){}");
+    L.push("  renderPalGrid();");
+    L.push("}");
+    L.push("function renderPalGrid(){");
+    L.push("  var wrap = $('palGrid'); if(!wrap) return;");
+    L.push("  var now = document.body.getAttribute('data-theme') || '';");
+    L.push("  wrap.innerHTML = '';");
+    L.push("  THEMES.forEach(function(th){");
+    L.push("    var b = document.createElement('button');");
+    L.push("    b.className = 'press' + (th.id === now ? ' on' : '');");
+    L.push("    b.innerHTML = '<span class=\"sw\">' + th.sw.map(function(c){");
+    L.push("      return '<i style=\"background:' + c + '\"></i>';");
+    L.push("    }).join('') + '</span>' + th.label;");
+    L.push("    b.addEventListener('click', function(){ applyTheme(th.id); toast('換成「' + th.label + '」'); });");
+    L.push("    wrap.appendChild(b);");
+    L.push("  });");
+    L.push("}");
+    L.push("");
+  }
+
+  if(state.pages.set){
+    L.push("/* ---------- 字體大小 ---------- */");
+    L.push("var LS_FS = APP_NS + '_fs';");
+    L.push("function applyFontSize(px){");
+    L.push("  px = Math.max(14, Math.min(22, parseInt(px, 10) || " + (state.fontSize || 16) + "));");
+    L.push("  document.documentElement.style.setProperty('--fs', px + 'px');");
+    L.push("  var r = $('fsRange'); if(r) r.value = px;");
+    L.push("  var n = $('fsNow'); if(n) n.textContent = px + 'px';");
+    L.push("  try{ localStorage.setItem(LS_FS, px); }catch(e){}");
+    L.push("}");
+    L.push("(function(){");
+    L.push("  var r = $('fsRange');");
+    L.push("  if(r) r.addEventListener('input', function(){ applyFontSize(this.value); });");
+    L.push("})();");
+    L.push("");
+    L.push("/* ---------- 字體 ---------- */");
+    L.push("var FONTS = " + JSON.stringify(FONTS.map(function(f){
+      return { id:f.id, label:f.label, stack:f.stack };
+    })) + ";");
+    L.push("function applyFont(id){");
+    L.push("  var f = FONTS[0], i;");
+    L.push("  for(i = 0; i < FONTS.length; i++){ if(FONTS[i].id === id) f = FONTS[i]; }");
+    L.push("  document.documentElement.style.setProperty('--font', f.stack);");
+    L.push("  try{ localStorage.setItem(LS_FONT, f.id); }catch(e){}");
+    L.push("  renderFontList(f.id);");
+    L.push("}");
+    L.push("function renderFontList(now){");
+    L.push("  var wrap = $('fontList'); if(!wrap) return;");
+    L.push("  wrap.innerHTML = '';");
+    L.push("  FONTS.forEach(function(f){");
+    L.push("    var b = document.createElement('button');");
+    L.push("    b.className = 'press' + (f.id === now ? ' on' : '');");
+    L.push("    b.textContent = f.label;");
+    L.push("    b.style.fontFamily = f.stack;");
+    L.push("    b.addEventListener('click', function(){ applyFont(f.id); });");
+    L.push("    wrap.appendChild(b);");
+    L.push("  });");
+    L.push("}");
+    L.push("");
+  }
+
+  L.push("/* ---------- 示範按鈕 ---------- */");
+  L.push("(function(){");
+  L.push("  var b;");
+  L.push("  b = $('btnHead');   if(b) b.addEventListener('click', function(){ toast('哈囉 ✦'); });");
+  L.push("  b = $('btnHello');  if(b) b.addEventListener('click', function(){ toast('按到了'); });");
+  L.push("  b = $('btnSubmit'); if(b) b.addEventListener('click', function(){");
+  L.push("    var n = $('fmName') ? $('fmName').value.trim() : '';");
+  L.push("    toast(n ? ('收到了，' + n) : '先填個名字吧');");
+  L.push("  });");
+  L.push("  b = $('btnModal');  if(b) b.addEventListener('click', function(){");
+  L.push("    openModal('彈窗', '<div class=\"hint\">這是彈窗內容，換成你要的東西。</div>');");
+  L.push("  });");
+  L.push("})();");
+  L.push("");
+  L.push("/* ---------- 開場 ---------- */");
+  L.push("(function(){");
+  L.push("  var th = null, fn = null;");
+  L.push("  try{ th = localStorage.getItem(LS_THEME); fn = localStorage.getItem(LS_FONT); }catch(e){}");
+  if(state.recipes.length && state.pages.pal){
+    L.push("  if(typeof applyTheme === 'function') applyTheme(th || '');");
+  }
+  if(state.pages.set){
+    L.push("  if(typeof applyFont === 'function') applyFont(fn || '" + state.font + "');");
+    L.push("  var fs = null;");
+    L.push("  try{ fs = localStorage.getItem(LS_FS); }catch(e){}");
+    L.push("  if(typeof applyFontSize === 'function') applyFontSize(fs || " + (state.fontSize || 16) + ");");
+  }
+  L.push("  go(TABS[0]);");
+  L.push("})();");
+
+  return L.join('\n');
+}
+
+/* ============================================================
+   重新計算 → 所有畫面跟著更新
+============================================================ */
+function recompute(){
+  var d = deriveTheme(state.mode, state.seeds);
+  Object.keys(state.advOverride).forEach(function(k){
+    if(d[k] !== undefined) d[k] = state.advOverride[k];
+  });
+  state.theme = d;
+  renderSeeds();
+  renderHealth();
+  if($('foldAdv').className.indexOf('open') >= 0) renderAdv();
+  markDirty();
+  save();
+}
+
+/* ============================================================
+   試喝：唯一的預覽出口
+============================================================ */
+var dirty = true, pvTimer = null;
+function markDirty(){
+  dirty = true;
+  clearTimeout(pvTimer);
+  pvTimer = setTimeout(function(){
+    if(curTab === 'taste' || $('full').className === 'on') refreshPreview();
+  }, 260);
+}
+function refreshPreview(){
+  var html = buildSite();
+  var a = $('pvFrame'), b = $('fullFrame');
+  if(a) a.srcdoc = html;
+  if(b && $('full').className === 'on') b.srcdoc = html;
+  dirty = false;
+}
+var PV_SIZES = [
+  { id:'phone',  label:'📱 手機',  w:'390px' },
+  { id:'tablet', label:'📖 平板',  w:'768px' },
+  { id:'full',   label:'🖥️ 全寬',  w:'100%' }
+];
+function renderPvSize(){
+  var wrap = $('pvSizeRow');
+  wrap.innerHTML = '';
+  PV_SIZES.forEach(function(s){
+    var b = document.createElement('button');
+    b.className = 'press' + (state.pvSize === s.id ? ' on' : '');
+    b.textContent = s.label;
+    b.addEventListener('click', function(){
+      state.pvSize = s.id; applyPvSize(); renderPvSize(); save();
+    });
+    wrap.appendChild(b);
+  });
+}
+function applyPvSize(){
+  var s = PV_SIZES[0], i;
+  for(i = 0; i < PV_SIZES.length; i++){ if(PV_SIZES[i].id === state.pvSize) s = PV_SIZES[i]; }
+  $('pvFrame').style.width = s.w;
+}
+
+/* ============================================================
+   ① 選料
+============================================================ */
+function renderMeta(){
+  $('fName').value = state.meta.name;
+  $('fSub').value  = state.meta.sub;
+  $('fNs').value   = state.meta.ns;
+}
+function renderPageList(){
+  var wrap = $('pageList');
+  wrap.innerHTML = '';
+  PAGES.forEach(function(p){
+    var on = !!state.pages[p.id];
+    var b = document.createElement('button');
+    b.className = 'pk press' + (on ? ' on' : '');
+    b.innerHTML = '<span class="bx">' + (on ? '✓' : '') + '</span>' +
+      '<span class="tx"><b>' + p.ic + ' ' + p.label + '</b><small>' + p.note + '</small></span>';
+    b.addEventListener('click', function(){
+      var count = activePages().length;
+      if(on && count <= 1){ toast('至少要留一張桌子'); return; }
+      state.pages[p.id] = !on;
+      renderPageList(); markDirty(); save();
+    });
+    wrap.appendChild(b);
+  });
+  $('pageCount').textContent = activePages().length + ' 張';
+}
+function renderPickList(){
+  var wrap = $('pickList');
+  wrap.innerHTML = '';
+  var groups = [];
+  ITEMS.forEach(function(it){ if(groups.indexOf(it.grp) < 0) groups.push(it.grp); });
+  groups.forEach(function(g){
+    var head = document.createElement('div');
+    head.className = 'grp';
+    head.innerHTML = '<span>' + g + '</span>';
+    wrap.appendChild(head);
+    ITEMS.filter(function(it){ return it.grp === g; }).forEach(function(it){
+      var on = !!state.pick[it.id];
+      var b = document.createElement('button');
+      b.className = 'pk press' + (on ? ' on' : '');
+      b.innerHTML = '<span class="bx">' + (on ? '✓' : '') + '</span>' +
+        '<span class="tx"><b>' + it.label + '</b><small>' + it.note + '</small>' +
+        '<code>.' + it.cls + '</code></span>';
+      b.addEventListener('click', function(){ togglePick(it.id); });
+      wrap.appendChild(b);
+    });
+  });
+  $('pickCount').textContent = picked().length + ' / ' + ITEMS.length;
+}
+function togglePick(id){
+  var it = itemOf(id);
+  if(!it) return;
+  if(state.pick[id]){
+    delete state.pick[id];
+  } else {
+    state.pick[id] = true;
+    if(it.dep){
+      var added = [];
+      it.dep.forEach(function(d){
+        if(!state.pick[d]){ state.pick[d] = true; var o = itemOf(d); if(o) added.push(o.label); }
+      });
+      if(added.length) toast('順手幫你補上：' + added.join('、'));
+    }
+  }
+  renderPickList(); markDirty(); save();
+}
+
+/* ============================================================
+   ② 調味
+============================================================ */
+function renderModeRow(){
+  var bs = $('modeRow').querySelectorAll('button'), i;
+  for(i = 0; i < bs.length; i++){
+    bs[i].className = 'press' + (bs[i].getAttribute('data-m') === state.mode ? ' on' : '');
+  }
+}
+/* ---------- 特調：12 款收藏配色 ---------- */
+function renderMix(){
+  var sel = $('mixSelect');
+  sel.innerHTML = '';
+  var o0 = document.createElement('option');
+  o0.value = ''; o0.textContent = '—— 不套用，自己調 ——';
+  if(!state.palette) o0.selected = true;
+  sel.appendChild(o0);
+
+  [{ fav:true, label:'🌙 原站主題' }, { fav:false, label:'✨ 風格主題' }].forEach(function(g){
+    var members = PALETTES.filter(function(p){ return !!p.fav === g.fav; });
+    if(!members.length) return;
+    var og = document.createElement('optgroup');
+    og.label = g.label;
+    members.forEach(function(p){
+      var o = document.createElement('option');
+      o.value = p.id; o.textContent = p.name;
+      if(p.id === state.palette) o.selected = true;
+      og.appendChild(o);
+    });
+    sel.appendChild(og);
+  });
+
+  var card = $('mixCard'), p = paletteOf(state.palette);
+  if(!p){ card.style.display = 'none'; return; }
+  card.style.display = '';
+  $('mixSw').style.background =
+    'linear-gradient(135deg,' + p.v.bg + ' 0%,' + p.v.bg + ' 34%,' +
+    p.v.accent + ' 34%,' + p.v.accent + ' 72%,' + p.v.danger + ' 72%)';
+  $('mixName').textContent = p.name;
+  $('mixTag').textContent = p.tag;
+}
+function applyPalette(id){
+  var p = paletteOf(id);
+  if(!p){ clearPalette(); return; }
+  state.palette = id;
+  state.mode = (lum(p.v.bg) < 0.22) ? 'dark' : 'light';
+  state.seeds = { bg:p.v.bg, ink:p.v.ink, accent:p.v.accent, danger:p.v.danger };
+  state.advOverride = {};
+  VAR_KEYS.forEach(function(k){ if(p.v[k]) state.advOverride[k] = p.v[k]; });
+  renderModeRow();
+  recompute();
+  renderMix();
+  toast('整杯換成「' + p.name + '」');
+}
+/* 只要動了任何一顆基底色或搖一杯，就算脫離特調 */
+function clearPalette(){
+  if(!state.palette) return;
+  state.palette = '';
+  renderMix();
+}
+
+function renderStyleSelect(){
+  var sel = $('styleSelect');
+  sel.innerHTML = '';
+  STYLE_GROUPS.forEach(function(g){
+    var members = STYLE_LIST.filter(function(s){ return s.group === g.id; });
+    if(!members.length) return;
+    var og = document.createElement('optgroup');
+    og.label = g.label;
+    members.forEach(function(s){
+      var o = document.createElement('option');
+      o.value = s.key; o.textContent = s.label;
+      if(s.key === state.style) o.selected = true;
+      og.appendChild(o);
+    });
+    sel.appendChild(og);
+  });
+  renderStyleCard();
+}
+function renderStyleCard(){
+  var st = currentStyle();
+  $('stSw').style.background = st.sw;
+  $('stName').textContent = st.label;
+  $('stDesc').textContent = st.desc;
+}
+function renderDngRow(){
+  var wrap = $('dngRow');
+  wrap.innerHTML = '';
+  DANGER_MODES.forEach(function(d){
+    var b = document.createElement('button');
+    b.className = 'press' + (state.dangerMode === d.id ? ' on' : '');
+    b.textContent = d.label;
+    b.addEventListener('click', function(){ state.dangerMode = d.id; renderDngRow(); save(); });
+    wrap.appendChild(b);
+  });
+}
+var SEED_DEFS = [
+  { key:'bg',     label:'🫧 背景基色', lockable:true },
+  { key:'ink',    label:'🖋️ 文字色',   lockable:false },
+  { key:'accent', label:'💎 主色',     lockable:true },
+  { key:'danger', label:'🍓 警示色',   lockable:true }
+];
+function renderSeeds(){
+  var wrap = $('seedList');
+  wrap.innerHTML = '';
+  SEED_DEFS.forEach(function(d){
+    var val = (d.key === 'ink') ? state.theme.ink : state.seeds[d.key];
+    var row = document.createElement('div');
+    row.className = 'seed';
+    row.innerHTML =
+      '<div class="sw" style="background:' + val + '"><input type="color" value="' + val + '"></div>' +
+      '<div class="tx"><b>' + d.label + '</b><span>' + val + '</span></div>' +
+      (d.lockable ? '<button class="lock press' + (state.locks[d.key] ? ' on' : '') + '">' +
+        (state.locks[d.key] ? '🔒' : '🔓') + '</button>' : '');
+    var inp = row.querySelector('input');
+    inp.addEventListener('input', function(){
+      if(d.key === 'ink') state.seeds.ink = this.value;
+      else state.seeds[d.key] = this.value;
+      state.advOverride = {};
+      clearPalette();
+      recompute();
+    });
+    var lk = row.querySelector('.lock');
+    if(lk) lk.addEventListener('click', function(){
+      state.locks[d.key] = !state.locks[d.key];
+      renderSeeds(); save();
+    });
+    wrap.appendChild(row);
+  });
+}
+var HP_CHECKS = [
+  { a:'ink',      b:'bg',     label:'內文 × 背景',   need:4.5 },
+  { a:'ink',      b:'card',   label:'內文 × 卡片',   need:4.5 },
+  { a:'ink-soft', b:'card',   label:'次要字 × 卡片', need:3.2 },
+  { a:'on-accent',b:'accent', label:'按鈕字 × 主色', need:4.0 },
+  { a:'accent',   b:'card',   label:'主色 × 卡片',   need:2.2 },
+  { a:'danger',   b:'card',   label:'警示 × 卡片',   need:2.2 }
+];
+function renderHealth(){
+  var wrap = $('hpList');
+  wrap.innerHTML = '';
+  var bad = 0;
+  HP_CHECKS.forEach(function(c){
+    var v = contrast(state.theme[c.a], state.theme[c.b]);
+    var ok = v >= c.need;
+    if(!ok) bad++;
+    var row = document.createElement('div');
+    row.className = 'hp' + (ok ? '' : ' bad');
+    row.innerHTML = '<span class="dot" style="background:' + (ok ? state.theme.accent : state.theme.danger) + '"></span>' +
+      c.label + '<span class="val">' + v.toFixed(1) + ' / ' + c.need + '</span>';
+    wrap.appendChild(row);
+  });
+  var sum = document.createElement('div');
+  sum.className = 'hint';
+  sum.style.marginTop = '9px';
+  sum.textContent = bad === 0 ? '都看得清楚，可以放心用。'
+    : ('有 ' + bad + ' 項偏低，字可能會糊掉。往「逐格微調」把明暗拉開一點會好很多。');
+  wrap.appendChild(sum);
+}
+function renderAdv(){
+  var wrap = $('advBody');
+  wrap.innerHTML = '';
+  VAR_KEYS.forEach(function(k){
+    var val = state.theme[k];
+    var row = document.createElement('div');
+    row.className = 'adv';
+    row.innerHTML =
+      '<div class="sw" style="background:' + val + '"><input type="color" value="' + val + '"></div>' +
+      '<b>' + VAR_LABELS[k] + '</b><span>' + val + '</span>';
+    row.querySelector('input').addEventListener('input', function(){
+      state.advOverride[k] = this.value;
+      recompute();
+    });
+    wrap.appendChild(row);
+  });
+  var btn = document.createElement('button');
+  btn.className = 'btn-line press btn-gap btn-sm';
+  btn.textContent = '↩️ 放掉所有手動微調';
+  btn.addEventListener('click', function(){ state.advOverride = {}; recompute(); toast('回到算出來的顏色'); });
+  wrap.appendChild(btn);
+}
+
+/* ---------- 版式手感 ---------- */
+var BORDERS = [{id:'solid',label:'實線'},{id:'dashed',label:'虛線'},{id:'none',label:'無框'}];
+var SHADOWS = [{id:'hard',label:'硬陰影'},{id:'lift',label:'墊高'},{id:'soft',label:'柔陰影'},{id:'none',label:'無'}];
+function renderPanel(){
+  $('fsRange').value = state.fontSize;
+  $('fsV').textContent = state.fontSize + 'px';
+  $('pnlRadius').value = state.panel.radius;
+  $('pnlRadiusV').textContent = state.panel.radius + 'px';
+  $('pnlBw').value = state.panel.bw;
+  $('pnlBwV').textContent = state.panel.bw + 'px';
+  seg('pnlBorderRow', BORDERS, state.panel.border, function(id){ state.panel.border = id; renderPanel(); markDirty(); save(); });
+  seg('pnlShadowRow', SHADOWS, state.panel.shadow, function(id){ state.panel.shadow = id; renderPanel(); markDirty(); save(); });
+  seg('fontRow', FONTS, state.font, function(id){ state.font = id; renderPanel(); markDirty(); save(); });
+}
+function seg(wrapId, list, now, onPick){
+  var wrap = $(wrapId);
+  wrap.innerHTML = '';
+  list.forEach(function(o){
+    var b = document.createElement('button');
+    b.className = 'press' + (o.id === now ? ' on' : '');
+    b.textContent = o.label;
+    b.addEventListener('click', function(){ onPick(o.id); });
+    wrap.appendChild(b);
+  });
+}
+
+/* ---------- 表格家族 ---------- */
+function renderTblMode(){
+  var wrap = $('tblModeRow');
+  wrap.innerHTML = '';
+  TBL_MODES.forEach(function(m){
+    var b = document.createElement('button');
+    b.className = 'press' + (state.tbl.mode === m.id ? ' on' : '');
+    b.textContent = m.label;
+    b.addEventListener('click', function(){
+      state.tbl.mode = m.id;
+      renderTblMode(); renderTblColors(); markDirty(); save();
+    });
+    wrap.appendChild(b);
+  });
+}
+function renderTblColors(){
+  var wrap = $('tblColors'), mode = state.tbl.mode;
+  wrap.innerHTML = '';
+
+  if(mode === 'auto'){
+    $('tblModeHint').textContent =
+      '一鍵綁主色：表頭與標籤直接吃目前的配色，搖一杯或換主題整桌跟著變，不用一格一格設。';
+    COLOR_FIELDS.forEach(function(f){
+      var row = document.createElement('div');
+      row.className = 'crow';
+      row.innerHTML = '<div class="cn"><b>' + f.name + '</b><small>' + f.v + '</small></div>' +
+        '<span class="auto-val">' + TBL_AUTO_SHOW[f.k] + '</span>';
+      wrap.appendChild(row);
+    });
+    return;
+  }
+
+  if(mode === 'theme'){
+    $('tblModeHint').textContent = '進階：自己指定每一格要綁哪個主題變數，換配色時還是會跟著走。';
+    COLOR_FIELDS.forEach(function(f){
+      var row = document.createElement('div');
+      row.className = 'crow';
+      var sel = '<select data-k="' + f.k + '">' + f.opts.map(function(o){
+        return '<option value="' + o[0] + '"' + (state.tbl.theme[f.k] === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
+      }).join('') + '</select>';
+      row.innerHTML = '<div class="cn"><b>' + f.name + '</b><small>' + f.v + '</small></div>' + sel;
+      row.querySelector('select').addEventListener('change', function(){
+        state.tbl.theme[f.k] = this.value;
+        markDirty(); save();
+      });
+      wrap.appendChild(row);
+    });
+    return;
+  }
+
+  $('tblModeHint').textContent = '寫死色碼：不管主題怎麼換，表格永遠是這幾個顏色。';
+  COLOR_FIELDS.forEach(function(f){
+    var val = state.tbl.fixed[f.k];
+    var row = document.createElement('div');
+    row.className = 'crow';
+    row.innerHTML = '<div class="cn"><b>' + f.name + '</b><small>' + f.v + '</small></div>' +
+      '<span class="chex">' + val + '</span>' +
+      '<div class="cbox" style="background:' + val + '"><input type="color" value="' + val + '"></div>';
+    row.querySelector('input').addEventListener('input', function(){
+      state.tbl.fixed[f.k] = this.value.toUpperCase();
+      row.querySelector('.cbox').style.background = this.value;
+      row.querySelector('.chex').textContent = this.value.toUpperCase();
+      markDirty(); save();
+    });
+    wrap.appendChild(row);
+  });
+}
+
+/* ---------- 搖一杯 ---------- */
+function rollSeeds(st, mode){
+  var M = st[mode];
+  var bgHue  = rollHue(st.hue ? st.hue.bg  : null);
+  var accHue = rollHue(st.hue ? st.hue.acc : null);
+  if(st.key === 'memphis') bgHue = accHue;
+  if((st.key === 'rococo' || st.key === 'luxury') && hueDist(bgHue, accHue) < 20){
+    bgHue = (accHue + 40 + randInt(0, 40)) % 360;
+  }
+  var dngHue = rollDangerHue(st, accHue);
+  return {
+    bg:     hslToHex(bgHue,  randIn(M.bg.s),  randIn(M.bg.l)),
+    accent: hslToHex(accHue, randIn(M.acc.s), randIn(M.acc.l)),
+    danger: hslToHex(dngHue, randIn(M.dng.s), randIn(M.dng.l))
+  };
+}
+function randomize(){
+  clearPalette();
+  state.advOverride = {};
+  var st = currentStyle();
+  var next = rollSeeds(st, state.mode);
+  ['bg','accent','danger'].forEach(function(k){ if(!state.locks[k]) state.seeds[k] = next[k]; });
+  state.seeds.ink = null;
+  recompute();
+  wiggle();
+  var locked = ['bg','accent','danger'].filter(function(k){ return state.locks[k]; }).length;
+  toast('新的一杯來了' + (st.key === 'any' ? '' : '・' + st.label) + (locked ? '（' + locked + ' 顆鎖著）' : ''));
+}
+function makeTwin(){
+  clearPalette();
+  var from = state.mode, to = (from === 'light') ? 'dark' : 'light';
+  var st = currentStyle(), M = st[to];
+  var bgH = hexToHsl(state.seeds.bg), acH = hexToHsl(state.seeds.accent), dgH = hexToHsl(state.seeds.danger);
+  state.seeds.bg     = hslToHex(bgH.h, randIn(M.bg.s),  randIn(M.bg.l));
+  state.seeds.accent = hslToHex(acH.h, randIn(M.acc.s), randIn(M.acc.l));
+  state.seeds.danger = hslToHex(dgH.h, randIn(M.dng.s), randIn(M.dng.l));
+  state.seeds.ink = null;
+  state.advOverride = {};
+  state.mode = to;
+  renderModeRow();
+  recompute();
+  toast(to === 'dark' ? '做好深色雙生版了 🌙' : '做好明亮雙生版了 ☀️');
+}
+function setMode(mode){
+  clearPalette();
+  state.mode = mode;
+  state.seeds = JSON.parse(JSON.stringify(DEFAULT_SEEDS[mode]));
+  state.advOverride = {};
+  renderModeRow();
+  recompute();
+}
+function wiggle(){
+  var el = $('mascot');
+  el.className = 'mascot';
+  void el.offsetWidth;
+  el.className = 'mascot wiggle';
+}
+
+/* ---------- 圖片吸色（本機 K-means，不連線） ---------- */
+function extractPalette(imgEl, k, iterations){
+  k = k || 6; iterations = iterations || 8;
+  var size = 80;
+  var canvas = document.createElement('canvas');
+  canvas.width = size; canvas.height = size;
+  var ctx = canvas.getContext('2d');
+  ctx.drawImage(imgEl, 0, 0, size, size);
+  var data;
+  try{ data = ctx.getImageData(0, 0, size, size).data; }catch(e){ return null; }
+  var pts = [], i, j;
+  for(i = 0; i < data.length; i += 4){
+    if(data[i + 3] < 125) continue;
+    pts.push([data[i], data[i + 1], data[i + 2]]);
+  }
+  if(!pts.length) return null;
+  var cents = [];
+  for(j = 0; j < k; j++) cents.push(pts[Math.floor(Math.random() * pts.length)].slice());
+  var assign = new Array(pts.length);
+  for(var it = 0; it < iterations; it++){
+    for(i = 0; i < pts.length; i++){
+      var best = 0, bd = Infinity;
+      for(j = 0; j < k; j++){
+        var dr = pts[i][0] - cents[j][0], dg = pts[i][1] - cents[j][1], db = pts[i][2] - cents[j][2];
+        var d = dr * dr + dg * dg + db * db;
+        if(d < bd){ bd = d; best = j; }
+      }
+      assign[i] = best;
+    }
+    var sums = [], cnts = [];
+    for(j = 0; j < k; j++){ sums.push([0, 0, 0]); cnts.push(0); }
+    for(i = 0; i < pts.length; i++){
+      var a = assign[i];
+      sums[a][0] += pts[i][0]; sums[a][1] += pts[i][1]; sums[a][2] += pts[i][2]; cnts[a]++;
+    }
+    for(j = 0; j < k; j++){ if(cnts[j] > 0) cents[j] = [sums[j][0] / cnts[j], sums[j][1] / cnts[j], sums[j][2] / cnts[j]]; }
+  }
+  var counts = [];
+  for(j = 0; j < k; j++) counts.push(0);
+  for(i = 0; i < assign.length; i++) counts[assign[i]]++;
+  var out = [];
+  for(j = 0; j < k; j++){
+    if(counts[j] === 0) continue;
+    var hex = rgbToHex(cents[j][0], cents[j][1], cents[j][2]);
+    var hsl = hexToHsl(hex);
+    out.push({ hex:hex, h:hsl.h, s:hsl.s, l:hsl.l, n:counts[j] });
+  }
+  out.sort(function(a, b){ return b.n - a.n; });
+  return out;
+}
+function handleImageFile(file){
+  var reader = new FileReader();
+  $('imgAnalyzing').style.display = 'block';
+  $('imgResult').style.display = 'none';
+  reader.onload = function(e){
+    var img = new Image();
+    img.onload = function(){
+      var res = extractPalette(img, 6, 8);
+      $('imgAnalyzing').style.display = 'none';
+      if(!res || !res.length){ toast('這張圖分析不出顏色'); return; }
+      state.imgClusters = res;
+      $('imgThumb').src = e.target.result;
+      $('imgSwatches').innerHTML = res.map(function(c){
+        return '<div style="background:' + c.hex + '"></div>';
+      }).join('');
+      $('imgResult').style.display = 'block';
+    };
+    img.onerror = function(){ $('imgAnalyzing').style.display = 'none'; toast('圖片讀不到'); };
+    img.src = e.target.result;
+  };
+  reader.onerror = function(){ $('imgAnalyzing').style.display = 'none'; toast('圖片讀不到'); };
+  reader.readAsDataURL(file);
+}
+function applyImagePalette(){
+  var cs = state.imgClusters;
+  if(!cs || !cs.length){ toast('要先挑一張圖'); return; }
+  clearPalette();
+  var dominant = cs[0];
+  var vivid = cs.filter(function(c){ return c.s > 15; }).sort(function(a, b){ return b.s - a.s; });
+  var accSrc = vivid[0] || dominant;
+  state.advOverride = {};
+  var st = currentStyle(), M = st[state.mode];
+  var dngHue = rollDangerHue(st, accSrc.h);
+  var next = {
+    bg:     hslToHex(dominant.h, randIn(M.bg.s),  randIn(M.bg.l)),
+    accent: hslToHex(accSrc.h,   randIn(M.acc.s), randIn(M.acc.l)),
+    danger: hslToHex(dngHue,     randIn(M.dng.s), randIn(M.dng.l))
+  };
+  ['bg','accent','danger'].forEach(function(k){ if(!state.locks[k]) state.seeds[k] = next[k]; });
+  state.seeds.ink = null;
+  recompute();
+  toast('吸完色了' + (st.key === 'any' ? '' : '・依「' + st.label + '」調配'));
+}
+
+/* ============================================================
+   ④ 食譜櫃
+   ------------------------------------------------------------
+   存起來的每一杯 = 產出網站裡的一個 [data-theme] 區塊
+============================================================ */
+function renderRecipes(){
+  var wrap = $('rcpList');
+  wrap.innerHTML = '';
+  if(!state.recipes.length){
+    wrap.innerHTML = '<div class="hint">櫃子還是空的。調出喜歡的顏色以後，取個名字收進來。</div>';
+    $('rcpCount').textContent = '0 杯';
+    return;
+  }
+  state.recipes.forEach(function(r, idx){
+    var row = document.createElement('div');
+    row.className = 'rcp';
+    row.innerHTML =
+      '<div class="sw"><i style="background:' + r.vars.bg + '"></i>' +
+      '<i style="background:' + r.vars.accent + '"></i>' +
+      '<i style="background:' + r.vars.danger + '"></i></div>' +
+      '<div class="tx"><b>' + escHtml(r.label) + '</b><span>' + escHtml(r.id) + '</span></div>' +
+      '<button class="act press" data-a="use" title="換回這杯">↩️</button>' +
+      '<button class="act press" data-a="del" title="丟掉">🗑️</button>';
+    row.querySelector('[data-a=use]').addEventListener('click', function(){
+      state.mode = r.mode;
+      state.seeds = JSON.parse(JSON.stringify(r.seeds));
+      state.advOverride = JSON.parse(JSON.stringify(r.advOverride || {}));
+      renderModeRow();
+      recompute();
+      toast('換回「' + r.label + '」');
+    });
+    row.querySelector('[data-a=del]').addEventListener('click', function(){
+      state.recipes.splice(idx, 1);
+      renderRecipes(); markDirty(); save();
+      toast('丟掉「' + r.label + '」');
+    });
+    wrap.appendChild(row);
+  });
+  $('rcpCount').textContent = state.recipes.length + ' 杯';
+}
+function saveRecipe(){
+  var label = $('rcpLabel').value.trim();
+  var id = $('rcpId').value.trim().replace(/[^A-Za-z0-9_-]/g, '');
+  if(!label){ toast('先幫這杯取個名字'); return; }
+  if(!id){ id = 'cup' + (state.recipes.length + 1); }
+  var dup = -1, i;
+  for(i = 0; i < state.recipes.length; i++){ if(state.recipes[i].id === id) dup = i; }
+  var rec = {
+    id:id, label:label, mode:state.mode,
+    seeds: JSON.parse(JSON.stringify(state.seeds)),
+    advOverride: JSON.parse(JSON.stringify(state.advOverride)),
+    vars: JSON.parse(JSON.stringify(state.theme))
+  };
+  if(dup >= 0){ state.recipes[dup] = rec; toast('蓋掉舊的「' + label + '」'); }
+  else { state.recipes.push(rec); toast('收進櫃子了・' + label); }
+  $('rcpLabel').value = ''; $('rcpId').value = '';
+  renderRecipes(); markDirty(); save();
+}
+
+/* ---------- 看色取名 ---------- */
+var HUE_CUTS = [16, 45, 70, 100, 175, 205, 250, 290, 330, 361];
+var HUE_WORDS = ['草莓','焦糖','蜂蜜','青蘋','抹茶','薄荷','藍柑','薰衣草','芋泥','荔枝'];
+var GRAY_WORDS = ['燕麥','煙灰','牛奶','可可','杏仁'];
+var TEXTURE_LIGHT = ['拿鐵','奶蓋','歐蕾','慕斯','棉花糖','鮮奶油'];
+var TEXTURE_DARK  = ['濃縮','黑糖','夜咖','冷萃','煙燻'];
+var TEXTURE_VIVID = ['氣泡','冰沙','蘇打','漸層'];
+function nameIdea(){
+  var acc = hexToHsl(state.theme.accent);
+  var base;
+  if(acc.s < 14){ base = pickOne(GRAY_WORDS); }
+  else {
+    var i = 0;
+    while(i < HUE_CUTS.length - 1 && acc.h >= HUE_CUTS[i]) i++;
+    base = HUE_WORDS[i % HUE_WORDS.length];
+  }
+  var tex;
+  if(acc.s > 60) tex = pickOne(TEXTURE_VIVID);
+  else if(state.mode === 'dark') tex = pickOne(TEXTURE_DARK);
+  else tex = pickOne(TEXTURE_LIGHT);
+  var label = base + tex;
+  var romaji = 'cup-' + Math.abs(Math.round(acc.h)) + '-' + (state.mode === 'dark' ? 'd' : 'l') + randInt(10, 99);
+  $('rcpLabel').value = label;
+  $('rcpId').value = romaji;
+  toast('叫它「' + label + '」如何');
+}
+
+/* ============================================================
+   外帶
+============================================================ */
+function doBuild(){
+  var code = buildSite();
+  $('outCode').value = code;
+  var kb = (code.length / 1024).toFixed(1);
+  $('outSize').innerHTML = '共 <b>' + code.length.toLocaleString() + '</b> 個字元（約 ' + kb + ' KB）・' +
+    picked().length + ' 塊積木・' + activePages().length + ' 張桌子・' + state.recipes.length + ' 組配色';
+  toast('做好了，可以帶走');
+  return code;
+}
+function doCopy(){
+  var code = $('outCode').value || doBuild();
+  var ta = $('outCode');
+  ta.removeAttribute('readonly');
+  ta.select(); ta.setSelectionRange(0, 999999);
+  var ok = false;
+  try{ ok = document.execCommand('copy'); }catch(e){}
+  ta.setAttribute('readonly', 'readonly');
+  if(ok){ toast('複製好了'); return; }
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(code).then(function(){ toast('複製好了'); },
+      function(){ toast('複製失敗，請長按框內文字手動複製'); });
+  } else { toast('複製失敗，請長按框內文字手動複製'); }
+}
+function doDownload(){
+  var code = $('outCode').value || doBuild();
+  var name = (state.meta.name || 'site').replace(/[\\/:*?"<>|]/g, '') + '.html';
+  var blob = new Blob([code], { type:'text/html;charset=utf-8' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = name;
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); }, 400);
+  toast('下載中・' + name);
+}
+
+/* ============================================================
+   備份
+============================================================ */
+function doBackup(){
+  var data = JSON.stringify(state, null, 1);
+  var blob = new Blob([data], { type:'application/json;charset=utf-8' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = '小怪獸咖啡館_備份_' + new Date().toISOString().slice(0, 10) + '.json';
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); }, 400);
+  toast('備份下載中');
+}
+function doRestore(file){
+  var reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      var o = JSON.parse(e.target.result);
+      Object.keys(state).forEach(function(k){
+        if(o[k] !== undefined && k !== 'theme') state[k] = o[k];
+      });
+      renderAll();
+      recompute();
+      toast('接回來了');
+    }catch(err){ toast('這份檔案讀不懂'); }
+  };
+  reader.onerror = function(){ toast('檔案讀不到'); };
+  reader.readAsText(file);
+}
+function doWipe(){
+  if(!confirm('所有設定與整櫃食譜都會清掉，確定嗎？')) return;
+  try{ localStorage.removeItem(LS); }catch(e){}
+  location.reload();
+}
+
+/* ============================================================
+   分頁與折疊
+============================================================ */
+var curTab = 'pick';
+function go(id){
+  curTab = id;
+  ['pick','mix','taste','out'].forEach(function(k){
+    var s = $('tab-' + k);
+    if(s) s.style.display = (k === id) ? '' : 'none';
+  });
+  var bs = $('navBar').querySelectorAll('button'), i;
+  for(i = 0; i < bs.length; i++){
+    bs[i].className = 'press' + (bs[i].getAttribute('data-tab') === id ? ' on' : '');
+  }
+  window.scrollTo(0, 0);
+  if(id === 'taste' && dirty) refreshPreview();
+  if(id === 'out') doBuild();
+}
+function openFull(){
+  $('full').className = 'on';
+  $('fullFrame').srcdoc = buildSite();
+}
+function closeFull(){
+  $('full').className = '';
+}
+
+/* ============================================================
+   全部重畫
+============================================================ */
+function renderAll(){
+  renderMeta();
+  renderPageList();
+  renderPickList();
+  renderModeRow();
+  renderMix();
+  renderStyleSelect();
+  renderDngRow();
+  renderPanel();
+  renderTblMode();
+  renderTblColors();
+  renderPvSize();
+  applyPvSize();
+  renderRecipes();
+}
+
+/* ============================================================
+   綁事件
+============================================================ */
+(function bind(){
+  var bs = $('navBar').querySelectorAll('button'), i;
+  for(i = 0; i < bs.length; i++){
+    bs[i].addEventListener('click', function(){ go(this.getAttribute('data-tab')); });
+  }
+
+  var fhs = document.querySelectorAll('.fold-head');
+  for(i = 0; i < fhs.length; i++){
+    fhs[i].addEventListener('click', function(){
+      var box = $(this.getAttribute('data-fold'));
+      var open = box.className.indexOf('open') >= 0;
+      box.className = open ? 'fold' : 'fold open';
+      if(!open && box.id === 'foldAdv') renderAdv();
+    });
+  }
+
+  $('mascot').addEventListener('click', function(){ wiggle(); toast('☕'); });
+  $('btnDice').addEventListener('click', randomize);
+  $('btnPeek').addEventListener('click', openFull);
+  $('btnFull').addEventListener('click', openFull);
+  $('fullClose').addEventListener('click', closeFull);
+  $('fullReload').addEventListener('click', function(){ $('fullFrame').srcdoc = buildSite(); toast('重沖好了'); });
+  $('btnReload').addEventListener('click', function(){ refreshPreview(); toast('重沖好了'); });
+
+  ['fName','fSub','fNs'].forEach(function(id){
+    $(id).addEventListener('input', function(){
+      state.meta.name = $('fName').value;
+      state.meta.sub  = $('fSub').value;
+      state.meta.ns   = $('fNs').value;
+      markDirty(); save();
+    });
+  });
+
+  $('pickAll').addEventListener('click', function(){
+    ITEMS.forEach(function(it){ state.pick[it.id] = true; });
+    renderPickList(); markDirty(); save(); toast('全部放進去了');
+  });
+  $('pickCommon').addEventListener('click', function(){
+    state.pick = {};
+    COMMON_PICK.forEach(function(id){ state.pick[id] = true; });
+    renderPickList(); markDirty(); save(); toast('換成常用組');
+  });
+  $('pickNone').addEventListener('click', function(){
+    state.pick = {};
+    renderPickList(); markDirty(); save(); toast('清空了');
+  });
+
+  var mbs = $('modeRow').querySelectorAll('button');
+  for(i = 0; i < mbs.length; i++){
+    mbs[i].addEventListener('click', function(){ setMode(this.getAttribute('data-m')); });
+  }
+  $('mixSelect').addEventListener('change', function(){
+    applyPalette(this.value);
+  });
+  $('fsRange').addEventListener('input', function(){
+    state.fontSize = parseInt(this.value, 10);
+    $('fsV').textContent = state.fontSize + 'px';
+    markDirty(); save();
+  });
+  $('styleSelect').addEventListener('change', function(){
+    state.style = this.value;
+    renderStyleCard();
+    var st = currentStyle();
+    if(st.nativeMode && st.nativeMode !== state.mode){
+      state.mode = st.nativeMode;
+      renderModeRow();
+    }
+    save();
+    toast('風味換成「' + st.label + '」・按搖一杯試試');
+  });
+  $('btnRandom').addEventListener('click', randomize);
+  $('btnTwin').addEventListener('click', makeTwin);
+
+  $('pnlRadius').addEventListener('input', function(){
+    state.panel.radius = parseInt(this.value, 10);
+    $('pnlRadiusV').textContent = state.panel.radius + 'px';
+    markDirty(); save();
+  });
+  $('pnlBw').addEventListener('input', function(){
+    state.panel.bw = parseInt(this.value, 10);
+    $('pnlBwV').textContent = state.panel.bw + 'px';
+    markDirty(); save();
+  });
+
+  $('btnPickImg').addEventListener('click', function(){ $('imgFile').click(); });
+  $('imgFile').addEventListener('change', function(){
+    if(this.files && this.files[0]) handleImageFile(this.files[0]);
+    this.value = '';
+  });
+  $('btnApplyImg').addEventListener('click', applyImagePalette);
+
+  $('btnNameIdea').addEventListener('click', nameIdea);
+  $('btnSaveRcp').addEventListener('click', saveRecipe);
+
+  $('btnBuild').addEventListener('click', doBuild);
+  $('btnCopy').addEventListener('click', doCopy);
+  $('btnDl').addEventListener('click', doDownload);
+
+  $('btnBackup').addEventListener('click', doBackup);
+  $('btnRestore').addEventListener('click', function(){ $('jsonFile').click(); });
+  $('jsonFile').addEventListener('change', function(){
+    if(this.files && this.files[0]) doRestore(this.files[0]);
+    this.value = '';
+  });
+  $('btnWipe').addEventListener('click', doWipe);
+
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && $('full').className === 'on') closeFull();
+  });
+})();
+
+/* ============================================================
+   開店
+============================================================ */
+renderAll();
+recompute();
+go('pick');
+
+</script>
+</body>
+</html>
