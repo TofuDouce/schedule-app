@@ -128,6 +128,7 @@ button{font-family:var(--font);font-weight:700;cursor:pointer;border:0}
 .btn.soft:active{box-shadow:0 2px 0 var(--card-edge)}
 .btn.warn{background:var(--danger);box-shadow:0 4px 0 var(--danger-dk);color:#fff}
 .btn.tiny{font-size:.74em;padding:9px 20px}
+a.btn{display:block;text-align:center;text-decoration:none}
 
 label.fl{display:block;font-weight:700;font-size:.8em;margin:14px 0 6px}
 input[type=text],textarea,select{
@@ -348,6 +349,14 @@ nav.bottom button.on{color:var(--accent)}
       <div class="eyebrow">保險起見</div>
       <p class="sub" style="margin:0 0 8px">作品只存在雲端。下載一份放手機或電腦，萬一出事還救得回來。</p>
       <div class="row"><button class="btn soft wide" id="btnBackup">備份全部作品</button></div>
+      <div class="gauge hide" id="bkGauge"><span></span></div>
+      <div class="meter" id="bkMsg"></div>
+      <div class="row hide" id="bkResult">
+        <a class="btn wide" id="bkLink" download>下載到這台裝置</a>
+      </div>
+      <div class="row hide" id="bkShareRow">
+        <button class="btn soft wide" id="bkShare">儲存到「檔案」App</button>
+      </div>
       <div class="center"><button class="btn warn tiny" id="btnOut">登出</button></div>
     </div>
   </div>
@@ -650,31 +659,117 @@ async function move(key, dir){
   }catch(e){ err(friendly(e)); }
 }
 
+let bkBlob = null, bkName = '';
+
+function loadJSZip(){
+  if(window.JSZip) return Promise.resolve(window.JSZip);
+  return new Promise((res, rej) => {
+    const t = document.createElement('script');
+    t.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+    t.onload = () => window.JSZip ? res(window.JSZip) : rej(new Error('JSZip 沒載到'));
+    t.onerror = () => rej(new Error('連不到 JSZip'));
+    document.head.appendChild(t);
+  });
+}
+function bkProgress(pct, msg){
+  $('bkGauge').classList.remove('hide');
+  $('bkGauge').querySelector('span').style.width = Math.max(2, Math.min(100, pct)) + '%';
+  $('bkMsg').textContent = msg;
+}
+function safeName(n, used){
+  let base = String(n || 'work').replace(/[\\/:*?"<>|\u0000-\u001f]/g, '-').trim().slice(0, 60) || 'work';
+  let name = base + '.html', k = 2;
+  while(used.has(name)){ name = base + '-' + k + '.html'; k++; }
+  used.add(name);
+  return name;
+}
+
 async function backup(){
   const btn = $('btnBackup');
+  clearErr();
+  bkBlob = null;
+  $('bkResult').classList.add('hide');
+  $('bkShareRow').classList.add('hide');
+  if(!works.length){ $('bkMsg').textContent = '架上還沒有作品。'; return; }
+
   btn.disabled = true;
-  const out = { site:'小怪獸咖啡館', at:new Date().toISOString(), works:[] };
+  btn.textContent = '打包中⋯⋯';
+  const stamp = new Date().toISOString().slice(0, 10);
+  const failed = [];
+
   try{
+    let zip = null;
+    try{ zip = new (await loadJSZip())(); }
+    catch(e){ $('bkMsg').textContent = '壓縮工具載不到，改用單一檔案格式。'; }
+
+    const used = new Set();
+    const manifest = [];
+
     for(let i = 0; i < works.length; i++){
       const w = works[i];
-      btn.textContent = '打包中 ' + (i + 1) + ' / ' + works.length;
-      const snap = await getDoc(doc(db, w.coll, w.id, 'blob', 'source'));
-      out.works.push({
-        id:w.id, coll:w.coll, name:w.name, desc:w.desc, cat:w.cat,
-        pinned:!!w.pinned, order:rank(w), size:w.size,
-        code: snap.exists() ? (snap.data().code || '') : ''
-      });
+      bkProgress((i / works.length) * 70, '讀取中 ' + (i + 1) + ' / ' + works.length + '　' + (w.name || ''));
+      let code = '';
+      try{
+        const snap = await getDoc(doc(db, w.coll, w.id, 'blob', 'source'));
+        code = snap.exists() ? (snap.data().code || '') : '';
+      }catch(e){ failed.push(w.name || w.id); continue; }
+      if(!code){ failed.push(w.name || w.id); continue; }
+
+      const folder = w.coll === 'posts_private' ? '加鎖' : '公開';
+      const file = safeName(w.name, used);
+      manifest.push({ id:w.id, coll:w.coll, name:w.name, desc:w.desc, cat:w.cat,
+        pinned:!!w.pinned, order:rank(w), size:w.size, file:folder + '/' + file });
+      if(zip) zip.folder(folder).file(file, code);
+      else manifest[manifest.length - 1].code = code;
     }
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([JSON.stringify(out, null, 1)], { type:'application/json' }));
-    a.download = 'cafe-backup-' + new Date().toISOString().slice(0, 10) + '.json';
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 8000);
-    toast('備份下載好了');
-  }catch(e){ err(friendly(e)); }
-  finally{ btn.disabled = false; btn.textContent = '備份全部作品'; }
+
+    if(!manifest.length) throw new Error('一件都讀不到');
+
+    if(zip){
+      zip.file('作品清單.json', JSON.stringify({ site:'小怪獸咖啡館', at:new Date().toISOString(), works:manifest }, null, 1));
+      bkBlob = await zip.generateAsync(
+        { type:'blob', compression:'DEFLATE', compressionOptions:{ level:6 } },
+        m => bkProgress(70 + m.percent * 0.3, '壓縮中 ' + Math.round(m.percent) + '%')
+      );
+      bkName = 'cafe-backup-' + stamp + '.zip';
+    }else{
+      bkBlob = new Blob([JSON.stringify({ site:'小怪獸咖啡館', at:new Date().toISOString(), works:manifest }, null, 1)],
+        { type:'application/json' });
+      bkName = 'cafe-backup-' + stamp + '.json';
+    }
+
+    const mb = (bkBlob.size / 1048576).toFixed(2);
+    $('bkLink').href = URL.createObjectURL(bkBlob);
+    $('bkLink').download = bkName;
+    $('bkLink').textContent = '下載 ' + bkName + '（' + mb + ' MB）';
+    $('bkResult').classList.remove('hide');
+
+    try{
+      const f = new File([bkBlob], bkName, { type: bkBlob.type });
+      if(navigator.canShare && navigator.canShare({ files:[f] })) $('bkShareRow').classList.remove('hide');
+    }catch(e){}
+
+    bkProgress(100, failed.length
+      ? '打包好了，但有 ' + failed.length + ' 件讀不到：' + failed.join('、')
+      : '打包好了，' + manifest.length + ' 件。點下面的按鈕存起來。');
+  }catch(e){
+    $('bkGauge').classList.add('hide');
+    $('bkMsg').textContent = '';
+    err('備份失敗：' + ((e && e.message) || e));
+  }finally{
+    btn.disabled = false;
+    btn.textContent = '備份全部作品';
+  }
 }
 $('btnBackup').addEventListener('click', backup);
+$('bkShare').addEventListener('click', async () => {
+  if(!bkBlob) return;
+  try{
+    await navigator.share({ files:[new File([bkBlob], bkName, { type: bkBlob.type })], title: bkName });
+  }catch(e){
+    if(e && e.name !== 'AbortError') toast('存檔沒成功，改用上面那顆下載');
+  }
+});
 
 /* ---------- 編輯 ---------- */
 function setMeter(){
