@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@500;700;900&family=LXGW+WenKai+TC&display=swap" rel="stylesheet">
 <style>
-/* ---------- 預設配色：奶油撲滿 ---------- */
+/* ---------- 預設配色：拿鐵奶油 ---------- */
 :root{
   --bg:#F5F1E4; --dot:#E6DDC7; --card:#FFFCF3; --card-edge:#D9CDB0; --card-under:#DDE3CE;
   --ink:#453A28; --ink-soft:#8A7B5C; --ink-faint:#B6A886;
@@ -94,6 +94,7 @@ body{
   transition:background-color .25s,color .25s;
 }
 .wrap{max-width:620px;margin:0 auto}
+@media (min-width:780px){.wrap{max-width:1000px}}
 
 .tape{position:relative}
 .tape::before{
@@ -174,11 +175,16 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);
 .meter.bad{color:var(--danger-dk);font-weight:700}
 
 .grid{display:grid;gap:12px}
+@media (min-width:780px){.grid{grid-template-columns:repeat(2,1fr)}}
 .work{position:relative;background:var(--card);border:var(--pnl-bw) var(--pnl-bs) var(--card-edge);
   border-radius:var(--pnl-r);box-shadow:var(--pnl-sh-sm);
   padding:15px 15px 14px 19px;overflow:hidden;cursor:pointer}
 .work:active{transform:translateY(2px);box-shadow:0 2px 0 var(--card-under)}
+.work{padding-right:60px}
 .work .stripe{position:absolute;left:0;top:0;bottom:0;width:7px}
+.ord{position:absolute;right:9px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:6px}
+.ord button{width:38px;height:31px;border-radius:11px;background:var(--input-bg);border:2px solid var(--card-edge);color:var(--ink-soft);font-size:.72em;line-height:1}
+.ord button:active{background:var(--accent-pale);color:var(--accent-dk)}
 .work .nm{font-weight:700;font-size:.9em;line-height:1.4}
 .work .ds{font-size:.74em;color:var(--ink-soft);margin-top:2px;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
@@ -339,6 +345,9 @@ nav.bottom button.on{color:var(--accent)}
         <button class="btn soft wide" id="btnReload">重新整理架上</button>
       </div>
       <div class="row"><button class="btn soft wide" id="btnShelfLink">去看前台</button></div>
+      <div class="eyebrow">保險起見</div>
+      <p class="sub" style="margin:0 0 8px">作品只存在雲端。下載一份放手機或電腦，萬一出事還救得回來。</p>
+      <div class="row"><button class="btn soft wide" id="btnBackup">備份全部作品</button></div>
       <div class="center"><button class="btn warn tiny" id="btnOut">登出</button></div>
     </div>
   </div>
@@ -357,7 +366,7 @@ nav.bottom button.on{color:var(--accent)}
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
   from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-import { getFirestore, collection, doc, getDoc, getDocs, setDoc, deleteDoc }
+import { getFirestore, collection, doc, getDoc, getDocs, setDoc, deleteDoc, updateDoc }
   from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 const firebaseConfig = {
@@ -377,15 +386,15 @@ const COLOR = {'模擬器':'var(--c-sim)','小說':'var(--c-nov)','網站工具'
   '日常工具':'var(--c-day)','實驗性質':'var(--c-exp)','其他':'var(--c-etc)'};
 
 const THEMES = [
-  { id:'',       label:'奶油撲滿', sw:['#F5F1E4','#5F9E6E','#8C6FC6'] },
-  { id:'coin',   label:'銅板銀',   sw:['#E9EAEC','#5B6B7A','#B4574B'] },
-  { id:'lucky',  label:'紅包喜氣', sw:['#F2E4E0','#C0392B','#A9791F'] },
-  { id:'matcha', label:'抹茶零錢', sw:['#EDF1E6','#5FA47A','#C4785B'] },
-  { id:'book',   label:'存摺藍',   sw:['#E7EBF1','#3E5C8C','#B05A3E'] },
-  { id:'rose',   label:'玫瑰儲金', sw:['#EFE3E4','#B37784','#9A5C3C'] },
-  { id:'paper',  label:'牛皮帳本', sw:['#E6DCC8','#7A5C3E','#A24B3C'] },
-  { id:'night',  label:'夜間記帳', sw:['#23262B','#6FA8CC','#EDEAE3'] },
-  { id:'ink',    label:'墨黑金庫', sw:['#121212','#C9A227','#F0EDE6'] }
+  { id:'',       label:'拿鐵奶油', sw:['#F5F1E4','#5F9E6E','#8C6FC6'] },
+  { id:'coin',   label:'銀霧冷萃',   sw:['#E9EAEC','#5B6B7A','#B4574B'] },
+  { id:'lucky',  label:'莓果紅茶', sw:['#F2E4E0','#C0392B','#A9791F'] },
+  { id:'matcha', label:'抹茶拿鐵', sw:['#EDF1E6','#5FA47A','#C4785B'] },
+  { id:'book',   label:'藍山深焙',   sw:['#E7EBF1','#3E5C8C','#B05A3E'] },
+  { id:'rose',   label:'玫瑰歐蕾', sw:['#EFE3E4','#B37784','#9A5C3C'] },
+  { id:'paper',  label:'焦糖瑪奇朵', sw:['#E6DCC8','#7A5C3E','#A24B3C'] },
+  { id:'night',  label:'深夜營業', sw:['#23262B','#6FA8CC','#EDEAE3'] },
+  { id:'ink',    label:'炭焙黑金', sw:['#121212','#C9A227','#F0EDE6'] }
 ];
 const FONTS = [
   { id:'maru',     label:'圓體（Zen Maru）',   stack:"'Zen Maru Gothic','Noto Sans TC','PingFang TC',sans-serif" },
@@ -400,7 +409,7 @@ const LOOKS = [
   { id:'dash', label:'虛線' },
   { id:'flat', label:'方正' }
 ];
-const FS_MIN = 15, FS_MAX = 24, FS_DEF = 19;
+const FS_MIN = 15, FS_MAX = 34, FS_DEF = 19;
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -496,7 +505,8 @@ applyLook(store.get('look', ''));
 fs = applyFs(parseInt(store.get('fs', FS_DEF), 10) || FS_DEF);
 
 /* ---------- 分頁 ---------- */
-let cur = null, code = '', works = [], filter = '全部';
+const rank = w => (w.order != null ? w.order : (w.updated || 0));
+let cur = null, code = '', works = [], filter = '全部', rows = [];
 const TABS = [['shelf','tabShelf'],['edit','tabEdit'],['look','tabLook'],['acc','tabAcc']];
 
 function go(tab){
@@ -576,7 +586,7 @@ async function loadList(){
       snap.forEach(d => works.push(Object.assign({ id:d.id, coll }, d.data())));
     }
   }catch(e){ err(friendly(e)); $('list').innerHTML = ''; return; }
-  works.sort((a, b) => (b.pinned?1:0) - (a.pinned?1:0) || (b.updated||0) - (a.updated||0));
+  works.sort((a, b) => (b.pinned?1:0) - (a.pinned?1:0) || rank(b) - rank(a));
   paintList();
   paintStat();
 }
@@ -587,7 +597,7 @@ function paintStat(){
   $('stKb').textContent = Math.round(works.reduce((s, w) => s + (w.size || 0), 0) / 1024);
 }
 function paintList(){
-  const rows = works.filter(w => filter === '全部' || w.cat === filter);
+  rows = works.filter(w => filter === '全部' || w.cat === filter);
   $('countLine').textContent = '架上的作品　' + works.length + ' 件';
   if(!rows.length){
     $('list').innerHTML = works.length
@@ -604,8 +614,18 @@ function paintList(){
         '<span class="chip ' + (w.coll === 'posts_private' ? 'lock">加鎖' : 'open">公開') + '</span>' +
         esc(w.cat || '其他') + '　' + Math.round((w.size||0)/1024) + ' KB' +
       '</div>' +
+      '<div class="ord">' +
+        '<button data-move="up" data-id="' + w.coll + '/' + w.id + '">&#9650;</button>' +
+        '<button data-move="down" data-id="' + w.coll + '/' + w.id + '">&#9660;</button>' +
+      '</div>' +
     '</div>'
   ).join('');
+  $('list').querySelectorAll('.ord button').forEach(b => {
+    b.addEventListener('click', ev => {
+      ev.stopPropagation();
+      move(b.dataset.id, b.dataset.move === 'up' ? -1 : 1);
+    });
+  });
   $('list').querySelectorAll('.work').forEach(el => {
     el.addEventListener('click', () => {
       const [coll, id] = el.dataset.id.split('/');
@@ -613,6 +633,48 @@ function paintList(){
     });
   });
 }
+
+async function move(key, dir){
+  const i = rows.findIndex(w => (w.coll + '/' + w.id) === key);
+  const j = i + dir;
+  if(i < 0 || j < 0 || j >= rows.length) return;
+  const a = rows[i], b = rows[j];
+  if(!!a.pinned !== !!b.pinned){ toast('釘選的作品永遠在最前面'); return; }
+  const ra = rank(a), rb = rank(b);
+  try{
+    await updateDoc(doc(db, a.coll, a.id), { order: rb });
+    await updateDoc(doc(db, b.coll, b.id), { order: ra });
+    a.order = rb; b.order = ra;
+    works.sort((x, y) => (y.pinned?1:0) - (x.pinned?1:0) || rank(y) - rank(x));
+    paintList();
+  }catch(e){ err(friendly(e)); }
+}
+
+async function backup(){
+  const btn = $('btnBackup');
+  btn.disabled = true;
+  const out = { site:'小怪獸咖啡館', at:new Date().toISOString(), works:[] };
+  try{
+    for(let i = 0; i < works.length; i++){
+      const w = works[i];
+      btn.textContent = '打包中 ' + (i + 1) + ' / ' + works.length;
+      const snap = await getDoc(doc(db, w.coll, w.id, 'blob', 'source'));
+      out.works.push({
+        id:w.id, coll:w.coll, name:w.name, desc:w.desc, cat:w.cat,
+        pinned:!!w.pinned, order:rank(w), size:w.size,
+        code: snap.exists() ? (snap.data().code || '') : ''
+      });
+    }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(out, null, 1)], { type:'application/json' }));
+    a.download = 'cafe-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 8000);
+    toast('備份下載好了');
+  }catch(e){ err(friendly(e)); }
+  finally{ btn.disabled = false; btn.textContent = '備份全部作品'; }
+}
+$('btnBackup').addEventListener('click', backup);
 
 /* ---------- 編輯 ---------- */
 function setMeter(){
@@ -702,6 +764,7 @@ $('btnSave').addEventListener('click', async () => {
     await setDoc(doc(db, coll, id), {
       name, desc: $('fDesc').value.trim(), cat: pickedCat(),
       pinned: $('tgPin').classList.contains('on'),
+      order: (cur && cur.order != null) ? cur.order : Date.now(),
       size, updated: Date.now()
     });
     await setDoc(doc(db, coll, id, 'blob', 'source'), { code });
