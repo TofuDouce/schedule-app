@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@500;700;900&family=LXGW+WenKai+TC&display=swap" rel="stylesheet">
 <style>
-/* ---------- 預設配色：奶油撲滿 ---------- */
+/* ---------- 預設配色：拿鐵奶油 ---------- */
 :root{
   --bg:#F5F1E4; --dot:#E6DDC7; --card:#FFFCF3; --card-edge:#D9CDB0; --card-under:#DDE3CE;
   --ink:#453A28; --ink-soft:#8A7B5C; --ink-faint:#B6A886;
@@ -95,6 +95,7 @@ body{
   transition:background-color .25s,color .25s;
 }
 .wrap{max-width:620px;margin:0 auto}
+@media (min-width:780px){.wrap{max-width:1120px}}
 
 .tape{position:relative}
 .tape::before{
@@ -157,6 +158,9 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
 
 /* 作品卡 */
 .grid{display:grid;gap:16px;margin-top:16px}
+@media (min-width:780px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media (min-width:1100px){.grid{grid-template-columns:repeat(3,1fr)}}
+@media (min-width:780px){body{padding-bottom:calc(120px + env(safe-area-inset-bottom))}.shot{height:200px}}
 .work{
   position:relative;background:var(--card);border:var(--pnl-bw) var(--pnl-bs) var(--card-edge);
   border-radius:var(--pnl-r);box-shadow:var(--pnl-sh);overflow:hidden;cursor:pointer;
@@ -310,7 +314,7 @@ nav.bottom button.on{color:var(--accent)}
   <!-- 老闆 -->
   <div class="hide" id="tabOwner">
     <div class="card tape">
-      <div class="eyebrow">老闆入口</div>
+      <div class="eyebrow">帳號</div>
       <p style="margin:0 0 4px;font-size:.82em" id="ownerLine">登入之後，加鎖的作品會一起出現在架上。</p>
       <p class="sub" id="ownerWho"></p>
       <div class="row"><button class="btn wide" id="btnIn">用 Google 登入</button></div>
@@ -325,13 +329,14 @@ nav.bottom button.on{color:var(--accent)}
   <button class="on" data-tab="shelf"><span class="ic">&#9749;</span>架上</button>
   <button data-tab="about"><span class="ic">&#128218;</span>關於</button>
   <button data-tab="look"><span class="ic">&#127912;</span>外觀</button>
-  <button data-tab="owner"><span class="ic">&#128273;</span>老闆</button>
+  <button data-tab="owner"><span class="ic">&#128100;</span>帳號</button>
 </nav>
 
 <div id="viewer">
   <div class="top">
     <button class="btn" id="vClose">關閉</button>
     <div class="vname" id="vName"></div>
+    <button class="btn soft" id="vLink">連結</button>
     <button class="btn soft" id="vOpen">另開</button>
   </div>
   <iframe id="vFrame" sandbox="allow-scripts allow-same-origin allow-modals allow-popups allow-forms"></iframe>
@@ -361,15 +366,15 @@ const COLOR = {'模擬器':'var(--c-sim)','小說':'var(--c-nov)','網站工具'
   '日常工具':'var(--c-day)','實驗性質':'var(--c-exp)','其他':'var(--c-etc)'};
 
 const THEMES = [
-  { id:'',       label:'奶油撲滿', sw:['#F5F1E4','#5F9E6E','#8C6FC6'] },
-  { id:'coin',   label:'銅板銀',   sw:['#E9EAEC','#5B6B7A','#B4574B'] },
-  { id:'lucky',  label:'紅包喜氣', sw:['#F2E4E0','#C0392B','#A9791F'] },
-  { id:'matcha', label:'抹茶零錢', sw:['#EDF1E6','#5FA47A','#C4785B'] },
-  { id:'book',   label:'存摺藍',   sw:['#E7EBF1','#3E5C8C','#B05A3E'] },
-  { id:'rose',   label:'玫瑰儲金', sw:['#EFE3E4','#B37784','#9A5C3C'] },
-  { id:'paper',  label:'牛皮帳本', sw:['#E6DCC8','#7A5C3E','#A24B3C'] },
-  { id:'night',  label:'夜間記帳', sw:['#23262B','#6FA8CC','#EDEAE3'] },
-  { id:'ink',    label:'墨黑金庫', sw:['#121212','#C9A227','#F0EDE6'] }
+  { id:'',       label:'拿鐵奶油', sw:['#F5F1E4','#5F9E6E','#8C6FC6'] },
+  { id:'coin',   label:'銀霧冷萃',   sw:['#E9EAEC','#5B6B7A','#B4574B'] },
+  { id:'lucky',  label:'莓果紅茶', sw:['#F2E4E0','#C0392B','#A9791F'] },
+  { id:'matcha', label:'抹茶拿鐵', sw:['#EDF1E6','#5FA47A','#C4785B'] },
+  { id:'book',   label:'藍山深焙',   sw:['#E7EBF1','#3E5C8C','#B05A3E'] },
+  { id:'rose',   label:'玫瑰歐蕾', sw:['#EFE3E4','#B37784','#9A5C3C'] },
+  { id:'paper',  label:'焦糖瑪奇朵', sw:['#E6DCC8','#7A5C3E','#A24B3C'] },
+  { id:'night',  label:'深夜營業', sw:['#23262B','#6FA8CC','#EDEAE3'] },
+  { id:'ink',    label:'炭焙黑金', sw:['#121212','#C9A227','#F0EDE6'] }
 ];
 const FONTS = [
   { id:'maru',     label:'圓體（Zen Maru）',     stack:"'Zen Maru Gothic','Noto Sans TC','PingFang TC',sans-serif" },
@@ -384,7 +389,7 @@ const LOOKS = [
   { id:'dash', label:'虛線' },
   { id:'flat', label:'方正' }
 ];
-const FS_MIN = 15, FS_MAX = 24, FS_DEF = 19;
+const FS_MIN = 15, FS_MAX = 34, FS_DEF = 19;
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -488,6 +493,7 @@ $('nav').addEventListener('click', e => {
 });
 
 /* ---------- 篩選 ---------- */
+const rank = w => (w.order != null ? w.order : (w.updated || 0));
 let works = [], filter = '全部', keyword = '', isOwner = false;
 const codeCache = new Map();
 
@@ -514,9 +520,11 @@ async function load(){
       snap.forEach(d => works.push(Object.assign({ id:d.id, coll }, d.data())));
     }
   }catch(e){ err(friendly(e)); }
-  works.sort((a, b) => (b.pinned?1:0) - (a.pinned?1:0) || (b.updated||0) - (a.updated||0));
+  works.sort((a, b) => (b.pinned?1:0) - (a.pinned?1:0) || rank(b) - rank(a));
   paintList();
   paintStat();
+  const m = location.hash.match(/^#w=(.+)$/);
+  if(m && works.some(w => (w.coll + '/' + w.id) === m[1])) openWork(m[1]);
 }
 function paintStat(){
   $('stN').textContent = works.length;
@@ -597,6 +605,7 @@ async function openWork(key){
   $('vFrame').srcdoc = '';
   $('viewer').classList.add('on');
   document.body.style.overflow = 'hidden';
+  try{ history.replaceState(null, '', '#w=' + key); }catch(e){}
   try{
     $('vFrame').srcdoc = await fetchCode(key);
   }catch(e){
@@ -609,6 +618,12 @@ $('vClose').addEventListener('click', () => {
   $('viewer').classList.remove('on');
   $('vFrame').srcdoc = '';
   document.body.style.overflow = '';
+  try{ history.replaceState(null, '', location.pathname + location.search); }catch(e){}
+});
+$('vLink').addEventListener('click', async () => {
+  const url = location.origin + location.pathname + '#w=' + viewKey;
+  try{ await navigator.clipboard.writeText(url); toast('連結複製好了'); }
+  catch(e){ toast('複製失敗，請從網址列複製'); }
 });
 $('vOpen').addEventListener('click', () => {
   const c = codeCache.get(viewKey);
@@ -630,13 +645,13 @@ $('btnAdmin').addEventListener('click', () => { window.location.href = ADMIN_URL
 onAuthStateChanged(auth, async user => {
   const owner = !!user && user.uid === OWNER;
   if(user && !owner){
-    $('ownerLine').textContent = '這個帳號不是老闆，看到的還是公開的部分。';
+    $('ownerLine').textContent = '這個帳號沒有權限，看到的還是公開的部分。';
     $('ownerWho').textContent = user.displayName || '';
     $('btnIn').classList.add('hide');
     $('ownerTools').classList.add('hide');
     $('outWrap').classList.remove('hide');
   }else if(owner){
-    $('ownerLine').textContent = '老闆回來了。加鎖的作品已經放上架。';
+    $('ownerLine').textContent = '已登入。加鎖的作品都放上架了。';
     $('ownerWho').textContent = user.displayName || '';
     $('btnIn').classList.add('hide');
     $('ownerTools').classList.remove('hide');
