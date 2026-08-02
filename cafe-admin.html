@@ -346,6 +346,12 @@ nav.bottom button.on{color:var(--accent)}
         <button class="btn soft wide" id="btnReload">重新整理架上</button>
       </div>
       <div class="row"><button class="btn soft wide" id="btnShelfLink">去看前台</button></div>
+      <div class="eyebrow">縮圖</div>
+      <p class="sub" style="margin:0 0 8px">前台的預覽小圖在這裡補。只會截還沒有縮圖的，已經有的會跳過。</p>
+      <div class="row"><button class="btn soft wide" id="btnThumbAll">補全部縮圖</button></div>
+      <div class="gauge hide" id="tbGauge"><span></span></div>
+      <div class="meter" id="tbMsg"></div>
+
       <div class="eyebrow">保險起見</div>
       <p class="sub" style="margin:0 0 8px">作品只存在雲端。下載一份放手機或電腦，萬一出事還救得回來。</p>
       <div class="row"><button class="btn soft wide" id="btnBackup">備份全部作品</button></div>
@@ -369,6 +375,7 @@ nav.bottom button.on{color:var(--accent)}
   <button data-tab="look"><span class="ic">&#127912;</span>外觀</button>
   <button data-tab="acc"><span class="ic">&#128100;</span>帳號</button>
 </nav>
+<iframe id="shotFrame" sandbox="allow-scripts allow-same-origin" style="position:fixed;left:-9999px;top:0;width:1200px;height:900px;border:0"></iframe>
 <div id="toast"></div>
 
 <script type="module">
@@ -762,6 +769,49 @@ async function backup(){
   }
 }
 $('btnBackup').addEventListener('click', backup);
+
+let tbStop = false;
+function tbProgress(pct, msg){
+  $('tbGauge').classList.remove('hide');
+  $('tbGauge').querySelector('span').style.width = Math.max(2, Math.min(100, pct)) + '%';
+  $('tbMsg').textContent = msg;
+}
+async function thumbAll(){
+  const btn = $('btnThumbAll');
+  clearErr();
+  const todo = works.filter(w => !w.thumb);
+  if(!todo.length){ $('tbMsg').textContent = '每一件都有縮圖了，不用補。'; return; }
+
+  if(btn.dataset.running === '1'){ tbStop = true; btn.textContent = '停止中⋯⋯'; return; }
+  btn.dataset.running = '1';
+  btn.textContent = '停止';
+  tbStop = false;
+  let ok = 0, fail = 0;
+
+  for(let i = 0; i < todo.length; i++){
+    if(tbStop){ break; }
+    const w = todo[i];
+    tbProgress((i / todo.length) * 100, '截圖中 ' + (i + 1) + ' / ' + todo.length + '　' + (w.name || ''));
+    try{
+      const snap = await getDoc(doc(db, w.coll, w.id, 'blob', 'source'));
+      const code = snap.exists() ? (snap.data().code || '') : '';
+      if(!code){ fail++; continue; }
+      const thumb = await makeThumb(code);
+      if(!thumb){ fail++; continue; }
+      await updateDoc(doc(db, w.coll, w.id), { thumb });
+      w.thumb = thumb;
+      ok++;
+    }catch(e){ fail++; }
+    await new Promise(r => setTimeout(r, 400));
+  }
+
+  btn.dataset.running = '';
+  btn.textContent = '補全部縮圖';
+  const left = works.filter(w => !w.thumb).length;
+  tbProgress(100, (tbStop ? '停下來了。' : '完成。') +
+    '成功 ' + ok + (fail ? '、失敗 ' + fail : '') + (left ? '、還缺 ' + left : ''));
+}
+$('btnThumbAll').addEventListener('click', thumbAll);
 $('bkShare').addEventListener('click', async () => {
   if(!bkBlob) return;
   try{
@@ -770,6 +820,44 @@ $('bkShare').addEventListener('click', async () => {
     if(e && e.name !== 'AbortError') toast('存檔沒成功，改用上面那顆下載');
   }
 });
+
+/* ---------- 縮圖 ---------- */
+function loadH2C(){
+  if(window.html2canvas) return Promise.resolve(window.html2canvas);
+  return new Promise((res, rej) => {
+    const t = document.createElement('script');
+    t.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+    t.onload = () => window.html2canvas ? res(window.html2canvas) : rej(new Error('no h2c'));
+    t.onerror = () => rej(new Error('connect fail'));
+    document.head.appendChild(t);
+  });
+}
+function makeThumb(code){
+  return new Promise((resolve, reject) => {
+    const fr = $('shotFrame');
+    let done = false;
+    const timer = setTimeout(() => { if(!done){ done = true; reject(new Error('timeout')); } }, 8000);
+    fr.onload = async () => {
+      if(done) return;
+      try{
+        await new Promise(r => setTimeout(r, 900));
+        const doc2 = fr.contentDocument;
+        const h2c = await loadH2C();
+        const canvas = await h2c(doc2.body, {
+          width:1200, height:900, windowWidth:1200, windowHeight:900,
+          scale:0.34, backgroundColor:'#ffffff', logging:false, useCORS:true
+        });
+        const small = document.createElement('canvas');
+        small.width = 408; small.height = 306;
+        small.getContext('2d').drawImage(canvas, 0, 0, 408, 306);
+        const url = small.toDataURL('image/jpeg', 0.7);
+        done = true; clearTimeout(timer);
+        resolve(url.length > 700000 ? '' : url);
+      }catch(e){ done = true; clearTimeout(timer); reject(e); }
+    };
+    fr.srcdoc = code;
+  });
+}
 
 /* ---------- 編輯 ---------- */
 function setMeter(){
@@ -856,11 +944,15 @@ $('btnSave').addEventListener('click', async () => {
   const btn = $('btnSave');
   btn.disabled = true; btn.textContent = '儲存中⋯⋯';
   try{
+    let thumb = '';
+    btn.textContent = '產生縮圖⋯⋯';
+    try{ thumb = await makeThumb(code); }catch(e){ thumb = ''; }
+
     await setDoc(doc(db, coll, id), {
       name, desc: $('fDesc').value.trim(), cat: pickedCat(),
       pinned: $('tgPin').classList.contains('on'),
       order: (cur && cur.order != null) ? cur.order : Date.now(),
-      size, updated: Date.now()
+      size, thumb, updated: Date.now()
     });
     await setDoc(doc(db, coll, id, 'blob', 'source'), { code });
     if(cur && cur.coll !== coll){
