@@ -166,12 +166,13 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
   border-radius:var(--pnl-r);box-shadow:var(--pnl-sh);overflow:hidden;cursor:pointer;
 }
 .work:active{transform:translateY(2px);box-shadow:var(--pnl-sh-sm)}
-.shot{position:relative;height:172px;background:var(--input-bg);
+.shot{position:relative;height:172px;background:#fff;
   border-bottom:2px solid var(--card-edge);overflow:hidden}
-.shot iframe{position:absolute;top:0;left:0;width:300%;height:300%;border:0;
-  transform:scale(.3333);transform-origin:0 0;pointer-events:none;background:#fff}
-.shot .veil{position:absolute;inset:0}
-.shot .ph{position:absolute;inset:0;display:grid;place-items:center;color:var(--ink-faint);font-size:.72em;font-weight:700}
+.shot img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block}
+.shot .ph{position:absolute;inset:0;display:grid;place-items:center;
+  background:var(--input-bg);color:var(--ink-faint);font-size:.72em;font-weight:700;text-align:center;padding:10px}
+.shot .play{position:absolute;right:10px;bottom:10px;width:34px;height:34px;border-radius:50%;
+  background:rgba(58,50,35,.55);color:#fff;display:grid;place-items:center;font-size:13px;backdrop-filter:blur(2px)}
 .meta{padding:14px 16px 15px;position:relative}
 .meta .stripe{position:absolute;left:0;top:0;bottom:0;width:7px}
 .meta .nm{font-weight:900;font-size:.94em;line-height:1.4}
@@ -182,6 +183,10 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
 .chip.open{background:var(--accent)}
 .star{color:var(--c-day)}
 .empty{text-align:center;color:var(--ink-faint);font-size:.82em;padding:40px 10px;line-height:2}
+.pager{display:flex;align-items:center;justify-content:center;gap:14px;margin:20px 0 4px}
+.pager button{background:var(--accent-pale);color:var(--accent-dk);font-weight:900;border-radius:99px;padding:10px 20px;box-shadow:var(--soft-sh);font-size:.82em}
+.pager button:disabled{opacity:.4;box-shadow:none}
+.pager .pg{font-weight:900;color:var(--ink-soft);font-size:.8em;min-width:64px;text-align:center}
 
 /* 外觀 */
 .themes{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px}
@@ -494,7 +499,8 @@ $('nav').addEventListener('click', e => {
 
 /* ---------- 篩選 ---------- */
 const rank = w => (w.order != null ? w.order : (w.updated || 0));
-let works = [], filter = '全部', keyword = '', isOwner = false;
+const PER = 8;
+let works = [], filter = '全部', keyword = '', isOwner = false, page = 0;
 const codeCache = new Map();
 
 $('filters').innerHTML = ['全部'].concat(CATS).map((c, i) =>
@@ -503,9 +509,10 @@ $('filters').addEventListener('click', e => {
   const t = e.target.closest('.cat'); if(!t) return;
   filter = t.dataset.c;
   $('filters').querySelectorAll('.cat').forEach(x => x.classList.toggle('on', x === t));
+  page = 0;
   paintList();
 });
-$('q').addEventListener('input', e => { keyword = e.target.value.trim(); paintList(); });
+$('q').addEventListener('input', e => { keyword = e.target.value.trim(); page = 0; paintList(); });
 $('legend').innerHTML = CATS.map(c =>
   '<div class="lg"><span style="background:' + COLOR[c] + '"></span>' + c + '</div>').join('');
 
@@ -532,26 +539,7 @@ function paintStat(){
   $('stC').textContent = new Set(works.map(w => w.cat || '其他')).size;
 }
 
-const io = new IntersectionObserver(async entries => {
-  for(const en of entries){
-    if(!en.isIntersecting) continue;
-    const el = en.target;
-    io.unobserve(el);
-    try{
-      const c = await fetchCode(el.dataset.key);
-      const f = document.createElement('iframe');
-      f.setAttribute('sandbox', 'allow-scripts allow-same-origin');
-      f.setAttribute('scrolling', 'no');
-      f.srcdoc = c;
-      el.appendChild(f);
-      const ph = el.querySelector('.ph');
-      if(ph) ph.remove();
-    }catch(e){
-      const ph = el.querySelector('.ph');
-      if(ph) ph.textContent = '這件作品的畫面載不出來';
-    }
-  }
-}, { rootMargin: '250px' });
+// 縮圖改為靜態圖，不再需要 IntersectionObserver
 
 async function fetchCode(key){
   if(codeCache.has(key)) return codeCache.get(key);
@@ -565,12 +553,16 @@ async function fetchCode(key){
 
 function paintList(){
   const kw = keyword.toLowerCase();
-  const rows = works.filter(w =>
+  const all = works.filter(w =>
     (filter === '全部' || w.cat === filter) &&
     (!kw || (w.name||'').toLowerCase().includes(kw) || (w.desc||'').toLowerCase().includes(kw))
   );
-  $('countLine').textContent = rows.length ? '架上　' + rows.length + ' 件' + (isOwner ? '（含加鎖）' : '') : '架上';
-  if(!rows.length){
+  const pages = Math.max(1, Math.ceil(all.length / PER));
+  if(page > pages - 1) page = pages - 1;
+  const rows = all.slice(page * PER, page * PER + PER);
+
+  $('countLine').textContent = all.length ? '架上　' + all.length + ' 件' + (isOwner ? '（含加鎖）' : '') : '架上';
+  if(!all.length){
     $('list').innerHTML = works.length
       ? '<div class="empty">這裡沒有符合的作品。</div>'
       : '<div class="empty">架上還空著。<br>老闆正在後面忙。</div>';
@@ -578,8 +570,11 @@ function paintList(){
   }
   $('list').innerHTML = rows.map(w => {
     const key = w.coll + '/' + w.id;
+    const shot = w.thumb
+      ? '<img src="' + w.thumb + '" alt="" loading="lazy"><div class="play">&#9654;</div>'
+      : '<div class="ph">點開就能跑</div>';
     return '<div class="work" data-key="' + key + '">' +
-      '<div class="shot" data-key="' + key + '"><div class="ph">畫面載入中⋯⋯</div><div class="veil"></div></div>' +
+      '<div class="shot">' + shot + '</div>' +
       '<div class="meta">' +
         '<div class="stripe" style="background:' + (COLOR[w.cat] || 'var(--c-etc)') + '"></div>' +
         '<div class="nm">' + (w.pinned ? '<span class="star">★</span> ' : '') + esc(w.name) + '</div>' +
@@ -590,7 +585,19 @@ function paintList(){
         '</div>' +
       '</div></div>';
   }).join('');
-  $('list').querySelectorAll('.shot').forEach(el => io.observe(el));
+
+  if(pages > 1){
+    const bar = document.createElement('div');
+    bar.className = 'pager';
+    bar.innerHTML = '<button id="pgPrev"' + (page === 0 ? ' disabled' : '') + '>上一頁</button>' +
+      '<span class="pg">' + (page + 1) + ' / ' + pages + '</span>' +
+      '<button id="pgNext"' + (page >= pages - 1 ? ' disabled' : '') + '>下一頁</button>';
+    $('list').appendChild(bar);
+    const jump = d => { page += d; paintList(); window.scrollTo({ top:0, behavior:'smooth' }); };
+    $('pgPrev').addEventListener('click', () => jump(-1));
+    $('pgNext').addEventListener('click', () => jump(1));
+  }
+
   $('list').querySelectorAll('.work').forEach(el => {
     el.addEventListener('click', () => openWork(el.dataset.key));
   });
