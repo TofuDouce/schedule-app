@@ -69,6 +69,18 @@
   --accent:#C9A227; --accent-dk:#E0BC49; --accent-pale:#3A3220; --on-accent:#14120A;
   --input-bg:#1F1F1F; --danger:#C96A4A; --danger-dk:#E08A6B; --scrim:#000000;
 }
+[data-theme="sunlit"]{
+  --bg:#F8D86B; --dot:#EFC75A; --card:#FFFDF7; --card-edge:#F1BE46; --card-under:#B98226;
+  --ink:#4B3527; --ink-soft:#765A43; --ink-faint:#A7865C;
+  --accent:#EFAE32; --accent-dk:#C77B18; --accent-pale:#FFF0BB; --on-accent:#3B281B;
+  --input-bg:#FFF9E8; --danger:#B9513F; --danger-dk:#873528; --scrim:#4B3527;
+}
+[data-theme="mono"]{
+  --bg:#F1F1EF; --dot:#D9D9D5; --card:#FFFFFF; --card-edge:#BDBDB8; --card-under:#222222;
+  --ink:#171717; --ink-soft:#5F5F5B; --ink-faint:#8B8B85;
+  --accent:#171717; --accent-dk:#000000; --accent-pale:#E9E9E6; --on-accent:#FFFFFF;
+  --input-bg:#FAFAF8; --danger:#8B3529; --danger-dk:#64231C; --scrim:#171717;
+}
 
 /* ---------- 版式與衍生變數：一律寫在 body ---------- */
 body{
@@ -234,7 +246,34 @@ nav.bottom button{flex:1;display:flex;flex-direction:column;align-items:center;g
   font-size:.62em;font-weight:900;color:var(--ink-faint);padding:4px 0;min-width:0;background:none}
 nav.bottom button .ic{font-size:20px;line-height:1.2}
 nav.bottom button.on{color:var(--accent)}
+.nav-brand{display:none}
 .hide{display:none!important}
+@media (min-width:900px){
+  html{background:var(--bg)}
+  body{padding:0 38px 42px 232px;background-attachment:fixed}
+  body:has(nav.bottom.hide){padding-left:38px}
+  .wrap{max-width:1180px}
+  body:has(nav.bottom.hide) .wrap{max-width:760px}
+  header{display:flex;align-items:center;gap:16px;text-align:left;padding:34px 0 26px}
+  header .sign{width:100%}
+  header .monster{margin:0;flex:0 0 auto}
+  header .sign>div:last-child{min-width:0}
+  header h1{font-size:1.55em;letter-spacing:.09em}
+  header .sub{font-size:.8em;margin-top:3px}
+  .card{padding:24px 24px;margin-bottom:22px}
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:20px}
+  nav.bottom{position:fixed;left:0;top:0;right:auto;bottom:0;width:208px;max-width:none;margin:0;
+    display:flex;flex-direction:column;justify-content:flex-start;gap:8px;padding:24px 14px 20px;
+    border:0;border-right:2px solid var(--card-edge);border-radius:0;box-shadow:5px 0 0 var(--card-under)}
+  nav.bottom .nav-brand{display:flex;align-items:center;gap:11px;padding:6px 8px 24px;margin-bottom:8px;border-bottom:1px dashed var(--card-edge);color:var(--ink)}
+  .nav-brand .mark{width:38px;height:38px;display:grid;place-items:center;border-radius:13px;background:var(--accent);color:var(--on-accent);font-size:20px;box-shadow:3px 3px 0 var(--card-under)}
+  .nav-brand strong{display:block;font-size:.82em;letter-spacing:.08em;line-height:1.35}
+  .nav-brand small{display:block;color:var(--ink-faint);font-size:.64em;letter-spacing:.08em;margin-top:2px}
+  nav.bottom button{flex:0 0 auto;flex-direction:row;justify-content:flex-start;gap:13px;min-height:52px;padding:13px 14px;border-radius:15px;font-size:.76em;letter-spacing:.04em}
+  nav.bottom button .ic{width:27px;font-size:22px;line-height:1;text-align:center}
+  nav.bottom button.on{color:var(--accent-dk);background:var(--accent-pale);box-shadow:inset 4px 0 0 var(--accent)}
+  #toast{left:calc(50% + 104px);bottom:28px}
+}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -346,12 +385,6 @@ nav.bottom button.on{color:var(--accent)}
         <button class="btn soft wide" id="btnReload">重新整理架上</button>
       </div>
       <div class="row"><button class="btn soft wide" id="btnShelfLink">去看前台</button></div>
-      <div class="eyebrow">縮圖</div>
-      <p class="sub" style="margin:0 0 8px">前台的預覽小圖在這裡補。只會截還沒有縮圖的，已經有的會跳過。</p>
-      <div class="row"><button class="btn soft wide" id="btnThumbAll">補全部縮圖</button></div>
-      <div class="gauge hide" id="tbGauge"><span></span></div>
-      <div class="meter" id="tbMsg"></div>
-
       <div class="eyebrow">保險起見</div>
       <p class="sub" style="margin:0 0 8px">作品只存在雲端。下載一份放手機或電腦，萬一出事還救得回來。</p>
       <div class="row"><button class="btn soft wide" id="btnBackup">備份全部作品</button></div>
@@ -370,6 +403,7 @@ nav.bottom button.on{color:var(--accent)}
 </div>
 
 <nav class="bottom hide" id="nav">
+  <div class="nav-brand"><span class="mark">☕</span><div><strong>小怪獸咖啡館</strong><small>管理工作區</small></div></div>
   <button class="on" data-tab="shelf"><span class="ic">&#9749;</span>架上</button>
   <button data-tab="edit"><span class="ic">&#10133;</span>新增</button>
   <button data-tab="look"><span class="ic">&#127912;</span>外觀</button>
@@ -410,7 +444,9 @@ const THEMES = [
   { id:'rose',   label:'玫瑰歐蕾', sw:['#EFE3E4','#B37784','#9A5C3C'] },
   { id:'paper',  label:'焦糖瑪奇朵', sw:['#E6DCC8','#7A5C3E','#A24B3C'] },
   { id:'night',  label:'深夜營業', sw:['#23262B','#6FA8CC','#EDEAE3'] },
-  { id:'ink',    label:'炭焙黑金', sw:['#121212','#C9A227','#F0EDE6'] }
+  { id:'ink',    label:'炭焙黑金', sw:['#121212','#C9A227','#F0EDE6'] },
+  { id:'sunlit', label:'暖陽黃棕', sw:['#F8D86B','#EFAE32','#4B3527'] },
+  { id:'mono',   label:'黑白極簡', sw:['#F1F1EF','#171717','#BDBDB8'] }
 ];
 const FONTS = [
   { id:'maru',     label:'圓體（Zen Maru）',   stack:"'Zen Maru Gothic','Noto Sans TC','PingFang TC',sans-serif" },
@@ -769,49 +805,6 @@ async function backup(){
   }
 }
 $('btnBackup').addEventListener('click', backup);
-
-let tbStop = false;
-function tbProgress(pct, msg){
-  $('tbGauge').classList.remove('hide');
-  $('tbGauge').querySelector('span').style.width = Math.max(2, Math.min(100, pct)) + '%';
-  $('tbMsg').textContent = msg;
-}
-async function thumbAll(){
-  const btn = $('btnThumbAll');
-  clearErr();
-  const todo = works.filter(w => !w.thumb);
-  if(!todo.length){ $('tbMsg').textContent = '每一件都有縮圖了，不用補。'; return; }
-
-  if(btn.dataset.running === '1'){ tbStop = true; btn.textContent = '停止中⋯⋯'; return; }
-  btn.dataset.running = '1';
-  btn.textContent = '停止';
-  tbStop = false;
-  let ok = 0, fail = 0;
-
-  for(let i = 0; i < todo.length; i++){
-    if(tbStop){ break; }
-    const w = todo[i];
-    tbProgress((i / todo.length) * 100, '截圖中 ' + (i + 1) + ' / ' + todo.length + '　' + (w.name || ''));
-    try{
-      const snap = await getDoc(doc(db, w.coll, w.id, 'blob', 'source'));
-      const code = snap.exists() ? (snap.data().code || '') : '';
-      if(!code){ fail++; continue; }
-      const thumb = await makeThumb(code);
-      if(!thumb){ fail++; continue; }
-      await updateDoc(doc(db, w.coll, w.id), { thumb });
-      w.thumb = thumb;
-      ok++;
-    }catch(e){ fail++; }
-    await new Promise(r => setTimeout(r, 400));
-  }
-
-  btn.dataset.running = '';
-  btn.textContent = '補全部縮圖';
-  const left = works.filter(w => !w.thumb).length;
-  tbProgress(100, (tbStop ? '停下來了。' : '完成。') +
-    '成功 ' + ok + (fail ? '、失敗 ' + fail : '') + (left ? '、還缺 ' + left : ''));
-}
-$('btnThumbAll').addEventListener('click', thumbAll);
 $('bkShare').addEventListener('click', async () => {
   if(!bkBlob) return;
   try{
