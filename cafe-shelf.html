@@ -69,6 +69,18 @@
   --accent:#C9A227; --accent-dk:#E0BC49; --accent-pale:#3A3220; --on-accent:#14120A;
   --input-bg:#1F1F1F; --danger:#C96A4A; --danger-dk:#E08A6B; --scrim:#000000;
 }
+[data-theme="sunlit"]{
+  --bg:#F8D86B; --dot:#EFC75A; --card:#FFFDF7; --card-edge:#F1BE46; --card-under:#B98226;
+  --ink:#4B3527; --ink-soft:#765A43; --ink-faint:#A7865C;
+  --accent:#EFAE32; --accent-dk:#C77B18; --accent-pale:#FFF0BB; --on-accent:#3B281B;
+  --input-bg:#FFF9E8; --danger:#B9513F; --danger-dk:#873528; --scrim:#4B3527;
+}
+[data-theme="mono"]{
+  --bg:#F1F1EF; --dot:#D9D9D5; --card:#FFFFFF; --card-edge:#BDBDB8; --card-under:#222222;
+  --ink:#171717; --ink-soft:#5F5F5B; --ink-faint:#8B8B85;
+  --accent:#171717; --accent-dk:#000000; --accent-pale:#E9E9E6; --on-accent:#FFFFFF;
+  --input-bg:#FAFAF8; --danger:#8B3529; --danger-dk:#64231C; --scrim:#171717;
+}
 
 /* ---------- 版式與衍生變數：一律寫在 body ----------
    data-theme 掛在 body，這些若寫在 :root 會先結算成預設色，換配色時不會跟著變。 */
@@ -246,7 +258,34 @@ nav.bottom button{flex:1;display:flex;flex-direction:column;align-items:center;g
   font-size:.62em;font-weight:900;color:var(--ink-faint);padding:4px 0;min-width:0;background:none}
 nav.bottom button .ic{font-size:20px;line-height:1.2}
 nav.bottom button.on{color:var(--accent)}
+.nav-brand{display:none}
 .hide{display:none!important}
+@media (min-width:900px){
+  html{background:var(--bg)}
+  body{padding:0 38px 42px 232px;background-attachment:fixed}
+  .wrap{max-width:1180px}
+  header{display:flex;align-items:center;gap:16px;text-align:left;padding:34px 0 26px}
+  header .monster{margin:0;flex:0 0 auto}
+  header .brand-copy{min-width:0}
+  header h1{font-size:1.55em;letter-spacing:.09em}
+  header .sub{font-size:.8em;margin-top:3px}
+  .card{padding:24px 24px;margin-bottom:22px}
+  #tabShelf>input[type=search]{max-width:560px;box-shadow:0 5px 0 var(--card-under)}
+  .cats{gap:9px}
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin-top:20px}
+  .shot{height:220px}
+  nav.bottom{position:fixed;left:0;top:0;right:auto;bottom:0;width:208px;max-width:none;margin:0;
+    display:flex;flex-direction:column;justify-content:flex-start;gap:8px;padding:24px 14px 20px;
+    border:0;border-right:2px solid var(--card-edge);border-radius:0;box-shadow:5px 0 0 var(--card-under)}
+  nav.bottom .nav-brand{display:flex;align-items:center;gap:11px;padding:6px 8px 24px;margin-bottom:8px;border-bottom:1px dashed var(--card-edge);color:var(--ink)}
+  .nav-brand .mark{width:38px;height:38px;display:grid;place-items:center;border-radius:13px;background:var(--accent);color:var(--on-accent);font-size:20px;box-shadow:3px 3px 0 var(--card-under)}
+  .nav-brand strong{display:block;font-size:.82em;letter-spacing:.08em;line-height:1.35}
+  .nav-brand small{display:block;color:var(--ink-faint);font-size:.64em;letter-spacing:.08em;margin-top:2px}
+  nav.bottom button{flex:0 0 auto;flex-direction:row;justify-content:flex-start;gap:13px;min-height:52px;padding:13px 14px;border-radius:15px;font-size:.76em;letter-spacing:.04em}
+  nav.bottom button .ic{width:27px;font-size:22px;line-height:1;text-align:center}
+  nav.bottom button.on{color:var(--accent-dk);background:var(--accent-pale);box-shadow:inset 4px 0 0 var(--accent)}
+  #toast{left:calc(50% + 104px);bottom:28px}
+}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -255,8 +294,10 @@ nav.bottom button.on{color:var(--accent)}
 
   <header>
     <div class="monster"><u></u><i></i><i></i><b></b></div>
-    <h1>小怪獸咖啡館</h1>
-    <p class="sub">一個人的作品架</p>
+    <div class="brand-copy">
+      <h1>小怪獸咖啡館</h1>
+      <p class="sub">一個人的作品架</p>
+    </div>
   </header>
 
   <div id="err"></div>
@@ -331,6 +372,7 @@ nav.bottom button.on{color:var(--accent)}
 </div>
 
 <nav class="bottom" id="nav">
+  <div class="nav-brand"><span class="mark">☕</span><div><strong>小怪獸咖啡館</strong><small>作品工作區</small></div></div>
   <button class="on" data-tab="shelf"><span class="ic">&#9749;</span>架上</button>
   <button data-tab="about"><span class="ic">&#128218;</span>關於</button>
   <button data-tab="look"><span class="ic">&#127912;</span>外觀</button>
@@ -379,7 +421,9 @@ const THEMES = [
   { id:'rose',   label:'玫瑰歐蕾', sw:['#EFE3E4','#B37784','#9A5C3C'] },
   { id:'paper',  label:'焦糖瑪奇朵', sw:['#E6DCC8','#7A5C3E','#A24B3C'] },
   { id:'night',  label:'深夜營業', sw:['#23262B','#6FA8CC','#EDEAE3'] },
-  { id:'ink',    label:'炭焙黑金', sw:['#121212','#C9A227','#F0EDE6'] }
+  { id:'ink',    label:'炭焙黑金', sw:['#121212','#C9A227','#F0EDE6'] },
+  { id:'sunlit', label:'暖陽黃棕', sw:['#F8D86B','#EFAE32','#4B3527'] },
+  { id:'mono',   label:'黑白極簡', sw:['#F1F1EF','#171717','#BDBDB8'] }
 ];
 const FONTS = [
   { id:'maru',     label:'圓體（Zen Maru）',     stack:"'Zen Maru Gothic','Noto Sans TC','PingFang TC',sans-serif" },
