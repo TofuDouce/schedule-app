@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>小說編輯器 v5 · 章節撰寫與自烤發布</title>
+<title>小說編輯器 v6 · 章節撰寫與自烤發布</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=LXGW+WenKai+TC&family=Zen+Maru+Gothic:wght@400;500;700&family=Zen+Old+Mincho:wght@400;600&family=Cinzel:wght@500;600&display=swap" rel="stylesheet">
@@ -60,6 +60,14 @@ body[data-theme="amber"]{
   --accent:#f0c02a; --accent-dk:#b58a12; --accent-pale:#2c2209; --on-accent:#1a1405;
   --input-bg:#241c0b; --danger:#d1553f; --danger-dk:#9c3a28; --scrim:rgba(0,0,0,0.62);
   --card-rgb:32,25,8; --ink-rgb:246,238,211; --accent-rgb:240,192,42;
+}
+body[data-theme="tarot"]{
+  color-scheme:dark;
+  --bg:#171320; --dot:rgba(216,191,138,0.10); --card:#1d182c; --card-edge:#3a2e63; --card-under:#0b0814;
+  --ink:#f4efff; --ink-soft:#bba9e8; --ink-faint:#a897c9;
+  --accent:#d8bf8a; --accent-dk:#a9905e; --accent-pale:#241a35; --on-accent:#171320;
+  --input-bg:#0f0b19; --danger:#f29494; --danger-dk:#b45c5c; --scrim:rgba(0,0,0,0.66);
+  --card-rgb:29,24,44; --ink-rgb:244,239,255; --accent-rgb:216,191,138;
 }
 body[data-theme="silver"]{
   color-scheme:light;
@@ -238,6 +246,30 @@ input[type=color]{width:100%;height:44px;background:var(--input-bg);border:2px s
 #errBar.on{display:block;}
 #errBar .x{position:absolute;top:8px;right:10px;background:none;border:none;color:#fff;font-size:18px;cursor:pointer;}
 
+/* ═══════════ 星夜塔羅裝飾（編輯器） ═══════════ */
+#stars{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0;display:none;}
+body[data-theme="tarot"] #stars{display:block;}
+#stars i{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;opacity:.7;animation:twinkle 4s infinite;}
+@keyframes twinkle{0%,100%{opacity:.15;transform:scale(.7)}50%{opacity:1;transform:scale(1.4)}}
+body[data-theme="tarot"]{background-image:radial-gradient(circle at 50% 0%,rgba(180,150,255,.14),transparent 42%),radial-gradient(var(--dot) 1.2px,transparent 1.2px);}
+.deco-frame,.deco-corner{display:none;}
+body[data-theme="tarot"] .deco-frame{display:block;position:fixed;inset:8px;border:1.5px solid rgba(216,191,138,.42);
+  border-radius:30px;pointer-events:none;z-index:60;}
+body[data-theme="tarot"] .deco-frame::before{content:"";position:absolute;inset:9px;border:1px solid rgba(216,191,138,.16);border-radius:23px;}
+body[data-theme="tarot"] .deco-corner{display:block;position:fixed;width:74px;height:74px;pointer-events:none;z-index:61;color:rgba(216,191,138,.85);font-size:18px;}
+body[data-theme="tarot"] .deco-corner::before{content:"";position:absolute;inset:0;border:1.5px solid rgba(216,191,138,.4);border-radius:50%;}
+body[data-theme="tarot"] .deco-corner::after{content:"\2726";position:absolute;}
+.dc-tl{top:12px;left:12px;} .dc-tl::before{clip-path:polygon(0 0,100% 0,0 100%);} .dc-tl::after{top:10px;left:10px;}
+.dc-tr{top:12px;right:12px;} .dc-tr::before{clip-path:polygon(0 0,100% 0,100% 100%);} .dc-tr::after{top:10px;right:10px;}
+.dc-bl{bottom:12px;left:12px;} .dc-bl::before{clip-path:polygon(0 0,0 100%,100% 100%);} .dc-bl::after{bottom:10px;left:10px;}
+.dc-br{bottom:12px;right:12px;} .dc-br::before{clip-path:polygon(100% 0,0 100%,100% 100%);} .dc-br::after{bottom:10px;right:10px;}
+body[data-theme="tarot"] main,body[data-theme="tarot"] .top{position:relative;z-index:2;}
+body[data-theme="tarot"] .card,body[data-theme="tarot"] .chcard{backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  background:rgba(var(--card-rgb),0.72);}
+body[data-theme="tarot"] .moon-mini{display:inline-block;color:var(--accent);animation:floatMoon 4s ease-in-out infinite;}
+@keyframes floatMoon{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+.moon-mini{display:none;font-size:1.1em;margin-left:6px;}
+
 @media(min-width:900px){
   body{padding-bottom:0;padding-left:200px;}
   nav.bottom{flex-direction:column;top:0;bottom:0;right:auto;width:188px;justify-content:flex-start;padding:20px 12px;
@@ -249,6 +281,13 @@ input[type=color]{width:100%;height:44px;background:var(--input-bg);border:2px s
 }
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;}}
 </style>
+
+<div id="stars" aria-hidden="true"></div>
+<div class="deco-frame" aria-hidden="true"></div>
+<div class="deco-corner dc-tl" aria-hidden="true"></div>
+<div class="deco-corner dc-tr" aria-hidden="true"></div>
+<div class="deco-corner dc-bl" aria-hidden="true"></div>
+<div class="deco-corner dc-br" aria-hidden="true"></div>
 
 <header class="top">
   <span aria-hidden="true">
@@ -274,7 +313,7 @@ input[type=color]{width:100%;height:44px;background:var(--input-bg);border:2px s
       <path d="M37 41 L33 45 M37 41 L37 45 M37 41 L41 45" stroke="var(--owl-foot)" stroke-width="1.6" stroke-linecap="round"/>
     </svg>
   </span>
-  <h1>NOVEL STUDIO<small>小說編輯器 v5</small></h1>
+  <h1>NOVEL STUDIO<span class="moon-mini">☾</span><small>小說編輯器 v6</small></h1>
 </header>
 
 <main>
@@ -295,6 +334,15 @@ input[type=color]{width:100%;height:44px;background:var(--input-bg);border:2px s
       <input type="text" id="f-sub" placeholder="例如：天狼星 × 妳"></div>
     <div class="fld" style="margin-bottom:0"><label class="lbl">卷別備註（接在「全N章」後面）</label>
       <input type="text" id="f-foot" placeholder="例如：連載中 / 完結・共三卷"></div>
+  </div>
+
+  <div class="card">
+    <div class="sec-title"><span class="bdg">✦</span>網站版型</div>
+    <p class="note" style="margin-top:0">套用在烤出來的小說網站，封面與內文都會生效。星夜塔羅會加上細金框、四角星徽、閃爍星空、懸浮月亮與毛玻璃面板。</p>
+    <div class="chips" id="c-skin">
+      <span class="chip on" data-v="plain">📄 標準</span>
+      <span class="chip" data-v="tarot">✦ 星夜塔羅</span>
+    </div>
   </div>
 
   <div class="card">
@@ -443,7 +491,7 @@ input[type=color]{width:100%;height:44px;background:var(--input-bg);border:2px s
     <button class="btn-danger" onclick="resetAll()">清空全部內容</button>
     <p class="hint">此動作無法復原，建議先匯出備份。</p>
   </div>
-  <p class="hint" style="text-align:center;padding:8px 0 20px">小說編輯器 v5 · 單檔離線 · 資料僅存於本機瀏覽器</p>
+  <p class="hint" style="text-align:center;padding:8px 0 20px">小說編輯器 v6 · 單檔離線 · 資料僅存於本機瀏覽器</p>
 </section>
 
 </main>
@@ -473,7 +521,7 @@ input[type=color]{width:100%;height:44px;background:var(--input-bg);border:2px s
 :root{
   /*M:INK*/--zhu:#9e2b25;--zhu-bright:#c0392b;--ink-bg:#100d0a;--ink-fg:#e7ddca;/*M:/INK*/
   --muted:#9b9384;
-  --rfs:19px; --rfont:'Noto Serif TC',serif; --rlh:2.05; --rpad:22px;
+  --rfs:19px; --rfont:'Noto Serif TC',serif; --rlh:2.05; --rpad:22px; --glass-rgb:23,19,32;
 }
 /*M:THEMECSS*/
 [data-theme="parch"]{--read-bg:#F5EDD8;--read-fg:#2C2620;--read-muted:#7A6F5F;--read-rule:#DDD0B8;--accent:#8B5E1A;--accent-bright:#6E4A12;--accent-tint:rgba(139,94,26,0.10);}
@@ -607,12 +655,51 @@ body.vert .pager button{min-height:44px;}
 .fontbtns button{padding:9px 14px;min-height:42px;border-radius:20px;border:1px solid var(--read-rule);
   background:transparent;color:var(--read-fg);font-size:.74rem;}
 .fontbtns button.cur{border-color:var(--accent);color:var(--accent);}
+/* ═══════════ 星夜塔羅版型 ═══════════ */
+.rstars{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0;}
+.rstars i{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;opacity:.7;animation:twinkle 4s infinite;}
+@keyframes twinkle{0%,100%{opacity:.15;transform:scale(.7)}50%{opacity:1;transform:scale(1.4)}}
+@keyframes floatMoon{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+body.skin-tarot{background-image:radial-gradient(circle at 50% 0%,rgba(180,150,255,.14),transparent 42%);}
+body.skin-tarot #cover{background-image:radial-gradient(circle at 50% 0%,rgba(180,150,255,.16),transparent 45%);}
+body.skin-tarot #reader{position:relative;z-index:1;}
+body.skin-tarot #cover>*{position:relative;z-index:2;}
+body.skin-tarot .cover-stars{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:1;}
+body.skin-tarot .cover-stars i{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;opacity:.7;animation:twinkle 4s infinite;}
+.tframe,.tcorner,.moon-wrap{display:none;}
+body.skin-tarot .tframe{display:block;position:fixed;inset:9px;border:1.5px solid rgba(216,191,138,.44);
+  border-radius:32px;pointer-events:none;z-index:65;}
+body.skin-tarot .tframe::before{content:"";position:absolute;inset:10px;border:1px solid rgba(216,191,138,.17);border-radius:24px;}
+body.skin-tarot .tcorner{display:block;position:fixed;width:82px;height:82px;pointer-events:none;z-index:66;
+  color:rgba(216,191,138,.85);font-size:20px;}
+body.skin-tarot .tcorner::before{content:"";position:absolute;inset:0;border:1.5px solid rgba(216,191,138,.42);border-radius:50%;}
+body.skin-tarot .tcorner::after{content:"\2726";position:absolute;}
+.tc-tl{top:13px;left:13px;} .tc-tl::before{clip-path:polygon(0 0,100% 0,0 100%);} .tc-tl::after{top:11px;left:11px;}
+.tc-tr{top:13px;right:13px;} .tc-tr::before{clip-path:polygon(0 0,100% 0,100% 100%);} .tc-tr::after{top:11px;right:11px;}
+.tc-bl{bottom:13px;left:13px;} .tc-bl::before{clip-path:polygon(0 0,0 100%,100% 100%);} .tc-bl::after{bottom:11px;left:11px;}
+.tc-br{bottom:13px;right:13px;} .tc-br::before{clip-path:polygon(100% 0,0 100%,100% 100%);} .tc-br::after{bottom:11px;right:11px;}
+body.skin-tarot .moon-wrap{display:block;position:relative;margin-bottom:4px;}
+body.skin-tarot .moon-wrap::before{content:"";position:absolute;left:50%;top:-38px;width:1px;height:38px;background:rgba(216,191,138,.35);}
+body.skin-tarot .moon-wrap .mn{font-size:2.4rem;color:var(--zhu-bright);text-shadow:0 0 18px rgba(216,191,138,.28);
+  display:block;animation:floatMoon 4s ease-in-out infinite;line-height:1;}
+body.skin-tarot .rbar,body.skin-tarot .pager,body.skin-tarot .panel{
+  background:rgba(var(--glass-rgb),0.72);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);}
+body.skin-tarot .panel{border:1px solid rgba(216,191,138,.28);}
+body.skin-tarot #page{position:relative;z-index:1;}
+body.skin-tarot.vert #page{z-index:1;}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;}}
 </style>
 </head>
 <body <!--M:DEFAULTTHEME-->data-theme="parch"<!--/M:DEFAULTTHEME-->>
 
+<div class="tframe" aria-hidden="true"></div>
+<div class="tcorner tc-tl" aria-hidden="true"></div>
+<div class="tcorner tc-tr" aria-hidden="true"></div>
+<div class="tcorner tc-bl" aria-hidden="true"></div>
+<div class="tcorner tc-br" aria-hidden="true"></div>
+
 <div id="cover">
+  <div class="moon-wrap" aria-hidden="true"><span class="mn">☾</span></div>
   <div class="seal"><!--M:SEAL--><span>印</span><!--/M:SEAL--></div>
   <div class="cover-kicker"><!--M:KICKER-->副標題<!--/M:KICKER--></div>
   <h1 class="cover-title"><!--M:TITLE-->小說標題<!--/M:TITLE--></h1>
@@ -627,6 +714,7 @@ body.vert .pager button{min-height:44px;}
 <div id="reader">
   <div class="rbar">
     <button class="ib" id="tocBtn" aria-label="目錄">☰</button>
+    <button class="ib" id="homeBtn" aria-label="回到封面">⌂</button>
     <div class="ti"><div class="p" id="tPart"></div><div class="t" id="tTitle"></div></div>
     <button class="ib" id="setBtn" aria-label="設定">Aa</button>
   </div>
@@ -651,6 +739,9 @@ body.vert .pager button{min-height:44px;}
     <div class="sl">主題</div>
     <div class="dots-row" id="dotsLight"></div>
     <div class="dots-row" id="dotsDark" style="margin-bottom:0"></div>
+  </div>
+  <div class="srow" style="margin-top:-6px">
+    <button id="resetThemeBtn" style="width:100%;min-height:44px;border:1px solid var(--read-rule);background:transparent;color:var(--read-muted);border-radius:8px;font-size:.74rem;letter-spacing:.1em;">↺ 還原為作者預設主題</button>
   </div>
   <div class="srow">
     <div class="sl">排版方向</div>
@@ -678,17 +769,43 @@ body.vert .pager button{min-height:44px;}
 <script>
 /*M:CH*/var CH=[{part:"",title:"範例章節",label:"",html:"<p>尚未加入章節。</p>"}];/*M:/CH*/
 /*M:LS*/var LS="novel_reader_v1";/*M:/LS*/
+/*M:SKIN*/var SKIN="plain";var DEFTH="parch";/*M:/SKIN*/
 var FONTS=[{k:"'Noto Serif TC',serif",n:"思源明體"},{k:"'Noto Sans TC',sans-serif",n:"思源黑體"},{k:"'LXGW WenKai TC',cursive",n:"霞鶩文楷"},{k:"'Zen Maru Gothic',sans-serif",n:"圓體"},{k:"'Zen Old Mincho',serif",n:"明朝"},{k:"'PingFang TC','PingFang SC','Heiti TC',sans-serif",n:"蘋方黑體"}];
 /*M:THEMEDATA*/var TH=[{k:"parch",n:"羊皮紙",a:"#8B5E1A",b:"#F5EDD8",d:0}];/*M:/THEMEDATA*/
-var cur=0, pref={theme:"",fs:19,lh:2.05,pad:22,vert:false,font:"'Noto Serif TC',serif"};
+var cur=0, pref={theme:"",defOf:"",fs:19,lh:2.05,pad:22,vert:false,font:"'Noto Serif TC',serif"};
 function $(i){ return document.getElementById(i); }
 function loadPref(){
   try{ var r=localStorage.getItem(LS+"_pref"); if(r){ var o=JSON.parse(r); for(var k in o){ if(o.hasOwnProperty(k)) pref[k]=o[k]; } } }catch(e){}
-  var dflt=document.body.getAttribute("data-theme")||(TH.length?TH[0].k:"parch");
+  var dflt=DEFTH||document.body.getAttribute("data-theme")||(TH.length?TH[0].k:"parch");
+  /* 作者換過預設主題就重新套用一次，之後讀者自己選的仍會被記住 */
+  if(pref.defOf!==dflt){ pref.theme=dflt; pref.defOf=dflt; savePref(); }
   if(!pref.theme) pref.theme=dflt;
   var found=false, z;
   for(z=0;z<TH.length;z++){ if(TH[z].k===pref.theme){ found=true; break; } }
   if(!found) pref.theme=dflt;
+}
+/* 讀者可一鍵回到作者設定的主題 */
+function resetTheme(){ pref.theme=DEFTH; savePref(); applyPref(); }
+function makeStars(box,n){
+  if(!box || (box.childNodes && box.childNodes.length)) return;
+  var i, st;
+  for(i=0;i<n;i++){
+    st=document.createElement("i");
+    st.style.left=(Math.random()*100)+"%";
+    st.style.top=(Math.random()*100)+"%";
+    st.style.animationDelay=(Math.random()*4)+"s";
+    box.appendChild(st);
+  }
+}
+function applySkin(){
+  if(SKIN!=="tarot") return;
+  document.body.className=(document.body.className?document.body.className+" ":"")+"skin-tarot";
+  var a=document.createElement("div"); a.className="rstars";
+  document.body.insertBefore(a, document.body.firstChild);
+  makeStars(a,120);
+  var c=document.createElement("div"); c.className="cover-stars";
+  $("cover").insertBefore(c, $("cover").firstChild);
+  makeStars(c,90);
 }
 function savePref(){ try{ localStorage.setItem(LS+"_pref", JSON.stringify(pref)); }catch(e){} }
 function savePos(){ try{ localStorage.setItem(LS+"_pos", String(cur)); }catch(e){} }
@@ -700,7 +817,7 @@ function applyPref(){
   d.style.setProperty("--rlh", String(pref.lh));
   d.style.setProperty("--rpad", pref.pad+"px");
   d.style.setProperty("--rfont", pref.font);
-  document.body.className = pref.vert ? "vert" : "";
+  document.body.className = (pref.vert ? "vert" : "") + (SKIN==="tarot" ? " skin-tarot" : "");
   if($("fsVal")) $("fsVal").textContent=pref.fs+"px";
   if($("lhVal")) $("lhVal").textContent=pref.lh.toFixed(2);
   if($("pdVal")) $("pdVal").textContent=pref.pad+"px";
@@ -792,6 +909,7 @@ function closeP(){ $("scrim").className="scrim"; $("toc").className="panel"; $("
 function enter(i){ $("cover").className="gone"; $("reader").className="on"; renderCh(i); }
 window.onscroll=updBar;
 $("page").onscroll=updBar;
+applySkin();
 loadPref(); renderDots(); renderFonts(); applyPref();
 var last=loadPos();
 if(last>0 && last<CH.length){ $("resumeBtn").style.display="block"; $("resumeBtn").textContent="回到上次進度（第 "+(last+1)+" 章）"; }
@@ -800,11 +918,13 @@ $("resumeBtn").onclick=function(){ enter(last); };
 $("tocBtn").onclick=function(){ renderToc(); openP($("toc")); };
 $("setBtn").onclick=function(){ openP($("settings")); };
 $("scrim").onclick=closeP;
+$("homeBtn").onclick=function(){ closeP(); $("reader").className=""; $("cover").className=""; window.scrollTo(0,0); };
 $("prevBtn").onclick=function(){ if(cur>0) renderCh(cur-1); };
 $("nextBtn").onclick=function(){ if(cur<CH.length-1) renderCh(cur+1); };
 $("fsR").oninput=function(){ pref.fs=parseInt(this.value,10); savePref(); applyPref(); updBar(); };
 $("lhR").oninput=function(){ pref.lh=parseInt(this.value,10)/100; savePref(); applyPref(); updBar(); };
 $("pdR").oninput=function(){ pref.pad=parseInt(this.value,10); savePref(); applyPref(); updBar(); };
+$("resetThemeBtn").onclick=resetTheme;
 $("vertSw").onchange=function(){ pref.vert=this.checked; savePref(); applyPref(); toStart(); updBar(); };
 </script>
 </body>
@@ -863,6 +983,7 @@ function blankState(){
     chapters:[],
     rthemes:{},
     defaultTheme:'parch',
+    skin:'plain',
     chOrder:'new',
     openIdx:-1
   };
@@ -1130,6 +1251,11 @@ function focusOpen(){
   if(pos<0 || !cards[pos]) return;
   if(cards[pos].scrollIntoView) cards[pos].scrollIntoView({behavior:'smooth',block:'center'});
 }
+function skinUI(){
+  var v=ST.skin||'plain';
+  var cs=$('c-skin').querySelectorAll('.chip');
+  for(var i=0;i<cs.length;i++){ cs[i].classList.remove('on'); if(cs[i].getAttribute('data-v')===v) cs[i].classList.add('on'); }
+}
 function chOrderUI(){
   var v=ST.chOrder||'new';
   var cs=$('c-chorder').querySelectorAll('.chip');
@@ -1211,7 +1337,8 @@ var THEME_LIST=[
   {k:'jade',n:'墨綠',bg:'#08130e',ac:'#45b877'},
   {k:'navy',n:'藏藍',bg:'#080c18',ac:'#6f8ff0'},
   {k:'amber',n:'琥珀',bg:'#141005',ac:'#f0c02a'},
-  {k:'silver',n:'銀霧',bg:'#eceef2',ac:'#6a6f9c'}
+  {k:'silver',n:'銀霧',bg:'#eceef2',ac:'#6a6f9c'},
+  {k:'tarot',n:'星夜塔羅',bg:'#171320',ac:'#d8bf8a'}
 ];
 function renderThemes(){
   var row=$('theme-row'); row.innerHTML='';
@@ -1228,7 +1355,19 @@ function renderThemes(){
   for(var j=0;j<THEME_LIST.length;j++){ if(THEME_LIST[j].k===PREF.theme) cur=THEME_LIST[j]; }
   $('theme-name').textContent='目前配色：'+(cur?cur.n:'深色金');
 }
-function setTheme(k){ document.body.setAttribute('data-theme',k); PREF.theme=k; savePref(); renderThemes(); }
+function setTheme(k){ document.body.setAttribute('data-theme',k); PREF.theme=k; savePref(); renderThemes(); makeStars(); }
+function makeStars(){
+  var w=$('stars'); if(!w) return;
+  if(w.childNodes && w.childNodes.length) return;
+  var i, st;
+  for(i=0;i<110;i++){
+    st=document.createElement('i');
+    st.style.left=(Math.random()*100)+'%';
+    st.style.top=(Math.random()*100)+'%';
+    st.style.animationDelay=(Math.random()*4)+'s';
+    w.appendChild(st);
+  }
+}
 function setFont(v){ document.documentElement.style.setProperty('--font',v); PREF.font=v; savePref(); toast('字型已套用'); }
 function setFs(v){
   v=parseInt(v,10); if(isNaN(v))v=19; if(v<15)v=15; if(v>40)v=40;
@@ -1380,6 +1519,7 @@ function buildFinal(){
   for(i=0;i<RKEYS.length;i++){ if(RKEYS[i]===dth){ okth=true; break; } }
   if(!okth) dth=RKEYS[0];
   tpl=cutAll(tpl,'<!--M:DEFAULTTHEME-->','<!--/M:DEFAULTTHEME-->','data-theme="'+dth+'"');
+  tpl=cutAll(tpl,'/*M:SKIN*/','/*M:/SKIN*/','var SKIN="'+((ST.skin==='tarot')?'tarot':'plain')+'";var DEFTH="'+dth+'";');
 
   var TD=[], kl, tl;
   for(i=0;i<RLIGHT.length;i++){ kl=RLIGHT[i]; tl=rtheme(kl); TD.push({k:kl,n:tl.name,a:tl.accent,b:tl.bg,d:0}); }
@@ -1576,7 +1716,7 @@ function importJson(input){
       var o=JSON.parse(r.result);
       if(o && o.state && o.state.cover && o.state.chapters){
         ST=o.state; loadFix(); save();
-        bindCover(); sealModeUI(); renderSeal(); renderChapters(); renderRThemes();
+        bindCover(); sealModeUI(); renderSeal(); skinUI(); chOrderUI(); renderChapters(); renderRThemes();
         ok=true;
       }
     }catch(e){}
@@ -1596,7 +1736,7 @@ function resetAll(){
   openConfirm('清空全部內容','封面、章節與主題色都會被刪除，且無法復原。建議先匯出備份。確定繼續？',function(){
     try{ localStorage.removeItem(K_STATE); }catch(e){}
     ST=blankState(); save();
-    bindCover(); sealModeUI(); renderSeal(); renderChapters(); renderRThemes();
+    bindCover(); sealModeUI(); renderSeal(); skinUI(); chOrderUI(); renderChapters(); renderRThemes();
     closeModal(); toast('已清空');
   });
 }
@@ -1633,6 +1773,7 @@ document.addEventListener('click', function(e){
   var g=chip.parentNode;
   if(!g || !g.id) return;
   if(g.id==='c-chorder'){ setChOrder(chip.getAttribute('data-v')); return; }
+  if(g.id==='c-skin'){ ST.skin=chip.getAttribute('data-v'); save(); skinUI(); toast(ST.skin==='tarot'?'已套用星夜塔羅版型':'已改回標準版型'); return; }
   if(g.id!=='c-sealmode') return;
   ST.cover.sealMode=chip.getAttribute('data-v');
   save(); sealModeUI(); renderSeal();
@@ -1643,12 +1784,14 @@ document.addEventListener('click', function(e){
 function init(){
   loadAll();
   applyPref();
+  makeStars();
   renderThemes();
   bindCover();
   sealModeUI();
   scanSvgVars();
   renderSeal();
   chOrderUI();
+  skinUI();
   renderChapters();
   renderRThemes();
   go('cover');
