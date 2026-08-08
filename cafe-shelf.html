@@ -82,6 +82,30 @@
   --input-bg:#FAFAF8; --danger:#8B3529; --danger-dk:#64231C; --scrim:#171717;
 }
 
+[data-theme="dream"]{
+  --bg:#1B1526; --dot:#2A2140; --card:rgba(29,24,44,.72); --card-edge:#3B2F55; --card-under:#0E0A18;
+  --ink:#F4EFFF; --ink-soft:#B9A9E0; --ink-faint:#7A6B99;
+  --accent:#D8BF8A; --accent-dk:#EBD5A2; --accent-pale:#2E2545; --on-accent:#1B1526;
+  --input-bg:#221A33; --danger:#E39; --danger-dk:#F5A; --scrim:#0B0812;
+  --monster:#8C6FC6; --monster-dk:#B79BEA; --monster-eye:#FFFDF6;
+}
+#dreamSky{position:fixed;inset:0;z-index:-3;overflow:hidden;pointer-events:none;opacity:0;
+  transition:opacity .5s;background:radial-gradient(circle at 50% 0%,rgba(180,150,255,.16),transparent 42%)}
+body[data-theme="dream"] #dreamSky{opacity:1}
+#dreamSky .s{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;animation:dreamTw 4s infinite}
+@keyframes dreamTw{0%,100%{opacity:.15;transform:scale(.7)}50%{opacity:1;transform:scale(1.4)}}
+#dreamFrame{position:fixed;inset:12px;border:1.5px solid rgba(216,191,138,.42);border-radius:34px;
+  z-index:999;pointer-events:none;opacity:0;transition:opacity .5s}
+#dreamFrame::before{content:"";position:absolute;inset:11px;border:1px solid rgba(216,191,138,.16);border-radius:26px}
+body[data-theme="dream"] #dreamFrame{opacity:1}
+.dreamCorner{position:fixed;width:44px;height:44px;z-index:1000;pointer-events:none;opacity:0;transition:opacity .5s;
+  color:rgba(216,191,138,.85);font-size:22px;display:grid;place-items:center}
+body[data-theme="dream"] .dreamCorner{opacity:1}
+.dreamCorner.tl{top:20px;left:20px}.dreamCorner.tr{top:20px;right:20px}
+.dreamCorner.bl{bottom:20px;left:20px}.dreamCorner.br{bottom:20px;right:20px}
+@media (min-width:900px){.dreamCorner.tl,.dreamCorner.bl{left:216px}}
+@media (prefers-reduced-motion:reduce){#dreamSky .s{animation:none}}
+
 /* ---------- 版式與衍生變數：一律寫在 body ----------
    data-theme 掛在 body，這些若寫在 :root 會先結算成預設色，換配色時不會跟著變。 */
 body{
@@ -290,6 +314,12 @@ nav.bottom button.on{color:var(--accent)}
 </style>
 </head>
 <body>
+<div id="dreamSky"></div>
+<div id="dreamFrame"></div>
+<div class="dreamCorner tl">&#10022;</div>
+<div class="dreamCorner tr">&#10022;</div>
+<div class="dreamCorner bl">&#10022;</div>
+<div class="dreamCorner br">&#10022;</div>
 <div class="wrap">
 
   <header>
@@ -423,7 +453,8 @@ const THEMES = [
   { id:'night',  label:'深夜營業', sw:['#23262B','#6FA8CC','#EDEAE3'] },
   { id:'ink',    label:'炭焙黑金', sw:['#121212','#C9A227','#F0EDE6'] },
   { id:'sunlit', label:'暖陽黃棕', sw:['#F8D86B','#EFAE32','#4B3527'] },
-  { id:'mono',   label:'黑白極簡', sw:['#F1F1EF','#171717','#BDBDB8'] }
+  { id:'mono',   label:'黑白極簡', sw:['#F1F1EF','#171717','#BDBDB8'] },
+  { id:'dream',  label:'慵懶夢境', sw:['#1B1526','#D8BF8A','#8C6FC6'] }
 ];
 const FONTS = [
   { id:'maru',     label:'圓體（Zen Maru）',     stack:"'Zen Maru Gothic','Noto Sans TC','PingFang TC',sans-serif" },
@@ -720,6 +751,20 @@ onAuthStateChanged(auth, async user => {
     await load();
   }
 });
+
+(function(){
+  var sky = document.getElementById('dreamSky');
+  if(sky && !sky.children.length){
+    for(var i=0;i<120;i++){
+      var s=document.createElement('div');
+      s.className='s';
+      s.style.left=Math.random()*100+'%';
+      s.style.top=Math.random()*100+'%';
+      s.style.animationDelay=Math.random()*4+'s';
+      sky.appendChild(s);
+    }
+  }
+})();
 </script>
 </body>
 </html>
