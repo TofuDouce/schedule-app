@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>小說編輯器 v8 · 章節撰寫與自烤發布</title>
+<title>小說編輯器 v10 · 工作台、部卷、概要、PDF 與自烤發布</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=LXGW+WenKai+TC&family=Zen+Maru+Gothic:wght@400;500;700&family=Zen+Old+Mincho:wght@400;600&family=Cinzel:wght@500;600&display=swap" rel="stylesheet">
@@ -275,6 +275,102 @@ body[data-theme="tarot"] .moon-mini{display:inline-block;color:var(--accent);ani
 @keyframes floatMoon{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
 .moon-mini{display:none;font-size:1.1em;margin-left:6px;}
 
+
+/* ═══════════ v9 Pro 新增 ═══════════ */
+/* 吉祥物選擇（用 Grid，不用 flex，避免最後一顆被拉長） */
+.mascot-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+.mbtn{display:flex;flex-direction:column;align-items:center;gap:5px;padding:9px 4px 8px;cursor:pointer;
+  background:transparent;border:1.5px solid var(--chip-off-edge);border-radius:14px;transition:.15s;}
+.mbtn:active{transform:scale(.94);}
+.mbtn.on{border-color:var(--accent);background:var(--tint-hi);box-shadow:2px 2px 0 var(--card-under);}
+.mbtn .mi{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.28);}
+.mbtn .mi svg{width:70%;height:70%;display:block;}
+.mbtn .mt{font-size:.58em;color:var(--ink-soft);letter-spacing:.5px;line-height:1.2;text-align:center;}
+.mbtn.on .mt{color:var(--accent);font-weight:600;}
+@media(max-width:340px){ .mbtn .mt{font-size:.52em;} }
+
+/* 吉祥物動畫（原元件包的 <style> 基於安全會被移除，動畫改由這裡提供） */
+.seal-prev .mn-g,.mbtn .mn-g,.seal-prev .m-float,.mbtn .m-float{
+  transform-origin:50% 60%;animation:mn-float 3.4s ease-in-out infinite;}
+@keyframes mn-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.seal-prev .m-eye,.mbtn .m-eye{transform-origin:center;transform-box:fill-box;animation:mn-blink 4.4s infinite;}
+@keyframes mn-blink{0%,92%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+
+/* ═══════════ v10 新增 ═══════════ */
+/* 工作台指標 */
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px;}
+.dash-cell{background:var(--tint);border:1.5px solid var(--card-edge);border-radius:13px;padding:12px 12px;min-height:78px;
+  display:flex;flex-direction:column;justify-content:center;}
+.dash-cell .dv{font-size:1.12em;font-weight:700;color:var(--accent);line-height:1.25;overflow-wrap:anywhere;}
+.dash-cell .dk{font-size:.64em;color:var(--ink-faint);letter-spacing:1px;margin-top:4px;}
+.pbar{height:10px;border-radius:99px;background:var(--input-bg);border:1.5px solid var(--card-edge);overflow:hidden;margin:4px 0 6px;}
+.pbar>i{display:block;height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,var(--accent-dk),var(--accent));transition:width .25s ease;}
+
+/* 存檔狀態綠燈 */
+#savePill{position:fixed;right:12px;bottom:calc(80px + env(safe-area-inset-bottom));z-index:44;
+  display:flex;align-items:center;gap:7px;padding:7px 12px;border-radius:99px;
+  background:var(--card-solid);border:1.5px solid var(--card-edge);box-shadow:2px 2px 0 var(--card-under);
+  color:var(--ink-faint);font-size:.64em;letter-spacing:.5px;pointer-events:none;transition:opacity .25s,color .25s;}
+#savePill::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--ink-faint);transition:background .2s;}
+#savePill[data-s="saving"]{color:var(--accent);}
+#savePill[data-s="saving"]::before{background:var(--accent);animation:savePulse 1s infinite;}
+#savePill[data-s="saved"]{color:#5FAE7A;}
+#savePill[data-s="saved"]::before{background:#5FAE7A;}
+#savePill[data-s="error"]{color:var(--danger);border-color:var(--danger);}
+#savePill[data-s="error"]::before{background:var(--danger);}
+@keyframes savePulse{0%,100%{opacity:.3}50%{opacity:1}}
+@media(prefers-reduced-motion:reduce){#savePill[data-s="saving"]::before{animation:none;}}
+
+/* 部／卷分組標頭 */
+.volhead{display:flex;align-items:center;gap:10px;margin:18px 2px 10px;}
+.volhead:first-child{margin-top:2px;}
+.volhead .vt{font-family:'Cinzel',var(--font);font-size:.78em;font-weight:700;letter-spacing:.16em;color:var(--accent);
+  border:1.5px solid var(--accent);border-radius:20px;padding:5px 13px;white-space:nowrap;background:var(--tint);}
+.volhead .vl{flex:1;height:2px;background:var(--card-edge);border-radius:2px;}
+.volhead .vn{font-size:.62em;color:var(--ink-faint);letter-spacing:1px;white-space:nowrap;}
+
+/* 部／卷整理彈窗 */
+.volrow{display:flex;align-items:center;gap:8px;padding:8px 2px;border-bottom:1px solid var(--card-edge);}
+.volrow:last-child{border-bottom:none;}
+.volrow .vi{font-size:.66em;color:var(--ink-faint);min-width:26px;text-align:right;}
+.volrow .vname{flex:1;font-size:.8em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.volrow select{width:auto;min-width:112px;max-width:150px;padding:7px 26px 7px 9px;font-size:.72em;border-radius:9px;}
+.volbox{max-height:44svh;overflow-y:auto;-webkit-overflow-scrolling:touch;border:1.5px solid var(--card-edge);border-radius:12px;padding:6px 10px;margin-top:8px;}
+.rangerow{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:8px;}
+.rangerow input[type=number]{width:78px;padding:8px 9px;font-size:.78em;border-radius:9px;}
+
+/* 工具箱 */
+.tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.tool-grid button{width:100%;}
+@media(max-width:330px){ .tool-grid{grid-template-columns:1fr;} }
+
+/* 彈窗內的勾選列 */
+.swline{display:flex;align-items:center;gap:10px;padding:9px 2px;font-size:.82em;color:var(--ink);cursor:pointer;}
+.swline input[type=checkbox]{width:20px;height:20px;min-width:20px;accent-color:var(--accent);}
+
+/* 章節狀態圓點 */
+.sdot{width:10px;height:10px;min-width:10px;border-radius:50%;display:block;}
+.sdot.s-draft{background:var(--ink-faint);}
+.sdot.s-rev{background:var(--accent);}
+.sdot.s-done{background:#5FAE7A;}
+
+/* 統計儀表板 */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px;}
+.stat-cell{background:var(--tint);border:1.5px solid var(--card-edge);border-radius:12px;padding:11px 12px;}
+.stat-cell .sv{font-size:1.15em;font-weight:700;color:var(--accent);line-height:1.25;}
+.stat-cell .sk{font-size:.66em;color:var(--ink-faint);letter-spacing:1px;margin-top:2px;}
+.barbox{max-height:230px;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  border:1.5px solid var(--card-edge);border-radius:12px;padding:10px;}
+.barrow{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.barrow:last-child{margin-bottom:0;}
+.barrow .bl{font-size:.62em;color:var(--ink-faint);min-width:30px;text-align:right;}
+.barrow .bt{flex:1;height:9px;background:var(--tint);border-radius:6px;overflow:hidden;}
+.barrow .bf{display:block;height:100%;border-radius:6px;background:var(--accent);}
+.barrow .bf.s-draft{background:var(--ink-faint);}
+.barrow .bf.s-done{background:#5FAE7A;}
+.barrow .bv{font-size:.62em;color:var(--ink-soft);min-width:44px;text-align:right;}
+
 @media(min-width:900px){
   body{padding-bottom:0;padding-left:200px;}
   nav.bottom{flex-direction:column;top:0;bottom:0;right:auto;width:188px;justify-content:flex-start;padding:20px 12px;
@@ -318,7 +414,7 @@ body[data-theme="tarot"] .moon-mini{display:inline-block;color:var(--accent);ani
       <path d="M37 41 L33 45 M37 41 L37 45 M37 41 L41 45" stroke="var(--owl-foot)" stroke-width="1.6" stroke-linecap="round"/>
     </svg>
   </span>
-  <h1>NOVEL STUDIO<span class="moon-mini">☾</span><small>小說編輯器 v8</small></h1>
+  <h1>NOVEL STUDIO<span class="moon-mini">🌛</span><small>小說編輯器 v10 · 融合版</small></h1>
 </header>
 
 <main>
@@ -365,9 +461,12 @@ body[data-theme="tarot"] .moon-mini{display:inline-block;color:var(--accent);ani
       <div class="fld"><label class="lbl">貼上 SVG 程式碼</label>
         <p class="note">從吉祥物產生器複製整段 <code>&lt;svg&gt;…&lt;/svg&gt;</code> 貼進來。若程式碼裡有 CSS 變數，下方會自動列出讓妳配色。</p>
         <textarea id="f-sealsvg" rows="5" placeholder="&lt;svg viewBox=&quot;0 0 64 64&quot;&gt;…&lt;/svg&gt;"></textarea></div>
+      <div class="fld">
+        <label class="lbl">內建吉祥物（五款，點一下直接帶入）</label>
+        <div class="mascot-row" id="mascot-row"></div>
+      </div>
       <div class="btn-row" style="margin-bottom:12px">
-        <button class="btn-line hi sm" onclick="useOwl()">🦉 帶入貓頭鷹</button>
-        <button class="btn-line sm" onclick="scanSvgVars()">🎨 掃描顏色變數</button>
+        <button class="btn-line sm" onclick="scanSvgVars()">🎨 重新掃描顏色變數</button>
       </div>
       <div id="svg-vars"></div>
     </div>
@@ -416,7 +515,93 @@ body[data-theme="tarot"] .moon-mini{display:inline-block;color:var(--accent);ani
     </div>
   </div>
 
+  <div class="card">
+    <div class="sec-title"><span class="bdg">🔎</span>尋找章節</div>
+    <div class="fld" style="margin-bottom:10px">
+      <input type="text" id="ch-search" placeholder="輸入關鍵字，標題、小標、概要與內文都會找" oninput="setChFilter(this.value)"></div>
+    <div class="chips" id="c-chstatus">
+      <span class="chip on" data-v="all">全部</span>
+      <span class="chip" data-v="draft">✏ 草稿</span>
+      <span class="chip" data-v="rev">🔧 修訂中</span>
+      <span class="chip" data-v="done">✅ 完稿</span>
+    </div>
+    <p class="hint" id="ch-filter-stat"></p>
+  </div>
+
   <div id="ch-list"></div>
+</section>
+
+<!-- ═════════ 工具箱 ═════════ -->
+<section class="tab-page" id="pg-tools">
+  <p class="page-lead">寫作的儀表板與所有批次工具都收在這裡。章節頁專心寫，這裡專心管。</p>
+
+  <div class="card tape">
+    <div class="sec-title"><span class="bdg">✦</span>v10 工作台<span class="cnt" id="dash-cnt"></span></div>
+    <div class="dash-grid">
+      <div class="dash-cell"><div class="dv" id="dash-a">—</div><div class="dk">章節／總字數</div></div>
+      <div class="dash-cell"><div class="dv" id="dash-b">—</div><div class="dk">平均每章字數</div></div>
+      <div class="dash-cell"><div class="dv" id="dash-c">—</div><div class="dk">完稿比例</div></div>
+      <div class="dash-cell"><div class="dv" id="dash-d">—</div><div class="dk">目標字數進度</div></div>
+    </div>
+    <div class="pbar"><i id="dash-bar"></i></div>
+    <p class="hint" id="dash-cap" style="text-align:right">尚未設定全書目標字數</p>
+    <div class="fld" style="margin-top:12px">
+      <label class="lbl" for="f-goal">全書目標字數（選填）</label>
+      <input type="number" id="f-goal" min="0" step="1000" placeholder="例如：250000">
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="sec-title"><span class="bdg">🚀</span>快速跳章</div>
+    <div class="fld" style="margin-bottom:10px">
+      <select id="jump-sel"></select>
+    </div>
+    <button class="btn-line hi" onclick="jumpToChapter()">前往這一章</button>
+    <p class="hint">會切到章節頁、自動展開該章並捲到畫面中央。</p>
+  </div>
+
+  <div class="card">
+    <div class="sec-title"><span class="bdg">🧰</span>寫作工具箱</div>
+    <div class="tool-grid">
+      <button class="btn-line sm" onclick="splitImportDialog()">✂ 智慧拆章匯入</button>
+      <button class="btn-line sm" onclick="findReplaceDialog()">🔁 尋找與取代</button>
+      <button class="btn-line sm" onclick="statsDialog()">📊 寫作統計</button>
+      <button class="btn-line sm" onclick="tidyDialog()">🧹 排版體檢</button>
+      <button class="btn-line sm" onclick="summarizeAllDialog()">✨ 一鍵補概要</button>
+      <button class="btn-line sm" id="undoBtn" onclick="doUndo()">↩ 復原上一步</button>
+    </div>
+    <p class="hint" id="undo-hint">還原點：目前沒有可復原的動作。</p>
+  </div>
+
+  <div class="card">
+    <div class="sec-title"><span class="bdg">📝</span>章節概要輸出</div>
+    <p class="note" style="margin-top:0">關掉之後，自烤網站、PDF 與全書匯出都不會帶概要，但概要文字仍留在草稿裡，隨時可以再打開。同一份稿子就能出「有概要版」和「無概要版」兩種。</p>
+    <div class="chips" id="c-usesum">
+      <span class="chip on" data-v="on">✅ 輸出時附上概要</span>
+      <span class="chip" data-v="off">🚫 輸出時隱藏概要</span>
+    </div>
+    <p class="hint" id="sum-stat"></p>
+    <div class="btn-row" style="margin-top:10px">
+      <button class="btn-line sm dg" onclick="clearAllSummaries()">🧽 清空全部概要</button>
+    </div>
+    <p class="hint">清空是真的把文字刪掉，但會留還原點，按「復原上一步」可以救回來。只是想暫時不出現的話，用上面的開關就好。</p>
+  </div>
+
+  <div class="card">
+    <div class="sec-title"><span class="bdg">📚</span>部／卷分類<span class="cnt" id="vol-cnt"></span></div>
+    <p class="note" style="margin-top:0">章節多到滑不完的時候，把它們分成第一部、第二部。分組會出現在章節列表、快速跳章、烤出來的目錄與 PDF 目錄。</p>
+    <div class="chips" id="vol-chips" style="margin-bottom:12px"></div>
+    <button class="btn-main" onclick="volumeDialog()">📚 整理部／卷</button>
+  </div>
+
+  <div class="card">
+    <div class="sec-title"><span class="bdg">🗒</span>專案筆記／大綱</div>
+    <p class="note" style="margin-top:0">世界觀設定、伏筆、if 線與支線構想都丟這裡。只存在草稿裡，不會被烤進小說網站。</p>
+    <div class="fld">
+      <textarea id="f-notes" rows="8" placeholder="記下世界觀、伏筆、下一章待辦、if 線草稿…"></textarea>
+    </div>
+    <p class="hint">邊打邊自動儲存，右下角的燈會告訴你存好了沒。</p>
+  </div>
 </section>
 
 <!-- ═════════ 外觀 ═════════ -->
@@ -472,6 +657,12 @@ body[data-theme="tarot"] .moon-mini{display:inline-block;color:var(--accent);ani
   </div>
 
   <div class="card">
+    <div class="sec-title"><span class="bdg">📕</span>匯出 PDF</div>
+    <button class="btn-main" onclick="pdfDialog()">📕 產生列印版（可存成 PDF）</button>
+    <p class="hint">A4 版面，四邊留白 20mm 以上，文字不會貼著邊界。三套配色：羊皮紙、銀霧、星夜塔羅。</p>
+  </div>
+
+  <div class="card">
     <div class="sec-title"><span class="bdg">📦</span>全書匯出</div>
     <div class="btn-row" style="margin-bottom:10px">
       <button class="btn-line" onclick="exportBookMd()">⬇ 全書 .md</button>
@@ -496,7 +687,7 @@ body[data-theme="tarot"] .moon-mini{display:inline-block;color:var(--accent);ani
     <button class="btn-danger" onclick="resetAll()">清空全部內容</button>
     <p class="hint">此動作無法復原，建議先匯出備份。</p>
   </div>
-  <p class="hint" style="text-align:center;padding:8px 0 20px">小說編輯器 v8 · 單檔離線 · 資料僅存於本機瀏覽器</p>
+  <p class="hint" style="text-align:center;padding:8px 0 20px">小說編輯器 v10 · 單檔離線 · 儲存空間：novel_v10</p>
 </section>
 
 </main>
@@ -504,11 +695,13 @@ body[data-theme="tarot"] .moon-mini{display:inline-block;color:var(--accent);ani
 <nav class="bottom">
   <button class="on" id="nav-cover" onclick="go('cover')"><span class="ic">📖</span>封面</button>
   <button id="nav-chapters" onclick="go('chapters')"><span class="ic">📚</span>章節</button>
+  <button id="nav-tools" onclick="go('tools')"><span class="ic">🧰</span>工具箱</button>
   <button id="nav-look" onclick="go('look')"><span class="ic">🎨</span>外觀</button>
   <button id="nav-export" onclick="go('export')"><span class="ic">🔥</span>匯出</button>
 </nav>
 
 <div id="modalWrap"><div id="modalScrim" onclick="closeModal()"></div><div id="modalBox"></div></div>
+<div id="savePill" data-s="idle" aria-live="polite">草稿</div>
 <div id="toast"></div>
 <div id="errBar"><button class="x" onclick="hideErr()">✕</button><span id="errMsg"></span></div>
 
@@ -611,6 +804,15 @@ button{font-family:inherit;color:inherit;cursor:pointer;}
   color:var(--read-fg);border-bottom:1px solid var(--read-rule);font-size:.84rem;line-height:1.6;}
 .toc-item.cur{color:var(--accent);background:var(--accent-tint);}
 .toc-item .n{font-size:.62rem;letter-spacing:.2em;color:var(--read-muted);display:block;}
+.toc-item .s{display:block;font-size:.68rem;line-height:1.65;color:var(--read-muted);margin-top:4px;}
+.toc-vol{margin:16px 0 8px;padding:6px 12px;border-radius:20px;display:inline-block;
+  font-size:.66rem;letter-spacing:.18em;font-weight:700;color:var(--accent);
+  border:1.5px solid var(--accent);background:var(--accent-tint);}
+.toc-vol:first-child{margin-top:0;}
+.seal .mn-g,.seal .m-float{transform-origin:50% 60%;animation:mn-float 3.4s ease-in-out infinite;}
+@keyframes mn-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.seal .m-eye{transform-origin:center;transform-box:fill-box;animation:mn-blink 4.4s infinite;}
+@keyframes mn-blink{0%,92%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
 .srow{margin-bottom:18px;}
 .srow .sl{font-size:.68rem;letter-spacing:.2em;color:var(--read-muted);margin-bottom:9px;}
 .dots{display:flex;gap:12px;flex-wrap:wrap;}
@@ -880,14 +1082,20 @@ function renderCh(i){
   savePos(); renderToc(); updBar();
 }
 function renderToc(){
-  var w=$("tocBody"); w.innerHTML="";
+  var w=$("tocBody"); w.innerHTML=""; var lastVol=null;
   for(var i=0;i<CH.length;i++){
     (function(k){
+      var vv=CH[k].vol||"";
+      if(vv!==lastVol){
+        lastVol=vv;
+        if(vv){ var vh=document.createElement("div"); vh.className="toc-vol"; vh.textContent=vv; w.appendChild(vh); }
+      }
       var b=document.createElement("button");
       b.className="toc-item"+(k===cur?" cur":"");
       var n=document.createElement("span"); n.className="n"; n.textContent=CH[k].part||("第 "+(k+1)+" 章");
       b.appendChild(n);
       b.appendChild(document.createTextNode(CH[k].title||""));
+      if(CH[k].summary){ var sm=document.createElement("span"); sm.className="s"; sm.textContent=CH[k].summary; b.appendChild(sm); }
       b.onclick=function(){ closeP(); renderCh(k); };
       w.appendChild(b);
     })(i);
@@ -940,9 +1148,10 @@ $("vertSw").onchange=function(){ pref.vert=this.checked; savePref(); applyPref()
 <script>
 /* ══════════════════ 命名空間與工具 ══════════════════ */
 /* 命名空間自 v5 起固定，之後改版不再更動，草稿會一直留著 */
-var APP_NS = "novel";
+var APP_NS = "novel_v10";
 var K_STATE = APP_NS + "_state";
-var LEGACY_NS = ["novel_v4","novel_v3","novel_v2","novel_v1"];
+/* 第一次開啟 v10 時，會把 v9 的草稿複製過來一份（原本那份不動，兩邊各自獨立） */
+var LEGACY_NS = ["novel","novel_v4","novel_v3","novel_v2","novel_v1"];
 var K_PREF  = APP_NS + "_pref";
 
 function $(id){ return document.getElementById(id); }
@@ -985,13 +1194,17 @@ var OWL_VARS={'--owl-body':'#8a6a3c','--owl-belly':'#e7d3aa','--owl-face':'#c8a8
 var ST=null, PREF={theme:'gold',font:"'Noto Serif TC',serif",fs:19};
 function blankState(){
   return {
-    cover:{title:'',kicker:'',tag:'',sub:'',foot:'',seal:'',sealMode:'text',sealSvg:'',svgVars:{},pageTitle:'',storageKey:''},
+    cover:{title:'',kicker:'',tag:'',sub:'',foot:'',seal:'',sealMode:'text',sealSvg:'',svgVars:{},mascot:'',pageTitle:'',storageKey:''},
     ink:{zhu:'#9e2b25',zhuBright:'#c0392b',bg:'#100d0a',fg:'#e7ddca'},
     chapters:[],
     rthemes:{},
     defaultTheme:'parch',
     skin:'plain',
     chOrder:'new',
+    pdfTheme:'parch',
+    goal:0,
+    notes:'',
+    useSummary:true,
     openIdx:-1
   };
 }
@@ -1023,14 +1236,30 @@ function loadAll(){
   for(k in b.cover){ if(b.cover.hasOwnProperty(k) && typeof ST.cover[k]==='undefined') ST.cover[k]=b.cover[k]; }
   for(k in b.ink){ if(b.ink.hasOwnProperty(k) && typeof ST.ink[k]==='undefined') ST.ink[k]=b.ink[k]; }
   if(!ST.chapters) ST.chapters=[];
+  /* 舊草稿沒有 vol 欄位，補上空字串免得後面到處判斷 */
+  for(k=0;k<ST.chapters.length;k++){
+    if(typeof ST.chapters[k].vol==='undefined') ST.chapters[k].vol='';
+    if(typeof ST.chapters[k].summary==='undefined') ST.chapters[k].summary='';
+  }
   try{ var p=localStorage.getItem(K_PREF); if(p) PREF=JSON.parse(p); }catch(e){}
 }
-var _st;
+var _st, _pillT;
+/* 右下角存檔燈：saving 會閃，saved 轉綠，兩秒後淡回待命 */
+function saveLight(state){
+  var p=$('savePill'); if(!p) return;
+  clearTimeout(_pillT);
+  p.setAttribute('data-s',state);
+  p.style.opacity='1';
+  p.textContent=(state==='saving')?'儲存中':(state==='saved')?'已儲存':(state==='error')?'儲存失敗':'草稿';
+  if(state==='saved'){ _pillT=setTimeout(function(){ p.style.opacity='.55'; },2000); }
+}
 function save(){
   clearTimeout(_st);
+  saveLight('saving');
   _st=setTimeout(function(){
-    try{ localStorage.setItem(K_STATE, JSON.stringify(ST)); }
-    catch(e){ showErr('草稿儲存失敗，瀏覽器儲存空間可能已滿。請先匯出 JSON 備份。'); }
+    try{ localStorage.setItem(K_STATE, JSON.stringify(ST)); saveLight('saved'); }
+    catch(e){ saveLight('error'); showErr('草稿儲存失敗，瀏覽器儲存空間可能已滿。請先匯出 JSON 備份。'); }
+    dashSoon();
   },220);
 }
 function savePref(){
@@ -1056,13 +1285,17 @@ function bindCover(){
   }
   var sv=$('f-sealsvg');
   sv.value=ST.cover.sealSvg||'';
-  sv.oninput=function(){ ST.cover.sealSvg=sv.value; save(); renderSeal(); };
+  sv.oninput=function(){
+    ST.cover.sealSvg=sv.value; save();
+    if(absorbSvgStyle(sv.value)) scanSvgVars();
+    renderSeal();
+  };
   var inks=['zhu','zhuBright','bg','fg'];
   for(var j=0;j<inks.length;j++){
     (function(k){
       var el=$('ink-'+k);
       el.value=ST.ink[k];
-      el.oninput=function(){ ST.ink[k]=el.value; save(); renderSeal(); };
+      el.oninput=function(){ ST.ink[k]=el.value; save(); renderSeal(); renderMascotRow(); };
     })(inks[j]);
   }
 }
@@ -1073,13 +1306,8 @@ function sealModeUI(){
   $('box-sealtext').style.display=(m==='text')?'block':'none';
   $('box-sealsvg').style.display=(m==='svg')?'block':'none';
 }
-function useOwl(){
-  ST.cover.sealSvg=OWL_SVG;
-  ST.cover.svgVars=clone(OWL_VARS);
-  $('f-sealsvg').value=OWL_SVG;
-  save(); scanSvgVars(); renderSeal();
-  toast('已帶入貓頭鷹，可在下方調色');
-}
+/* v8 的按鈕改成吉祥物選單，這裡保留舊函式名避免任何殘留呼叫失效 */
+function useOwl(){ useMascot('owl'); }
 /* 只保留繪圖標籤，濾掉 script 與事件屬性 */
 function sanitizeSvg(raw){
   var s=String(raw||'');
@@ -1107,7 +1335,7 @@ function scanSvgVars(){
   var g=document.createElement('div'); g.className='cgrid4';
   for(var i=0;i<names.length;i++){
     (function(n){
-      if(!ST.cover.svgVars[n]) ST.cover.svgVars[n]=OWL_VARS[n]||'#cccccc';
+      if(!ST.cover.svgVars[n]) ST.cover.svgVars[n]=varDefault(n);
       var d=document.createElement('div'); d.className='citem'; d.textContent=n.replace(/^--/,'');
       var c=document.createElement('input'); c.type='color'; c.value=ST.cover.svgVars[n];
       c.oninput=function(){ ST.cover.svgVars[n]=c.value; save(); renderSeal(); };
@@ -1120,7 +1348,7 @@ function scanSvgVars(){
 function resolvedSvg(){
   var s=sanitizeSvg(ST.cover.sealSvg||''), names=svgVarNames(s), i;
   for(i=0;i<names.length;i++){
-    var n=names[i], col=ST.cover.svgVars[n]||OWL_VARS[n]||'#cccccc';
+    var n=names[i], col=ST.cover.svgVars[n]||varDefault(n);
     var pat=new RegExp('var\\(\\s*'+n.replace(/[-]/g,'\\-')+'\\s*(,[^)]*)?\\)','g');
     s=s.replace(pat, function(){ return col; });
   }
@@ -1152,7 +1380,7 @@ function updStat(){
   $('book-stat').textContent='全 '+s.n+' 章 · '+s.w+' 字';
 }
 function addChapter(){
-  ST.chapters.push({part:'第 '+(ST.chapters.length+1)+' 章',title:'',label:'',content:''});
+  ST.chapters.push({part:'第 '+(ST.chapters.length+1)+' 章',vol:lastVolName(),title:'',label:'',content:'',summary:'',status:'draft'});
   ST.openIdx=ST.chapters.length-1;
   save(); renderChapters(); focusOpen();
   toast('已新增章節，可直接開始貼內容');
@@ -1170,6 +1398,7 @@ function smartSplit(raw){
   return out.join('\n\n');
 }
 function doSmartSplit(idx){
+  snap('智慧分段');
   var c=ST.chapters[idx], before=c.content;
   c.content=smartSplit(before);
   save(); renderChapters();
@@ -1188,29 +1417,52 @@ function paragraphsToHtml(raw){
   if(!out.length) out.push('<p></p>');
   return out.join('\n');
 }
+function metaLine(c, idx){
+  return (c.part||'')+' · '+countWords(c.content)+' 字 · '+statusName(chStatus(c));
+}
 function renderChapters(){
   var w=$('ch-list'); w.innerHTML='';
   updStat();
+  var fstat=$('ch-filter-stat');
   if(!ST.chapters.length){
     var e=document.createElement('div'); e.className='empty';
-    e.innerHTML='<div class="ei">📖</div><div class="et">還沒有任何章節</div><div class="ed">按上方「新增章節」開始，<br>或直接從 .txt 匯入一章。</div>';
-    w.appendChild(e); return;
+    e.innerHTML='<div class="ei">📖</div><div class="et">還沒有任何章節</div><div class="ed">按上方「新增章節」開始，<br>或用工具箱的「智慧拆章匯入」一次貼好幾章。</div>';
+    w.appendChild(e);
+    if(fstat) fstat.textContent='';
+    updUndo();
+    return;
   }
-  var view=viewOrder();
+  var view=viewOrder(), shown=0, lastVol=null;
   for(var i=0;i<view.length;i++){
     (function(idx){
       var c=ST.chapters[idx];
+      if(!chMatch(c)) return;
+      shown++;
+      /* 換部就插一條分組標頭；沒填部的章節不會硬塞標題 */
+      var vnow=trim(c.vol||'');
+      if(vnow!==lastVol){
+        lastVol=vnow;
+        if(vnow){
+          var vh=document.createElement('div'); vh.className='volhead';
+          var vt=document.createElement('span'); vt.className='vt'; vt.textContent=vnow; vh.appendChild(vt);
+          var vl=document.createElement('span'); vl.className='vl'; vh.appendChild(vl);
+          var vn=document.createElement('span'); vn.className='vn'; vn.textContent=volCount(vnow)+' 章'; vh.appendChild(vn);
+          w.appendChild(vh);
+        }
+      }
       var card=document.createElement('div');
       card.className='chcard'+(ST.openIdx===idx?' open':'');
+      card.setAttribute('data-idx', String(idx));
 
       var head=document.createElement('div'); head.className='chhead';
       var no=document.createElement('div'); no.className='no'; no.textContent=String(idx+1); head.appendChild(no);
       var tt=document.createElement('div'); tt.className='tt';
       var h4=document.createElement('h4'); h4.textContent=c.title||'（未命名章節）'; tt.appendChild(h4);
-      var pp=document.createElement('p'); pp.textContent=(c.part||'')+' · '+countWords(c.content)+' 字'; tt.appendChild(pp);
+      var pp=document.createElement('p'); pp.textContent=metaLine(c, idx); tt.appendChild(pp);
       head.appendChild(tt);
+      var dotS=document.createElement('span'); dotS.className='sdot s-'+chStatus(c); head.appendChild(dotS);
       var arw=document.createElement('span'); arw.className='arw'; arw.textContent='▸'; head.appendChild(arw);
-      head.onclick=function(){ ST.openIdx=(ST.openIdx===idx)?-1:idx; save(); renderChapters(); };
+      head.onclick=function(){ toggleCh(idx); };
       card.appendChild(head);
 
       var body=document.createElement('div'); body.className='chbody';
@@ -1222,18 +1474,52 @@ function renderChapters(){
         if(rows){ el=document.createElement('textarea'); el.rows=rows; }
         else { el=document.createElement('input'); el.type='text'; }
         el.value=c[key]||''; el.placeholder=ph;
-        el.oninput=function(){ c[key]=el.value; save(); if(key==='content'){ updStat(); } };
+        el.oninput=function(){
+          c[key]=el.value; save();
+          if(key==='content'){ statSoon(); pp.textContent=metaLine(c, idx); }
+          else if(key==='title'){ h4.textContent=el.value||'（未命名章節）'; }
+          else if(key==='part'){ pp.textContent=metaLine(c, idx); }
+        };
         f.appendChild(el); body.appendChild(f);
         return el;
       }
       mkField('章節編號（顯示在標題上方）','part','例如：第一章');
-      mkField('章節標題','title','例如：燒還沒退');
+      var volEl=mkField('所屬部／卷（選填）','vol','例如：第一部　雪國');
+      volEl.setAttribute('list','vol-datalist');
+      var titleEl=mkField('章節標題','title','例如：燒還沒退');
       mkField('小標／時間地點（選填）','label','例如：1993年・麻瓜區');
-      var ta=mkField('內文','content','把跟 AI 玩出來的段落貼進來，貼完按下方「智慧分段」。',10);
+      mkField('章節概要（給目錄用，可按下方「生概要」自動產生）','summary','兩三句話交代這章發生什麼',2);
+      var ta=mkField('內文','content','把跟 AI 玩出來的段落貼進來。第一行若是【第一章・標題】，貼上時會自動抓成標題。',10);
+
+      /* P0-①：貼上時自動截取標題（原本沒有標題才動手，不覆蓋既有內容） */
+      ta.onpaste=function(){
+        var emptyTitle=!trim(c.title);
+        setTimeout(function(){
+          c.content=ta.value; save(); statSoon();
+          if(emptyTitle){
+            var r=extractTitleFrom(c.content);
+            if(r && r.title){
+              c.title=r.title; c.content=r.rest;
+              ta.value=r.rest; titleEl.value=r.title; h4.textContent=r.title;
+              save(); toast('已自動擷取標題：'+r.title);
+            }
+          }
+          pp.textContent=metaLine(c, idx);
+        },0);
+      };
 
       var r1=document.createElement('div'); r1.className='mini-row'; r1.style.marginTop='4px';
       function mk(txt,cls,fn){ var b=document.createElement('button'); b.className='mini'+(cls?' '+cls:''); b.textContent=txt; b.onclick=fn; r1.appendChild(b); return b; }
       mk('✨ 智慧分段','hi',function(){ doSmartSplit(idx); });
+      mk('🏷 抓標題',null,function(){
+        snap('抓標題');
+        if(grabTitle(idx, true, false)) updUndo();
+      });
+      mk('📝 生概要',null,function(){
+        snap('生成概要');
+        if(makeSummary(idx, false)) updUndo();
+      });
+      mk(statusName(chStatus(c)),null,function(){ cycleStatus(idx); });
       mk('➕ 追加內容',null,function(){ appendDialog(idx); });
       mk('◇ 插入分隔',null,function(){
         c.content=(c.content?c.content+'\n\n':'')+'◇'; ta.value=c.content; save(); toast('已插入場景分隔');
@@ -1248,6 +1534,21 @@ function renderChapters(){
       w.appendChild(card);
     })(view[i]);
   }
+  if(!shown){
+    var e2=document.createElement('div'); e2.className='empty';
+    e2.innerHTML='<div class="ei">🔎</div><div class="et">沒有符合的章節</div><div class="ed">換個關鍵字，或把狀態篩選改回「全部」。</div>';
+    w.appendChild(e2);
+  }
+  if(fstat){
+    fstat.textContent=(trim(chFilterText)||chFilterStatus!=='all')
+      ? ('顯示 '+shown+' / '+ST.chapters.length+' 章')
+      : ('全部 '+ST.chapters.length+' 章');
+  }
+  updUndo();
+  renderVolChips();
+  renderJump();
+  dashSoon();
+  usesumUI();
 }
 /* 檢視順序：new 為最新在最上面，seq 為真實章節順序。只影響顯示。 */
 /* 捲到目前展開的章節卡 */
@@ -1284,7 +1585,7 @@ function moveCh(i,d){
   var j=v[np];
   var t=ST.chapters[i]; ST.chapters[i]=ST.chapters[j]; ST.chapters[j]=t;
   if(ST.openIdx===i) ST.openIdx=j; else if(ST.openIdx===j) ST.openIdx=i;
-  save(); renderChapters();
+  save(); renderChapters(); focusOpen();
 }
 function setChOrder(v){
   ST.chOrder=v; save();
@@ -1294,7 +1595,8 @@ function setChOrder(v){
 }
 function delCh(i){
   var t=ST.chapters[i].title||'（未命名章節）';
-  openConfirm('刪除章節','確定刪除「'+t+'」嗎？此動作無法復原。',function(){
+  openConfirm('刪除章節','確定刪除「'+t+'」嗎？刪除後可以用工具箱的「復原上一步」救回來一次。',function(){
+    snap('刪除章節「'+t+'」');
     ST.chapters.splice(i,1);
     if(ST.openIdx>=ST.chapters.length) ST.openIdx=-1;
     save(); renderChapters(); closeModal(); toast('已刪除');
@@ -1327,10 +1629,14 @@ function onTxtFile(input){
   var r=new FileReader();
   r.onload=function(){
     var name=file.name.replace(/\.[^.]+$/,'');
-    ST.chapters.push({part:'第 '+(ST.chapters.length+1)+' 章',title:name,label:'',content:smartSplit(r.result)});
+    var body=smartSplit(r.result), tt=name;
+    /* 內文第一行若寫成【第一章・標題】，優先用它當標題 */
+    var got=extractTitleFrom(body);
+    if(got && got.title){ tt=got.title; body=got.rest; }
+    ST.chapters.push({part:'第 '+(ST.chapters.length+1)+' 章',title:tt,label:'',content:body,summary:'',status:'draft'});
     ST.openIdx=ST.chapters.length-1;
     save(); renderChapters(); focusOpen(); input.value='';
-    toast('已匯入「'+name+'」');
+    toast('已匯入「'+tt+'」');
   };
   r.onerror=function(){ showErr('讀取檔案失敗，請再試一次。'); input.value=''; };
   r.readAsText(file);
@@ -1502,7 +1808,7 @@ function buildFinal(){
   var chs=[];
   for(i=0;i<ST.chapters.length;i++){
     var c=ST.chapters[i];
-    chs.push({part:c.part||'',title:c.title||'',label:c.label||'',html:paragraphsToHtml(c.content||'')});
+    chs.push({part:c.part||'',vol:trim(c.vol||''),title:c.title||'',label:c.label||'',summary:(useSum()?trim(c.summary||''):''),html:paragraphsToHtml(c.content||'')});
   }
   if(!chs.length){ chs.push({part:'',title:'尚未加入章節',label:'',html:'<p>這本小說還沒有內容。</p>'}); }
   var chJson=JSON.stringify(chs,null,1).split('<\/script').join('<\\/script');
@@ -1557,12 +1863,10 @@ function doBake(){
     toast('已烤好，可直接上傳 GitHub Pages');
   }catch(e){ showErr('自烤失敗：'+(e&&e.message?e.message:'未知錯誤')); }
 }
+/* v9：改走 Blob URL，iOS Safari 對 document.write 常常渲染不完整 */
 function doPreview(){
-  try{
-    var w=window.open('','_blank');
-    if(!w){ toast('瀏覽器擋掉了新分頁，請允許彈出視窗'); return; }
-    w.document.open(); w.document.write(buildFinal()); w.document.close();
-  }catch(e){ showErr('預覽失敗：'+(e&&e.message?e.message:'未知錯誤')); }
+  try{ openHtmlWindow(buildFinal(), '預覽失敗，請改用「自烤匯出」下載檔案再開啟。'); }
+  catch(e){ showErr('預覽失敗：'+(e&&e.message?e.message:'未知錯誤')); }
 }
 
 /* ══════════════════ 全書 md / txt ══════════════════ */
@@ -1596,7 +1900,12 @@ function bookMd(){
   L.push('');
   L.push('---');
   L.push('');
-  for(i=0;i<ST.chapters.length;i++){ L.push(chapterMd(ST.chapters[i],i)); L.push('---'); L.push(''); }
+  var mdVol=null;
+  for(i=0;i<ST.chapters.length;i++){
+    var cv=trim(ST.chapters[i].vol||'');
+    if(cv!==mdVol){ mdVol=cv; if(cv){ L.push('# '+cv); L.push(''); } }
+    L.push(chapterMd(ST.chapters[i],i)); L.push('---'); L.push('');
+  }
   return L.join('\n');
 }
 function bookTxt(){
@@ -1608,7 +1917,12 @@ function bookTxt(){
   L.push('全 '+s.n+' 章 · '+s.w+' 字'+(ST.cover.foot?' · '+ST.cover.foot:''));
   L.push('');
   L.push('════════════════');
-  for(i=0;i<ST.chapters.length;i++){ L.push(chapterTxt(ST.chapters[i],i)); }
+  var txVol=null;
+  for(i=0;i<ST.chapters.length;i++){
+    var cv2=trim(ST.chapters[i].vol||'');
+    if(cv2!==txVol){ txVol=cv2; if(cv2){ L.push(''); L.push('　　◆　'+cv2+'　◆'); L.push(''); } }
+    L.push(chapterTxt(ST.chapters[i],i));
+  }
   return L.join('\n');
 }
 function exportBookMd(){
@@ -1722,6 +2036,7 @@ function importJson(input){
     try{
       var o=JSON.parse(r.result);
       if(o && o.state && o.state.cover && o.state.chapters){
+        snap('匯入 JSON 前的內容');
         ST=o.state; loadFix(); save();
         bindCover(); sealModeUI(); renderSeal(); skinUI(); chOrderUI(); renderChapters(); renderRThemes();
         ok=true;
@@ -1740,7 +2055,8 @@ function loadFix(){
   for(k in b.ink){ if(b.ink.hasOwnProperty(k) && typeof ST.ink[k]==='undefined') ST.ink[k]=b.ink[k]; }
 }
 function resetAll(){
-  openConfirm('清空全部內容','封面、章節與主題色都會被刪除，且無法復原。建議先匯出備份。確定繼續？',function(){
+  openConfirm('清空全部內容','封面、章節與主題色都會被刪除。建議先匯出備份。確定繼續？',function(){
+    snap('清空全部內容');
     try{ localStorage.removeItem(K_STATE); }catch(e){}
     ST=blankState(); save();
     bindCover(); sealModeUI(); renderSeal(); skinUI(); chOrderUI(); renderChapters(); renderRThemes();
@@ -1762,12 +2078,13 @@ function openConfirm(title,msg,onYes){
   openModal(f);
 }
 function go(tab){
-  var pages={cover:'pg-cover',chapters:'pg-chapters',look:'pg-look',export:'pg-export'};
-  var navs={cover:'nav-cover',chapters:'nav-chapters',look:'nav-look',export:'nav-export'};
+  var pages={cover:'pg-cover',chapters:'pg-chapters',tools:'pg-tools',look:'pg-look',export:'pg-export'};
+  var navs={cover:'nav-cover',chapters:'nav-chapters',tools:'nav-tools',look:'nav-look',export:'nav-export'};
   for(var k in pages){ if(pages.hasOwnProperty(k)){ $(pages[k]).classList.remove('on'); $(navs[k]).classList.remove('on'); } }
   $(pages[tab]).classList.add('on'); $(navs[tab]).classList.add('on');
   window.scrollTo(0,0);
   if(tab==='chapters') renderChapters();
+  if(tab==='tools'){ renderDash(); renderJump(); renderVolChips(); usesumUI(); updUndo(); }
   if(tab==='look'){ renderThemes(); renderRThemes(); }
   if(tab==='cover') renderSeal();
 }
@@ -1780,12 +2097,1029 @@ document.addEventListener('click', function(e){
   var g=chip.parentNode;
   if(!g || !g.id) return;
   if(g.id==='c-chorder'){ setChOrder(chip.getAttribute('data-v')); return; }
+  if(g.id==='c-chstatus'){ setChStatusFilter(chip.getAttribute('data-v')); return; }
+  if(g.id==='c-usesum'){ setUseSummary(chip.getAttribute('data-v')==='on'); return; }
+  if(g.id==='vol-chips'){ jumpToVolume(chip.getAttribute('data-v')); return; }
   if(g.id==='c-skin'){ ST.skin=chip.getAttribute('data-v'); save(); skinUI(); toast(ST.skin==='tarot'?'已套用星夜塔羅版型':'已改回標準版型'); return; }
   if(g.id!=='c-sealmode') return;
   ST.cover.sealMode=chip.getAttribute('data-v');
   save(); sealModeUI(); renderSeal();
   if(ST.cover.sealMode==='svg') scanSvgVars();
 });
+
+
+/* ══════════════════════════════════════════════════════════
+   v9 Pro 新增區塊 A：吉祥物庫、標題擷取、還原點、章節篩選
+   ══════════════════════════════════════════════════════════ */
+
+/* ── 吉祥物庫（五種） ── */
+var DOG_SVG='<svg viewBox="0 0 100 100" fill="none"><g class="mn-g"><path d="M50 31 C68 31 79 43 79 59 C79 75 66 86 50 86 C34 86 21 75 21 59 C21 43 32 31 50 31 Z" fill="var(--m-body)"/><path d="M35 35 C21 35 14 49 18 62 C22 72 33 71 35 60 Z" fill="var(--m-sub)"/><path d="M65 35 C79 35 86 49 82 62 C78 72 67 71 65 60 Z" fill="var(--m-sub)"/><ellipse cx="50" cy="66.5" rx="12" ry="7.4" fill="var(--m-sub)" opacity="0.42"/><ellipse cx="50" cy="62.5" rx="3.4" ry="2.6" fill="var(--m-line)"/><ellipse cx="37" cy="45" rx="7.2" ry="4.6" fill="#FFFFFF" opacity="0.5" transform="rotate(-26 37 45)"/><circle cx="30" cy="64" r="4.4" fill="var(--m-cheek)" opacity="0.8"/><circle cx="70" cy="64" r="4.4" fill="var(--m-cheek)" opacity="0.8"/><ellipse class="m-eye" cx="41.5" cy="58" rx="2.7" ry="3.6" fill="var(--m-line)"/><ellipse class="m-eye" cx="58.5" cy="58" rx="2.7" ry="3.6" fill="var(--m-line)"/><path d="M46.2 67.5 Q50 70.7 53.8 67.5" fill="none" stroke="var(--m-line)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></g></svg>';
+var BEAR_SVG='<svg viewBox="0 0 100 100" fill="none"><g class="mn-g"><circle cx="27" cy="35" r="10" fill="var(--m-body)"/><circle cx="73" cy="35" r="10" fill="var(--m-body)"/><circle cx="27" cy="35" r="4.6" fill="var(--m-sub)"/><circle cx="73" cy="35" r="4.6" fill="var(--m-sub)"/><path d="M50 30 C69 30 81 43 81 59 C81 75 68 86 50 86 C32 86 19 75 19 59 C19 43 31 30 50 30 Z" fill="var(--m-body)"/><ellipse cx="50" cy="67" rx="12.6" ry="8.6" fill="var(--m-sub)" opacity="0.42"/><ellipse cx="50" cy="63" rx="3.6" ry="2.8" fill="var(--m-line)"/><ellipse cx="36" cy="42" rx="7.2" ry="4.6" fill="#FFFFFF" opacity="0.5" transform="rotate(-26 36 42)"/><circle cx="29" cy="63" r="4.4" fill="var(--m-cheek)" opacity="0.8"/><circle cx="71" cy="63" r="4.4" fill="var(--m-cheek)" opacity="0.8"/><g class="m-eye"><circle cx="41" cy="57" r="4.4" fill="var(--m-line)"/><circle cx="39.5" cy="55.4" r="1.5" fill="#FFFFFF"/></g><g class="m-eye"><circle cx="59" cy="57" r="4.4" fill="var(--m-line)"/><circle cx="57.5" cy="55.4" r="1.5" fill="#FFFFFF"/></g><path d="M45.4 68 q2.3 3.2 4.6 0 q2.3 3.2 4.6 0" fill="none" stroke="var(--m-line)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></g></svg>';
+var FOX_SVG='<svg viewBox="0 0 100 100" fill="none"><g class="mn-g"><path d="M20 38 L30 8 L42 34 Z" fill="var(--fox-dark)"></path><path d="M80 38 L70 8 L58 34 Z" fill="var(--fox-dark)"></path><path d="M24 36 L30 16 L38 33 Z" fill="var(--fox-fur)"></path><path d="M76 36 L70 16 L62 33 Z" fill="var(--fox-fur)"></path><ellipse cx="50" cy="56" rx="34" ry="30" fill="var(--fox-fur)"></ellipse><ellipse cx="50" cy="67" rx="20" ry="14" fill="var(--fox-cheek)"></ellipse><path d="M50 79 L38 65 Q50 59 62 65 Z" fill="var(--fox-dark)" opacity=".5"></path><ellipse class="m-eye" cx="38" cy="54" rx="4.2" ry="5.5" fill="var(--fox-eye)"></ellipse><ellipse class="m-eye" cx="62" cy="54" rx="4.2" ry="5.5" fill="var(--fox-eye)"></ellipse><path d="M50 70 q-3 0 -3 3 q3 3 6 0 q0 -3 -3 -3 Z" fill="var(--fox-eye)"></path><path d="M34 83 Q50 93 66 83 L64 77 Q50 85 36 77 Z" fill="var(--fox-ribbon)"></path><circle cx="50" cy="81" r="4" fill="var(--fox-ribbon-dk)"></circle></g></svg>';
+var KAO_SVG='<svg viewBox="0 0 100 100" fill="none"><g class="mn-g"><text x="50" y="60" font-size="21" text-anchor="middle" dominant-baseline="middle" font-family="-apple-system,\'SF Pro Text\',\'Helvetica Neue\',\'Segoe UI Symbol\',Arial,sans-serif" fill="var(--m-line)">\u0295\u00D6\u1D65\u00D6\u0294</text><text x="82" y="30" font-size="15" text-anchor="middle">\uD83C\uDF38</text></g></svg>';
+
+var MASCOTS=[
+  {k:'owl', n:'貓頭鷹', ic:'🦉', svg:OWL_SVG, vars:OWL_VARS},
+  {k:'dog', n:'狗狗',   ic:'🐶', svg:DOG_SVG,
+    vars:{'--m-body':'#FFF7EE','--m-sub':'#E9C9A4','--m-cheek':'#FFB9BE','--m-line':'#6B5B4E'}},
+  {k:'fox', n:'小狐狸', ic:'🦊', svg:FOX_SVG,
+    vars:{'--fox-fur':'#E8A26B','--fox-dark':'#C97A45','--fox-cheek':'#F2C6A0','--fox-ribbon':'#C8443C','--fox-ribbon-dk':'#9C2F29','--fox-eye':'#2B1A12'}},
+  {k:'bear',n:'小熊',   ic:'🐻', svg:BEAR_SVG,
+    vars:{'--m-body':'#F2DCC0','--m-sub':'#E2BE97','--m-cheek':'#FFAFA8','--m-line':'#6B5142'}},
+  {k:'kao', n:'顏文字', ic:'✨', svg:KAO_SVG,
+    vars:{'--m-line':'#FFF3E0'}}
+];
+function mascotBy(k){ for(var i=0;i<MASCOTS.length;i++){ if(MASCOTS[i].k===k) return MASCOTS[i]; } return null; }
+/* 選單縮圖要顯示各自的原色，不能靠頁面上不存在的 CSS 變數 */
+function resolveSvgWith(svg, vars){
+  var t=String(svg||''), names=svgVarNames(t), i, n, col, pat;
+  for(i=0;i<names.length;i++){
+    n=names[i];
+    col=(vars && vars[n]) ? vars[n] : '#cccccc';
+    pat=new RegExp('var\\(\\s*'+n.replace(/[-]/g,'\\-')+'\\s*(,[^)]*)?\\)','g');
+    t=t.replace(pat, (function(c){ return function(){ return c; }; })(col));
+  }
+  return t;
+}
+/* 變數預設值：先看目前選用的吉祥物，再看全庫，最後才給灰色 */
+function varDefault(n){
+  var m=mascotBy(ST.cover.mascot||''), i;
+  if(m && m.vars[n]) return m.vars[n];
+  for(i=0;i<MASCOTS.length;i++){ if(MASCOTS[i].vars[n]) return MASCOTS[i].vars[n]; }
+  return '#cccccc';
+}
+function useMascot(k){
+  var m=mascotBy(k); if(!m) return;
+  ST.cover.mascot=k;
+  ST.cover.sealMode='svg';
+  ST.cover.sealSvg=m.svg;
+  ST.cover.svgVars=clone(m.vars);
+  $('f-sealsvg').value=m.svg;
+  save(); sealModeUI(); scanSvgVars(); renderSeal(); renderMascotRow();
+  toast('已帶入'+m.n+'，可在下方調色');
+}
+function renderMascotRow(){
+  var w=$('mascot-row'); if(!w) return;
+  w.innerHTML='';
+  for(var i=0;i<MASCOTS.length;i++){
+    (function(m){
+      var b=document.createElement('button');
+      b.className='mbtn'+((ST.cover.mascot===m.k)?' on':'');
+      b.type='button';
+      var s=document.createElement('span'); s.className='mi';
+      s.style.background='radial-gradient(circle at 34% 30%,'+ST.ink.zhuBright+','+ST.ink.zhu+')';
+      s.innerHTML=resolveSvgWith(m.svg, m.vars);
+      var t=document.createElement('span'); t.className='mt'; t.textContent=m.n;
+      b.appendChild(s); b.appendChild(t);
+      b.onclick=function(){ useMascot(m.k); };
+      w.appendChild(b);
+    })(MASCOTS[i]);
+  }
+}
+
+/* ── P0-① 貼入文章自動截取標題 ── */
+/* 支援【】〖〗《》「」［］[]、markdown #、以及裸寫的「第X章…」 */
+function headTitle(s){
+  if(!s) return null;
+  var m, v=null;
+  /* 「」『』（）不列入：對白與夾注句太常整行出現，會被誤判成標題 */
+  m=s.match(/^[【〖《〈［\[]\s*([^】〗》〉］\]]{1,40})\s*[】〗》〉］\]]$/);
+  if(m) v=trim(m[1]);
+  if(v===null){ m=s.match(/^#{1,4}\s+(.{1,40})$/); if(m) v=trim(m[1]); }
+  if(v===null){
+    /* 裸寫的「第X章」後面若還有字，必須隔著分隔符號，否則「第一章的內容。」會被誤判 */
+    m=s.match(/^(第[零一二三四五六七八九十百千兩0-9]{1,8}[章話回節幕折卷篇](?:[\s\u3000・·:：、\-—－~～]+[^\n]{1,30})?)$/);
+    if(m) v=trim(m[1]);
+  }
+  if(v===null || !v) return null;
+  if(v.length>40) return null;
+  if(/[。！？…；]$/.test(v)) return null;   /* 整句話不是標題 */
+  return v;
+}
+/* 只看第一個非空行；抓到就把那一行從內文移除 */
+function extractTitleFrom(content){
+  var t=String(content||'').replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+  var lines=t.split('\n'), i, s, ti;
+  for(i=0;i<lines.length;i++){
+    s=trim(lines[i]);
+    if(!s) continue;
+    ti=headTitle(s);
+    if(ti===null) return null;
+    lines.splice(0,i+1);
+    return {title:ti, rest:trim(lines.join('\n'))};
+  }
+  return null;
+}
+/* force=true 時即使已有標題也覆蓋（給「抓標題」按鈕用） */
+function grabTitle(idx, force, silent){
+  var c=ST.chapters[idx]; if(!c) return false;
+  if(!force && trim(c.title)) return false;
+  var r=extractTitleFrom(c.content);
+  if(!r || !r.title){ if(!silent) toast('第一行看不出標題，請確認格式像【第一章・標題】'); return false; }
+  c.title=r.title; c.content=r.rest;
+  save();
+  if(!silent){ renderChapters(); toast('已擷取標題：'+r.title); }
+  return true;
+}
+
+/* ── 還原點（單層 undo） ── */
+var UNDO=null, UNDO_LABEL='';
+function snap(label){
+  try{ UNDO=JSON.stringify(ST); UNDO_LABEL=label||'上一步'; }catch(e){ UNDO=null; }
+  updUndo();
+}
+function updUndo(){
+  var h=$('undo-hint'); if(!h) return;
+  h.textContent = UNDO ? ('還原點：'+UNDO_LABEL+'（可復原一次）') : '還原點：目前沒有可復原的動作。';
+  var b=$('undoBtn'); if(b) b.className='btn-line sm'+(UNDO?' hi':'');
+}
+function doUndo(){
+  if(!UNDO){ toast('目前沒有可復原的動作'); return; }
+  var keep=UNDO, lb=UNDO_LABEL;
+  var o=null;
+  try{ o=JSON.parse(keep); }catch(e){ showErr('復原失敗：還原點資料損毀。'); UNDO=null; updUndo(); return; }
+  ST=o; loadFix(); UNDO=null; UNDO_LABEL='';
+  save(); refreshAll();
+  toast('已復原「'+lb+'」');
+}
+function refreshAll(){
+  bindCover(); sealModeUI(); renderSeal(); renderMascotRow();
+  skinUI(); chOrderUI(); renderChapters(); renderRThemes(); updUndo();
+}
+
+/* ── 章節狀態與篩選 ── */
+var STATUS_DEF=[{k:'draft',n:'草稿',ic:'✏'},{k:'rev',n:'修訂中',ic:'🔧'},{k:'done',n:'完稿',ic:'✅'}];
+function chStatus(c){
+  var s=c.status||'draft', i;
+  for(i=0;i<STATUS_DEF.length;i++){ if(STATUS_DEF[i].k===s) return s; }
+  return 'draft';
+}
+function statusName(k){ for(var i=0;i<STATUS_DEF.length;i++){ if(STATUS_DEF[i].k===k) return STATUS_DEF[i].ic+' '+STATUS_DEF[i].n; } return '✏ 草稿'; }
+function cycleStatus(idx){
+  var c=ST.chapters[idx], cur=chStatus(c), i, np=0;
+  for(i=0;i<STATUS_DEF.length;i++){ if(STATUS_DEF[i].k===cur){ np=(i+1)%STATUS_DEF.length; break; } }
+  c.status=STATUS_DEF[np].k; save(); renderChapters();
+  toast('已標記為「'+STATUS_DEF[np].n+'」');
+}
+var chFilterText='', chFilterStatus='all';
+function setChFilter(v){ chFilterText=v; renderChapters(); }
+function setChStatusFilter(v){
+  chFilterStatus=v;
+  var cs=$('c-chstatus').querySelectorAll('.chip');
+  for(var i=0;i<cs.length;i++){ cs[i].classList.remove('on'); if(cs[i].getAttribute('data-v')===v) cs[i].classList.add('on'); }
+  renderChapters();
+}
+function chMatch(c){
+  if(chFilterStatus!=='all' && chStatus(c)!==chFilterStatus) return false;
+  var q=trim(chFilterText);
+  if(!q) return true;
+  q=q.toLowerCase();
+  var hay=((c.part||'')+' '+(c.title||'')+' '+(c.label||'')+' '+(c.summary||'')+' '+(c.content||'')).toLowerCase();
+  return hay.indexOf(q)>=0;
+}
+
+/* ── 缺點修正：字數統計去抖動，避免每敲一字重算全書 ── */
+var _statT;
+function statSoon(){
+  clearTimeout(_statT);
+  _statT=setTimeout(function(){ updStat(); },420);
+}
+/* ── 缺點修正：展開／收合只切換 class，不重繪整份列表 ── */
+function toggleCh(idx){
+  var w=$('ch-list'); if(!w) return;
+  var cards=w.querySelectorAll('.chcard'), i, k;
+  var willOpen=(ST.openIdx!==idx);
+  ST.openIdx=willOpen?idx:-1;
+  save();
+  for(i=0;i<cards.length;i++){
+    k=parseInt(cards[i].getAttribute('data-idx'),10);
+    cards[i].className='chcard'+((k===idx && willOpen)?' open':'');
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   v9 Pro 新增區塊 B：自動概要、拆章匯入、尋找取代、統計、排版體檢
+   ══════════════════════════════════════════════════════════ */
+
+/* ── P1 自動生成章節概要（抽取式，離線、不需連線） ── */
+function sentencesOf(content){
+  var t=String(content||'').replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+  var blocks=t.split(/\n{2,}/), out=[], i, j, b, parts, s;
+  for(i=0;i<blocks.length;i++){
+    b=trim(blocks[i]);
+    if(!b) continue;
+    if(b==='◇'||b==='◆'||b==='***'||b==='※'||b==='---') continue;
+    parts=b.replace(/([。！？!?…])/g, function(m){ return m+'\u0001'; }).split('\u0001');
+    for(j=0;j<parts.length;j++){
+      s=trim(parts[j]);
+      if(s.length>=8) out.push(s);
+    }
+  }
+  return out;
+}
+function autoSummary(content, maxLen){
+  maxLen=maxLen||90;
+  var sents=sentencesOf(content), i, n, sc, s, best=[], raw;
+  if(!sents.length){
+    raw=trim(String(content||'').replace(/\s+/g,''));
+    if(!raw) return '';
+    return raw.length>maxLen ? raw.substring(0,maxLen)+'……' : raw;
+  }
+  n=sents.length;
+  for(i=0;i<n;i++){
+    s=sents[i];
+    sc=0;
+    sc += (1 - (i/n)) * 2.2;                       /* 越前面越可能是場景交代 */
+    sc += 1 - (Math.abs(s.length-30)/70);          /* 30 字上下最好用 */
+    if(s.indexOf('「')===0 || s.indexOf('『')===0) sc -= 0.55;  /* 純對白資訊量低 */
+    if(s.length<12) sc -= 0.4;
+    best.push({i:i, s:s, sc:sc});
+  }
+  best.sort(function(a,b){ return b.sc-a.sc; });
+  var pick=best.slice(0, Math.min(3,best.length));
+  pick.sort(function(a,b){ return a.i-b.i; });
+  var out='';
+  for(i=0;i<pick.length;i++){
+    if(out.length>=maxLen) break;
+    out += pick[i].s;
+    if(!/[。！？…]$/.test(out)) out+='。';
+  }
+  if(out.length>maxLen) out=out.substring(0,maxLen)+'……';
+  return out;
+}
+function makeSummary(idx, silent){
+  var c=ST.chapters[idx]; if(!c) return false;
+  var s=autoSummary(c.content, 90);
+  if(!s){ if(!silent) toast('這一章還沒有內文，無法生成概要'); return false; }
+  c.summary=s; save();
+  if(!silent){ renderChapters(); toast('已生成概要'); }
+  return true;
+}
+function summarizeAllDialog(){
+  var miss=0, i;
+  for(i=0;i<ST.chapters.length;i++){ if(!trim(ST.chapters[i].summary) && trim(ST.chapters[i].content)) miss++; }
+  if(!ST.chapters.length){ toast('還沒有章節'); return; }
+  var f=document.createDocumentFragment();
+  var h=document.createElement('h3'); h.textContent='一鍵補概要'; f.appendChild(h);
+  var p=document.createElement('p'); p.className='hint'; p.style.margin='0 0 14px';
+  p.textContent='目前有 '+miss+' 章還沒有概要。概要用抽取式演算法從內文挑出最具代表性的句子，生成後可以自己再改。';
+  f.appendChild(p);
+  var wrap=document.createElement('label'); wrap.className='swline';
+  var cb=document.createElement('input'); cb.type='checkbox';
+  var sp=document.createElement('span'); sp.textContent='連已有概要的章節一起重新生成';
+  wrap.appendChild(cb); wrap.appendChild(sp); f.appendChild(wrap);
+  var row=document.createElement('div'); row.className='btn-row'; row.style.marginTop='16px';
+  var no=document.createElement('button'); no.className='btn-line'; no.textContent='取消'; no.onclick=closeModal;
+  var ok=document.createElement('button'); ok.className='btn-main'; ok.textContent='開始生成';
+  ok.onclick=function(){
+    snap('一鍵補概要');
+    var done=0, j;
+    for(j=0;j<ST.chapters.length;j++){
+      if(!cb.checked && trim(ST.chapters[j].summary)) continue;
+      if(makeSummary(j, true)) done++;
+    }
+    save(); renderChapters(); closeModal(); updUndo();
+    toast('已生成 '+done+' 章概要');
+  };
+  row.appendChild(no); row.appendChild(ok); f.appendChild(row);
+  openModal(f);
+}
+
+/* ── 新功能 1：智慧拆章匯入 ── */
+function detectChunks(raw){
+  var t=String(raw||'').replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+  var lines=t.split('\n'), out=[], cur=null, i, s, ti;
+  for(i=0;i<lines.length;i++){
+    s=trim(lines[i]);
+    ti=headTitle(s);
+    if(ti!==null){
+      if(cur) out.push(cur);
+      cur={title:ti, body:[]};
+      continue;
+    }
+    if(!cur){ if(!s) continue; cur={title:'', body:[]}; }
+    cur.body.push(lines[i]);
+  }
+  if(cur) out.push(cur);
+  var res=[], b;
+  for(i=0;i<out.length;i++){
+    b=smartSplit(out[i].body.join('\n'));
+    if(!out[i].title && !b) continue;
+    res.push({title:out[i].title, content:b});
+  }
+  return res;
+}
+function splitImportDialog(){
+  var f=document.createDocumentFragment();
+  var h=document.createElement('h3'); h.textContent='智慧拆章匯入'; f.appendChild(h);
+  var p=document.createElement('p'); p.className='hint'; p.style.margin='0 0 12px';
+  p.textContent='把好幾章一次貼進來。只要每章開頭那一行寫成【第一章・標題】、《第一章》、## 第一章 或直接寫「第一章 標題」，就會自動切開並帶入標題。';
+  f.appendChild(p);
+  var ta=document.createElement('textarea'); ta.rows=10; ta.placeholder='貼上整份稿件';
+  ta.style.marginBottom='10px'; f.appendChild(ta);
+  var info=document.createElement('p'); info.className='hint'; info.style.margin='0 0 12px';
+  info.textContent='偵測結果：尚未偵測。';
+  f.appendChild(info);
+  var chunks=[];
+  ta.oninput=function(){
+    chunks=detectChunks(ta.value);
+    if(!chunks.length){ info.textContent='偵測結果：目前找不到內容。'; return; }
+    var names=[], i;
+    for(i=0;i<chunks.length && i<6;i++){ names.push(chunks[i].title||'（未命名）'); }
+    info.textContent='偵測結果：共 '+chunks.length+' 章 ── '+names.join('、')+(chunks.length>6?' …':'');
+  };
+  var row=document.createElement('div'); row.className='btn-row';
+  var no=document.createElement('button'); no.className='btn-line'; no.textContent='取消'; no.onclick=closeModal;
+  var ok=document.createElement('button'); ok.className='btn-main'; ok.textContent='匯入';
+  ok.onclick=function(){
+    if(!chunks.length){ toast('沒有偵測到可匯入的章節'); return; }
+    snap('智慧拆章匯入');
+    var i, base=ST.chapters.length;
+    for(i=0;i<chunks.length;i++){
+      ST.chapters.push({
+        part:'第 '+(base+i+1)+' 章',
+        title:chunks[i].title||'',
+        label:'', content:chunks[i].content, summary:'', status:'draft'
+      });
+    }
+    ST.openIdx=ST.chapters.length-1;
+    save(); renderChapters(); closeModal(); updUndo();
+    toast('已匯入 '+chunks.length+' 章');
+  };
+  row.appendChild(no); row.appendChild(ok); f.appendChild(row);
+  openModal(f);
+}
+
+/* ── 新功能 2：全書尋找與取代 ── */
+function countOcc(hay, needle){
+  if(!needle) return 0;
+  var n=0, from=0, i;
+  while(true){
+    i=hay.indexOf(needle, from);
+    if(i<0) break;
+    n++; from=i+needle.length;
+    if(n>200000) break;
+  }
+  return n;
+}
+function findReplaceDialog(){
+  var f=document.createDocumentFragment();
+  var h=document.createElement('h3'); h.textContent='尋找與取代'; f.appendChild(h);
+  var p=document.createElement('p'); p.className='hint'; p.style.margin='0 0 12px';
+  p.textContent='純文字比對，不使用萬用字元。改角色名、統一稱謂很好用。取代前會先算出命中次數。';
+  f.appendChild(p);
+
+  function mk(labelText, ph){
+    var d=document.createElement('div'); d.className='fld';
+    var l=document.createElement('label'); l.className='lbl'; l.textContent=labelText; d.appendChild(l);
+    var el=document.createElement('input'); el.type='text'; el.placeholder=ph; d.appendChild(el);
+    f.appendChild(d); return el;
+  }
+  var fi=mk('尋找','要被換掉的字');
+  var ri=mk('取代為','換成什麼（留空＝刪除）');
+
+  var t1=document.createElement('label'); t1.className='swline';
+  var cbT=document.createElement('input'); cbT.type='checkbox'; cbT.checked=true;
+  var s1=document.createElement('span'); s1.textContent='一併處理章節標題與小標';
+  t1.appendChild(cbT); t1.appendChild(s1); f.appendChild(t1);
+
+  var info=document.createElement('p'); info.className='hint'; info.style.margin='8px 0 12px';
+  info.textContent='命中：－';
+  f.appendChild(info);
+
+  function scan(){
+    var q=fi.value;
+    if(!q){ info.textContent='命中：－'; return 0; }
+    var n=0, ch=0, i, c, hit;
+    for(i=0;i<ST.chapters.length;i++){
+      c=ST.chapters[i]; hit=0;
+      hit+=countOcc(String(c.content||''), q);
+      if(cbT.checked){
+        hit+=countOcc(String(c.title||''), q);
+        hit+=countOcc(String(c.label||''), q);
+        hit+=countOcc(String(c.part||''), q);
+      }
+      if(hit){ n+=hit; ch++; }
+    }
+    info.textContent='命中：'+n+' 處，分布在 '+ch+' 章。';
+    return n;
+  }
+  fi.oninput=scan; cbT.onchange=scan;
+
+  var row=document.createElement('div'); row.className='btn-row';
+  var no=document.createElement('button'); no.className='btn-line'; no.textContent='關閉'; no.onclick=closeModal;
+  var ok=document.createElement('button'); ok.className='btn-main'; ok.textContent='全部取代';
+  ok.onclick=function(){
+    var q=fi.value, r=ri.value;
+    if(!q){ toast('請先輸入要尋找的字'); return; }
+    var n=scan();
+    if(!n){ toast('沒有命中，沒有東西可以換'); return; }
+    snap('尋找與取代（'+q+'）');
+    var i, c;
+    for(i=0;i<ST.chapters.length;i++){
+      c=ST.chapters[i];
+      c.content=String(c.content||'').split(q).join(r);
+      if(cbT.checked){
+        c.title=String(c.title||'').split(q).join(r);
+        c.label=String(c.label||'').split(q).join(r);
+        c.part=String(c.part||'').split(q).join(r);
+      }
+    }
+    save(); renderChapters(); closeModal(); updUndo();
+    toast('已取代 '+n+' 處，可用「復原上一步」還原');
+  };
+  row.appendChild(no); row.appendChild(ok); f.appendChild(row);
+  openModal(f);
+}
+
+/* ── 新功能 3：寫作統計儀表板 ── */
+function statsDialog(){
+  var f=document.createDocumentFragment();
+  var h=document.createElement('h3'); h.textContent='寫作統計'; f.appendChild(h);
+  if(!ST.chapters.length){
+    var e=document.createElement('p'); e.className='hint'; e.textContent='還沒有章節。';
+    f.appendChild(e); openModal(f); return;
+  }
+  var i, w, arr=[], total=0, maxW=0, minW=-1, maxI=0, minI=0;
+  var cnt={draft:0,rev:0,done:0};
+  for(i=0;i<ST.chapters.length;i++){
+    w=countWords(ST.chapters[i].content);
+    arr.push(w); total+=w;
+    if(w>maxW){ maxW=w; maxI=i; }
+    if(minW<0 || w<minW){ minW=w; minI=i; }
+    cnt[chStatus(ST.chapters[i])]++;
+  }
+  if(minW<0) minW=0;
+  var avg=Math.round(total/ST.chapters.length);
+  var mins=Math.round(total/400);
+
+  var grid=document.createElement('div'); grid.className='stat-grid';
+  function kv(k,v){
+    var d=document.createElement('div'); d.className='stat-cell';
+    var a=document.createElement('div'); a.className='sv'; a.textContent=v;
+    var b=document.createElement('div'); b.className='sk'; b.textContent=k;
+    d.appendChild(a); d.appendChild(b); grid.appendChild(d);
+  }
+  kv('總章數', String(ST.chapters.length));
+  kv('總字數', String(total));
+  kv('平均每章', String(avg));
+  kv('預估閱讀', (mins<1?'不到 1':String(mins))+' 分');
+  f.appendChild(grid);
+
+  var st=document.createElement('p'); st.className='hint'; st.style.margin='10px 0 4px';
+  st.textContent='進度：草稿 '+cnt.draft+' 章 · 修訂中 '+cnt.rev+' 章 · 完稿 '+cnt.done+' 章';
+  f.appendChild(st);
+  var lg=document.createElement('p'); lg.className='hint'; lg.style.margin='0 0 12px';
+  lg.textContent='最長：第 '+(maxI+1)+' 章 '+maxW+' 字 ／ 最短：第 '+(minI+1)+' 章 '+minW+' 字';
+  f.appendChild(lg);
+
+  var bars=document.createElement('div'); bars.className='barbox';
+  for(i=0;i<arr.length;i++){
+    (function(k){
+      var row=document.createElement('div'); row.className='barrow';
+      var lb=document.createElement('span'); lb.className='bl'; lb.textContent=(k+1)+'.';
+      var tr=document.createElement('span'); tr.className='bt';
+      var fl=document.createElement('i'); fl.style.width=(maxW?Math.max(2,Math.round(arr[k]/maxW*100)):2)+'%';
+      fl.className='bf s-'+chStatus(ST.chapters[k]);
+      tr.appendChild(fl);
+      var vl=document.createElement('span'); vl.className='bv'; vl.textContent=arr[k];
+      row.appendChild(lb); row.appendChild(tr); row.appendChild(vl);
+      bars.appendChild(row);
+    })(i);
+  }
+  f.appendChild(bars);
+
+  var row2=document.createElement('div'); row2.className='btn-row'; row2.style.marginTop='16px';
+  var ok=document.createElement('button'); ok.className='btn-main'; ok.textContent='關閉'; ok.onclick=closeModal;
+  row2.appendChild(ok); f.appendChild(row2);
+  openModal(f);
+}
+
+/* ── 新功能 4：排版體檢與一鍵淨化 ── */
+var TIDY_RULES=[
+  {k:'indent', n:'刪掉行首多餘的空白與全形空格',
+   fn:function(t){ return t.replace(/^[ \t\u3000]+/gm,''); }},
+  {k:'space', n:'把連續空白縮成一個',
+   fn:function(t){ return t.replace(/[ \t]{2,}/g,' '); }},
+  {k:'ell', n:'半形省略號 ... 換成 ……',
+   fn:function(t){ return t.replace(/\.{3,}/g,'……').replace(/。{3,}/g,'……'); }},
+  {k:'dash', n:'連字號 -- 換成破折號 ──',
+   fn:function(t){ return t.replace(/-{2,}/g,'──'); }},
+  {k:'bang', n:'連續的驚嘆號／問號縮成兩個',
+   fn:function(t){ return t.replace(/！{3,}/g,'！！').replace(/？{3,}/g,'？？'); }},
+  {k:'punct', n:'中文句中的半形逗號、句號改成全形',
+   fn:function(t){
+     t=t.replace(/([\u4e00-\u9fff]),(?=[\u4e00-\u9fff])/g, function(m,a){ return a+'，'; });
+     t=t.replace(/([\u4e00-\u9fff])\.(?=[\u4e00-\u9fff])/g, function(m,a){ return a+'。'; });
+     return t;
+   }},
+  {k:'blank', n:'刪掉三行以上的連續空行',
+   fn:function(t){ return t.replace(/\n{3,}/g,'\n\n'); }}
+];
+function tidyDialog(){
+  if(!ST.chapters.length){ toast('還沒有章節'); return; }
+  var f=document.createDocumentFragment();
+  var h=document.createElement('h3'); h.textContent='排版體檢'; f.appendChild(h);
+  var p=document.createElement('p'); p.className='hint'; p.style.margin='0 0 12px';
+  p.textContent='勾選要套用的整理項目，會一次處理全書內文。執行前會自動建立還原點。';
+  f.appendChild(p);
+
+  var boxes=[], i;
+  for(i=0;i<TIDY_RULES.length;i++){
+    (function(r){
+      var l=document.createElement('label'); l.className='swline';
+      var cb=document.createElement('input'); cb.type='checkbox'; cb.checked=true;
+      var sp=document.createElement('span'); sp.textContent=r.n;
+      l.appendChild(cb); l.appendChild(sp); f.appendChild(l);
+      boxes.push({r:r, cb:cb});
+    })(TIDY_RULES[i]);
+  }
+  var row=document.createElement('div'); row.className='btn-row'; row.style.marginTop='16px';
+  var no=document.createElement('button'); no.className='btn-line'; no.textContent='取消'; no.onclick=closeModal;
+  var ok=document.createElement('button'); ok.className='btn-main'; ok.textContent='套用';
+  ok.onclick=function(){
+    snap('排版體檢');
+    var j, k, c, before, changed=0;
+    for(j=0;j<ST.chapters.length;j++){
+      c=ST.chapters[j]; before=String(c.content||'');
+      var t=before;
+      for(k=0;k<boxes.length;k++){ if(boxes[k].cb.checked) t=boxes[k].r.fn(t); }
+      if(t!==before){ c.content=t; changed++; }
+    }
+    save(); renderChapters(); closeModal(); updUndo();
+    toast(changed? ('已整理 '+changed+' 章') : '看起來已經很乾淨，沒有需要改的地方');
+  };
+  row.appendChild(no); row.appendChild(ok); f.appendChild(row);
+  openModal(f);
+}
+
+/* ══════════════════════════════════════════════════════════
+   v9 Pro 新增區塊 C：PDF 匯出、SVG 樣式變數擷取、開新分頁工具
+   ══════════════════════════════════════════════════════════ */
+
+/* ── 缺點修正：貼上含 <style> 的吉祥物元件包時，先把變數預設值抽出來再淨化 ── */
+function extractStyleVars(raw){
+  var s=String(raw||''), out={}, m;
+  var blocks=s.match(/<style[\s\S]*?<\/style>/gi);
+  if(!blocks) return out;
+  var re=/(--[a-zA-Z0-9_-]+)\s*:\s*([^;}\n]+)/g;
+  for(var i=0;i<blocks.length;i++){
+    re.lastIndex=0;
+    while((m=re.exec(blocks[i]))!==null){
+      var v=trim(m[2]);
+      if(/^#[0-9a-fA-F]{3,8}$/.test(v)) out[m[1]]=v;
+    }
+  }
+  return out;
+}
+/* 貼上後自動吸收 <style> 裡的色值，並告知使用者 style 已被移除 */
+function absorbSvgStyle(raw){
+  var got=extractStyleVars(raw), n=0, k;
+  for(k in got){
+    if(!got.hasOwnProperty(k)) continue;
+    ST.cover.svgVars[k]=got[k]; n++;
+  }
+  if(n){
+    ST.cover.mascot='';
+    save();
+    toast('已讀取 <style> 裡的 '+n+' 個顏色（<style> 本身基於安全會被移除）');
+  }
+  return n;
+}
+
+/* ── 開新分頁：先走 Blob URL，被擋掉才退回 document.write ── */
+function openHtmlWindow(html, failMsg){
+  var w=null, url='';
+  try{ w=window.open('','_blank'); }catch(e){ w=null; }
+  if(!w){ toast('瀏覽器擋掉了新分頁，請允許彈出視窗'); return null; }
+  try{
+    url=URL.createObjectURL(new Blob([html],{type:'text/html;charset=utf-8'}));
+    w.location.href=url;
+    setTimeout(function(){ try{ URL.revokeObjectURL(url); }catch(e){} }, 60000);
+    return w;
+  }catch(e){
+    try{ w.document.open(); w.document.write(html); w.document.close(); return w; }
+    catch(e2){ showErr(failMsg||'開啟新分頁失敗。'); return null; }
+  }
+}
+
+/* ── P2 PDF 匯出（三套版面配色，走瀏覽器列印） ── */
+var PDF_THEMES=[
+  {k:'parch', n:'羊皮紙', bg:'#F5EDD8', fg:'#2C2620', muted:'#7A6F5F', rule:'#DDD0B8', accent:'#8B5E1A', seal:'#9E2B25'},
+  {k:'silver',n:'銀霧',   bg:'#F4F5F8', fg:'#22262F', muted:'#5B6373', rule:'#C7CCD6', accent:'#6A6F9C', seal:'#4A4F80'},
+  {k:'tarot', n:'星夜塔羅',bg:'#0F0A21', fg:'#EADFFF', muted:'#A897C9', rule:'#3A2E63', accent:'#D8BF8A', seal:'#D8BF8A'}
+];
+function pdfThemeBy(k){ for(var i=0;i<PDF_THEMES.length;i++){ if(PDF_THEMES[i].k===k) return PDF_THEMES[i]; } return PDF_THEMES[0]; }
+function buildPdfHtml(themeKey, opt){
+  opt=opt||{};
+  var T=pdfThemeBy(themeKey), i, c;
+  var titleLines=String(ST.cover.title||'').split('\n'), th=[];
+  for(i=0;i<titleLines.length;i++){ if(trim(titleLines[i])) th.push(esc(trim(titleLines[i]))); }
+  var bookTitle=th.join('<br>')||'小說';
+  var flatTitle=trim(String(ST.cover.title||'').split('\n').join(' '))||'小說';
+  var s=bookStat();
+
+  var H=[];
+  H.push('<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="utf-8">');
+  H.push('<meta name="viewport" content="width=device-width, initial-scale=1.0">');
+  H.push('<title>'+esc(flatTitle)+'（列印版）</title>');
+  H.push('<link rel="preconnect" href="https://fonts.googleapis.com">');
+  H.push('<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>');
+  H.push('<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700&display=swap" rel="stylesheet">');
+  H.push('<style>');
+  H.push('@page{size:A4;margin:18mm 16mm 18mm;}');
+  H.push('*{box-sizing:border-box;margin:0;padding:0;}');
+  H.push('html{background:'+T.bg+';-webkit-print-color-adjust:exact;print-color-adjust:exact;}');
+  H.push('body{background:'+T.bg+';color:'+T.fg+';}');
+  H.push('body{font-family:"Noto Serif TC",serif;line-height:1.95;font-size:11.5pt;');
+  H.push('  -webkit-print-color-adjust:exact;print-color-adjust:exact;padding:0 0 40px;}');
+  H.push('.sheet{max-width:180mm;margin:0 auto;padding:14mm 10mm 12mm;}');
+  H.push('.tools{position:fixed;left:0;right:0;bottom:0;z-index:9;display:flex;gap:10px;justify-content:center;');
+  H.push('  padding:12px 14px calc(12px + env(safe-area-inset-bottom));background:'+T.bg+';border-top:1px solid '+T.rule+';}');
+  H.push('.tools button{min-height:48px;padding:12px 22px;border-radius:10px;border:1.5px solid '+T.accent+';');
+  H.push('  background:'+T.accent+';color:'+T.bg+';font-family:inherit;font-size:15px;cursor:pointer;}');
+  H.push('.tools .g{background:transparent;color:'+T.accent+';}');
+  H.push('.note{max-width:172mm;margin:0 auto;padding:14px 12mm 0;font-size:12px;color:'+T.muted+';line-height:1.7;}');
+  H.push('@media print{.tools,.note{display:none!important;}body{padding-bottom:0;}.sheet{padding:0 6mm;max-width:none;}}');
+  /* 封面 */
+  H.push('.cv{text-align:center;padding:26mm 0 20mm;page-break-after:always;break-after:page;}');
+  H.push('.cv .seal{width:34mm;height:34mm;border-radius:50%;margin:0 auto 12mm;display:flex;align-items:center;justify-content:center;');
+  H.push('  background:'+T.seal+';color:#fff;font-size:26pt;font-weight:700;overflow:hidden;}');
+  H.push('.cv .seal svg{width:64%;height:64%;}');
+  H.push('.cv .kick{font-size:10pt;letter-spacing:.4em;color:'+T.muted+';margin-bottom:8mm;}');
+  H.push('.cv h1{font-size:30pt;line-height:1.3;letter-spacing:.08em;font-weight:700;}');
+  H.push('.cv .ln{width:22mm;height:2px;background:'+T.accent+';margin:8mm auto;}');
+  H.push('.cv .tag{font-size:12pt;margin-bottom:4mm;}');
+  H.push('.cv .sub{font-size:10pt;color:'+T.muted+';letter-spacing:.14em;}');
+  H.push('.cv .foot{margin-top:14mm;font-size:9pt;color:'+T.muted+';letter-spacing:.2em;}');
+  /* 目錄 */
+  H.push('.toc{page-break-after:always;break-after:page;}');
+  H.push('.toc h2{font-size:16pt;letter-spacing:.3em;margin-bottom:8mm;color:'+T.accent+';}');
+  H.push('.toc ol{list-style:none;}');
+  H.push('.toc li{padding:7px 0;border-bottom:1px solid '+T.rule+';font-size:11pt;}');
+  H.push('.toc li .n{color:'+T.muted+';font-size:9pt;letter-spacing:.16em;margin-right:8px;}');
+  H.push('.toc li .s{display:block;font-size:9pt;color:'+T.muted+';line-height:1.7;margin-top:3px;}');
+  H.push('.toc li.vh{border-bottom:none;padding:11px 0 4px;font-size:10.5pt;font-weight:700;letter-spacing:.2em;color:'+T.accent+';}');
+  H.push('.ch .vh{font-size:9pt;letter-spacing:.22em;color:'+T.muted+';margin-bottom:3mm;}');
+  /* 章節 */
+  H.push('.ch{page-break-before:always;break-before:page;padding-top:4mm;}');
+  H.push('.ch:first-of-type{page-break-before:auto;break-before:auto;}');
+  H.push('.ch .no{font-size:9pt;letter-spacing:.3em;color:'+T.accent+';margin-bottom:4px;}');
+  H.push('.ch h3{font-size:17pt;line-height:1.5;letter-spacing:.05em;font-weight:700;}');
+  H.push('.ch .lb{font-size:9.5pt;color:'+T.muted+';margin-top:4px;}');
+  H.push('.ch .rule{width:18mm;height:2px;background:'+T.accent+';margin:6mm 0 8mm;}');
+  H.push('.ch .sm{font-size:9.5pt;color:'+T.muted+';line-height:1.85;border-left:2px solid '+T.rule+';padding-left:10px;margin-bottom:8mm;}');
+  H.push('.ch p{text-indent:2em;margin-bottom:.9em;text-align:justify;orphans:2;widows:2;}');
+  H.push('.ch .sep{text-align:center;text-indent:0;color:'+T.muted+';margin:1.6em 0;letter-spacing:.8em;}');
+  H.push('</style></head><body>');
+
+  H.push('<div class="note">這一頁是列印版。iPhone：點下方「列印 / 存成 PDF」，在預覽畫面用雙指往外撥，再按分享就能存成 PDF。電腦：直接按 Ctrl／Cmd + P。</div>');
+  H.push('<div class="sheet">');
+
+  /* 封面 */
+  H.push('<section class="cv">');
+  H.push('<div class="seal">'+sealHtml()+'</div>');
+  if(trim(ST.cover.kicker)) H.push('<div class="kick">'+esc(trim(ST.cover.kicker))+'</div>');
+  H.push('<h1>'+bookTitle+'</h1>');
+  H.push('<div class="ln"></div>');
+  if(trim(ST.cover.tag)) H.push('<p class="tag">'+esc(trim(ST.cover.tag))+'</p>');
+  if(trim(ST.cover.sub)) H.push('<p class="sub">'+esc(trim(ST.cover.sub))+'</p>');
+  H.push('<div class="foot">全 '+ST.chapters.length+' 章 ・ '+s.w+' 字'+(trim(ST.cover.foot)?' ・ '+esc(trim(ST.cover.foot)):'')+'</div>');
+  H.push('</section>');
+
+  /* 目錄 */
+  if(opt.toc!==false && ST.chapters.length){
+    H.push('<section class="toc"><h2>目 錄</h2><ol>');
+    var tocVol=null;
+    for(i=0;i<ST.chapters.length;i++){
+      c=ST.chapters[i];
+      var cv=trim(c.vol||'');
+      if(cv!==tocVol){ tocVol=cv; if(cv) H.push('<li class="vh">'+esc(cv)+'</li>'); }
+      H.push('<li><span class="n">'+esc(c.part||('第 '+(i+1)+' 章'))+'</span>'+esc(c.title||'（未命名）'));
+      if(opt.summary!==false && trim(c.summary)) H.push('<span class="s">'+esc(trim(c.summary))+'</span>');
+      H.push('</li>');
+    }
+    H.push('</ol></section>');
+  }
+
+  /* 章節 */
+  if(!ST.chapters.length){
+    H.push('<section class="ch"><h3>尚未加入章節</h3><div class="rule"></div><p>這本小說還沒有內容。</p></section>');
+  }
+  for(i=0;i<ST.chapters.length;i++){
+    c=ST.chapters[i];
+    H.push('<section class="ch">');
+    if(trim(c.vol||'')) H.push('<div class="vh">'+esc(trim(c.vol))+'</div>');
+    H.push('<div class="no">'+esc(c.part||('第 '+(i+1)+' 章'))+'</div>');
+    H.push('<h3>'+esc(c.title||'（未命名）')+'</h3>');
+    if(trim(c.label)) H.push('<div class="lb">'+esc(trim(c.label))+'</div>');
+    H.push('<div class="rule"></div>');
+    if(opt.summary!==false && trim(c.summary)) H.push('<div class="sm">'+esc(trim(c.summary))+'</div>');
+    H.push(paragraphsToHtml(c.content||''));
+    H.push('</section>');
+  }
+
+  H.push('</div>');
+  H.push('<div class="tools"><button onclick="window.print()">列印 / 存成 PDF</button>');
+  H.push('<button class="g" onclick="window.close()">關閉</button></div>');
+  H.push('<scr'+'ipt>setTimeout(function(){ try{ window.print(); }catch(e){} }, 900);<\/scr'+'ipt>');
+  H.push('</body></html>');
+  return H.join('\n');
+}
+function pdfDialog(){
+  var f=document.createDocumentFragment();
+  var h=document.createElement('h3'); h.textContent='匯出 PDF'; f.appendChild(h);
+  var p=document.createElement('p'); p.className='hint'; p.style.margin='0 0 12px';
+  p.textContent='會開一個排好版的列印頁：A4、四邊留白 20mm 以上，文字不會貼著邊界。選好配色後按「開啟列印頁」。';
+  f.appendChild(p);
+
+  var lb=document.createElement('div'); lb.className='lbl'; lb.textContent='版面配色'; f.appendChild(lb);
+  var wrap=document.createElement('div'); wrap.className='chips'; wrap.style.marginBottom='12px';
+  var pick=ST.pdfTheme||'parch', btns=[];
+  for(var i=0;i<PDF_THEMES.length;i++){
+    (function(t){
+      var b=document.createElement('span'); b.className='chip'+(t.k===pick?' on':'');
+      b.textContent=t.n;
+      b.onclick=function(){
+        pick=t.k; ST.pdfTheme=t.k; save();
+        for(var j=0;j<btns.length;j++){ btns[j].el.className='chip'+(btns[j].k===pick?' on':''); }
+      };
+      btns.push({k:t.k, el:b});
+      wrap.appendChild(b);
+    })(PDF_THEMES[i]);
+  }
+  f.appendChild(wrap);
+
+  var o1=document.createElement('label'); o1.className='swline';
+  var cbToc=document.createElement('input'); cbToc.type='checkbox'; cbToc.checked=true;
+  var s1=document.createElement('span'); s1.textContent='加入目錄頁'; o1.appendChild(cbToc); o1.appendChild(s1); f.appendChild(o1);
+
+  var o2=document.createElement('label'); o2.className='swline';
+  var cbSum=document.createElement('input'); cbSum.type='checkbox'; cbSum.checked=useSum();
+  var s2=document.createElement('span'); s2.textContent='顯示章節概要'; o2.appendChild(cbSum); o2.appendChild(s2); f.appendChild(o2);
+
+  var warn=document.createElement('p'); warn.className='hint'; warn.style.margin='10px 0 0';
+  warn.textContent='星夜塔羅是深色底，列印會很吃墨水，比較適合存成電子 PDF 閱讀。';
+  f.appendChild(warn);
+
+  var row=document.createElement('div'); row.className='btn-row'; row.style.marginTop='16px';
+  var no=document.createElement('button'); no.className='btn-line'; no.textContent='取消'; no.onclick=closeModal;
+  var ok=document.createElement('button'); ok.className='btn-main'; ok.textContent='開啟列印頁';
+  ok.onclick=function(){
+    try{
+      var html=buildPdfHtml(pick, {toc:cbToc.checked, summary:cbSum.checked});
+      closeModal();
+      openHtmlWindow(html, 'PDF 列印頁開啟失敗。');
+    }catch(e){ showErr('PDF 產生失敗：'+(e&&e.message?e.message:'未知錯誤')); }
+  };
+  row.appendChild(no); row.appendChild(ok); f.appendChild(row);
+  openModal(f);
+}
+
+/* ══════════════════════════════════════════════════════════
+   v10：工作台 · 部／卷 · 概要開關 · 專案筆記
+   ══════════════════════════════════════════════════════════ */
+
+/* ── 部／卷 ── */
+function volList(){
+  var out=[], seen={}, i, v;
+  for(i=0;i<ST.chapters.length;i++){
+    v=trim(ST.chapters[i].vol||'');
+    if(!v || seen[v]) continue;
+    seen[v]=1; out.push(v);
+  }
+  return out;
+}
+function volCount(name){
+  var n=0, i;
+  for(i=0;i<ST.chapters.length;i++){ if(trim(ST.chapters[i].vol||'')===name) n++; }
+  return n;
+}
+/* 新增章節時預設沿用最後一章的部，免得每次都要重填 */
+function lastVolName(){
+  if(!ST || !ST.chapters || !ST.chapters.length) return '';
+  return trim(ST.chapters[ST.chapters.length-1].vol||'');
+}
+function volDatalist(){
+  var d=$('vol-datalist'), i, o, vs=volList();
+  if(!d){ d=document.createElement('datalist'); d.id='vol-datalist'; document.body.appendChild(d); }
+  d.innerHTML='';
+  for(i=0;i<vs.length;i++){ o=document.createElement('option'); o.value=vs[i]; d.appendChild(o); }
+}
+function renderVolChips(){
+  var w=$('vol-chips'), cnt=$('vol-cnt'), vs=volList(), i, b, none=0, j;
+  if(!w) return;
+  w.innerHTML='';
+  for(j=0;j<ST.chapters.length;j++){ if(!trim(ST.chapters[j].vol||'')) none++; }
+  if(cnt) cnt.textContent=vs.length?(vs.length+' 部'):'尚未分部';
+  if(!vs.length){
+    var p=document.createElement('p'); p.className='hint'; p.style.margin='0';
+    p.textContent='目前所有章節都沒有分部。按下方按鈕可以一次把某個區間指派成第一部、第二部。';
+    w.appendChild(p);
+  } else {
+    for(i=0;i<vs.length;i++){
+      b=document.createElement('span'); b.className='chip'; b.setAttribute('data-v',vs[i]);
+      b.textContent=vs[i]+'（'+volCount(vs[i])+'）';
+      w.appendChild(b);
+    }
+    if(none){
+      b=document.createElement('span'); b.className='chip'; b.setAttribute('data-v','');
+      b.textContent='未分部（'+none+'）'; w.appendChild(b);
+    }
+  }
+  volDatalist();
+}
+/* 點部的 chip：跳到章節頁並捲到該部第一章 */
+function jumpToVolume(name){
+  var i, target=-1;
+  for(i=0;i<ST.chapters.length;i++){ if(trim(ST.chapters[i].vol||'')===trim(name||'')){ target=i; break; } }
+  if(target<0){ toast('這一部底下目前沒有章節'); return; }
+  ST.openIdx=target; save(); go('chapters');
+  setTimeout(focusOpen,120);
+}
+function volumeDialog(){
+  var f=document.createDocumentFragment();
+  var h=document.createElement('h3'); h.textContent='整理部／卷'; f.appendChild(h);
+  var p=document.createElement('p'); p.className='hint'; p.style.margin='0 0 12px';
+  p.textContent='先用上面的區間指派把大批章節分好，再用下面的清單微調個別章節。';
+  f.appendChild(p);
+
+  var lb1=document.createElement('div'); lb1.className='lbl'; lb1.textContent='區間指派（依真實章節順序）'; f.appendChild(lb1);
+  var rr=document.createElement('div'); rr.className='rangerow';
+  var iFrom=document.createElement('input'); iFrom.type='number'; iFrom.min='1'; iFrom.value='1'; iFrom.setAttribute('aria-label','起始章');
+  var t1=document.createElement('span'); t1.style.fontSize='.78em'; t1.textContent='章 到';
+  var iTo=document.createElement('input'); iTo.type='number'; iTo.min='1'; iTo.value=String(ST.chapters.length||1); iTo.setAttribute('aria-label','結束章');
+  var t2=document.createElement('span'); t2.style.fontSize='.78em'; t2.textContent='章 →';
+  var t0=document.createElement('span'); t0.style.fontSize='.78em'; t0.textContent='第';
+  rr.appendChild(t0); rr.appendChild(iFrom); rr.appendChild(t1); rr.appendChild(iTo); rr.appendChild(t2);
+  f.appendChild(rr);
+
+  var nf=document.createElement('div'); nf.className='fld'; nf.style.marginBottom='8px';
+  var nIn=document.createElement('input'); nIn.type='text'; nIn.placeholder='部的名稱，例如：第一部　雪國（留空＝取消分部）';
+  nIn.setAttribute('list','vol-datalist');
+  nf.appendChild(nIn); f.appendChild(nf);
+
+  var applyBtn=document.createElement('button'); applyBtn.className='btn-line hi'; applyBtn.textContent='套用到這個區間';
+  f.appendChild(applyBtn);
+
+  var lb2=document.createElement('div'); lb2.className='lbl'; lb2.style.marginTop='16px'; lb2.textContent='逐章微調'; f.appendChild(lb2);
+  var box=document.createElement('div'); box.className='volbox'; f.appendChild(box);
+
+  function optionsFor(sel, cur){
+    var vs=volList(), i, o;
+    sel.innerHTML='';
+    o=document.createElement('option'); o.value=''; o.textContent='（未分部）'; sel.appendChild(o);
+    for(i=0;i<vs.length;i++){ o=document.createElement('option'); o.value=vs[i]; o.textContent=vs[i]; sel.appendChild(o); }
+    if(cur){
+      var has=false;
+      for(i=0;i<sel.options.length;i++){ if(sel.options[i].value===cur) has=true; }
+      if(!has){ o=document.createElement('option'); o.value=cur; o.textContent=cur; sel.appendChild(o); }
+    }
+    sel.value=cur||'';
+  }
+  function drawList(){
+    box.innerHTML='';
+    if(!ST.chapters.length){
+      var e=document.createElement('p'); e.className='hint'; e.style.margin='6px 0'; e.textContent='還沒有任何章節。';
+      box.appendChild(e); return;
+    }
+    for(var i=0;i<ST.chapters.length;i++){
+      (function(idx){
+        var c=ST.chapters[idx];
+        var row=document.createElement('div'); row.className='volrow';
+        var n=document.createElement('span'); n.className='vi'; n.textContent=String(idx+1); row.appendChild(n);
+        var nm=document.createElement('span'); nm.className='vname'; nm.textContent=c.title||'（未命名章節）'; row.appendChild(nm);
+        var sel=document.createElement('select');
+        optionsFor(sel, trim(c.vol||''));
+        sel.onchange=function(){ c.vol=sel.value; save(); };
+        row.appendChild(sel);
+        box.appendChild(row);
+      })(i);
+    }
+  }
+  drawList();
+
+  applyBtn.onclick=function(){
+    var a=parseInt(iFrom.value,10), b=parseInt(iTo.value,10), name=trim(nIn.value), i, n=0;
+    if(!ST.chapters.length){ toast('還沒有任何章節'); return; }
+    if(isNaN(a)||isNaN(b)){ toast('請填寫起訖章數'); return; }
+    if(a>b){ var tmp=a; a=b; b=tmp; }
+    a=Math.max(1,a); b=Math.min(ST.chapters.length,b);
+    snap('區間指派部／卷');
+    for(i=a-1;i<=b-1;i++){ ST.chapters[i].vol=name; n++; }
+    save(); volDatalist(); drawList(); renderVolChips(); updUndo();
+    toast(name?('第 '+a+'～'+b+' 章已歸入「'+name+'」'):('第 '+a+'～'+b+' 章已取消分部'));
+  };
+
+  var row=document.createElement('div'); row.className='btn-row'; row.style.marginTop='16px';
+  var ok=document.createElement('button'); ok.className='btn-main'; ok.textContent='完成';
+  ok.onclick=function(){ closeModal(); renderChapters(); renderVolChips(); renderJump(); };
+  row.appendChild(ok); f.appendChild(row);
+  openModal(f);
+}
+
+/* ── 工作台 ── */
+function doneRatio(){
+  var n=ST.chapters.length, d=0, i;
+  if(!n) return 0;
+  for(i=0;i<n;i++){ if(chStatus(ST.chapters[i])==='done') d++; }
+  return Math.round(d/n*100);
+}
+var _dashT;
+function dashSoon(){ clearTimeout(_dashT); _dashT=setTimeout(renderDash,260); }
+function renderDash(){
+  if(!$('dash-a')) return;
+  var st=bookStat(), avg=st.n?Math.round(st.w/st.n):0, goal=parseInt(ST.goal,10)||0;
+  $('dash-cnt').textContent=st.n+' 章'+(volList().length?(' · '+volList().length+' 部'):'');
+  $('dash-a').textContent=st.n+' 章／'+st.w.toLocaleString()+' 字';
+  $('dash-b').textContent=avg?(avg.toLocaleString()+' 字'):'—';
+  $('dash-c').textContent=doneRatio()+'%';
+  var pct=goal?Math.min(100,Math.round(st.w/goal*100)):0;
+  $('dash-d').textContent=goal?(pct+'%'):'—';
+  $('dash-bar').style.width=(goal?pct:doneRatio())+'%';
+  $('dash-cap').textContent=goal
+    ? (st.w.toLocaleString()+' / '+goal.toLocaleString()+' 字，還差 '+Math.max(0,goal-st.w).toLocaleString()+' 字')
+    : '尚未設定全書目標字數，進度條先顯示完稿比例';
+  var g=$('f-goal'); if(g && document.activeElement!==g) g.value=goal?String(goal):'';
+}
+
+/* ── 快速跳章 ── */
+function renderJump(){
+  var sel=$('jump-sel'); if(!sel) return;
+  var keep=sel.value, i, o, grp=null, lastVol=null, v;
+  sel.innerHTML='';
+  if(!ST.chapters.length){
+    o=document.createElement('option'); o.value=''; o.textContent='（還沒有章節）'; sel.appendChild(o); return;
+  }
+  for(i=0;i<ST.chapters.length;i++){
+    v=trim(ST.chapters[i].vol||'');
+    if(v!==lastVol){ lastVol=v; grp=null; }
+    o=document.createElement('option');
+    o.value=String(i);
+    o.textContent=(i+1)+'. '+(ST.chapters[i].title||'（未命名章節）');
+    if(v){
+      if(!grp){ grp=document.createElement('optgroup'); grp.label=v; sel.appendChild(grp); }
+      grp.appendChild(o);
+    } else { sel.appendChild(o); }
+  }
+  if(keep && sel.querySelector('option[value="'+keep+'"]')) sel.value=keep;
+  else if(ST.openIdx>=0) sel.value=String(ST.openIdx);
+}
+function jumpToChapter(){
+  var sel=$('jump-sel'); if(!sel || sel.value==='') { toast('還沒有章節可以跳'); return; }
+  var i=parseInt(sel.value,10);
+  if(isNaN(i) || !ST.chapters[i]) return;
+  ST.openIdx=i; save(); go('chapters');
+  setTimeout(focusOpen,120);
+  toast('已跳到第 '+(i+1)+' 章');
+}
+
+/* ── 概要輸出開關 ── */
+function useSum(){ return ST.useSummary!==false; }
+function usesumUI(){
+  var w=$('c-usesum'); if(!w) return;
+  var cs=w.querySelectorAll('.chip'), on=useSum(), i;
+  for(i=0;i<cs.length;i++){
+    cs[i].classList.remove('on');
+    if(cs[i].getAttribute('data-v')===(on?'on':'off')) cs[i].classList.add('on');
+  }
+  var st=$('sum-stat');
+  if(st){
+    var have=0, j;
+    for(j=0;j<ST.chapters.length;j++){ if(trim(ST.chapters[j].summary||'')) have++; }
+    st.textContent='目前 '+have+' / '+ST.chapters.length+' 章寫了概要，'+(on?'輸出時會一起帶出去。':'輸出時全部隱藏。');
+  }
+}
+function setUseSummary(on){
+  ST.useSummary=!!on; save(); usesumUI();
+  toast(on?'輸出時會附上章節概要':'輸出時不會出現章節概要');
+}
+function clearAllSummaries(){
+  var have=0, i;
+  for(i=0;i<ST.chapters.length;i++){ if(trim(ST.chapters[i].summary||'')) have++; }
+  if(!have){ toast('目前沒有任何概要'); return; }
+  openConfirm('清空全部概要','會刪掉 '+have+' 章的概要文字。留有還原點，按工具箱的「復原上一步」可以救回來。',function(){
+    snap('清空全部概要');
+    for(var j=0;j<ST.chapters.length;j++){ ST.chapters[j].summary=''; }
+    save(); closeModal(); renderChapters(); usesumUI(); updUndo();
+    toast('已清空 '+have+' 章概要');
+  });
+}
+
+/* ── 工具箱欄位綁定 ── */
+function bindTools(){
+  var g=$('f-goal'), n=$('f-notes');
+  if(g){
+    g.value=(parseInt(ST.goal,10)||0)?String(parseInt(ST.goal,10)):'';
+    g.oninput=function(){ ST.goal=parseInt(g.value,10)||0; save(); renderDash(); };
+  }
+  if(n){
+    n.value=ST.notes||'';
+    n.oninput=function(){ ST.notes=n.value; save(); };
+  }
+  usesumUI();
+  volDatalist();
+}
 
 /* ══════════════════ 初始化 ══════════════════ */
 function init(){
@@ -1797,10 +3131,17 @@ function init(){
   sealModeUI();
   scanSvgVars();
   renderSeal();
+  renderMascotRow();
   chOrderUI();
   skinUI();
   renderChapters();
   renderRThemes();
+  bindTools();
+  renderDash();
+  renderJump();
+  renderVolChips();
+  updUndo();
+  saveLight('idle');
   go('cover');
   if(MIGRATED_FROM){
     setTimeout(function(){ toast('已自動接手 '+MIGRATED_FROM+' 的草稿，共 '+ST.chapters.length+' 章'); },400);
