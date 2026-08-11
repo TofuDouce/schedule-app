@@ -82,6 +82,19 @@
   --input-bg:#FAFAF8; --danger:#8B3529; --danger-dk:#64231C; --scrim:#171717;
 }
 
+[data-theme="navy"]{
+  --bg:#FAF6EC; --dot:#EDE4CE; --card:#FFFDF7; --card-edge:#E4DBC7; --card-under:#C9BFA0;
+  --ink:#34302A; --ink-soft:#78705F; --ink-faint:#A79A82;
+  --accent:#3E5C76; --accent-dk:#2C4356; --accent-pale:#E7EEF3; --on-accent:#FFFFFF;
+  --input-bg:#FFFEF9; --danger:#C1442D; --danger-dk:#96311E; --scrim:#241F1A;
+}
+[data-theme="berry"]{
+  --bg:#FFFCF5; --dot:#F1E9DA; --card:#FFFFFF; --card-edge:#000000; --card-under:#000000;
+  --ink:#1C1C17; --ink-soft:#5C5850; --ink-faint:#948E80;
+  --accent:#B23A5B; --accent-dk:#8A2C46; --accent-pale:#FBEAF0; --on-accent:#FFFFFF;
+  --input-bg:#FFF8FA; --danger:#A6402E; --danger-dk:#7C2E20; --scrim:#1C1C17;
+}
+
 [data-theme="dream"]{
   --bg:#1B1526; --dot:#2A2140; --card:rgba(29,24,44,.72); --card-edge:#3B2F55; --card-under:#0E0A18;
   --ink:#F4EFFF; --ink-soft:#B9A9E0; --ink-faint:#7A6B99;
@@ -113,8 +126,6 @@ body{
   --pnl-sh-sm:0 4px 0 var(--card-under);
   --soft-sh:0 4px 0 var(--card-edge);
   --tape:var(--monster);
-  --c-sim:#8C6FC6; --c-nov:#C4776E; --c-web:#5F9E6E;
-  --c-day:#C99B45; --c-exp:#6C8FB5; --c-etc:#9A8B70;
 }
 body[data-look="bold"]{ --pnl-r:20px; --pnl-bw:3px; }
 body[data-look="dash"]{ --pnl-bs:dashed; --pnl-sh:0 3px 0 var(--card-under); --pnl-sh-sm:0 2px 0 var(--card-under); }
@@ -187,12 +198,6 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);
 .cat{font-size:.76em;font-weight:700;padding:8px 15px;border-radius:99px;cursor:pointer;
   background:var(--input-bg);border:2px solid var(--card-edge);color:var(--ink-soft)}
 .cat.on{color:#fff;border-color:transparent}
-.cat.on[data-c="模擬器"]{background:var(--c-sim)}
-.cat.on[data-c="小說"]{background:var(--c-nov)}
-.cat.on[data-c="網站工具"]{background:var(--c-web)}
-.cat.on[data-c="日常工具"]{background:var(--c-day)}
-.cat.on[data-c="實驗性質"]{background:var(--c-exp)}
-.cat.on[data-c="其他"]{background:var(--c-etc)}
 .cat.on[data-c="全部"]{background:var(--ink);color:var(--bg)}
 
 .toggles{display:flex;gap:10px;margin-top:12px}
@@ -229,13 +234,21 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);
 .chip{font-size:.95em;font-weight:700;padding:2px 10px;border-radius:99px;color:#fff}
 .chip.lock{background:var(--monster)}
 .chip.open{background:var(--accent)}
-.star{color:var(--c-day)}
+.star{color:#C99B45}
 .empty{text-align:center;color:var(--ink-faint);font-size:.82em;padding:34px 10px;line-height:2}
 
 .stat{display:flex;gap:10px;margin-top:12px}
 .stat div{flex:1;background:var(--input-bg);border:2px solid var(--card-edge);border-radius:16px;padding:12px 6px;text-align:center}
 .stat b{display:block;font-size:1.1em;font-weight:900;color:var(--accent-dk);line-height:1.3}
 .stat small{font-size:.62em;color:var(--ink-faint)}
+
+.mcat{display:inline-flex;align-items:center;gap:7px;padding:7px 8px 7px 14px;border-radius:99px;
+  color:#fff;font-size:.78em;font-weight:700}
+.mcat button{background:rgba(255,255,255,.3);border:0;color:#fff;width:20px;height:20px;
+  border-radius:50%;font-size:13px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0}
+.mcat button:active{background:rgba(255,255,255,.5)}
+.swatch{width:30px;height:30px;border-radius:50%;border:2px solid var(--card-edge);cursor:pointer}
+.swatch.on{border-color:var(--ink);box-shadow:0 0 0 3px var(--accent-pale)}
 
 /* 外觀 */
 .themes{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px}
@@ -415,6 +428,14 @@ nav.bottom button.on{color:var(--accent)}
         <button class="btn soft wide" id="btnReload">重新整理架上</button>
       </div>
       <div class="row"><button class="btn soft wide" id="btnShelfLink">去看前台</button></div>
+
+      <div class="eyebrow">分類管理</div>
+      <p class="sub" style="margin:0 0 8px">新增或刪除作品分類，至少要留一個。</p>
+      <div class="cats" id="catManage"></div>
+      <div class="row"><input type="text" id="newCatName" placeholder="新分類名稱" style="flex:1;min-width:140px"></div>
+      <div class="cats" id="newCatSwatch"></div>
+      <div class="row"><button class="btn soft wide" id="btnAddCat">新增分類</button></div>
+
       <div class="eyebrow">保險起見</div>
       <p class="sub" style="margin:0 0 8px">作品只存在雲端。下載一份放手機或電腦，萬一出事還救得回來。</p>
       <div class="row"><button class="btn soft wide" id="btnBackup">備份全部作品</button></div>
@@ -461,9 +482,21 @@ const OWNER = 'CbBcZ01ymNQou4X6HMfNMtEgXRl2';
 const SHELF_URL = 'cafe-shelf.html';
 const NS = 'cafeShelf:';
 const MAX = 900000;
-const CATS = ['模擬器','小說','網站工具','日常工具','實驗性質','其他'];
-const COLOR = {'模擬器':'var(--c-sim)','小說':'var(--c-nov)','網站工具':'var(--c-web)',
-  '日常工具':'var(--c-day)','實驗性質':'var(--c-exp)','其他':'var(--c-etc)'};
+const PALETTE = ['#8C6FC6','#C4776E','#5F9E6E','#C99B45','#6C8FB5','#9A8B70',
+  '#4F8A8B','#B25D8C','#7A9E4F','#A65B3F','#3E5C76','#B23A5B'];
+const DEFAULT_CATS = [
+  { label:'模擬器',   color:'#8C6FC6' },
+  { label:'小說',     color:'#C4776E' },
+  { label:'網站工具', color:'#5F9E6E' },
+  { label:'日常工具', color:'#C99B45' },
+  { label:'實驗性質', color:'#6C8FB5' },
+  { label:'其他',     color:'#9A8B70' }
+];
+let CATS = DEFAULT_CATS.slice();
+function catColor(label){
+  const c = CATS.find(x => x.label === label);
+  return c ? c.color : '#9A8B70';
+}
 
 const THEMES = [
   { id:'',       label:'拿鐵奶油', sw:['#F5F1E4','#5F9E6E','#8C6FC6'] },
@@ -477,6 +510,8 @@ const THEMES = [
   { id:'ink',    label:'炭焙黑金', sw:['#121212','#C9A227','#F0EDE6'] },
   { id:'sunlit', label:'暖陽黃棕', sw:['#F8D86B','#EFAE32','#4B3527'] },
   { id:'mono',   label:'黑白極簡', sw:['#F1F1EF','#171717','#BDBDB8'] },
+  { id:'navy',   label:'海軍手帳', sw:['#FAF6EC','#3E5C76','#C1442D'] },
+  { id:'berry',  label:'黑框莓果', sw:['#FFFCF5','#B23A5B','#000000'] },
   { id:'dream',  label:'慵懶夢境', sw:['#1B1526','#D8BF8A','#8C6FC6'] }
 ];
 const FONTS = [
@@ -589,6 +624,11 @@ fs = applyFs(parseInt(store.get('fs', FS_DEF), 10) || FS_DEF);
 
 /* ---------- 分頁 ---------- */
 const rank = w => (w.order != null ? w.order : (w.updated || 0));
+function fmtDT(ms){
+  if(!ms) return '';
+  const d = new Date(ms), p = n => String(n).padStart(2, '0');
+  return d.getFullYear() + '/' + p(d.getMonth()+1) + '/' + p(d.getDate()) + '　' + p(d.getHours()) + ':' + p(d.getMinutes());
+}
 let cur = null, code = '', works = [], filter = '全部', rows = [];
 const TABS = [['shelf','tabShelf'],['edit','tabEdit'],['look','tabLook'],['acc','tabAcc']];
 
@@ -604,22 +644,100 @@ $('nav').addEventListener('click', e => {
 });
 
 /* ---------- 分類 ---------- */
-$('catPick').innerHTML = CATS.map((c, i) =>
-  '<div class="cat' + (i === 0 ? ' on' : '') + '" data-c="' + c + '">' + c + '</div>').join('');
+function paintCats(container){
+  container.querySelectorAll('.cat').forEach(el => {
+    const on = el.classList.contains('on'), label = el.dataset.c;
+    if(!on || label === '全部'){ el.style.background=''; el.style.color=''; el.style.borderColor=''; return; }
+    el.style.background = catColor(label); el.style.color = '#fff'; el.style.borderColor = 'transparent';
+  });
+}
+function renderCatPick(list, activeLabel){
+  $('catPick').innerHTML = list.map(c =>
+    '<div class="cat" data-c="' + esc(c.label) + '">' + esc(c.label) + '</div>').join('');
+  setCat(activeLabel);
+}
 $('catPick').addEventListener('click', e => {
   const t = e.target.closest('.cat'); if(!t) return;
-  $('catPick').querySelectorAll('.cat').forEach(x => x.classList.toggle('on', x === t));
+  setCat(t.dataset.c);
 });
-const pickedCat = () => { const on = $('catPick').querySelector('.cat.on'); return on ? on.dataset.c : '其他'; };
-const setCat = c => $('catPick').querySelectorAll('.cat').forEach(x => x.classList.toggle('on', x.dataset.c === c));
+const pickedCat = () => { const on = $('catPick').querySelector('.cat.on'); return on ? on.dataset.c : ((CATS[0] && CATS[0].label) || '其他'); };
+const setCat = c => {
+  $('catPick').querySelectorAll('.cat').forEach(x => x.classList.toggle('on', x.dataset.c === c));
+  paintCats($('catPick'));
+};
 
-$('filters').innerHTML = ['全部'].concat(CATS).map((c, i) =>
-  '<div class="cat' + (i === 0 ? ' on' : '') + '" data-c="' + c + '">' + c + '</div>').join('');
+function renderFilters(){
+  $('filters').innerHTML = ['全部'].concat(CATS.map(c => c.label)).map((label, i) =>
+    '<div class="cat' + (i === 0 ? ' on' : '') + '" data-c="' + esc(label) + '">' + esc(label) + '</div>').join('');
+  paintCats($('filters'));
+}
+renderFilters();
 $('filters').addEventListener('click', e => {
   const t = e.target.closest('.cat'); if(!t) return;
   filter = t.dataset.c;
   $('filters').querySelectorAll('.cat').forEach(x => x.classList.toggle('on', x === t));
+  paintCats($('filters'));
   paintList();
+});
+
+/* ---------- 分類管理 ---------- */
+let newCatColor = PALETTE[0];
+async function loadCategories(){
+  try{
+    const snap = await getDoc(doc(db, 'meta', 'categories'));
+    if(snap.exists() && Array.isArray(snap.data().list) && snap.data().list.length){
+      CATS = snap.data().list;
+    }else{
+      CATS = DEFAULT_CATS.slice();
+      await saveCategories();
+    }
+  }catch(e){ CATS = DEFAULT_CATS.slice(); }
+  renderFilters();
+  paintCatManage();
+}
+async function saveCategories(){
+  try{ await setDoc(doc(db, 'meta', 'categories'), { list: CATS }); }
+  catch(e){ err(friendly(e)); }
+}
+function paintSwatches(){
+  $('newCatSwatch').innerHTML = PALETTE.map(c =>
+    '<div class="swatch' + (c === newCatColor ? ' on' : '') + '" data-c="' + c + '" style="background:' + c + '"></div>').join('');
+}
+function paintCatManage(){
+  $('catManage').innerHTML = CATS.map(c =>
+    '<span class="mcat" style="background:' + c.color + '">' + esc(c.label) +
+    '<button data-l="' + esc(c.label) + '" title="刪除">&times;</button></span>').join('');
+}
+paintSwatches();
+$('newCatSwatch').addEventListener('click', e => {
+  const t = e.target.closest('.swatch'); if(!t) return;
+  newCatColor = t.dataset.c;
+  paintSwatches();
+});
+$('catManage').addEventListener('click', async e => {
+  const b = e.target.closest('button'); if(!b) return;
+  if(CATS.length <= 1){ toast('至少要留一個分類'); return; }
+  const label = b.dataset.l;
+  if(!confirm('刪除分類「' + label + '」？已經用這個分類的作品不會被刪除，只是之後篩選不到它。')) return;
+  CATS = CATS.filter(c => c.label !== label);
+  await saveCategories();
+  paintCatManage();
+  renderFilters();
+  toast('分類刪除了');
+});
+$('btnAddCat').addEventListener('click', async () => {
+  const name = $('newCatName').value.trim();
+  if(!name){ toast('先取個名稱'); return; }
+  if(CATS.some(c => c.label === name)){ toast('已經有這個分類了'); return; }
+  if(CATS.length >= 24){ toast('分類有點多了，先整理一下吧'); return; }
+  CATS.push({ label:name, color:newCatColor });
+  await saveCategories();
+  $('newCatName').value = '';
+  newCatColor = PALETTE[CATS.length % PALETTE.length];
+  paintSwatches();
+  paintCatManage();
+  renderFilters();
+  toast('新增了「' + name + '」');
 });
 
 /* ---------- 登入 ---------- */
@@ -655,6 +773,7 @@ onAuthStateChanged(auth, async user => {
   $('gate').classList.add('hide');
   $('nav').classList.remove('hide');
   go('shelf');
+  await loadCategories();
   await loadList();
 });
 
@@ -690,12 +809,12 @@ function paintList(){
   }
   $('list').innerHTML = rows.map(w =>
     '<div class="work" data-id="' + w.coll + '/' + w.id + '">' +
-      '<div class="stripe" style="background:' + (COLOR[w.cat] || 'var(--c-etc)') + '"></div>' +
+      '<div class="stripe" style="background:' + catColor(w.cat) + '"></div>' +
       '<div class="nm">' + (w.pinned ? '<span class="star">★</span> ' : '') + esc(w.name) + '</div>' +
       (w.desc ? '<div class="ds">' + esc(w.desc) + '</div>' : '') +
       '<div class="mt">' +
         '<span class="chip ' + (w.coll === 'posts_private' ? 'lock">加鎖' : 'open">公開') + '</span>' +
-        esc(w.cat || '其他') + '　' + Math.round((w.size||0)/1024) + ' KB' +
+        esc(w.cat || '其他') + '　' + Math.round((w.size||0)/1024) + ' KB　' + fmtDT(w.created || w.updated) +
       '</div>' +
       '<div class="ord">' +
         '<button data-move="up" data-id="' + w.coll + '/' + w.id + '">&#9650;</button>' +
@@ -913,7 +1032,8 @@ function newWork(){
   $('edTitle').textContent = '收一件新作品';
   $('fName').value = ''; $('fDesc').value = '';
   $('fFile').value = ''; $('fileLabel').textContent = '從「檔案」選一個 HTML 檔';
-  setCat('模擬器'); setLock(false);
+  renderCatPick(CATS, (CATS[0] && CATS[0].label) || '其他');
+  setLock(false);
   $('tgPin').classList.remove('on');
   setMeter();
   $('btnDel').classList.add('hide');
@@ -927,7 +1047,8 @@ async function openEdit(w){
   $('fName').value = w.name || '';
   $('fDesc').value = w.desc || '';
   $('fFile').value = ''; $('fileLabel').textContent = '換一個 HTML 檔';
-  setCat(w.cat || '其他');
+  const extra = (w.cat && !CATS.some(c => c.label === w.cat)) ? [{ label:w.cat, color:catColor(w.cat) }] : [];
+  renderCatPick(CATS.concat(extra), w.cat || (CATS[0] && CATS[0].label) || '其他');
   setLock(w.coll === 'posts_private');
   $('tgPin').classList.toggle('on', !!w.pinned);
   $('meter').textContent = '讀取程式碼中⋯⋯';
@@ -976,6 +1097,7 @@ $('btnSave').addEventListener('click', async () => {
       name, desc: $('fDesc').value.trim(), cat: pickedCat(),
       pinned: $('tgPin').classList.contains('on'),
       order: (cur && cur.order != null) ? cur.order : Date.now(),
+      created: (cur && cur.created) ? cur.created : Date.now(),
       size, thumb, updated: Date.now()
     });
     await setDoc(doc(db, coll, id, 'blob', 'source'), { code });
