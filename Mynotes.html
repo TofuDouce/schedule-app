@@ -1,0 +1,772 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f8f7f2">
+  <title>小雲朵筆記｜Personal Cloud Notes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f8f7f2;
+      --surface: #fffefa;
+      --surface-2: #f2f4ec;
+      --ink: #2d3836;
+      --muted: #8a9490;
+      --line: #e7ebe1;
+      --mint: #8bcdb7;
+      --mint-deep: #4b9d87;
+      --lemon: #f2d477;
+      --peach: #f2ad8f;
+      --lavender: #b8addb;
+      --blue: #a8cde1;
+      --danger: #d77f79;
+      --shadow: 0 16px 36px rgba(54, 73, 65, .08), 0 3px 8px rgba(54, 73, 65, .04);
+      --shadow-soft: 0 7px 20px rgba(54, 73, 65, .07);
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --sidebar: 248px;
+      --font-display: 'Zen Maru Gothic', 'Noto Sans TC', sans-serif;
+      --font-body: 'Noto Sans TC', system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { min-width: 320px; background: var(--bg); }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 0%, rgba(184, 221, 205, .22), transparent 25rem),
+        radial-gradient(circle at 100% 72%, rgba(242, 212, 119, .13), transparent 25rem),
+        var(--bg);
+      font-family: var(--font-body);
+      line-height: 1.6;
+    }
+    button, input, textarea, select { font: inherit; }
+    button { border: 0; cursor: pointer; }
+    button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+      outline: 3px solid rgba(75, 157, 135, .24);
+      outline-offset: 2px;
+    }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+    .icon { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+    .icon svg { width: 1em; height: 1em; display: block; }
+
+    .app-shell { display: flex; min-height: 100svh; }
+    .sidebar {
+      position: fixed; inset: 0 auto 0 0; z-index: 20; width: var(--sidebar);
+      display: flex; flex-direction: column; padding: 28px 18px 20px;
+      background: rgba(255, 254, 250, .92); border-right: 1px solid rgba(224, 231, 222, .8);
+      backdrop-filter: blur(18px);
+    }
+    .brand { display: flex; align-items: center; gap: 11px; padding: 0 10px 29px; }
+    .brand-mark {
+      width: 40px; height: 40px; display: grid; place-items: center; color: #fff;
+      background: var(--mint-deep); border-radius: 14px 14px 14px 6px;
+      box-shadow: 5px 5px 0 #cfe9dd; font-size: 21px;
+    }
+    .brand-title { font: 900 19px/1.1 var(--font-display); letter-spacing: .02em; }
+    .brand-sub { margin-top: 3px; color: var(--muted); font-size: 10px; letter-spacing: .12em; }
+    .nav-label { padding: 0 12px 8px; color: #a6afaa; font-size: 11px; font-weight: 700; letter-spacing: .13em; }
+    .nav-list { display: grid; gap: 4px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 13px;
+      color: #7a8580; background: transparent; border-radius: 13px; text-align: left; transition: .18s ease;
+    }
+    .nav-item:hover { color: var(--ink); background: #f3f6ef; }
+    .nav-item.active { color: var(--mint-deep); background: #eaf5ef; font-weight: 800; }
+    .nav-item .icon { width: 18px; font-size: 19px; }
+    .nav-item .nav-count { margin-left: auto; font-size: 12px; color: #a0aaa4; }
+    .category-block { margin-top: 31px; }
+    .category-list { display: grid; gap: 3px; }
+    .category-item {
+      display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 13px;
+      color: #7b8681; background: transparent; border-radius: 11px; text-align: left; font-size: 13px;
+    }
+    .category-item:hover, .category-item.active { color: var(--ink); background: #f6f7f1; }
+    .category-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--dot, var(--mint)); }
+    .category-item .nav-count { margin-left: auto; color: #a8b0ab; font-size: 11px; }
+    .sidebar-bottom { margin-top: auto; display: grid; gap: 11px; }
+    .cloud-mini {
+      display: flex; align-items: center; gap: 9px; padding: 11px 12px; color: #77817d;
+      background: #f5f7f1; border: 1px solid var(--line); border-radius: 13px; font-size: 11px;
+    }
+    .cloud-mini .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--mint-deep); box-shadow: 0 0 0 4px rgba(75,157,135,.12); }
+    .profile-button {
+      display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px; color: var(--ink);
+      background: transparent; border-radius: 14px; text-align: left;
+    }
+    .profile-button:hover { background: #f6f7f1; }
+    .avatar { width: 35px; height: 35px; display: grid; place-items: center; flex: 0 0 auto; color: #527b6c; background: #dcefe6; border-radius: 12px; font-weight: 800; }
+    .profile-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 800; }
+    .profile-mode { color: var(--muted); font-size: 10px; }
+    .main { width: calc(100% - var(--sidebar)); margin-left: var(--sidebar); padding: 28px 44px 50px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 20px; max-width: 1200px; margin: 0 auto; }
+    .mobile-brand, .mobile-menu { display: none; }
+    .breadcrumb { color: #a2aba6; font-size: 12px; font-weight: 600; }
+    .breadcrumb strong { color: var(--mint-deep); }
+    .top-actions { display: flex; align-items: center; gap: 9px; }
+    .round-button {
+      width: 38px; height: 38px; display: grid; place-items: center; color: #84908a;
+      background: var(--surface); border: 1px solid var(--line); border-radius: 50%; box-shadow: 0 3px 8px rgba(54,73,65,.03);
+    }
+    .round-button:hover { color: var(--mint-deep); border-color: #cfe5d9; }
+    .hero { max-width: 1200px; margin: 44px auto 0; display: flex; align-items: flex-end; justify-content: space-between; gap: 30px; }
+    .eyebrow { display: flex; align-items: center; gap: 8px; color: var(--mint-deep); font-size: 12px; font-weight: 800; letter-spacing: .1em; }
+    .eyebrow i { width: 25px; height: 2px; background: var(--mint); border-radius: 2px; }
+    h1 { margin: 9px 0 5px; font: 900 clamp(28px, 4vw, 42px)/1.18 var(--font-display); letter-spacing: -.03em; }
+    .hero-copy { max-width: 460px; margin: 0; color: #8b9590; font-size: 13px; }
+    .date-stamp { display: grid; gap: 3px; min-width: 150px; padding: 14px 17px; background: rgba(255,254,250,.72); border: 1px solid var(--line); border-radius: 17px; color: #7c8882; font-size: 11px; text-align: right; }
+    .date-stamp strong { color: var(--ink); font-size: 14px; }
+
+    .toolbar { max-width: 1200px; display: flex; align-items: center; justify-content: space-between; gap: 14px; margin: 29px auto 0; }
+    .search-box { position: relative; flex: 1; max-width: 540px; }
+    .search-box .icon { position: absolute; top: 50%; left: 15px; transform: translateY(-50%); color: #a2ada7; font-size: 18px; }
+    .search-box input { width: 100%; height: 47px; padding: 0 18px 0 44px; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 15px; box-shadow: var(--shadow-soft); }
+    .search-box input::placeholder { color: #b1bab4; }
+    .toolbar-actions { display: flex; align-items: center; gap: 8px; }
+    .view-switch { display: flex; padding: 4px; background: #edf1e9; border-radius: 13px; }
+    .view-button { width: 35px; height: 32px; display: grid; place-items: center; color: #a0aaa3; background: transparent; border-radius: 9px; }
+    .view-button.active { color: var(--mint-deep); background: var(--surface); box-shadow: 0 2px 5px rgba(54,73,65,.08); }
+    .primary-button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 43px; padding: 0 17px; color: #fff; background: var(--mint-deep); border-radius: 13px; box-shadow: 0 6px 15px rgba(75,157,135,.2); font-weight: 800; font-size: 13px; transition: transform .16s ease, box-shadow .16s ease; }
+    .primary-button:hover { transform: translateY(-1px); box-shadow: 0 9px 18px rgba(75,157,135,.25); }
+    .primary-button:active, .secondary-button:active, .danger-button:active { transform: scale(.97); }
+    .secondary-button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 42px; padding: 0 15px; color: #718079; background: #f4f6f0; border: 1px solid var(--line); border-radius: 12px; font-weight: 700; font-size: 13px; }
+    .secondary-button:hover { color: var(--ink); background: #edf2eb; }
+
+    .stats-row { max-width: 1200px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 27px auto 0; }
+    .stat-card { position: relative; overflow: hidden; min-height: 93px; padding: 16px 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow-soft); }
+    .stat-card::after { content: ''; position: absolute; width: 72px; height: 72px; right: -22px; bottom: -28px; border-radius: 50%; background: var(--accent, #e6f3ed); }
+    .stat-card:nth-child(2) { --accent: #fff2ce; }
+    .stat-card:nth-child(3) { --accent: #f8dfd5; }
+    .stat-label { position: relative; z-index: 1; color: #99a39e; font-size: 11px; }
+    .stat-value { position: relative; z-index: 1; margin-top: 1px; font: 900 25px/1.2 var(--font-display); }
+    .stat-note { position: relative; z-index: 1; margin-top: 3px; color: #a8b0ab; font-size: 10px; }
+    .stat-icon { position: absolute; z-index: 1; top: 16px; right: 17px; color: #82bda9; font-size: 20px; }
+
+    .notes-head { max-width: 1200px; display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 37px auto 15px; }
+    .notes-heading { display: flex; align-items: baseline; gap: 9px; }
+    .notes-heading h2 { margin: 0; font: 900 20px var(--font-display); }
+    .notes-heading span { color: #a4aea9; font-size: 11px; }
+    .filter-select { height: 34px; padding: 0 10px; color: #7f8984; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; font-size: 11px; }
+    .notes-grid { max-width: 1200px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 0 auto; }
+    .notes-grid.list-view { grid-template-columns: 1fr; }
+    .note-card { position: relative; min-height: 214px; display: flex; flex-direction: column; padding: 20px; overflow: hidden; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-soft); cursor: pointer; transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+    .note-card:hover { transform: translateY(-3px); border-color: #d4e8dc; box-shadow: var(--shadow); }
+    .note-card::before { content: ''; position: absolute; width: 110px; height: 110px; top: -60px; right: -44px; border-radius: 50%; background: var(--wash, #eef8f2); pointer-events: none; }
+    .note-card:nth-child(4n+2) { --wash: #fff5dc; }
+    .note-card:nth-child(4n+3) { --wash: #f8e8e1; }
+    .note-card:nth-child(4n+4) { --wash: #eee9fa; }
+    .note-card.is-pinned { border-color: #efdfa3; }
+    .note-card.is-pinned::after { content: ''; position: absolute; top: 0; left: 20px; width: 30px; height: 4px; background: var(--lemon); border-radius: 0 0 5px 5px; }
+    .note-top { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 9px; }
+    .category-pill { display: inline-flex; align-items: center; gap: 5px; max-width: 130px; padding: 4px 9px; overflow: hidden; color: #668179; background: #edf6f0; border-radius: 7px; font-size: 10px; font-weight: 800; white-space: nowrap; text-overflow: ellipsis; }
+    .category-pill .category-dot { width: 6px; height: 6px; }
+    .note-menu { position: relative; z-index: 2; display: flex; gap: 4px; opacity: 0; transition: opacity .15s ease; }
+    .note-card:hover .note-menu, .note-card:focus-within .note-menu { opacity: 1; }
+    .mini-button { width: 28px; height: 28px; display: grid; place-items: center; color: #99a49e; background: #f6f7f3; border-radius: 8px; }
+    .mini-button:hover { color: var(--mint-deep); background: #eaf5ef; }
+    .mini-button.danger:hover { color: var(--danger); background: #fbece9; }
+    .note-title { position: relative; z-index: 1; margin: 19px 0 8px; overflow: hidden; font: 900 18px/1.35 var(--font-display); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    .note-excerpt { position: relative; z-index: 1; display: -webkit-box; flex: 1; margin: 0; overflow: hidden; color: #81908a; font-size: 12px; line-height: 1.75; -webkit-line-clamp: 3; -webkit-box-orient: vertical; white-space: pre-line; }
+    .note-bottom { position: relative; z-index: 1; display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; margin-top: 19px; }
+    .tag-row { display: flex; flex-wrap: wrap; gap: 5px; min-width: 0; }
+    .tag { padding: 3px 7px; color: #9a9e8d; background: #f5f4ec; border-radius: 6px; font-size: 9px; }
+    .note-time { flex: 0 0 auto; color: #aab2ac; font-size: 10px; }
+    .list-view .note-card { min-height: 114px; display: grid; grid-template-columns: minmax(170px, 1.1fr) minmax(180px, 1.7fr) auto; align-items: center; gap: 22px; padding: 17px 20px; }
+    .list-view .note-card::before { width: 90px; height: 90px; top: -40px; right: -28px; }
+    .list-view .note-title { margin: 9px 0 2px; font-size: 17px; }
+    .list-view .note-excerpt { -webkit-line-clamp: 2; }
+    .list-view .note-bottom { display: grid; justify-items: end; gap: 10px; margin: 0; }
+    .empty-state { grid-column: 1 / -1; padding: 70px 20px; color: #98a49e; background: rgba(255,254,250,.72); border: 1px dashed #dce4d9; border-radius: 20px; text-align: center; }
+    .empty-state .empty-icon { display: block; margin: 0 auto 10px; color: #add3c1; font-size: 36px; }
+    .empty-state strong { display: block; margin-bottom: 3px; color: #697871; font: 900 17px var(--font-display); }
+    .empty-state p { margin: 0; font-size: 12px; }
+
+    .mobile-cats { display: none; }
+    .cat-chip { display: inline-flex; align-items: center; gap: 6px; flex: 0 0 auto; padding: 7px 13px; color: #7b8681; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+    .cat-chip.active { color: #fff; background: var(--mint-deep); border-color: var(--mint-deep); }
+    .cat-chip.active .category-dot { background: rgba(255, 255, 255, .9); }
+    .reader-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 9px; }
+    .reader-body { margin: 0; color: #5f6d67; font-size: 14px; line-height: 1.95; white-space: pre-wrap; word-break: break-word; }
+    .reader-body.reader-empty { color: #a9b2ac; }
+    .reader-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 17px; }
+    .reader-tags:empty { display: none; }
+    .export-actions { display: grid; gap: 9px; margin-top: 15px; }
+    .export-link { text-decoration: none; }
+    .bottom-nav { display: none; }
+    .modal-backdrop { position: fixed; z-index: 50; inset: 0; display: grid; place-items: center; padding: 20px; background: rgba(42,54,49,.32); backdrop-filter: blur(7px); }
+    .modal-backdrop[hidden] { display: none; }
+    .modal-panel { width: min(100%, 620px); max-height: min(740px, calc(100svh - 40px)); overflow: auto; padding: 27px; background: var(--surface); border: 1px solid rgba(255,255,255,.8); border-radius: 25px; box-shadow: 0 25px 80px rgba(38,52,46,.22); animation: pop .2s ease-out; }
+    .modal-panel.small { width: min(100%, 410px); }
+    @keyframes pop { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: none; } }
+    .modal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 15px; margin-bottom: 22px; }
+    .modal-head h2 { margin: 0; font: 900 23px var(--font-display); }
+    .modal-head p { margin: 5px 0 0; color: #99a49e; font-size: 11px; }
+    .close-button { width: 33px; height: 33px; display: grid; place-items: center; color: #a5afa9; background: #f4f6f0; border-radius: 10px; }
+    .close-button:hover { color: var(--ink); }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .field { display: grid; gap: 6px; }
+    .field.full { grid-column: 1 / -1; }
+    .field label { color: #718079; font-size: 11px; font-weight: 800; }
+    .field label small { color: #a9b1ac; font-weight: 500; }
+    .field input, .field textarea, .field select { width: 100%; padding: 10px 12px; color: var(--ink); background: #fbfcf8; border: 1px solid var(--line); border-radius: 11px; font-size: 13px; }
+    .field input, .field select { height: 43px; }
+    .field textarea { min-height: 190px; resize: vertical; line-height: 1.75; }
+    .field input::placeholder, .field textarea::placeholder { color: #b8c0ba; }
+    .color-select-wrap { display: flex; align-items: center; gap: 9px; }
+    .category-preview { width: 18px; height: 18px; border-radius: 6px; background: var(--mint); }
+    .modal-actions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 9px; margin-top: 23px; }
+    .delete-copy { margin: 0; color: #7f8984; font-size: 13px; }
+    .danger-button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 42px; padding: 0 16px; color: #fff; background: var(--danger); border-radius: 12px; font-weight: 800; font-size: 13px; }
+    .form-tip { margin: 13px 0 0; padding: 10px 12px; color: #7d8c83; background: #f5f8f1; border-radius: 11px; font-size: 11px; }
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 13px 0; border-bottom: 1px solid var(--line); }
+    .toggle-row strong { display: block; font-size: 13px; }
+    .toggle-row span { color: #9aa59f; font-size: 11px; }
+    .switch { position: relative; width: 42px; height: 24px; flex: 0 0 auto; }
+    .switch input { position: absolute; opacity: 0; }
+    .switch span { display: block; width: 42px; height: 24px; padding: 3px; background: #dce3dc; border-radius: 30px; transition: .2s ease; }
+    .switch span::after { content: ''; display: block; width: 18px; height: 18px; background: #fff; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,.12); transition: .2s ease; }
+    .switch input:checked + span { background: var(--mint-deep); }
+    .switch input:checked + span::after { transform: translateX(18px); }
+    .settings-code { margin-top: 15px; padding: 11px 13px; color: #6f8077; background: #f5f8f1; border-radius: 12px; font-size: 11px; line-height: 1.7; }
+    .settings-code code { display: block; margin-top: 5px; padding: 8px; overflow: auto; color: #4c7566; background: #edf4eb; border-radius: 8px; font: 10px/1.5 ui-monospace, monospace; white-space: nowrap; }
+    .profile-note { margin: 0 0 17px; color: #8c9791; font-size: 12px; }
+    .toast { position: fixed; z-index: 100; right: 22px; bottom: 23px; max-width: min(360px, calc(100vw - 44px)); padding: 11px 15px; color: #fff; background: #415a51; border-radius: 12px; box-shadow: 0 10px 24px rgba(47,70,59,.2); font-size: 12px; opacity: 0; transform: translateY(10px); pointer-events: none; transition: .22s ease; }
+    .toast.show { opacity: 1; transform: none; }
+    .sync-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 8px; color: #7f8b84; background: #f3f6f0; border-radius: 8px; font-size: 10px; }
+    .sync-badge .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #b8c1ba; }
+    .sync-badge.online .status-dot { background: var(--mint-deep); }
+    .sync-badge.busy .status-dot { background: var(--lemon); animation: pulse 1s infinite; }
+    .sync-badge.error .status-dot { background: var(--danger); }
+    @keyframes pulse { 50% { opacity: .35; } }
+
+    @media (max-width: 1050px) {
+      :root { --sidebar: 220px; }
+      .main { padding-right: 27px; padding-left: 27px; }
+      .notes-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 720px) {
+      .app-shell { display: block; }
+      .sidebar { display: none; }
+      .main { width: 100%; margin: 0; padding: 17px 16px calc(95px + env(safe-area-inset-bottom)); }
+      .topbar { gap: 9px; }
+      .mobile-brand { display: flex; align-items: center; gap: 8px; }
+      .mobile-brand .brand-mark { width: 32px; height: 32px; border-radius: 11px 11px 11px 5px; font-size: 17px; box-shadow: 3px 3px 0 #cfe9dd; }
+      .mobile-brand .brand-title { font-size: 15px; }
+      .mobile-menu { display: grid; place-items: center; width: 34px; height: 34px; color: #84908a; background: transparent; }
+      .breadcrumb { display: none; }
+      .top-actions { margin-left: auto; }
+      .hero { align-items: flex-start; margin-top: 30px; }
+      .date-stamp { display: none; }
+      .hero-copy { max-width: 330px; font-size: 12px; }
+      .toolbar { display: grid; grid-template-columns: 1fr auto; margin-top: 23px; }
+      .search-box { grid-column: 1 / -1; max-width: none; }
+      .toolbar-actions { justify-content: flex-end; }
+      .stats-row { gap: 8px; margin-top: 18px; }
+      .stat-card { min-height: 84px; padding: 12px; }
+      .stat-label { font-size: 10px; }
+      .stat-value { font-size: 21px; }
+      .stat-note { display: none; }
+      .stat-icon { top: 12px; right: 10px; font-size: 17px; }
+      .notes-head { margin-top: 28px; }
+      .notes-grid { grid-template-columns: 1fr; gap: 12px; }
+      .note-card { min-height: 194px; }
+      .note-menu { opacity: 1; }
+      .list-view .note-card { grid-template-columns: 1fr; gap: 2px; min-height: 175px; }
+      .list-view .note-bottom { display: flex; align-items: flex-end; justify-items: initial; margin-top: 12px; }
+      .bottom-nav { position: fixed; z-index: 25; inset: auto 12px calc(10px + env(safe-area-inset-bottom)) 12px; display: flex; justify-content: space-around; padding: 7px 5px; background: rgba(255,254,250,.92); border: 1px solid rgba(224,231,222,.9); border-radius: 19px; box-shadow: 0 10px 35px rgba(54,73,65,.13); backdrop-filter: blur(18px); }
+      .bottom-nav .nav-item { width: auto; display: grid; justify-items: center; gap: 1px; padding: 6px 13px; border-radius: 13px; font-size: 9px; text-align: center; }
+      .bottom-nav .nav-item .icon { font-size: 18px; }
+      .bottom-nav .nav-item .nav-count { display: none; }
+      .modal-backdrop { align-items: end; padding: 0; }
+      .modal-panel { width: 100%; max-height: calc(100svh - 20px); padding: 23px 18px calc(20px + env(safe-area-inset-bottom)); border-radius: 25px 25px 0 0; }
+      .form-grid { grid-template-columns: 1fr; gap: 13px; }
+      .field.full { grid-column: auto; }
+      .mobile-cats { display: flex; gap: 7px; margin: 15px -16px 0; padding: 0 16px 3px; overflow-x: auto; scrollbar-width: none; }
+      .mobile-cats::-webkit-scrollbar { display: none; }
+      .toast { right: 16px; left: 16px; bottom: calc(80px + env(safe-area-inset-bottom)); max-width: none; }
+    }
+    @media (max-width: 390px) {
+      .toolbar-actions .primary-button { padding: 0 12px; }
+      .primary-button .button-label { display: none; }
+      .stats-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .stat-value { font-size: 19px; }
+      .sync-badge { padding: 5px 6px; }
+      #syncText { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="主要導覽">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">☁</div>
+        <div><div class="brand-title">小雲朵筆記</div><div class="brand-sub">PERSONAL NOTES</div></div>
+      </div>
+      <div class="nav-label">WORKSPACE</div>
+      <nav class="nav-list" id="desktopNav">
+        <button class="nav-item active" data-nav="notes"><span class="icon" data-icon="note"></span><span>我的筆記</span><span class="nav-count" id="allNavCount">0</span></button>
+        <button class="nav-item" data-nav="favorites"><span class="icon" data-icon="star"></span><span>已收藏</span><span class="nav-count" id="favNavCount">0</span></button>
+        <button class="nav-item" data-nav="recent"><span class="icon" data-icon="clock"></span><span>最近編輯</span></button>
+      </nav>
+      <div class="category-block">
+        <div class="nav-label">CATEGORIES</div>
+        <div class="category-list" id="categoryList"></div>
+      </div>
+      <div class="sidebar-bottom">
+        <button class="cloud-mini" data-action="open-settings"><span class="status-dot" id="sideStatusDot"></span><span id="sideSyncText">本機模式・資料保存在此裝置</span></button>
+        <button class="profile-button" data-action="open-profile"><span class="avatar" id="sideAvatar">我</span><span><span class="profile-name" id="sideProfileName">我的工作區</span><span class="profile-mode" id="sideProfileMode">點擊設定個人資料</span></span><span class="icon" data-icon="chevron-right" style="margin-left:auto;color:#aab2ac"></span></button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="mobile-brand"><button class="mobile-menu" aria-label="我的工作區" data-action="open-profile"><span class="icon" data-icon="menu"></span></button><div class="brand-mark" aria-hidden="true">☁</div><div class="brand-title">小雲朵筆記</div></div>
+        <div class="breadcrumb">Workspace <span>/</span> <strong>My notes</strong></div>
+        <div class="top-actions"><span class="sync-badge" id="syncBadge"><span class="status-dot"></span><span id="syncText">本機儲存</span></span><button class="round-button" data-action="sync-now" aria-label="立即同步"><span class="icon" data-icon="refresh"></span></button><button class="round-button" data-action="open-settings" aria-label="設定"><span class="icon" data-icon="settings"></span></button></div>
+      </header>
+
+      <section class="hero">
+        <div><div class="eyebrow"><i></i>YOUR LITTLE CLOUD</div><h1>把想法，放在雲朵裡。</h1><p class="hero-copy">一個安靜、簡單又有一點可愛的地方，收好今天的靈感與生活。</p></div>
+        <div class="date-stamp"><span>今天是</span><strong id="todayLabel">—</strong></div>
+      </section>
+
+      <section class="toolbar" aria-label="筆記工具列">
+        <label class="search-box"><span class="icon" data-icon="search"></span><span class="sr-only">搜尋筆記</span><input id="searchInput" type="search" placeholder="搜尋標題、內容或標籤…" autocomplete="off"></label>
+        <div class="toolbar-actions"><div class="view-switch" role="group" aria-label="切換檢視方式"><button class="view-button active" data-view="grid" aria-label="卡片檢視"><span class="icon" data-icon="grid"></span></button><button class="view-button" data-view="list" aria-label="列表檢視"><span class="icon" data-icon="list"></span></button></div><button class="primary-button" data-action="new-note"><span class="icon" data-icon="plus"></span><span class="button-label">新增筆記</span></button></div>
+      </section>
+
+      <div class="mobile-cats" id="mobileCats" role="group" aria-label="分類篩選"></div>
+
+      <section class="stats-row" aria-label="筆記統計">
+        <div class="stat-card"><span class="stat-icon icon" data-icon="note"></span><div class="stat-label">全部筆記</div><div class="stat-value" id="statTotal">0</div><div class="stat-note">正在你的雲朵裡</div></div>
+        <div class="stat-card"><span class="stat-icon icon" data-icon="folder"></span><div class="stat-label">分類數量</div><div class="stat-value" id="statCategories">0</div><div class="stat-note">整理得剛剛好</div></div>
+        <div class="stat-card"><span class="stat-icon icon" data-icon="star"></span><div class="stat-label">收藏筆記</div><div class="stat-value" id="statFavorites">0</div><div class="stat-note">值得再看一眼</div></div>
+      </section>
+
+      <section class="notes-head"><div class="notes-heading"><h2 id="sectionTitle">我的筆記</h2><span id="resultCount">0 篇</span></div><select class="filter-select" id="sortSelect" aria-label="排序方式"><option value="updated">最近更新</option><option value="created">建立時間</option><option value="title">標題排序</option></select></section>
+      <section class="notes-grid" id="notesGrid" aria-live="polite"></section>
+    </main>
+  </div>
+
+  <nav class="bottom-nav" id="bottomNav" aria-label="底部導覽">
+    <button class="nav-item active" data-nav="notes"><span class="icon" data-icon="note"></span><span>筆記</span></button>
+    <button class="nav-item" data-nav="favorites"><span class="icon" data-icon="star"></span><span>收藏</span></button>
+    <button class="nav-item" data-action="new-note"><span class="icon" data-icon="plus-circle"></span><span>新增</span></button>
+    <button class="nav-item" data-nav="recent"><span class="icon" data-icon="clock"></span><span>最近</span></button>
+    <button class="nav-item" data-action="open-settings"><span class="icon" data-icon="settings"></span><span>設定</span></button>
+  </nav>
+
+  <div class="modal-backdrop" id="editorModal" hidden>
+    <form class="modal-panel" id="editorForm">
+      <div class="modal-head"><div><h2 id="editorTitle">新增一篇筆記</h2><p>把腦袋裡的那一點點，先放在這裡。</p></div><button type="button" class="close-button" data-action="close-editor" aria-label="關閉"><span class="icon" data-icon="x"></span></button></div>
+      <div class="form-grid">
+        <div class="field full"><label for="noteTitle">標題 <small>（必填）</small></label><input id="noteTitle" maxlength="80" placeholder="今天想記下什麼？" required></div>
+        <div class="field"><label for="noteCategory">分類</label><div class="color-select-wrap"><span class="category-preview" id="categoryPreview"></span><select id="noteCategory"></select></div></div>
+        <div class="field"><label for="noteTags">標籤 <small>用逗號分隔</small></label><input id="noteTags" maxlength="120" placeholder="例如：靈感, 待辦"></div>
+        <div class="field full"><label for="noteContent">內容</label><textarea id="noteContent" placeholder="寫下你的想法、清單或任何想留住的事…"></textarea></div>
+      </div>
+      <div class="modal-actions"><button type="button" class="secondary-button" data-action="close-editor">取消</button><button type="submit" class="primary-button"><span class="icon" data-icon="check"></span>儲存筆記</button></div>
+    </form>
+  </div>
+
+  <div class="modal-backdrop" id="deleteModal" hidden>
+    <div class="modal-panel small"><div class="modal-head"><div><h2>要刪除這篇嗎？</h2><p>刪除後會從目前裝置移除。</p></div><button class="close-button" data-action="cancel-delete" aria-label="關閉"><span class="icon" data-icon="x"></span></button></div><p class="delete-copy" id="deleteCopy">這個動作無法復原，確定要繼續嗎？</p><div class="modal-actions"><button class="secondary-button" data-action="cancel-delete">先不要</button><button class="danger-button" data-action="confirm-delete"><span class="icon" data-icon="trash"></span>刪除筆記</button></div></div>
+  </div>
+
+  <div class="modal-backdrop" id="settingsModal" hidden>
+    <form class="modal-panel" id="settingsForm">
+      <div class="modal-head"><div><h2>同步與偏好設定</h2><p>先用本機模式也可以，準備好時再接上雲端。</p></div><button type="button" class="close-button" data-action="close-settings" aria-label="關閉"><span class="icon" data-icon="x"></span></button></div>
+      <div class="toggle-row"><div><strong>Google Sheets 雲端同步</strong><span>透過 Google Apps Script 保存與同步筆記</span></div><label class="switch"><input type="checkbox" id="cloudEnabled"><span></span></label></div>
+      <div class="form-grid" style="margin-top:17px"><div class="field full"><label for="syncUrl">Apps Script Web App URL</label><input id="syncUrl" type="url" placeholder="https://script.google.com/macros/s/.../exec"></div><div class="field"><label for="syncUser">同步帳號</label><input id="syncUser" placeholder="你的 email 或自訂 ID"></div><div class="field"><label for="syncKey">存取密碼</label><input id="syncKey" type="password" placeholder="第一次使用時建立"></div></div>
+      <div class="settings-code">小提醒：這個版本的 Apps Script 會以「同步帳號＋存取密碼」隔離資料。請將 URL 貼上後儲存，再按右上角同步。<code>action: sync ／ notes: [{ id, title, content, category, tags, created_at, updated_at }]</code></div>
+      <div class="modal-actions"><button type="button" class="secondary-button" data-action="export-notes"><span class="icon" data-icon="download"></span>匯出 JSON</button><button type="button" class="secondary-button" data-action="import-notes"><span class="icon" data-icon="upload"></span>匯入 JSON</button><button type="button" class="secondary-button" data-action="close-settings">取消</button><button type="submit" class="primary-button"><span class="icon" data-icon="save"></span>儲存設定</button></div>
+      <input id="importFile" type="file" accept="application/json" hidden>
+    </form>
+  </div>
+
+  <div class="modal-backdrop" id="profileModal" hidden>
+    <form class="modal-panel small" id="profileForm">
+      <div class="modal-head"><div><h2>我的工作區</h2><p>讓筆記知道要同步到哪裡。</p></div><button type="button" class="close-button" data-action="close-profile" aria-label="關閉"><span class="icon" data-icon="x"></span></button></div>
+      <p class="profile-note">不設定也能使用本機模式。若要使用雲端同步，請填入可辨識你的帳號；存取密碼會只保存在目前瀏覽器。</p>
+      <div class="form-grid"><div class="field"><label for="profileName">稱呼</label><input id="profileName" maxlength="30" placeholder="例如：小明"></div><div class="field"><label for="profileEmail">同步帳號</label><input id="profileEmail" type="email" placeholder="name@example.com"></div></div>
+      <div class="modal-actions"><button type="button" class="secondary-button" data-action="close-profile">取消</button><button type="submit" class="primary-button"><span class="icon" data-icon="check"></span>儲存</button></div>
+    </form>
+  </div>
+
+  <div class="modal-backdrop" id="readerModal" hidden>
+    <div class="modal-panel">
+      <div class="modal-head">
+        <div><h2 id="readerTitle">筆記</h2><div class="reader-meta"><span class="category-pill" id="readerCategory"></span><span class="note-time" id="readerTime"></span></div></div>
+        <button class="close-button" data-action="close-reader" aria-label="關閉"><span class="icon" data-icon="x"></span></button>
+      </div>
+      <p class="reader-body" id="readerBody"></p>
+      <div class="reader-tags" id="readerTags"></div>
+      <div class="modal-actions"><button class="secondary-button" data-action="reader-delete"><span class="icon" data-icon="trash"></span>刪除</button><button class="secondary-button" data-action="reader-pin"><span class="icon" data-icon="star"></span><span id="readerPinLabel">收藏</span></button><button class="primary-button" data-action="reader-edit"><span class="icon" data-icon="edit"></span>編輯</button></div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="exportModal" hidden>
+    <div class="modal-panel small">
+      <div class="modal-head">
+        <div><h2>匯出備份</h2><p>iPhone 請點下方連結，或用「分享」存進檔案 App。</p></div>
+        <button class="close-button" data-action="close-export" aria-label="關閉"><span class="icon" data-icon="x"></span></button>
+      </div>
+      <p class="form-tip" id="exportCount">0 篇筆記</p>
+      <div class="export-actions">
+        <a class="primary-button export-link" id="exportLink" href="#" download><span class="icon" data-icon="download"></span>下載 JSON 備份</a>
+        <button class="secondary-button" id="shareExport" data-action="share-export" hidden><span class="icon" data-icon="upload"></span>用「分享」儲存</button>
+      </div>
+      <div class="modal-actions"><button class="secondary-button" data-action="close-export">關閉</button></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+  <script>
+    'use strict';
+    const NOTE_KEY = 'little_cloud_notes_v1';
+    const PROFILE_KEY = 'little_cloud_profile_v1';
+    const SETTINGS_KEY = 'little_cloud_settings_v1';
+    const GRAVE_KEY = 'little_cloud_graves_v1';
+    const GRAVE_DAYS = 90;
+    const CATEGORIES = [
+      { id: 'all', name: '全部筆記', color: '#8bcdb7' },
+      { id: 'work', name: '工作', color: '#9bc4de' },
+      { id: 'life', name: '生活', color: '#f2ad8f' },
+      { id: 'idea', name: '靈感', color: '#b8addb' },
+      { id: 'list', name: '待辦清單', color: '#f0cc7e' }
+    ];
+    const ICONS = {
+      note: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.5h10.8L19 7.7V20H5z"/><path d="M15 4.5V8h4M8 11h8M8 14.5h6"/></svg>',
+      star: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.75 5.58 6.16.9-4.45 4.34 1.05 6.13L12 17.05 6.49 19.95l1.05-6.13L3.09 9.48l6.16-.9z"/></svg>',
+      clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.2 2"/></svg>',
+      folder: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 6.5h6l1.7 2h9.3v9.8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/><path d="M3.5 9h17"/></svg>',
+      search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.2 4.2"/></svg>',
+      grid: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>',
+      list: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h12M8 12h12M8 18h12"/><path d="M4 6h.01M4 12h.01M4 18h.01"/></svg>',
+      plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+      'plus-circle': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v8M8 12h8"/></svg>',
+      settings: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5v2M12 18.5v2M20.5 12h-2M5.5 12h-2M18 6l-1.4 1.4M7.4 16.6 6 18M18 18l-1.4-1.4M7.4 7.4 6 6"/><circle cx="12" cy="12" r="3.5"/></svg>',
+      refresh: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 0 0-14.8-3.9L4 9"/><path d="M4 5v4h4M4 13a8 8 0 0 0 14.8 3.9L20 15"/><path d="M20 19v-4h-4"/></svg>',
+      menu: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
+      'chevron-right': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"/></svg>',
+      'more': '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>',
+      edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m4 16.8-.7 3.9 3.9-.7L18.8 8.4a2.8 2.8 0 0 0-4-4z"/><path d="m13.5 6.5 4 4"/></svg>',
+      trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 7h15M9 7V4.5h6V7M7 7l.7 12.5h8.6L17 7M10 10.5v6M14 10.5v6"/></svg>',
+      pin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m15.8 4.2 4 4-2.2 1.1-3.5 3.5.3 4.2-1.5 1.5-3.5-4-3.2 3.2-.8-.8 3.2-3.2-4-3.5 1.5-1.5 4.2.3 3.5-3.5 1.1z"/></svg>',
+      x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg>',
+      check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4.5 4.5L19 7"/></svg>',
+      save: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h12.5L20 6.5V20H5z"/><path d="M8 4v5h8V4M8.5 20v-6h7v6"/></svg>',
+      download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M8 11l4 4 4-4M5 20h14"/></svg>',
+      upload: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V5M8 9l4-4 4 4M5 20h14"/></svg>'
+    };
+
+    const seedNotes = [
+      { id: 'seed-1', title: '下週產品會議提案', content: '整理一下首頁的使用流程，先從使用者第一次打開 App 的感受開始。\n\n想讓所有重要的事，都在三次點擊內完成。', category: 'work', tags: ['產品', '會議'], pinned: true, created_at: '2026-08-08T09:30:00.000Z', updated_at: '2026-08-08T15:10:00.000Z' },
+      { id: 'seed-2', title: '週末去市場買花', content: '向日葵、尤加利葉，還有一小束白色的滿天星。\n如果早起的話，順便去吃那家新開的飯糰。', category: 'life', tags: ['生活', '週末'], pinned: false, created_at: '2026-08-07T06:20:00.000Z', updated_at: '2026-08-07T06:20:00.000Z' },
+      { id: 'seed-3', title: '一個關於雨天的故事', content: '她把傘留在便利商店門口，像是把一個不想帶走的答案，暫時放在那裡。\n\n等雨停了，再回來看看。', category: 'idea', tags: ['寫作', '片段'], pinned: false, created_at: '2026-08-05T13:00:00.000Z', updated_at: '2026-08-06T11:12:00.000Z' },
+      { id: 'seed-4', title: '搬家前的待辦清單', content: '整理書櫃、處理不用的衣服、確認網路安裝時間。\n最後要記得留一盞小燈給下一個住進來的人。', category: 'list', tags: ['整理', '搬家'], pinned: false, created_at: '2026-08-03T03:10:00.000Z', updated_at: '2026-08-04T04:10:00.000Z' }
+    ];
+    const storedNotes = loadJson(NOTE_KEY, null);
+    let pendingSeed = !Array.isArray(storedNotes);
+    let notes = Array.isArray(storedNotes) ? storedNotes : seedNotes.map(n => ({...n}));
+    let profile = loadJson(PROFILE_KEY, { name: '我的工作區', email: '' });
+    let settings = loadJson(SETTINGS_KEY, { enabled: false, url: '', user: '', key: '' });
+    let current = { query: '', category: 'all', view: 'grid', sort: 'updated', nav: 'notes' };
+    let editingId = null;
+    let deletingId = null;
+    let readingId = null;
+    let toastTimer = null;
+    let graves = loadJson(GRAVE_KEY, []);
+    let editorSnapshot = '';
+    let exportUrl = '';
+    let exportBlob = null;
+    let syncing = false;
+
+    function loadJson(key, fallback) {
+      try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; } catch (err) { return fallback; }
+    }
+    function saveJson(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); return true; } catch (err) { return false; } }
+    function uid() { return 'note-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+    function escapeHtml(value) { return String(value ?? '').replace(/[&<>'"]/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[ch])); }
+    function escapeAttr(value) { return escapeHtml(value).replace(/`/g, '&#96;'); }
+    function categoryOf(id) { return CATEGORIES.find(c => c.id === id) || CATEGORIES[1]; }
+    function formatDate(value) { const d = new Date(value); if (Number.isNaN(d.getTime())) return '剛剛'; const now = new Date(); const sameYear = d.getFullYear() === now.getFullYear(); return d.toLocaleDateString('zh-TW', { month: 'short', day: 'numeric', ...(sameYear ? {} : { year: 'numeric' }) }); }
+    function formatFull(value) { const d = new Date(value); if (Number.isNaN(d.getTime())) return '剛剛'; return d.toLocaleString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }); }
+    function formatToday() { return new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' }); }
+    function timeValue(note) { return new Date(note.updated_at || note.created_at || 0).getTime(); }
+    function persist() {
+      pendingSeed = false;
+      const cutoff = Date.now() - 1000 * 60 * 60 * 24 * GRAVE_DAYS;
+      graves = graves.filter(g => g && g.id && (Date.parse(g.deleted_at) || Date.now()) > cutoff);
+      const okNotes = saveJson(NOTE_KEY, notes);
+      const okGraves = saveJson(GRAVE_KEY, graves);
+      if (!okNotes || !okGraves) showToast('儲存失敗：瀏覽器空間可能已滿，請先匯出備份');
+    }
+    function setIconNodes() { document.querySelectorAll('[data-icon]').forEach(el => { const name = el.dataset.icon; if (ICONS[name]) el.innerHTML = ICONS[name]; }); }
+    function showToast(message) { const el = document.getElementById('toast'); el.textContent = message; el.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 2600); }
+    function setModal(id, show) { const el = document.getElementById(id); if (el) el.hidden = !show; if (show) setTimeout(() => el.querySelector('input, textarea, select, button')?.focus(), 30); }
+    function setSyncStatus(type, text) { const badge = document.getElementById('syncBadge'); badge.className = 'sync-badge ' + type; document.getElementById('syncText').textContent = text; document.getElementById('sideSyncText').textContent = text; document.getElementById('sideStatusDot').style.background = type === 'error' ? 'var(--danger)' : type === 'busy' ? 'var(--lemon)' : 'var(--mint-deep)'; }
+
+    function renderCategories() {
+      const counts = notes.reduce((acc, n) => { acc[n.category] = (acc[n.category] || 0) + 1; return acc; }, {});
+      const list = document.getElementById('categoryList');
+      list.innerHTML = CATEGORIES.filter(c => c.id !== 'all').map(c => `<button class="category-item ${current.category === c.id ? 'active' : ''}" data-category="${c.id}"><span class="category-dot" style="--dot:${c.color}"></span><span>${escapeHtml(c.name)}</span><span class="nav-count">${counts[c.id] || 0}</span></button>`).join('');
+      document.getElementById('noteCategory').innerHTML = CATEGORIES.filter(c => c.id !== 'all').map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+      document.getElementById('mobileCats').innerHTML = CATEGORIES.map(c => `<button class="cat-chip ${current.category === c.id ? 'active' : ''}" data-category="${c.id}"><span class="category-dot" style="--dot:${c.color}"></span>${escapeHtml(c.name)}${c.id === 'all' ? '' : ` <span>${counts[c.id] || 0}</span>`}</button>`).join('');
+    }
+    function filteredNotes() {
+      let list = notes.filter(note => {
+        if (current.category !== 'all' && note.category !== current.category) return false;
+        if (current.nav === 'favorites' && !note.pinned) return false;
+        if (current.nav === 'recent' && timeValue(note) < Date.now() - 1000 * 60 * 60 * 24 * 30) return false;
+        const q = current.query.trim().toLowerCase();
+        return !q || [note.title, note.content, note.category, ...(note.tags || [])].join(' ').toLowerCase().includes(q);
+      });
+      return list.sort((a, b) => {
+        if (!!a.pinned !== !!b.pinned) return a.pinned ? -1 : 1;
+        if (current.sort === 'title') return String(a.title || '').localeCompare(String(b.title || ''), 'zh-Hant');
+        if (current.sort === 'created') return (Date.parse(b.created_at) || 0) - (Date.parse(a.created_at) || 0);
+        return timeValue(b) - timeValue(a);
+      });
+    }
+    function noteCard(note) {
+      const cat = categoryOf(note.category);
+      const tags = (note.tags || []).slice(0, 3).map(tag => `<span class="tag">#${escapeHtml(tag)}</span>`).join('');
+      return `<article class="note-card ${note.pinned ? 'is-pinned' : ''}" data-id="${escapeAttr(note.id)}" tabindex="0" role="button" aria-label="開啟筆記：${escapeAttr(note.title)}"><div class="note-top"><span class="category-pill"><span class="category-dot" style="--dot:${cat.color}"></span>${escapeHtml(cat.name)}</span><div class="note-menu"><button class="mini-button" data-action="toggle-pin" data-id="${escapeAttr(note.id)}" title="${note.pinned ? '取消收藏' : '收藏'}" aria-label="${note.pinned ? '取消收藏' : '收藏'}"><span class="icon" data-icon="star"></span></button><button class="mini-button" data-action="edit-note" data-id="${escapeAttr(note.id)}" title="編輯" aria-label="編輯"><span class="icon" data-icon="edit"></span></button><button class="mini-button danger" data-action="delete-note" data-id="${escapeAttr(note.id)}" title="刪除" aria-label="刪除"><span class="icon" data-icon="trash"></span></button></div></div><h3 class="note-title">${escapeHtml(note.title || '未命名筆記')}</h3><p class="note-excerpt">${escapeHtml(note.content || '還沒有內容，點擊開始寫下第一句話。')}</p><div class="note-bottom"><div class="tag-row">${tags}</div><time class="note-time" datetime="${escapeAttr(note.updated_at || '')}">${formatDate(note.updated_at || note.created_at)}</time></div></article>`;
+    }
+    function renderNotes() {
+      const list = filteredNotes();
+      const grid = document.getElementById('notesGrid');
+      grid.classList.toggle('list-view', current.view === 'list');
+      if (!list.length) grid.innerHTML = `<div class="empty-state"><span class="empty-icon icon">${ICONS.note}</span><strong>${current.query || current.category !== 'all' || current.nav !== 'notes' ? '這裡還沒有符合條件的筆記' : '雲朵裡還是空的'}</strong><p>${current.query || current.category !== 'all' || current.nav !== 'notes' ? '試試其他關鍵字或換一個分類吧。' : '按右上角「新增筆記」，收好你的第一個想法。'}</p></div>`;
+      else grid.innerHTML = list.map(noteCard).join('');
+      setIconNodes();
+      document.getElementById('resultCount').textContent = `${list.length} 篇`;
+    }
+    function render() {
+      renderCategories();
+      renderNotes();
+      const favs = notes.filter(n => n.pinned).length;
+      const cats = new Set(notes.map(n => n.category)).size;
+      document.getElementById('statTotal').textContent = notes.length;
+      document.getElementById('statCategories').textContent = cats;
+      document.getElementById('statFavorites').textContent = favs;
+      document.getElementById('allNavCount').textContent = notes.length;
+      document.getElementById('favNavCount').textContent = favs;
+      document.getElementById('todayLabel').textContent = formatToday();
+      document.getElementById('sectionTitle').textContent = current.nav === 'favorites' ? '已收藏' : current.nav === 'recent' ? '最近編輯' : current.category !== 'all' ? categoryOf(current.category).name : '我的筆記';
+      document.querySelectorAll('[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === current.view));
+      document.querySelectorAll('[data-nav]').forEach(b => b.classList.toggle('active', b.dataset.nav === current.nav));
+      document.getElementById('sortSelect').value = current.sort;
+      document.getElementById('sideProfileName').textContent = profile.name || '我的工作區';
+      document.getElementById('sideProfileMode').textContent = settings.enabled && settings.url ? '已開啟雲端同步' : '本機模式・僅此裝置';
+      document.getElementById('sideAvatar').textContent = (profile.name || '我').trim().slice(0, 1);
+      setSyncStatus(settings.enabled && settings.url ? 'online' : '', settings.enabled && settings.url ? '雲端同步已設定' : '本機儲存');
+      document.getElementById('searchInput').value = current.query;
+    }
+
+    function openEditor(id) {
+      editingId = id || null;
+      const note = notes.find(n => n.id === id);
+      document.getElementById('editorTitle').textContent = note ? '編輯這篇筆記' : '新增一篇筆記';
+      document.getElementById('noteTitle').value = note?.title || '';
+      document.getElementById('noteContent').value = note?.content || '';
+      document.getElementById('noteCategory').value = note?.category || (current.category !== 'all' ? current.category : 'work');
+      document.getElementById('noteTags').value = (note?.tags || []).join(', ');
+      updateCategoryPreview();
+      editorSnapshot = editorState();
+      setModal('editorModal', true);
+    }
+    function editorState() { return ['noteTitle', 'noteContent', 'noteCategory', 'noteTags'].map(id => document.getElementById(id).value).join('\u0001'); }
+    function closeEditor() {
+      if (editorSnapshot && editorState() !== editorSnapshot && !window.confirm('這篇筆記還沒儲存，確定要關閉嗎？')) return;
+      editorSnapshot = '';
+      setModal('editorModal', false);
+    }
+    function openReader(id) {
+      const note = notes.find(n => n.id === id);
+      if (!note) return;
+      readingId = id;
+      const cat = categoryOf(note.category);
+      document.getElementById('readerTitle').textContent = note.title || '未命名筆記';
+      document.getElementById('readerCategory').innerHTML = `<span class="category-dot" style="--dot:${cat.color}"></span>${escapeHtml(cat.name)}`;
+      document.getElementById('readerTime').textContent = '更新於 ' + formatFull(note.updated_at || note.created_at);
+      const body = document.getElementById('readerBody');
+      body.textContent = note.content || '這篇還沒有內容，點「編輯」開始寫吧。';
+      body.classList.toggle('reader-empty', !note.content);
+      document.getElementById('readerTags').innerHTML = (note.tags || []).map(t => `<span class="tag">#${escapeHtml(t)}</span>`).join('');
+      document.getElementById('readerPinLabel').textContent = note.pinned ? '取消收藏' : '收藏';
+      setModal('readerModal', true);
+    }
+    function updateCategoryPreview() { const cat = categoryOf(document.getElementById('noteCategory').value); document.getElementById('categoryPreview').style.background = cat.color; }
+    function saveNote(event) {
+      event.preventDefault();
+      const title = document.getElementById('noteTitle').value.trim();
+      if (!title) return;
+      const now = new Date().toISOString();
+      const item = { title, content: document.getElementById('noteContent').value.trim(), category: document.getElementById('noteCategory').value, tags: document.getElementById('noteTags').value.split(',').map(t => t.trim()).filter(Boolean).slice(0, 8), updated_at: now };
+      if (editingId) { const index = notes.findIndex(n => n.id === editingId); if (index > -1) notes[index] = {...notes[index], ...item}; showToast('筆記已更新'); }
+      else { notes.unshift({ id: uid(), ...item, pinned: false, created_at: now }); showToast('新筆記已收好'); }
+      editorSnapshot = ''; persist(); setModal('editorModal', false); render(); queueCloudPush();
+    }
+    function togglePin(id) { const note = notes.find(n => n.id === id); if (!note) return; note.pinned = !note.pinned; note.updated_at = new Date().toISOString(); persist(); render(); queueCloudPush(); showToast(note.pinned ? '已加入收藏' : '已取消收藏'); }
+    function askDelete(id) { deletingId = id; const note = notes.find(n => n.id === id); document.getElementById('deleteCopy').textContent = `「${note?.title || '未命名筆記'}」會從目前裝置移除。這個動作無法復原，確定要繼續嗎？`; setModal('deleteModal', true); }
+    function confirmDelete() {
+      if (!deletingId) return;
+      notes = notes.filter(n => n.id !== deletingId);
+      graves = graves.filter(g => g.id !== deletingId);
+      graves.push({ id: deletingId, deleted_at: new Date().toISOString() });
+      if (readingId === deletingId) { readingId = null; setModal('readerModal', false); }
+      deletingId = null;
+      persist(); setModal('deleteModal', false); render(); queueCloudPush(); showToast('筆記已刪除');
+    }
+    function setNav(nav) { current.nav = nav; if (nav !== 'notes') current.category = 'all'; render(); }
+    function loadSettingsForm() { document.getElementById('cloudEnabled').checked = !!settings.enabled; document.getElementById('syncUrl').value = settings.url || ''; document.getElementById('syncUser').value = settings.user || profile.email || ''; document.getElementById('syncKey').value = settings.key || ''; }
+    function saveSettings(event) { event.preventDefault(); settings = { enabled: document.getElementById('cloudEnabled').checked, url: document.getElementById('syncUrl').value.trim(), user: document.getElementById('syncUser').value.trim(), key: document.getElementById('syncKey').value, syncedAt: settings.syncedAt || '' }; saveJson(SETTINGS_KEY, settings); setModal('settingsModal', false); render(); showToast(settings.enabled && settings.url ? '雲端同步設定已儲存' : '已切換到本機模式'); if (settings.enabled && settings.url) syncNow(); }
+    function loadProfileForm() { document.getElementById('profileName').value = profile.name === '我的工作區' ? '' : profile.name || ''; document.getElementById('profileEmail').value = profile.email || ''; }
+    function saveProfile(event) { event.preventDefault(); profile = { name: document.getElementById('profileName').value.trim() || '我的工作區', email: document.getElementById('profileEmail').value.trim() }; saveJson(PROFILE_KEY, profile); if (!settings.user && profile.email) { settings.user = profile.email; saveJson(SETTINGS_KEY, settings); } setModal('profileModal', false); render(); showToast('工作區資料已更新'); }
+    function exportFilename() { const d = new Date(); const p = n => String(n).padStart(2, '0'); return `little-cloud-notes-${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}.json`; }
+    function canShareFile() { try { return !!(navigator.canShare && navigator.canShare({ files: [new File(['{}'], 'probe.json', { type: 'application/json' })] })); } catch (err) { return false; } }
+    function exportNotes() {
+      const payload = { schema: 'little-cloud-notes-1', exported_at: new Date().toISOString(), notes };
+      exportBlob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      if (exportUrl) URL.revokeObjectURL(exportUrl);
+      exportUrl = URL.createObjectURL(exportBlob);
+      const link = document.getElementById('exportLink');
+      link.href = exportUrl;
+      link.setAttribute('download', exportFilename());
+      document.getElementById('exportCount').textContent = `${notes.length} 篇筆記・約 ${Math.max(1, Math.round(exportBlob.size / 1024))} KB`;
+      document.getElementById('shareExport').hidden = !canShareFile();
+      setModal('settingsModal', false);
+      setModal('exportModal', true);
+    }
+    async function shareExport() {
+      if (!exportBlob) return;
+      try { await navigator.share({ files: [new File([exportBlob], exportFilename(), { type: 'application/json' })], title: '小雲朵筆記備份' }); }
+      catch (err) { /* 使用者取消分享 */ }
+    }
+    function importNotes(file) { if (!file) return; const reader = new FileReader(); reader.onload = () => { try { const data = JSON.parse(reader.result); const imported = Array.isArray(data) ? data : data.notes; if (!Array.isArray(imported)) throw new Error('format'); notes = imported.map(n => ({ id: n.id || uid(), title: String(n.title || '未命名筆記'), content: String(n.content || ''), category: CATEGORIES.some(c => c.id === n.category) ? n.category : 'idea', tags: Array.isArray(n.tags) ? n.tags : [], pinned: !!n.pinned, created_at: n.created_at || new Date().toISOString(), updated_at: n.updated_at || n.created_at || new Date().toISOString() })); graves = []; persist(); render(); setModal('settingsModal', false); showToast(`已匯入 ${notes.length} 篇筆記`); queueCloudPush(); } catch (err) { showToast('匯入失敗：檔案格式不正確'); } }; reader.readAsText(file); }
+
+    function mergeCloud(localNotes, localGraves, remoteNotes, remoteGraves) {
+      const noteMap = new Map();
+      localNotes.forEach(n => { if (n && n.id) noteMap.set(n.id, n); });
+      remoteNotes.forEach(n => {
+        if (!n || !n.id) return;
+        const cur = noteMap.get(n.id);
+        if (!cur || timeValue(n) > timeValue(cur)) noteMap.set(n.id, n);
+      });
+      const graveMap = new Map();
+      localGraves.concat(remoteGraves).forEach(g => {
+        if (!g || !g.id || !g.deleted_at) return;
+        const cur = graveMap.get(g.id);
+        if (!cur || String(g.deleted_at) > String(cur.deleted_at)) graveMap.set(g.id, { id: g.id, deleted_at: String(g.deleted_at) });
+      });
+      const revived = [];
+      graveMap.forEach((g, id) => { const n = noteMap.get(id); if (n && timeValue(n) > (Date.parse(g.deleted_at) || 0)) revived.push(id); });
+      revived.forEach(id => graveMap.delete(id));
+      const merged = [];
+      noteMap.forEach((n, id) => { if (!graveMap.has(id)) merged.push(n); });
+      return { notes: merged, graves: Array.from(graveMap.values()) };
+    }
+
+    async function syncNow() {
+      if (!settings.enabled || !settings.url) { showToast('目前是本機模式，請先在設定貼上同步網址'); return; }
+      if (!settings.user || !settings.key) { showToast('請先填寫同步帳號與存取密碼'); setModal('settingsModal', true); return; }
+      if (syncing) return;
+      syncing = true;
+      const seedOnly = pendingSeed;
+      setSyncStatus('busy', '同步中…');
+      try {
+        const body = {
+          action: seedOnly ? 'pull' : 'sync',
+          userId: settings.user,
+          accessKey: settings.key,
+          notes: seedOnly ? [] : notes,
+          graves: seedOnly ? [] : graves
+        };
+        const response = await fetch(settings.url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) });
+        if (!response.ok) throw new Error('network');
+        const data = await response.json();
+        if (!data.ok) throw new Error(data.error || 'sync');
+        const remoteNotes = Array.isArray(data.notes) ? data.notes : [];
+        const remoteGraves = Array.isArray(data.graves) ? data.graves : [];
+        if (seedOnly) {
+          if (remoteNotes.length) notes = remoteNotes;
+          graves = remoteGraves;
+        } else {
+          const merged = mergeCloud(notes, graves, remoteNotes, remoteGraves);
+          notes = merged.notes;
+          graves = merged.graves;
+        }
+        settings.syncedAt = data.synced_at || new Date().toISOString();
+        saveJson(SETTINGS_KEY, settings);
+        persist();
+        render();
+        setSyncStatus('online', '剛剛同步完成');
+        showToast(seedOnly && remoteNotes.length ? `已從雲端載入 ${remoteNotes.length} 篇筆記` : '雲端同步完成');
+      } catch (error) {
+        setSyncStatus('error', '同步失敗，保留本機資料');
+        showToast('同步失敗：請確認 URL、帳號與 Apps Script 部署權限');
+      } finally {
+        syncing = false;
+      }
+    }
+    let pushTimer = null;
+    function queueCloudPush() { if (!settings.enabled || !settings.url || !settings.user || !settings.key) return; clearTimeout(pushTimer); pushTimer = setTimeout(syncNow, 2500); }
+
+    document.addEventListener('click', event => {
+      const actionTarget = event.target.closest('[data-action]');
+      if (actionTarget) {
+        const action = actionTarget.dataset.action; const id = actionTarget.dataset.id;
+        if (action === 'new-note') openEditor();
+        if (action === 'edit-note') { event.stopPropagation(); openEditor(id); }
+        if (action === 'delete-note') { event.stopPropagation(); askDelete(id); }
+        if (action === 'toggle-pin') { event.stopPropagation(); togglePin(id); }
+        if (action === 'close-editor') closeEditor();
+        if (action === 'cancel-delete') { deletingId = null; setModal('deleteModal', false); }
+        if (action === 'confirm-delete') confirmDelete();
+        if (action === 'open-settings') { loadSettingsForm(); setModal('settingsModal', true); }
+        if (action === 'close-settings') setModal('settingsModal', false);
+        if (action === 'sync-now') syncNow();
+        if (action === 'open-profile') { loadProfileForm(); setModal('profileModal', true); }
+        if (action === 'close-profile') setModal('profileModal', false);
+        if (action === 'export-notes') exportNotes();
+        if (action === 'import-notes') document.getElementById('importFile').click();
+        if (action === 'close-reader') { readingId = null; setModal('readerModal', false); }
+        if (action === 'reader-edit') { const target = readingId; readingId = null; setModal('readerModal', false); openEditor(target); }
+        if (action === 'reader-pin' && readingId) { togglePin(readingId); openReader(readingId); }
+        if (action === 'reader-delete' && readingId) askDelete(readingId);
+        if (action === 'share-export') shareExport();
+        if (action === 'close-export') setModal('exportModal', false);
+      }
+      const nav = event.target.closest('[data-nav]'); if (nav) setNav(nav.dataset.nav);
+      const cat = event.target.closest('[data-category]'); if (cat) { current.category = cat.dataset.category; current.nav = 'notes'; render(); }
+      const view = event.target.closest('[data-view]'); if (view) { current.view = view.dataset.view; render(); }
+      if (!actionTarget && !nav && !cat && !view) { const card = event.target.closest('.note-card'); if (card && !event.target.closest('button')) openReader(card.dataset.id); }
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Enter' && event.target.matches('.note-card')) { event.preventDefault(); openReader(event.target.dataset.id); return; }
+      if (event.key === 'Escape') {
+        if (!document.getElementById('editorModal').hidden) { closeEditor(); return; }
+        ['deleteModal', 'settingsModal', 'profileModal', 'readerModal', 'exportModal'].forEach(id => setModal(id, false));
+      }
+      if ((event.ctrlKey || event.metaKey) && event.key === 'Enter' && !document.getElementById('editorModal').hidden) document.getElementById('editorForm').requestSubmit();
+    });
+    document.getElementById('editorForm').addEventListener('submit', saveNote);
+    document.getElementById('settingsForm').addEventListener('submit', saveSettings);
+    document.getElementById('profileForm').addEventListener('submit', saveProfile);
+    document.getElementById('searchInput').addEventListener('input', event => { current.query = event.target.value; renderNotes(); });
+    document.getElementById('sortSelect').addEventListener('change', event => { current.sort = event.target.value; renderNotes(); });
+    document.getElementById('noteCategory').addEventListener('change', updateCategoryPreview);
+    document.getElementById('importFile').addEventListener('change', event => { importNotes(event.target.files[0]); event.target.value = ''; });
+    document.querySelectorAll('.modal-backdrop').forEach(backdrop => backdrop.addEventListener('click', event => { if (event.target !== backdrop) return; if (backdrop.id === 'editorModal') closeEditor(); else setModal(backdrop.id, false); }));
+
+    setIconNodes(); render();
+  </script>
+</body>
+</html>
