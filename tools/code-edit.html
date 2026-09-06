@@ -33,6 +33,24 @@
   --code-bg:#F4ECD6; --code-ink:#2C1F0A;
   --pill-line:#CAB487; --pill-ink:#9C8350; --pill-fill:#AA8640; --set-label:#5A3E18; --set-bg:#F4ECD6;
 }
+[data-theme="peridot"] {
+  --bg:#F2F6DE; --bg2:#E9EDD1; --bg3:#DEE3C0; --surface:#FCFEF3;
+  --ink:#333A1C; --ink-soft:#747A5E; --ink-muted:#A9AF94;
+  --accent:#6F8824; --accent-soft:#8EAE2E;
+  --gold:#8EAE2E; --gold-pale:#E0E9BE;
+  --border:#CBCCBF; --shadow:rgba(51,58,28,.08); --shadow-md:rgba(51,58,28,.18);
+  --code-bg:#FCFEF3; --code-ink:#333A1C;
+  --pill-line:#A9AF94; --pill-ink:#747A5E; --pill-fill:#6F8824; --set-label:#333A1C; --set-bg:#F2F6DE;
+}
+[data-theme="apricot"] {
+  --bg:#FCF0E2; --bg2:#F5E6D2; --bg3:#EDDBC0; --surface:#FFFCF7;
+  --ink:#42342A; --ink-soft:#817469; --ink-muted:#B5A99C;
+  --accent:#566389; --accent-soft:#6E7FB0;
+  --gold:#C9A15E; --gold-pale:#E2DCD9;
+  --border:#F0E3CC; --shadow:rgba(66,52,42,.08); --shadow-md:rgba(66,52,42,.18);
+  --code-bg:#FFFCF7; --code-ink:#42342A;
+  --pill-line:#B5A99C; --pill-ink:#817469; --pill-fill:#6E7FB0; --set-label:#42342A; --set-bg:#FCF0E2;
+}
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
@@ -135,6 +153,14 @@ input[type=file]{display:none}
   justify-content:center; gap:10px; color:var(--ink-muted); background:var(--surface); text-align:center; padding:20px}
 .prev-empty .pi{font-size:2rem; opacity:.3}
 .prev-empty p{font-size:.82rem; line-height:1.9}
+.prev-err{position:absolute; left:0; right:0; bottom:0; max-height:38%; overflow-y:auto;
+  background:#B4574B; color:#FCEEEC; font-size:.76rem; line-height:1.7; font-family:"SF Mono",Monaco,monospace;
+  padding:9px 34px 9px 14px; display:none; z-index:5; box-shadow:0 -4px 14px rgba(0,0,0,.18)}
+.prev-err.show{display:block}
+.prev-err .line{white-space:pre-wrap; word-break:break-word}
+.prev-err .close{position:absolute; top:6px; right:8px; cursor:pointer; opacity:.75; font-size:.9rem; line-height:1}
+.prev-err .close:hover{opacity:1}
+.pane.prev.fullscreen{position:fixed; inset:0; z-index:150; background:var(--surface)}
 
 /* ───────── Settings panel（文庫膠囊風） ───────── */
 .set-overlay{position:fixed; inset:0; background:rgba(0,0,0,.3); z-index:200;
@@ -161,7 +187,8 @@ input[type=file]{display:none}
 .set-row:last-of-type{border-bottom:none}
 .set-label{font-size:1.05rem; font-weight:500; letter-spacing:.04em; color:var(--set-label); white-space:nowrap}
 .set-pills{display:flex; gap:12px; flex:1; justify-content:flex-end}
-.set-pills.three{gap:9px}
+.set-pills.three{gap:9px; flex-wrap:wrap}
+.set-pills.three .pill{flex:1 1 28%; min-width:74px}
 .pill{
   flex:1; max-width:142px; font-family:inherit; font-size:1rem; padding:13px 12px;
   border-radius:999px; border:1.5px solid var(--pill-line); background:transparent; color:var(--pill-ink);
@@ -179,6 +206,8 @@ input[type=file]{display:none}
 .theme-pill.t-light{background:#fff;color:#2A2A2A;border-color:#E0E0E0}
 .theme-pill.t-night{background:#1A1714;color:#EFE6D6;border-color:#1A1714}
 .theme-pill.t-antique{background:#ECE0C6;color:#6B5230;border-color:#D8C79E}
+.theme-pill.t-peridot{background:#F2F6DE;color:#333A1C;border-color:#CBCCBF}
+.theme-pill.t-apricot{background:#FCF0E2;color:#42342A;border-color:#F0E3CC}
 .theme-pill.on{box-shadow:0 0 0 2.5px var(--pill-fill); border-color:var(--pill-fill)}
 .s-reset{font-family:inherit; font-size:.84rem; padding:13px 0; border-radius:12px;
   border:1px solid var(--border); background:transparent; color:var(--ink-muted);
@@ -232,6 +261,10 @@ input[type=file]{display:none}
     <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg>
     <span class="txt">在新分頁開啟</span>
   </button>
+  <button class="btn gold" id="btnDownload">
+    <svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+    <span class="txt">下載</span>
+  </button>
 </div>
 
 <div class="workspace" id="workspace">
@@ -251,13 +284,20 @@ input[type=file]{display:none}
   <section class="pane prev" id="panePrev">
     <div class="pane-head">
       <span class="label">預覽 · 執行畫面</span>
-      <span class="mini" id="btnReload">
-        <svg viewBox="0 0 24 24"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-        重新整理
-      </span>
+      <div style="display:flex; align-items:center; gap:4px">
+        <span class="mini" id="btnFullscreen">
+          <svg viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+          全螢幕
+        </span>
+        <span class="mini" id="btnReload">
+          <svg viewBox="0 0 24 24"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          重新整理
+        </span>
+      </div>
     </div>
     <div class="prev-wrap">
       <iframe id="out" sandbox="allow-scripts allow-modals allow-popups allow-forms"></iframe>
+      <div class="prev-err" id="prevErr"></div>
     </div>
   </section>
 </div>
@@ -297,6 +337,8 @@ input[type=file]{display:none}
           <button class="pill theme-pill t-light" data-t="light" onclick="setTheme('light')">明亮</button>
           <button class="pill theme-pill t-night" data-t="night" onclick="setTheme('night')">夜間</button>
           <button class="pill theme-pill t-antique" data-t="antique" onclick="setTheme('antique')">仿舊</button>
+          <button class="pill theme-pill t-peridot" data-t="peridot" onclick="setTheme('peridot')">橄欖石</button>
+          <button class="pill theme-pill t-apricot" data-t="apricot" onclick="setTheme('apricot')">杏石</button>
         </div>
       </div>
       <button class="s-reset" onclick="resetSettings()">↺ 恢復預設值</button>
@@ -324,10 +366,26 @@ function saveSettings(){ LS.setItem('sce_settings', JSON.stringify(S)); }
 
 const src = $('src'), out = $('out'), gutter = $('gutter');
 
-/* ── 預覽 ── */
+/* ── 預覽（附加：即時錯誤攔截，不影響原始碼本身） ── */
+const ERR_SNIPPET = '<script>(function(){function send(t){try{parent.postMessage({__sceErr:true,text:t},"*")}catch(e){}}' +
+  'window.addEventListener("error",function(e){send((e.filename?e.filename.split("/").pop()+"：":"")+"第"+e.lineno+"行 — "+e.message)});' +
+  'window.addEventListener("unhandledrejection",function(e){var r=e.reason;send("Promise 錯誤："+(r&&r.message?r.message:r))});' +
+  '})();<\/script>';
 let rt;
-function render(){ out.srcdoc = src.value; }
+function render(){ hideErrBar(); out.srcdoc = ERR_SNIPPET + src.value; }
 function scheduleRender(){ clearTimeout(rt); rt = setTimeout(render, 250); }
+
+let errMsgs = [];
+function showErrBar(text){
+  if(errMsgs.includes(text)) return;
+  errMsgs.push(text); if(errMsgs.length>5) errMsgs.shift();
+  const box = $('prevErr');
+  box.innerHTML = errMsgs.map(m=>'<div class="line">⚠ '+m.replace(/</g,'&lt;')+'</div>').join('') +
+    '<span class="close" onclick="hideErrBar()">✕</span>';
+  box.classList.add('show');
+}
+function hideErrBar(){ errMsgs=[]; const box=$('prevErr'); box.classList.remove('show'); box.innerHTML=''; }
+window.addEventListener('message', e=>{ if(e.data && e.data.__sceErr) showErrBar(e.data.text); });
 
 /* ── 行號 / 字數 ── */
 function updateGutter(){
@@ -395,6 +453,49 @@ $('btnOpenTab').onclick = ()=>{
   if(!w) showToast('瀏覽器擋住彈出視窗，請允許後再試');
   setTimeout(()=>URL.revokeObjectURL(url), 60000);
 };
+
+/* ── 下載：檔名預設抓 <title> ── */
+function guessFilename(){
+  const m = src.value.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+  let base = m ? m[1].replace(/\s+/g,' ').trim() : '';
+  if(!base){
+    const cur = $('fname').textContent;
+    base = (cur && cur !== '尚未開啟檔案') ? cur.replace(/\.\w+$/,'') : '未命名';
+  }
+  base = base.replace(/[\\/:*?"<>|]/g,'').trim() || '未命名';
+  return base;
+}
+$('btnDownload').onclick = ()=>{
+  if(!src.value.trim()){ showToast('沒有內容可下載'); return; }
+  const guess = guessFilename();
+  const input = window.prompt('下載檔名：', guess + '.html');
+  if(input===null) return;
+  let fn = input.trim() || (guess + '.html');
+  if(!/\.\w+$/.test(fn)) fn += '.html';
+  const blob = new Blob([src.value], {type:'text/html'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = fn; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 4000);
+  showToast('已下載 '+fn+' ⬇');
+};
+
+/* ── 全螢幕預覽 ── */
+function toggleFullscreen(){
+  const fs = pp.classList.toggle('fullscreen');
+  pc.style.display = fs ? 'none' : '';
+  divider.style.display = fs ? 'none' : '';
+  showToast(fs ? '已進入全螢幕預覽（再按一次還原）' : '已還原版面');
+}
+$('btnFullscreen').onclick = toggleFullscreen;
+
+/* ── 鍵盤快捷鍵 ── */
+document.addEventListener('keydown', e=>{
+  const ctrl = e.ctrlKey || e.metaKey;
+  if(!ctrl) return;
+  if(e.key.toLowerCase()==='s'){ e.preventDefault(); $('btnDownload').click(); }
+  else if(e.key==='Enter'){ e.preventDefault(); render(); showToast('已重新整理預覽 ✓'); }
+});
 
 /* ── 設定：主題 / 字級 / 行高 / 換行 ── */
 function applyTheme(t){ document.documentElement.setAttribute('data-theme', t==='light'?'':t); }
