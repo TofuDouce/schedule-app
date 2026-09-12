@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>復古霓虹彈珠台 | Retro Neon Pinball</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #090514;
+            color: #f3e8ff;
+            overflow-x: hidden;
+        }
+        .pixel-font {
+            font-family: 'Press Start 2P', monospace;
+        }
+        .neon-glow-pink {
+            text-shadow: 0 0 10px #ff007f, 0 0 20px #ff007f, 0 0 30px #ff007f;
+        }
+        .neon-glow-cyan {
+            text-shadow: 0 0 10px #00f0ff, 0 0 20px #00f0ff, 0 0 30px #00f0ff;
+        }
+        .neon-box-pink {
+            box-shadow: 0 0 15px rgba(255, 0, 127, 0.4), inset 0 0 15px rgba(255, 0, 127, 0.2);
+        }
+        .neon-box-cyan {
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.4), inset 0 0 15px rgba(0, 240, 255, 0.2);
+        }
+        canvas {
+            touch-action: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-between p-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900 via-slate-950 to-black">
+
+    <header class="w-full max-w-md text-center my-2">
+        <h1 class="text-2xl md:text-3xl font-extrabold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-400 to-cyan-400 pixel-font mb-1">
+            NEON PINBALL
+        </h1>
+        <p class="text-xs text-purple-300">Retro Arcade Edition</p>
+    </header>
+
+    <main class="w-full max-w-md flex flex-col items-center relative">
+        <!-- Scoreboard Panel -->
+        <div class="w-full bg-slate-900/80 border-2 border-purple-500/50 rounded-xl p-3 mb-3 flex justify-between items-center neon-box-pink backdrop-blur-md">
+            <div class="text-center">
+                <span class="block text-[10px] text-pink-400 pixel-font">SCORE</span>
+                <span id="score-val" class="text-lg font-bold text-white pixel-font">000000</span>
+            </div>
+            <div class="text-center border-x border-purple-800/60 px-4">
+                <span class="block text-[10px] text-cyan-400 pixel-font">HIGH</span>
+                <span id="high-score-val" class="text-lg font-bold text-cyan-300 pixel-font">000000</span>
+            </div>
+            <div class="text-center">
+                <span class="block text-[10px] text-yellow-400 pixel-font">BALLS</span>
+                <span id="lives-val" class="text-lg font-bold text-yellow-300 pixel-font">3</span>
+            </div>
+        </div>
+
+        <!-- Canvas Container -->
+        <div id="canvas-container" class="relative w-full aspect-[1/1.6] bg-slate-950 border-4 border-purple-600 rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(168,85,247,0.3)]">
+            <canvas id="pinball-canvas" class="w-full h-full block"></canvas>
+            
+            <!-- Launch Power Bar Overlay -->
+            <div id="launch-bar-container" class="absolute right-3 bottom-16 w-3 h-32 bg-slate-800/80 border border-cyan-500/50 rounded-full overflow-hidden hidden flex flex-col justify-end">
+                <div id="launch-power-fill" class="w-full bg-gradient-to-t from-cyan-500 to-pink-500 h-0 transition-all duration-75"></div>
+            </div>
+
+            <!-- Overlay Message (Start / Game Over) -->
+            <div id="game-overlay" class="absolute inset-0 bg-black/85 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center z-20">
+                <h2 id="overlay-title" class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-cyan-400 pixel-font mb-4">
+                    READY?
+                </h2>
+                <p id="overlay-desc" class="text-sm text-purple-200 mb-6 leading-relaxed">
+                    使用左右方向鍵或 A/D 操控發球桿。<br>按住 <span class="text-cyan-400 font-bold">空白鍵 (Space)</span> 集氣發射彈珠！
+                </p>
+                <button id="start-btn" class="px-8 py-3 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-bold rounded-xl pixel-font text-sm shadow-[0_0_20px_rgba(236,72,153,0.5)] transform hover:scale-105 active:scale-95 transition-all">
+                    START GAME
+                </button>
+            </div>
+        </div>
+
+        <!-- Touch Controls for Mobile / Tablets -->
+        <div class="w-full grid grid-cols-3 gap-3 mt-4">
+            <button id="left-btn" class="py-4 bg-purple-900/60 border-2 border-purple-500/50 rounded-xl font-bold text-pink-400 active:bg-purple-700 active:text-white transition-all shadow-lg flex items-center justify-center pixel-font text-xs">
+                ◀ LEFT
+            </button>
+            <button id="launch-touch-btn" class="py-4 bg-cyan-900/60 border-2 border-cyan-500/50 rounded-xl font-bold text-cyan-300 active:bg-cyan-700 active:text-white transition-all shadow-lg flex items-center justify-center pixel-font text-[10px]">
+                LAUNCH
+            </button>
+            <button id="right-btn" class="py-4 bg-purple-900/60 border-2 border-purple-500/50 rounded-xl font-bold text-pink-400 active:bg-purple-700 active:text-white transition-all shadow-lg flex items-center justify-center pixel-font text-xs">
+                RIGHT ▶
+            </button>
+        </div>
+    </main>
+
+    <footer class="w-full max-w-md text-center mt-4 text-[11px] text-purple-400/80 leading-relaxed">
+        <p>💡 提示：撞擊霓虹圓盤與三角導流板可獲得高分。彈珠掉落底部即損失一條生命。</p>
+    </footer>
+
+    <script>
+        // Game state variables
+        let score = 0;
+        let highScore = localStorage.getItem('neon_pinball_highscore') || 0;
+        let lives = 3;
+        let gameState = 'IDLE'; // IDLE, PLAYING, GAMEOVER
+        let launchPower = 0;
+        let isCharging = false;
+        let activeBall = null;
+
+        document.getElementById('high-score-val').innerText = String(highScore).padStart(6, '0');
+
+        // Module aliases
+        const { Engine, Render, Runner, Bodies, Composite, Constraint, Events, Vector, Body } = Matter;
+
+        // Canvas dimensions (Internal design resolution: 400 x 640)
+        const boardWidth = 400;
+        const boardHeight = 640;
+
+        // Create Matter.js engine and renderer
+        const engine = Engine.create({
+            gravity: { x: 0, y: 1.2 }
+        });
+        const world = engine.world;
+
+        const container = document.getElementById('canvas-container');
+        const canvas = document.getElementById('pinball-canvas');
+
+        const render = Render.create({
+            canvas: canvas,
+            engine: engine,
+            options: {
+                width: boardWidth,
+                height: boardHeight,
+                wireframes: false,
+                background: '#090514'
+            }
+        });
+
+        Render.run(render);
+        const runner = Runner.create();
+        Runner.run(runner, engine);
+
+        // Keep track of interactive elements for collision visual effects
+        const glowingElements = [];
+
+        function buildPinballBoard() {
+            // Clear existing static bodies if any
+            Composite.clear(world, false);
+
+            const wallOptions = { isStatic: true, render: { fillStyle: '#1e1b4b', strokeStyle: '#a855f7', lineWidth: 2 } };
+
+            // Outer boundaries (Leaving right side open for launch lane x: 350 to 400)
+            // Left Wall
+            Bodies.rectangle(10, 320, 20, 640, wallOptions);
+            // Top Curve / Wall
+            Bodies.rectangle(200, 10, 400, 20, wallOptions);
+            
+            // Right Wall (Up to launcher entrance y: 480)
+            Bodies.rectangle(350, 240, 20, 480, wallOptions);
+
+            // Divider between main board and launcher lane (x: 330)
+            const laneDivider = Bodies.rectangle(330, 350, 10, 460, wallOptions);
+
+            // Top-right curved guide directing ball into playfield
+            const topRightCurve = Bodies.rectangle(315, 60, 40, 10, {
+                isStatic: true,
+                angle: Math.PI / 4,
+                render: { fillStyle: '#1e1b4b', strokeStyle: '#00f0ff', lineWidth: 2 }
+            });
+
+            // Slanted walls at the bottom leading to flippers
+            const leftSlope = Bodies.rectangle(90, 520, 180, 14, {
+                isStatic: true,
+                angle: Math.PI / 5,
+                render: { fillStyle: '#1e1b4b', strokeStyle: '#ff007f', lineWidth: 2 }
+            });
+            const rightSlope = Bodies.rectangle(250, 520, 180, 14, {
+                isStatic: true,
+                angle: -Math.PI / 5,
+                render: { fillStyle: '#1e1b4b', strokeStyle: '#ff007f', lineWidth: 2 }
+            });
+
+            Composite.add(world, [
+                Bodies.rectangle(200, 0, 400, 20, wallOptions), // Top
+                Bodies.rectangle(5, 320, 10, 640, wallOptions),  // Left
+                Bodies.rectangle(345, 240, 10, 480, wallOptions), // Right upper wall
+                laneDivider,
+                topRightCurve,
+                leftSlope,
+                rightSlope
+            ]);
+
+            const bumperOptions = {
+                isStatic: true,
+                render: { fillStyle: '#ff007f', strokeStyle: '#ffffff', lineWidth: 3 }
+            };
+
+            const bumpers = [
+                Bodies.circle(130, 180, 22, { ...bumperOptions, label: 'bumper', score: 100 }),
+                Bodies.circle(230, 180, 22, { ...bumperOptions, label: 'bumper', score: 100 }),
+                Bodies.circle(180, 260, 26, { ...bumperOptions, label: 'bumper', score: 150, render: { fillStyle: '#00f0ff', strokeStyle: '#ffffff', lineWidth: 3 } })
+            ];
+
+            bumpers.forEach(b => glowingElements.push({ body: b, litTimer: 0, baseColor: b.render.fillStyle }));
+            Composite.add(world, bumpers);
+
+            // Triangular deflectors (Slingshots)
+            const triangleOptions = {
+                isStatic: true,
+                render: { fillStyle: '#a855f7', strokeStyle: '#00f0ff', lineWidth: 2 }
+            };
+
+            const deflectors = [
+                Bodies.polygon(100, 420, 3, 30, { ...triangleOptions, angle: 0, label: 'deflector', score: 50 }),
+                Bodies.polygon(220, 420, 3, 30, { ...triangleOptions, angle: Math.PI, label: 'deflector', score: 50 })
+            ];
+
+            deflectors.forEach(d => glowingElements.push({ body: d, litTimer: 0, baseColor: d.render.fillStyle }));
+            Composite.add(world, deflectors);
+
+            // Left Flipper
+            const leftFlipperBody = Bodies.rectangle(130, 570, 70, 14, {
+                density: 0.05,
+                friction: 0,
+                render: { fillStyle: '#00f0ff', strokeStyle: '#ffffff', lineWidth: 2 }
+            });
+            const leftPivot = { x: 100, y: 570 };
+            const leftConstraint = Constraint.create({
+                pointA: leftPivot,
+                bodyB: leftFlipperBody,
+                pointB: { x: -30, y: 0 },
+                stiffness: 1,
+                length: 0
+            });
+
+            // Right Flipper
+            const rightFlipperBody = Bodies.rectangle(190, 570, 70, 14, {
+                density: 0.05,
+                friction: 0,
+                render: { fillStyle: '#00f0ff', strokeStyle: '#ffffff', lineWidth: 2 }
+            });
+            const rightPivot = { x: 220, y: 570 };
+            const rightConstraint = Constraint.create({
+                pointA: rightPivot,
+                bodyB: rightFlipperBody,
+                pointB: { x: 30, y: 0 },
+                stiffness: 1,
+                length: 0
+            });
+
+            Composite.add(world, [leftFlipperBody, leftConstraint, rightFlipperBody, rightConstraint]);
+
+            // Store references globally for key controls
+            window.leftFlipper = leftFlipperBody;
+            window.rightFlipper = rightFlipperBody;
+
+            // Death line sensor at the bottom (Drain)
+            const drain = Bodies.rectangle(170, 635, 300, 15, {
+                isSensor: true,
+                isStatic: true,
+                label: 'drain',
+                render: { fillStyle: 'transparent' }
+            });
+            Composite.add(world, drain);
+        }
+
+        function spawnBall() {
+            if (lives <= 0) return;
+            
+            // Remove existing active ball if any
+            if (activeBall) {
+                Composite.remove(world, activeBall);
+            }
+
+            activeBall = Bodies.circle(365, 540, 11, {
+                restitution: 0.7,
+                friction: 0.005,
+                frictionAir: 0.005,
+                label: 'ball',
+                render: {
+                    fillStyle: '#ffffff',
+                    strokeStyle: '#ff007f',
+                    lineWidth: 3
+                }
+            });
+
+            Composite.add(world, activeBall);
+            document.getElementById('launch-bar-container').classList.remove('hidden');
+        }
+
+        Events.on(engine, 'collisionStart', (event) => {
+            const pairs = event.pairs;
+            for (let i = 0; i < pairs.length; i++) {
+                const pair = pairs[i];
+                let targetBody = null;
+
+                if (pair.bodyA.label === 'ball') targetBody = pair.bodyB;
+                else if (pair.bodyB.label === 'ball') targetBody = pair.bodyA;
+
+                if (targetBody) {
+                    if (targetBody.label === 'bumper' || targetBody.label === 'deflector') {
+                        score += targetBody.score;
+                        document.getElementById('score-val').innerText = String(score).padStart(6, '0');
+
+                        // Flash light effect
+                        const elem = glowingElements.find(e => e.body === targetBody);
+                        if (elem) {
+                            elem.litTimer = 15;
+                            targetBody.render.fillStyle = '#ffff00'; // Neon yellow highlight
+                        }
+                    }
+
+                    if (targetBody.label === 'drain') {
+                        handleBallLoss();
+                    }
+                }
+            }
+        });
+
+        function handleBallLoss() {
+            if (!activeBall) return;
+            Composite.remove(world, activeBall);
+            activeBall = null;
+            document.getElementById('launch-bar-container').classList.add('hidden');
+
+            lives--;
+            document.getElementById('lives-val').innerText = lives;
+
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('neon_pinball_highscore', highScore);
+                document.getElementById('high-score-val').innerText = String(highScore).padStart(6, '0');
+            }
+
+            if (lives > 0) {
+                setTimeout(spawnBall, 1000);
+            } else {
+                triggerGameOver();
+            }
+        }
+
+        function triggerGameOver() {
+            gameState = 'GAMEOVER';
+            document.getElementById('overlay-title').innerText = 'GAME OVER';
+            document.getElementById('overlay-desc').innerHTML = `最終得分：<span class="text-pink-400 font-bold">${score}</span><br>挑戰高分失敗，再接再厲！`;
+            document.getElementById('start-btn').innerText = 'PLAY AGAIN';
+            document.getElementById('game-overlay').classList.remove('hidden');
+        }
+
+        Events.on(render, 'afterRender', () => {
+            const ctx = render.context;
+            
+            // Update glowing bumpers timer
+            glowingElements.forEach(elem => {
+                if (elem.litTimer > 0) {
+                    elem.litTimer--;
+                    if (elem.litTimer === 0) {
+                        elem.body.render.fillStyle = elem.baseColor;
+                    }
+                }
+            });
+
+            // If charging launcher, increase power
+            if (isCharging && activeBall && activeBall.position.y > 500) {
+                launchPower = Math.min(launchPower + 0.8, 35);
+                const fillPercent = (launchPower / 35) * 100;
+                document.getElementById('launch-power-fill').style.height = fillPercent + '%';
+            }
+        });
+
+        const keys = {};
+
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                if (gameState === 'PLAYING' && activeBall && activeBall.position.x > 340 && activeBall.position.y > 500) {
+                    isCharging = true;
+                }
+            }
+            if (e.code === 'ArrowLeft' || e.code === 'KeyA') {
+                keys['left'] = true;
+            }
+            if (e.code === 'ArrowRight' || e.code === 'KeyD') {
+                keys['right'] = true;
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                if (isCharging && activeBall) {
+                    isCharging = false;
+                    Body.applyForce(activeBall, activeBall.position, { x: 0, y: -0.065 * (launchPower / 10) });
+                    launchPower = 0;
+                    document.getElementById('launch-power-fill').style.height = '0%';
+                }
+            }
+            if (e.code === 'ArrowLeft' || e.code === 'KeyA') {
+                keys['left'] = false;
+            }
+            if (e.code === 'ArrowRight' || e.code === 'KeyD') {
+                keys['right'] = false;
+            }
+        });
+
+        // Flipper torque force update loop
+        Events.on(engine, 'beforeUpdate', () => {
+            const flipperForce = 0.0035;
+            if (window.leftFlipper) {
+                if (keys['left']) {
+                    Body.setAngularVelocity(window.leftFlipper, -0.35);
+                } else {
+                    Body.setAngularVelocity(window.leftFlipper, 0.2);
+                }
+            }
+            if (window.rightFlipper) {
+                if (keys['right']) {
+                    Body.setAngularVelocity(window.rightFlipper, 0.35);
+                } else {
+                    Body.setAngularVelocity(window.rightFlipper, -0.2);
+                }
+            }
+        });
+
+        // Touch event bindings for mobile interface
+        const leftBtn = document.getElementById('left-btn');
+        const rightBtn = document.getElementById('right-btn');
+        const launchTouchBtn = document.getElementById('launch-touch-btn');
+
+        leftBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys['left'] = true; });
+        leftBtn.addEventListener('touchend', (e) => { e.preventDefault(); keys['left'] = false; });
+        leftBtn.addEventListener('mousedown', () => { keys['left'] = true; });
+        leftBtn.addEventListener('mouseup', () => { keys['left'] = false; });
+
+        rightBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys['right'] = true; });
+        rightBtn.addEventListener('touchend', (e) => { e.preventDefault(); keys['right'] = false; });
+        rightBtn.addEventListener('mousedown', () => { keys['right'] = true; });
+        rightBtn.addEventListener('mouseup', () => { keys['right'] = false; });
+
+        launchTouchBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (activeBall && activeBall.position.x > 340 && activeBall.position.y > 500) {
+                Body.applyForce(activeBall, activeBall.position, { x: 0, y: -0.2 });
+            }
+        });
+        launchTouchBtn.addEventListener('click', () => {
+            if (activeBall && activeBall.position.x > 340 && activeBall.position.y > 500) {
+                Body.applyForce(activeBall, activeBall.position, { x: 0, y: -0.2 });
+            }
+        });
+
+        // Start Game button handler
+        document.getElementById('start-btn').addEventListener('click', () => {
+            score = 0;
+            lives = 3;
+            document.getElementById('score-val').innerText = '000000';
+            document.getElementById('lives-val').innerText = lives;
+            document.getElementById('game-overlay').classList.add('hidden');
+            
+            gameState = 'PLAYING';
+            buildPinballBoard();
+            spawnBall();
+        });
+
+        // Initialize board outline on load
+        buildPinballBoard();
+    </script>
+</body>
+</html>
