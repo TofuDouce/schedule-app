@@ -506,15 +506,22 @@ function updateBall(b,dt){
   if(b.life<.3){ b.trail=[]; }
   b.trail.push({x:b.x,y:b.y}); if(b.trail.length>7)b.trail.shift();
 
-  // Main playfield walls. The right shooter lane has its own guide; once released,
-  // the ball enters through the curved top opening and behaves normally.
-  // Continuous side/top guard rails. The lower playfield is also enclosed;
-  // the only opening is the drain centered under the two flippers.
-  if(b.x-b.r<play.x1){b.x=play.x1+b.r;b.vx=Math.abs(b.vx)*.94}
-  if(b.x+b.r>play.x2 && b.y<190){
-    b.x=play.x2-b.r;b.vx=-Math.max(4.8,Math.abs(b.vx));
+  // Main playfield walls. IMPORTANT: the playfield has a CONTINUOUS
+  // left/right cabinet wall all the way down to the lower apron.
+  // The shooter lane is outside this wall; once the ball exits the top arc,
+  // it is inside the main cabinet and must never be able to fly out sideways.
+  if(b.x-b.r<play.x1){
+    b.x=play.x1+b.r;
+    b.vx=Math.abs(b.vx)*.94;
   }
-  if(b.y-b.r<play.y1){b.y=play.y1+b.r;b.vy=Math.abs(b.vy)*.92}
+  if(b.x+b.r>play.x2){
+    b.x=play.x2-b.r;
+    b.vx=-Math.max(3.8,Math.abs(b.vx)*.94);
+  }
+  if(b.y-b.r<play.y1){
+    b.y=play.y1+b.r;
+    b.vy=Math.abs(b.vy)*.92;
+  }
 
   // Lower apron rails: balls may NOT fall through the sides.
   collideLowerRails(b);
@@ -653,6 +660,16 @@ function drawLane(){
   // Arrow showing the ball's final leftward exit.
   ctx.fillStyle='rgba(255,214,90,.75)';
   ctx.beginPath();ctx.moveTo(392,108);ctx.lineTo(418,96);ctx.lineTo(418,104);ctx.lineTo(438,104);ctx.lineTo(438,112);ctx.lineTo(418,112);ctx.lineTo(418,120);ctx.closePath();ctx.fill();
+
+  // MAIN CABINET GUARD RAILS — these are intentionally continuous.
+  // They visually match the physical collision walls used in updateBall().
+  ctx.lineCap='round';
+  ctx.lineWidth=16;ctx.strokeStyle='#24133e';ctx.shadowBlur=14;ctx.shadowColor='#42e8ff';
+  ctx.beginPath();ctx.moveTo(play.x1,86);ctx.lineTo(play.x1,900);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(play.x2,86);ctx.lineTo(play.x2,900);ctx.stroke();
+  ctx.lineWidth=7;ctx.strokeStyle='#42e8ff';ctx.shadowBlur=0;
+  ctx.beginPath();ctx.moveTo(play.x1,86);ctx.lineTo(play.x1,900);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(play.x2,86);ctx.lineTo(play.x2,900);ctx.stroke();
   ctx.restore();
 }
 function drawPegs(){
