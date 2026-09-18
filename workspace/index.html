@@ -231,6 +231,21 @@ html[data-theme="dark"] body.has-wallpaper .ctrl{background:rgba(30,30,28,.55);}
   font-size:13px;font-weight:800;letter-spacing:.02em;color:var(--text);
   line-height:1.2;
 }
+
+.wall-presets{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0 12px;}
+.wall-preset{
+  position:relative;border:2px solid var(--border);border-radius:14px;overflow:hidden;
+  cursor:pointer;padding:0;background:var(--surf2);aspect-ratio:16/10;
+  transition:border-color .15s,box-shadow .15s,transform .15s;
+}
+.wall-preset img{width:100%;height:100%;object-fit:cover;display:block;}
+.wall-preset:hover{transform:translateY(-1px);box-shadow:0 6px 16px var(--shadow)}
+.wall-preset.on{border-color:var(--A);box-shadow:0 0 0 2px color-mix(in srgb,var(--A) 30%,transparent)}
+.wall-preset span{
+  position:absolute;left:8px;bottom:8px;padding:4px 8px;border-radius:999px;
+  background:rgba(0,0,0,.45);color:#fff;font-size:11px;font-weight:800;
+  backdrop-filter:blur(6px);
+}
 .wall-preview{
   width:100%;height:90px;border-radius:12px;border:1.5px dashed var(--border);
   background:var(--surf2) center/cover no-repeat;margin:8px 0 10px;
@@ -515,7 +530,18 @@ button,input,select,textarea{font-family:inherit;}
         <button class="tog" id="card-flat" onclick="setCard('flat')">線框</button>
         <button class="tog" id="card-solid" onclick="setCard('solid')">實色</button>
       </div>
-      <label class="plabel">背景桌布（從手機／電腦選圖）</label>
+      <label class="plabel">預設桌布（一鍵套用）</label>
+      <div class="wall-presets" id="wallPresets">
+        <button type="button" class="wall-preset" data-wall="preset1" onclick="setPresetWallpaper('preset1')">
+          <img src="https://tofudouce.github.io/schedule-app/workspace/2B4BC346-58D2-4C75-B670-1FB9D44C0FA2.png" alt="桌布一" loading="lazy">
+          <span>桌布 A</span>
+        </button>
+        <button type="button" class="wall-preset" data-wall="preset2" onclick="setPresetWallpaper('preset2')">
+          <img src="https://tofudouce.github.io/schedule-app/workspace/60267E5A-CB18-46FE-91E2-EB1EEFC57E28.png" alt="桌布二" loading="lazy">
+          <span>桌布 B</span>
+        </button>
+      </div>
+      <label class="plabel">或從手機／電腦自選</label>
       <div class="wall-preview" id="wallPreview">尚未選擇桌布</div>
       <input type="file" id="wallInput" accept="image/*" style="display:none" onchange="onWallPick(event)">
       <div class="tog-group" style="margin-bottom:8px;">
@@ -602,17 +628,37 @@ let recent=JSON.parse(localStorage.getItem(LS.recent))||[];
 let egfrGender='male', cachedTasks=[], covidGap=84;
 
 
-window.applyWallpaper=function(dataUrl){
+
+const WALL_PRESETS={
+  preset1:'https://tofudouce.github.io/schedule-app/workspace/2B4BC346-58D2-4C75-B670-1FB9D44C0FA2.png',
+  preset2:'https://tofudouce.github.io/schedule-app/workspace/60267E5A-CB18-46FE-91E2-EB1EEFC57E28.png'
+};
+window.setPresetWallpaper=function(id){
+  const url=WALL_PRESETS[id]; if(!url) return;
+  localStorage.setItem(LS.wall, 'preset:'+id);
+  applyWallpaper(url, id);
+};
+function syncWallPresetUI(activeId){
+  document.querySelectorAll('.wall-preset').forEach(el=>{
+    el.classList.toggle('on', !!activeId && el.dataset.wall===activeId);
+  });
+}
+window.applyWallpaper=function(dataUrl, presetId){
   if(dataUrl){
     document.body.style.setProperty('--wall-image', 'url("'+dataUrl+'")');
     document.body.classList.add('has-wallpaper');
     const pv=document.getElementById('wallPreview');
-    if(pv){ pv.classList.add('has'); pv.style.backgroundImage='url("'+dataUrl+'")'; pv.textContent=''; }
+    if(pv){
+      if(presetId){ pv.classList.remove('has'); pv.style.backgroundImage=''; pv.textContent='使用預設桌布'; }
+      else { pv.classList.add('has'); pv.style.backgroundImage='url("'+dataUrl+'")'; pv.textContent=''; }
+    }
+    syncWallPresetUI(presetId||null);
   }else{
     document.body.style.removeProperty('--wall-image');
     document.body.classList.remove('has-wallpaper');
     const pv=document.getElementById('wallPreview');
     if(pv){ pv.classList.remove('has'); pv.style.backgroundImage=''; pv.textContent='尚未選擇桌布'; }
+    syncWallPresetUI(null);
   }
 };
 window.setWallDim=function(v){
@@ -995,7 +1041,16 @@ function fillLists(){
 }
 
 window.addEventListener('DOMContentLoaded', ()=>{
-  const _wall=localStorage.getItem(LS.wall); if(_wall) applyWallpaper(_wall);
+  const _wall=localStorage.getItem(LS.wall);
+  if(_wall){
+    if(_wall.startsWith('preset:')){
+      const pid=_wall.slice(7);
+      if(WALL_PRESETS[pid]) applyWallpaper(WALL_PRESETS[pid], pid);
+      else applyWallpaper(null);
+    }else{
+      applyWallpaper(_wall);
+    }
+  }
   const _dim=localStorage.getItem(LS.wallDim)||'42';
   const _wd=document.getElementById('wallDim'); if(_wd){ _wd.value=_dim; }
   setWallDim(_dim);
