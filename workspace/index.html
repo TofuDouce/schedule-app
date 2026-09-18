@@ -204,17 +204,33 @@ body.has-wallpaper[data-card] .ctrl,
 body.has-wallpaper .ctrl{background:rgba(255,255,255,.55);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);}
 html[data-theme="dark"] body.has-wallpaper .ctrl{background:rgba(30,30,28,.55);}
 
-.theme-swatches{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px;}
-.theme-swatch{
-  width:36px;height:36px;border-radius:50%;border:2.5px solid transparent;
-  cursor:pointer;padding:0;box-shadow:0 2px 8px rgba(0,0,0,.12);
-  position:relative;flex:none;
-  background:linear-gradient(135deg,var(--sw1),var(--sw2));
-  transition:transform .15s,box-shadow .15s;
+.theme-swatches{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px;
 }
-.theme-swatch:hover{transform:scale(1.08)}
-.theme-swatch.on{border-color:var(--text);box-shadow:0 0 0 3px color-mix(in srgb,var(--A) 35%,transparent),0 4px 12px rgba(0,0,0,.15)}
+.theme-swatch{
+  display:flex;flex-direction:column;align-items:flex-start;gap:8px;
+  padding:12px 12px 10px;text-align:left;
+  border-radius:14px;border:1.5px solid var(--border);
+  background:var(--surf);cursor:pointer;color:var(--text);
+  transition:border-color .15s,box-shadow .15s,transform .15s;
+  -webkit-appearance:none;appearance:none;
+}
+.theme-swatch:hover{transform:translateY(-1px);box-shadow:0 6px 16px var(--shadow)}
+.theme-swatch.on{
+  border-color:var(--A);
+  box-shadow:0 0 0 2px color-mix(in srgb,var(--A) 30%,transparent);
+  background:color-mix(in srgb,var(--A) 6%,var(--surf));
+}
 .theme-swatch:focus-visible{outline:3px solid var(--A);outline-offset:2px}
+.theme-swatch .dots{display:flex;gap:6px;align-items:center}
+.theme-swatch .dots i{
+  width:18px;height:18px;border-radius:50%;display:block;
+  border:1px solid rgba(0,0,0,.08);
+}
+.theme-swatch b{
+  font-size:13px;font-weight:800;letter-spacing:.02em;color:var(--text);
+  line-height:1.2;
+}
 .wall-preview{
   width:100%;height:90px;border-radius:12px;border:1.5px dashed var(--border);
   background:var(--surf2) center/cover no-repeat;margin:8px 0 10px;
@@ -490,7 +506,7 @@ button,input,select,textarea{font-family:inherit;}
   <div class="panel-body">
     <div class="pcard">
       <div class="pcard-title">🎨 顯示設定</div>
-      <label class="plabel">佈景主題（色塊＝主色 × 點綴色，滑鼠移上去可看名稱）</label>
+      <label class="plabel">佈景主題</label>
       <div class="theme-swatches" id="themeTogs"></div>
       <label class="plabel">卡片風格</label>
       <div class="tog-group">
@@ -563,7 +579,22 @@ const EMOJIS = ['🩺','💉','🏥','💊','📦','💻','🔍','📋','🧪','
 const LS = { links:'cz_links_v7', cfg:'cz_cfg_v7', theme:'cz_theme_v7', memo:'cz_memo', recent:'cz_recent', xl:'cz_xl', wall:'clinic_wall_v1', wallDim:'clinic_wall_dim_v1'};
 const THEME_ORDER=["clinic","vanilla","rose","lavender","sky","matcha","sunset","ink","sakura","ocean","light","ash","dark","contrast"];
 const THEME_LABEL={clinic:"診所藍",vanilla:"香草書頁",rose:"玫瑰花園",lavender:"薰衣草書房",sky:"晴空玻璃",matcha:"抹茶書齋",sunset:"暮色信箋",ink:"松煙水墨",sakura:"櫻花箋紙",ocean:"深海航線",light:"明亮",ash:"雅灰",dark:"夜間",contrast:"高對比"};
-const THEME_SWATCH={clinic:["#3a6f88","#c4a46a"],vanilla:["#4d7c43","#c5a66d"],rose:["#9c5e5d","#bd9270"],lavender:["#716589","#a89570"],sky:["#477d78","#b49c6b"],matcha:["#5c7a4a","#a68b5b"],sunset:["#b6603f","#c98a4b"],ink:["#3b3a35","#9c8a5c"],sakura:["#c06a86","#c9a06a"],ocean:["#2f6690","#9c8452"],light:["#2C5F8A","#5A96C8"],ash:["#3E4C6E","#9c8a5c"],dark:["#171714","#a6c993"],contrast:["#000000","#FFFDE8"]};
+const THEME_SWATCH={
+  clinic:["#eaf2f5","#3a6f88","#c4a46a"],
+  vanilla:["#f4efdf","#4d7c43","#c5a66d"],
+  rose:["#f7e9e4","#9c5e5d","#bd9270"],
+  lavender:["#eeebf5","#716589","#a89570"],
+  sky:["#eaf2f2","#477d78","#b49c6b"],
+  matcha:["#eef2e6","#5c7a4a","#a68b5b"],
+  sunset:["#f7e8de","#b6603f","#c98a4b"],
+  ink:["#e7e4dd","#3b3a35","#9c8a5c"],
+  sakura:["#fbeaf0","#c06a86","#c9a06a"],
+  ocean:["#e3edf3","#2f6690","#9c8452"],
+  light:["#EDF2F7","#2C5F8A","#5A96C8"],
+  ash:["#EDEAE3","#3E4C6E","#9c8a5c"],
+  dark:["#171714","#a6c993","#d1b77d"],
+  contrast:["#FFFDE8","#000000","#444444"]
+};
 const THEME_NEXT_ICON={clinic:"🌿",vanilla:"🌹",rose:"💜",lavender:"🌤",sky:"🍵",matcha:"🌅",sunset:"🖌",ink:"🌸",sakura:"🌊",ocean:"🌙",light:"☀️",ash:"🪨",dark:"🌙",contrast:"⬛"};
 let selIcon='🔗';
 let links=JSON.parse(localStorage.getItem(LS.links))||{primary:[],secondary:[]};
@@ -977,9 +1008,9 @@ window.addEventListener('DOMContentLoaded', ()=>{
     b.dataset.themeId=id;
     b.title=THEME_LABEL[id]||id;
     b.setAttribute('aria-label', THEME_LABEL[id]||id);
-    const cols=THEME_SWATCH[id]||['#888','#ccc'];
-    b.style.setProperty('--sw1', cols[0]);
-    b.style.setProperty('--sw2', cols[1]);
+    const cols=THEME_SWATCH[id]||['#eee','#888','#ccc'];
+    const name=THEME_LABEL[id]||id;
+    b.innerHTML=`<span class="dots">${cols.map(c=>`<i style="background:${c}"></i>`).join('')}</span><b>${name}</b>`;
     b.onclick=()=>setTheme(id);
     wrap.appendChild(b);
   });
