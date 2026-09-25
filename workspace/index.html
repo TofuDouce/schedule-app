@@ -232,6 +232,25 @@ html[data-theme="dark"] body.has-wallpaper .ctrl{background:rgba(30,30,28,.55);}
   line-height:1.2;
 }
 
+
+.wall-dl-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:8px;}
+@media(min-width:700px){.wall-dl-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
+.wall-dl-card{
+  border:1.5px solid var(--border);border-radius:16px;overflow:hidden;background:var(--surf);
+  box-shadow:0 4px 14px var(--shadow);
+}
+.wall-dl-card img{width:100%;aspect-ratio:16/10;object-fit:cover;display:block;background:var(--surf2);}
+.wall-dl-body{padding:12px;}
+.wall-dl-body b{display:block;font-size:16px;font-weight:900;margin-bottom:8px;color:var(--text);}
+.wall-dl-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.wall-dl-actions button,.wall-dl-actions a{
+  flex:1;min-width:90px;text-align:center;padding:10px 8px;border-radius:10px;
+  font-size:14px;font-weight:800;text-decoration:none;border:1.5px solid var(--border);
+  cursor:pointer;color:var(--sub);background:var(--surf2);
+}
+.wall-dl-actions button.primary,.wall-dl-actions a.primary{
+  background:linear-gradient(135deg,var(--A),var(--A2));color:#fff;border-color:transparent;
+}
 .wall-presets{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0 12px;}
 .wall-preset{
   position:relative;border:2px solid var(--border);border-radius:14px;overflow:hidden;
@@ -426,11 +445,21 @@ button,input,select,textarea{font-family:inherit;}
     <div class="card"><a class="card-link" href="javascript:void(0)" onclick="openModal('taskPanel')"><div class="icon-box">📋<span class="icon-dot" id="taskCardDot"></span></div><div class="card-title">定期任務</div><div class="card-desc">追蹤院內定期工作事項</div></a></div>
     <div class="card"><a class="card-link" href="javascript:void(0)" onclick="openModal('vaxPanel')"><div class="icon-box">💉</div><div class="card-title">疫苗速查</div><div class="card-desc">115年資格與應備證件</div></a></div>
     <div class="card"><a class="card-link" href="https://tofudouce.github.io/schedule-app/workspace/mou.html" target="_blank" rel="noopener"><div class="icon-box">💉</div><div class="card-title">猛健樂計算機</div><div class="card-desc">劑量轉換與殘餘藥量追蹤</div></a></div>
+    <div class="card"><a class="card-link" href="javascript:void(0)" onclick="openModal('wallPanel')"><div class="icon-box">🖼</div><div class="card-title">桌布下載</div><div class="card-desc">院內精選桌布・可套用或下載</div></a></div>
   </div>
 </main>
 
 <div id="modalOverlay" class="modal-overlay" onclick="closeModal()"></div>
 <div id="taskBadge" onclick="openModal('taskPanel')">🔴 <span id="taskBadgeText">有任務逾期！</span></div>
+
+
+<div id="wallPanel" class="modal-panel wide">
+  <div class="tp-hdr"><h3>🖼 桌布下載</h3><div class="tp-hdr-right"><button class="tp-close" onclick="closeModal()">✕</button></div></div>
+  <div class="tp-body">
+    <div class="tool-note">以下為院內提供的桌布，可一鍵套用到 Portal 背景，也可下載到手機／電腦當系統桌布使用。</div>
+    <div class="wall-dl-grid" id="wallDlGrid"></div>
+  </div>
+</div>
 
 <div id="taskPanel" class="modal-panel">
   <div class="tp-hdr"><h3>📋 定期任務</h3><div class="tp-hdr-right"><button class="tp-refresh" onclick="loadTasks()">🔄</button><button class="tp-close" onclick="closeModal()">✕</button></div></div>
@@ -533,12 +562,24 @@ button,input,select,textarea{font-family:inherit;}
       <label class="plabel">預設桌布（一鍵套用）</label>
       <div class="wall-presets" id="wallPresets">
         <button type="button" class="wall-preset" data-wall="preset1" onclick="setPresetWallpaper('preset1')">
-          <img src="https://tofudouce.github.io/schedule-app/workspace/2B4BC346-58D2-4C75-B670-1FB9D44C0FA2.png" alt="桌布一" loading="lazy">
+          <img src="https://tofudouce.github.io/schedule-app/workspace/2B4BC346-58D2-4C75-B670-1FB9D44C0FA2.png" alt="桌布 A" loading="lazy">
           <span>桌布 A</span>
         </button>
         <button type="button" class="wall-preset" data-wall="preset2" onclick="setPresetWallpaper('preset2')">
-          <img src="https://tofudouce.github.io/schedule-app/workspace/60267E5A-CB18-46FE-91E2-EB1EEFC57E28.png" alt="桌布二" loading="lazy">
+          <img src="https://tofudouce.github.io/schedule-app/workspace/60267E5A-CB18-46FE-91E2-EB1EEFC57E28.png" alt="桌布 B" loading="lazy">
           <span>桌布 B</span>
+        </button>
+        <button type="button" class="wall-preset" data-wall="preset3" onclick="setPresetWallpaper('preset3')">
+          <img src="https://tofudouce.github.io/schedule-app/workspace/08E6CA2D-89A9-47D7-A07C-CB0FC24F639E.png" alt="桌布 C" loading="lazy">
+          <span>桌布 C</span>
+        </button>
+        <button type="button" class="wall-preset" data-wall="preset4" onclick="setPresetWallpaper('preset4')">
+          <img src="https://tofudouce.github.io/schedule-app/workspace/DB270177-4770-44D9-8E18-5731702146B1.png" alt="桌布 D" loading="lazy">
+          <span>桌布 D</span>
+        </button>
+        <button type="button" class="wall-preset" data-wall="preset5" onclick="setPresetWallpaper('preset5')">
+          <img src="https://tofudouce.github.io/schedule-app/workspace/FE6F56D8-9E87-4EBC-AE78-09871C884C0D.png" alt="桌布 E" loading="lazy">
+          <span>桌布 E</span>
         </button>
       </div>
       <label class="plabel">或從手機／電腦自選</label>
@@ -631,8 +672,33 @@ let egfrGender='male', cachedTasks=[], covidGap=84;
 
 const WALL_PRESETS={
   preset1:'https://tofudouce.github.io/schedule-app/workspace/2B4BC346-58D2-4C75-B670-1FB9D44C0FA2.png',
-  preset2:'https://tofudouce.github.io/schedule-app/workspace/60267E5A-CB18-46FE-91E2-EB1EEFC57E28.png'
+  preset2:'https://tofudouce.github.io/schedule-app/workspace/60267E5A-CB18-46FE-91E2-EB1EEFC57E28.png',
+  preset3:'https://tofudouce.github.io/schedule-app/workspace/08E6CA2D-89A9-47D7-A07C-CB0FC24F639E.png',
+  preset4:'https://tofudouce.github.io/schedule-app/workspace/DB270177-4770-44D9-8E18-5731702146B1.png',
+  preset5:'https://tofudouce.github.io/schedule-app/workspace/FE6F56D8-9E87-4EBC-AE78-09871C884C0D.png'
 };
+const WALL_PRESET_META=[
+  {id:'preset1', label:'桌布 A', url:WALL_PRESETS.preset1},
+  {id:'preset2', label:'桌布 B', url:WALL_PRESETS.preset2},
+  {id:'preset3', label:'桌布 C', url:WALL_PRESETS.preset3},
+  {id:'preset4', label:'桌布 D', url:WALL_PRESETS.preset4},
+  {id:'preset5', label:'桌布 E', url:WALL_PRESETS.preset5}
+];
+
+function fillWallDlGrid(){
+  const g=document.getElementById('wallDlGrid'); if(!g) return;
+  g.innerHTML=WALL_PRESET_META.map(w=>`
+    <div class="wall-dl-card">
+      <img src="${w.url}" alt="${w.label}" loading="lazy">
+      <div class="wall-dl-body">
+        <b>${w.label}</b>
+        <div class="wall-dl-actions">
+          <button type="button" class="primary" onclick="setPresetWallpaper('${w.id}');closeModal();">套用</button>
+          <a class="primary" href="${w.url}" download="${w.label}.png" target="_blank" rel="noopener">下載</a>
+        </div>
+      </div>
+    </div>`).join('');
+}
 window.setPresetWallpaper=function(id){
   const url=WALL_PRESETS[id]; if(!url) return;
   localStorage.setItem(LS.wall, 'preset:'+id);
@@ -1081,6 +1147,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
   const ew=document.getElementById('emojiPicker');
   EMOJIS.forEach(e=>{const d=document.createElement('div'); d.className='eopt'+(e===selIcon?' on':''); d.textContent=e; d.onclick=()=>{document.querySelectorAll('.eopt').forEach(x=>x.classList.remove('on')); d.classList.add('on'); selIcon=e;}; ew.appendChild(d);});
   fillLists();
+  fillWallDlGrid();
   fetchCloud();
   setTimeout(()=>silentCheckTasks(),1800);
 });
