@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" data-theme="clinic" data-card="solid" data-font="sans" data-texture="none" data-xl="on">
+<html lang="zh-Hant" data-theme="clinic" data-card="solid" data-font="sans" data-texture="none" data-xl="on" data-wallmode="off">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -333,6 +333,64 @@ button,input,select,textarea{font-family:inherit;}
 #memoPanel.show{display:flex;}
 #memoText{width:100%;min-height:120px;resize:vertical;border:1.5px solid var(--border);border-radius:10px;padding:10px;font-size:15px;font-weight:600;background:var(--surf2);color:var(--text);}
 .memo-save{padding:10px;border:none;border-radius:10px;cursor:pointer;background:linear-gradient(135deg,var(--A),var(--A2));color:#fff;font-size:15px;font-weight:800;}
+
+/* ── 桌布模式：精簡列 + 高透明，露出背景 ── */
+html[data-wallmode="on"] .card{
+  background:rgba(255,255,255,.28) !important;
+  backdrop-filter:saturate(160%) blur(18px);
+  -webkit-backdrop-filter:saturate(160%) blur(18px);
+  border:1px solid rgba(255,255,255,.35);
+  box-shadow:0 6px 20px rgba(0,0,0,.06);
+}
+html[data-theme="dark"][data-wallmode="on"] .card{
+  background:rgba(30,30,28,.35) !important;
+  border-color:rgba(255,255,255,.12);
+}
+html[data-wallmode="on"] .grid{
+  grid-template-columns:1fr !important;
+  gap:10px;
+  max-width:520px;
+}
+html[data-wallmode="on"] .card-link{
+  flex-direction:row;
+  justify-content:flex-start;
+  text-align:left;
+  min-height:0;
+  padding:12px 16px;
+  gap:14px;
+}
+html[data-wallmode="on"] .icon-box{
+  width:44px;height:44px;font-size:24px;border-radius:12px;flex:none;
+  box-shadow:none;
+}
+html[data-wallmode="on"] .card-title{font-size:18px;letter-spacing:.02em;}
+html[data-wallmode="on"] .card-desc{display:none;}
+html[data-wallmode="on"] .card::before{display:none;}
+html[data-wallmode="on"] .card:hover{transform:translateX(4px);}
+html[data-wallmode="on"] .sec-label{margin:22px 0 10px;}
+html[data-wallmode="on"] #announceBanner{
+  background:rgba(255,255,255,.35);
+  backdrop-filter:blur(16px);
+}
+html[data-wallmode="on"] .main{max-width:560px;margin-left:28px;margin-right:auto;}
+@media(max-width:600px){
+  html[data-wallmode="on"] .main{margin-left:12px;max-width:none;}
+  html[data-wallmode="on"] .grid{max-width:none;}
+}
+.ctrl.on-wall{background:linear-gradient(135deg,var(--A),var(--A2));color:#fff;border-color:transparent;}
+
+/* 區塊收合 */
+.sec-label{cursor:pointer;user-select:none;}
+.sec-label .sec-pill{pointer-events:none;}
+.sec-chevron{
+  font-size:12px;color:var(--muted);margin-left:4px;
+  transition:transform .2s;display:inline-block;
+}
+.sec-label.collapsed .sec-chevron{transform:rotate(-90deg);}
+.sec-body{transition:opacity .2s;}
+.sec-body.collapsed{display:none;}
+.sec-label .sec-hint{font-size:12px;font-weight:700;color:var(--muted);margin-left:6px;}
+
 .controls{position:fixed;bottom:28px;right:28px;display:flex;flex-direction:column;gap:10px;z-index:1000;}
 .ctrl{width:56px;height:56px;border-radius:16px;border:1.5px solid var(--border);background:var(--surf);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px var(--shadow);color:var(--text);transition:transform .15s,box-shadow .15s;}
 .panel{position:fixed;top:0;right:-100%;width:min(480px,100%);height:100vh;background:var(--surf);border-left:2px solid var(--border);overflow-y:auto;transition:right .35s;z-index:2000;}
@@ -427,18 +485,18 @@ button,input,select,textarea{font-family:inherit;}
   <div id="announceBanner"><div class="announce-label">📢 診所公告</div><div id="announceText">─</div></div>
 
   <div id="recentSection">
-    <div class="sec-label" style="margin-top:16px;"><div class="sec-pill">🕐 最近開啟</div><div class="sec-line"></div></div>
-    <div class="recent-strip" id="recentStrip"></div>
+    <div class="sec-label" style="margin-top:16px;" data-sec="recent" onclick="toggleSec('recent')"><div class="sec-pill">🕐 最近開啟 <span class="sec-chevron">▾</span></div><div class="sec-line"></div></div>
+    <div class="sec-body" id="sec-recent"><div class="recent-strip" id="recentStrip"></div></div>
   </div>
 
-  <div class="sec-label"><div class="sec-pill">🏠 主要入口</div><div class="sec-line"></div></div>
-  <div id="primaryGrid" class="grid"><div class="empty">資料載入中…</div></div>
+  <div class="sec-label" data-sec="primary" onclick="toggleSec('primary')"><div class="sec-pill">🏠 主要入口 <span class="sec-chevron">▾</span></div><div class="sec-line"></div></div>
+  <div class="sec-body" id="sec-primary"><div id="primaryGrid" class="grid"><div class="empty">資料載入中…</div></div></div>
 
-  <div class="sec-label"><div class="sec-pill">🔗 次要入口</div><div class="sec-line"></div></div>
-  <div id="secondaryGrid" class="grid"><div class="empty">資料載入中…</div></div>
+  <div class="sec-label" data-sec="secondary" onclick="toggleSec('secondary')"><div class="sec-pill">🔗 次要入口 <span class="sec-chevron">▾</span></div><div class="sec-line"></div></div>
+  <div class="sec-body" id="sec-secondary"><div id="secondaryGrid" class="grid"><div class="empty">資料載入中…</div></div></div>
 
-  <div class="sec-label"><div class="sec-pill">📋 診所作業</div><div class="sec-line"></div></div>
-  <div class="grid">
+  <div class="sec-label" data-sec="ops" onclick="toggleSec('ops')"><div class="sec-pill">📋 診所作業 <span class="sec-chevron">▾</span></div><div class="sec-line"></div></div>
+  <div class="sec-body" id="sec-ops"><div class="grid">
     <div class="card"><a class="card-link" href="javascript:void(0)" onclick="openModal('egfrPanel')"><div class="icon-box">🩺</div><div class="card-title">eGFR 計算機</div><div class="card-desc">CKD-EPI 2021 腎功能分期</div></a></div>
     <div class="card"><a class="card-link" href="javascript:void(0)" onclick="openModal('yearPanel')"><div class="icon-box">📅</div><div class="card-title">年齡／年份換算</div><div class="card-desc">西元・民國・年齡互換</div></a></div>
     <div class="card"><a class="card-link" href="javascript:void(0)" onclick="openModal('covidPanel')"><div class="icon-box">💉</div><div class="card-title">新冠疫苗間隔</div><div class="card-desc">上次施打日 → 下次可打日（84天）</div></a></div>
@@ -446,7 +504,7 @@ button,input,select,textarea{font-family:inherit;}
     <div class="card"><a class="card-link" href="javascript:void(0)" onclick="openModal('vaxPanel')"><div class="icon-box">💉</div><div class="card-title">疫苗速查</div><div class="card-desc">115年資格與應備證件</div></a></div>
     <div class="card"><a class="card-link" href="https://tofudouce.github.io/schedule-app/workspace/mou.html" target="_blank" rel="noopener"><div class="icon-box">💉</div><div class="card-title">猛健樂計算機</div><div class="card-desc">劑量轉換與殘餘藥量追蹤</div></a></div>
     <div class="card"><a class="card-link" href="javascript:void(0)" onclick="openModal('wallPanel')"><div class="icon-box">🖼</div><div class="card-title">桌布下載</div><div class="card-desc">院內精選桌布・可套用或下載</div></a></div>
-  </div>
+  </div></div>
 </main>
 
 <div id="modalOverlay" class="modal-overlay" onclick="closeModal()"></div>
@@ -539,7 +597,7 @@ button,input,select,textarea{font-family:inherit;}
 
 <div id="memoPanel"><h4>📝 快速備忘</h4><textarea id="memoText" placeholder="在此輸入備忘事項…"></textarea><button class="memo-save" onclick="saveMemo()">儲存</button></div>
 <div class="controls">
-  <button class="ctrl" id="themeBtn" onclick="toggleTheme()" title="切換主題">🌙</button>
+  <button class="ctrl" id="wallModeBtn" onclick="toggleWallMode()" title="桌布模式：精簡卡片以露出背景">🖼</button>
   <button class="ctrl" onclick="toggleXl()" title="放大字級">🔎</button>
   <button class="ctrl" onclick="toggleMemo()" title="備忘">📝</button>
   <button class="ctrl" onclick="openPanel()" title="設定">⚙️</button>
@@ -643,7 +701,7 @@ const SHEET = 'https://docs.google.com/spreadsheets/d/1uYBA_CncbEAydmzNC1SRnsKJd
 const TASK_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1uYBA_CncbEAydmzNC1SRnsKJdswNgQh3zg1x6TKo0UU/export?format=csv&gid=646869954';
 const TASK_EDIT_URL  = 'https://docs.google.com/spreadsheets/d/1uYBA_CncbEAydmzNC1SRnsKJdswNgQh3zg1x6TKo0UU/edit#gid=646869954';
 const EMOJIS = ['🩺','💉','🏥','💊','📦','💻','🔍','📋','🧪','📅','📝','⭐','👤','⚙️','🔗','🏠','☎️','📊'];
-const LS = { links:'cz_links_v7', cfg:'cz_cfg_v7', theme:'cz_theme_v7', memo:'cz_memo', recent:'cz_recent', xl:'cz_xl', wall:'clinic_wall_v1', wallDim:'clinic_wall_dim_v1'};
+const LS = { links:'cz_links_v7', cfg:'cz_cfg_v7', theme:'cz_theme_v7', memo:'cz_memo', recent:'cz_recent', xl:'cz_xl', wall:'clinic_wall_v1', wallDim:'clinic_wall_dim_v1', wallmode:'clinic_wallmode_v1', secCollapse:'clinic_sec_v1'};
 const THEME_ORDER=["clinic","vanilla","rose","lavender","sky","matcha","sunset","ink","sakura","ocean","light","ash","dark","contrast"];
 const THEME_LABEL={clinic:"診所藍",vanilla:"香草書頁",rose:"玫瑰花園",lavender:"薰衣草書房",sky:"晴空玻璃",matcha:"抹茶書齋",sunset:"暮色信箋",ink:"松煙水墨",sakura:"櫻花箋紙",ocean:"深海航線",light:"明亮",ash:"雅灰",dark:"夜間",contrast:"高對比"};
 const THEME_SWATCH={
@@ -766,11 +824,51 @@ window.clearWallpaper=function(){
   const inp=document.getElementById('wallInput'); if(inp) inp.value='';
 };
 
+
+window.toggleWallMode=function(){
+  const on=document.documentElement.getAttribute('data-wallmode')!=='on';
+  setWallMode(on?'on':'off');
+};
+window.setWallMode=function(v){
+  v=(v==='on')?'on':'off';
+  document.documentElement.setAttribute('data-wallmode',v);
+  localStorage.setItem(LS.wallmode,v);
+  const btn=document.getElementById('wallModeBtn');
+  if(btn){
+    btn.classList.toggle('on-wall', v==='on');
+    btn.title=v==='on'?'目前：桌布模式（再點回工作模式）':'桌布模式：精簡卡片以露出背景';
+    btn.textContent=v==='on'?'💼':'🖼';
+  }
+};
+window.toggleSec=function(id){
+  const body=document.getElementById('sec-'+id);
+  const label=document.querySelector('.sec-label[data-sec="'+id+'"]');
+  if(!body) return;
+  const collapsed=body.classList.toggle('collapsed');
+  if(label) label.classList.toggle('collapsed', collapsed);
+  try{
+    const map=JSON.parse(localStorage.getItem(LS.secCollapse)||'{}');
+    map[id]=collapsed;
+    localStorage.setItem(LS.secCollapse, JSON.stringify(map));
+  }catch(e){}
+};
+function restoreSecCollapse(){
+  try{
+    const map=JSON.parse(localStorage.getItem(LS.secCollapse)||'{}');
+    Object.keys(map).forEach(id=>{
+      if(!map[id]) return;
+      const body=document.getElementById('sec-'+id);
+      const label=document.querySelector('.sec-label[data-sec="'+id+'"]');
+      if(body) body.classList.add('collapsed');
+      if(label) label.classList.add('collapsed');
+    });
+  }catch(e){}
+}
+
 window.setTheme=function(t){
   if(!THEME_ORDER.includes(t)) t='clinic';
   document.documentElement.setAttribute('data-theme',t);
   document.querySelectorAll('[data-theme-id]').forEach(el=>el.classList.toggle('on', el.dataset.themeId===t));
-  const tb=document.getElementById('themeBtn'); if(tb) tb.textContent = THEME_NEXT_ICON[t]||'🌙';
   localStorage.setItem(LS.theme,t);
   const dim=localStorage.getItem(LS.wallDim)||'42'; if(typeof setWallDim==='function') setWallDim(dim);
 };
@@ -1121,24 +1219,28 @@ window.addEventListener('DOMContentLoaded', ()=>{
   const _wd=document.getElementById('wallDim'); if(_wd){ _wd.value=_dim; }
   setWallDim(_dim);
   const wrap=document.getElementById('themeTogs');
-  wrap.className='theme-swatches';
-  THEME_ORDER.forEach(id=>{
-    const b=document.createElement('button');
-    b.type='button';
-    b.className='theme-swatch';
-    b.dataset.themeId=id;
-    b.title=THEME_LABEL[id]||id;
-    b.setAttribute('aria-label', THEME_LABEL[id]||id);
-    const cols=THEME_SWATCH[id]||['#eee','#888','#ccc'];
-    const name=THEME_LABEL[id]||id;
-    b.innerHTML=`<span class="dots">${cols.map(c=>`<i style="background:${c}"></i>`).join('')}</span><b>${name}</b>`;
-    b.onclick=()=>setTheme(id);
-    wrap.appendChild(b);
-  });
-  setTheme(localStorage.getItem(LS.theme)||'clinic');
-  restoreCfg();
+  if(wrap){
+    wrap.className='theme-swatches';
+    THEME_ORDER.forEach(id=>{
+      const b=document.createElement('button');
+      b.type='button';
+      b.className='theme-swatch';
+      b.dataset.themeId=id;
+      b.title=THEME_LABEL[id]||id;
+      b.setAttribute('aria-label', THEME_LABEL[id]||id);
+      const cols=THEME_SWATCH[id]||['#eee','#888','#ccc'];
+      const name=THEME_LABEL[id]||id;
+      b.innerHTML=`<span class="dots">${cols.map(c=>`<i style="background:${c}"></i>`).join('')}</span><b>${name}</b>`;
+      b.onclick=()=>setTheme(id);
+      wrap.appendChild(b);
+    });
+  }
+  try{ setTheme(localStorage.getItem(LS.theme)||'clinic'); }catch(e){ console.warn(e); }
+  try{ setWallMode(localStorage.getItem(LS.wallmode)||'off'); }catch(e){ console.warn(e); }
+  try{ restoreSecCollapse(); }catch(e){ console.warn(e); }
+  try{ restoreCfg(); }catch(e){ console.warn(e); }
   document.documentElement.setAttribute('data-xl', localStorage.getItem(LS.xl)||'on');
-  const memo=localStorage.getItem(LS.memo); if(memo) document.getElementById('memoText').value=memo;
+  const memo=localStorage.getItem(LS.memo); if(memo){ const mt=document.getElementById('memoText'); if(mt) mt.value=memo; }
   tick(); setInterval(tick,1000);
   renderRecent();
   const y=new Date().getFullYear();
