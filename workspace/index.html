@@ -239,6 +239,10 @@ html[data-theme="dark"] body.has-wallpaper .ctrl{background:rgba(30,30,28,.55);}
   border:1.5px solid var(--border);border-radius:16px;overflow:hidden;background:var(--surf);
   box-shadow:0 4px 14px var(--shadow);
 }
+.wall-dl-ph{
+  width:100%;aspect-ratio:16/10;display:flex;align-items:center;justify-content:center;
+  background:var(--surf2);color:var(--muted);font-size:13px;font-weight:700;
+}
 .wall-dl-card img{width:100%;aspect-ratio:16/10;object-fit:cover;display:block;background:var(--surf2);}
 .wall-dl-body{padding:12px;}
 .wall-dl-body b{display:block;font-size:16px;font-weight:900;margin-bottom:8px;color:var(--text);}
@@ -620,24 +624,28 @@ html[data-wallmode="on"] .main{max-width:560px;margin-left:28px;margin-right:aut
       <label class="plabel">預設桌布（一鍵套用）</label>
       <div class="wall-presets" id="wallPresets">
         <button type="button" class="wall-preset" data-wall="preset1" onclick="setPresetWallpaper('preset1')">
-          <img src="https://tofudouce.github.io/schedule-app/workspace/2B4BC346-58D2-4C75-B670-1FB9D44C0FA2.png" alt="桌布 A" loading="lazy">
+          <img data-src="https://tofudouce.github.io/schedule-app/workspace/2B4BC346-58D2-4C75-B670-1FB9D44C0FA2.png" alt="桌布 A" loading="lazy">
           <span>桌布 A</span>
         </button>
         <button type="button" class="wall-preset" data-wall="preset2" onclick="setPresetWallpaper('preset2')">
-          <img src="https://tofudouce.github.io/schedule-app/workspace/60267E5A-CB18-46FE-91E2-EB1EEFC57E28.png" alt="桌布 B" loading="lazy">
+          <img data-src="https://tofudouce.github.io/schedule-app/workspace/60267E5A-CB18-46FE-91E2-EB1EEFC57E28.png" alt="桌布 B" loading="lazy">
           <span>桌布 B</span>
         </button>
         <button type="button" class="wall-preset" data-wall="preset3" onclick="setPresetWallpaper('preset3')">
-          <img src="https://tofudouce.github.io/schedule-app/workspace/08E6CA2D-89A9-47D7-A07C-CB0FC24F639E.png" alt="桌布 C" loading="lazy">
+          <img data-src="https://tofudouce.github.io/schedule-app/workspace/08E6CA2D-89A9-47D7-A07C-CB0FC24F639E.png" alt="桌布 C" loading="lazy">
           <span>桌布 C</span>
         </button>
         <button type="button" class="wall-preset" data-wall="preset4" onclick="setPresetWallpaper('preset4')">
-          <img src="https://tofudouce.github.io/schedule-app/workspace/DB270177-4770-44D9-8E18-5731702146B1.png" alt="桌布 D" loading="lazy">
+          <img data-src="https://tofudouce.github.io/schedule-app/workspace/DB270177-4770-44D9-8E18-5731702146B1.png" alt="桌布 D" loading="lazy">
           <span>桌布 D</span>
         </button>
         <button type="button" class="wall-preset" data-wall="preset5" onclick="setPresetWallpaper('preset5')">
-          <img src="https://tofudouce.github.io/schedule-app/workspace/FE6F56D8-9E87-4EBC-AE78-09871C884C0D.png" alt="桌布 E" loading="lazy">
+          <img data-src="https://tofudouce.github.io/schedule-app/workspace/FE6F56D8-9E87-4EBC-AE78-09871C884C0D.png" alt="桌布 E" loading="lazy">
           <span>桌布 E</span>
+        </button>
+              <button type="button" class="wall-preset" data-wall="preset6" onclick="setPresetWallpaper('preset6')">
+          <img data-src="https://tofudouce.github.io/schedule-app/workspace/D97C8D75-113F-40FE-B612-783C2D7C5799.png" alt="桌布 F" loading="lazy" decoding="async">
+          <span>桌布 F</span>
         </button>
       </div>
       <label class="plabel">或從手機／電腦自選</label>
@@ -733,29 +741,62 @@ const WALL_PRESETS={
   preset2:'https://tofudouce.github.io/schedule-app/workspace/60267E5A-CB18-46FE-91E2-EB1EEFC57E28.png',
   preset3:'https://tofudouce.github.io/schedule-app/workspace/08E6CA2D-89A9-47D7-A07C-CB0FC24F639E.png',
   preset4:'https://tofudouce.github.io/schedule-app/workspace/DB270177-4770-44D9-8E18-5731702146B1.png',
-  preset5:'https://tofudouce.github.io/schedule-app/workspace/FE6F56D8-9E87-4EBC-AE78-09871C884C0D.png'
+  preset5:'https://tofudouce.github.io/schedule-app/workspace/FE6F56D8-9E87-4EBC-AE78-09871C884C0D.png',
+  preset6:'https://tofudouce.github.io/schedule-app/workspace/D97C8D75-113F-40FE-B612-783C2D7C5799.png'
 };
 const WALL_PRESET_META=[
   {id:'preset1', label:'桌布 A', url:WALL_PRESETS.preset1},
   {id:'preset2', label:'桌布 B', url:WALL_PRESETS.preset2},
   {id:'preset3', label:'桌布 C', url:WALL_PRESETS.preset3},
   {id:'preset4', label:'桌布 D', url:WALL_PRESETS.preset4},
-  {id:'preset5', label:'桌布 E', url:WALL_PRESETS.preset5}
+  {id:'preset5', label:'桌布 E', url:WALL_PRESETS.preset5},
+  {id:'preset6', label:'桌布 F', url:WALL_PRESETS.preset6}
 ];
+let wallDlFilled=false;
 
-function fillWallDlGrid(){
+function fillWallDlGrid(force){
   const g=document.getElementById('wallDlGrid'); if(!g) return;
-  g.innerHTML=WALL_PRESET_META.map(w=>`
-    <div class="wall-dl-card">
-      <img src="${w.url}" alt="${w.label}" loading="lazy">
+  if(wallDlFilled && !force) return;
+  wallDlFilled=true;
+  // 先放骨架，再一張一張載入預覽，避免一次搶頻寬
+  g.innerHTML=WALL_PRESET_META.map((w,i)=>`
+    <div class="wall-dl-card" data-idx="${i}">
+      <div class="wall-dl-ph" id="wallPh${i}">載入預覽中…</div>
+      <img alt="${w.label}" decoding="async" style="display:none" data-url="${w.url}" id="wallImg${i}">
       <div class="wall-dl-body">
         <b>${w.label}</b>
         <div class="wall-dl-actions">
           <button type="button" class="primary" onclick="setPresetWallpaper('${w.id}');closeModal();">套用</button>
-          <a class="primary" href="${w.url}" download="${w.label}.png" target="_blank" rel="noopener">下載</a>
+          <a href="${w.url}" download="${w.label}.png" target="_blank" rel="noopener">下載</a>
         </div>
       </div>
     </div>`).join('');
+  // 依序載入：完成一張再載下一張
+  let i=0;
+  const next=()=>{
+    if(i>=WALL_PRESET_META.length) return;
+    const img=document.getElementById('wallImg'+i);
+    const ph=document.getElementById('wallPh'+i);
+    if(!img) return;
+    img.onload=()=>{
+      img.style.display='block';
+      if(ph) ph.remove();
+      i++; next();
+    };
+    img.onerror=()=>{
+      if(ph) ph.textContent='預覽失敗，仍可下載';
+      i++; next();
+    };
+    img.src=img.dataset.url;
+  };
+  next();
+}
+function hydrateSettingsWallThumbs(){
+  document.querySelectorAll('.wall-preset img[data-src]').forEach(img=>{
+    if(!img.src || img.src===location.href){
+      img.src=img.dataset.src;
+    }
+  });
 }
 window.setPresetWallpaper=function(id){
   const url=WALL_PRESETS[id]; if(!url) return;
@@ -887,13 +928,14 @@ function restoreCfg(){
   if(c.ds) document.getElementById('dsSlider').value=c.ds;
   applySize(); setCard(c.card||'solid'); setFont(c.font||'sans'); setTexture(c.tex||'none'); setGrid(parseInt(c.grid)||4);
 }
-window.openPanel=()=>document.getElementById('adminPanel').classList.add('show');
+window.openPanel=()=>{document.getElementById('adminPanel').classList.add('show'); hydrateSettingsWallThumbs();};
 window.closePanel=()=>document.getElementById('adminPanel').classList.remove('show');
 window.openModal=id=>{
   document.querySelectorAll('.modal-panel').forEach(p=>p.classList.remove('show'));
   document.getElementById(id).classList.add('show');
   document.getElementById('modalOverlay').classList.add('show');
   document.body.style.overflow='hidden';
+  if(id==='wallPanel') fillWallDlGrid();
   if(id==='taskPanel' && !cachedTasks.length) loadTasks();
   if(id==='covidPanel') calcCovidGap();
 };
@@ -1249,7 +1291,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
   const ew=document.getElementById('emojiPicker');
   EMOJIS.forEach(e=>{const d=document.createElement('div'); d.className='eopt'+(e===selIcon?' on':''); d.textContent=e; d.onclick=()=>{document.querySelectorAll('.eopt').forEach(x=>x.classList.remove('on')); d.classList.add('on'); selIcon=e;}; ew.appendChild(d);});
   fillLists();
-  fillWallDlGrid();
+  /* wall previews load only when opening 桌布下載 */
   fetchCloud();
   setTimeout(()=>silentCheckTasks(),1800);
 });
