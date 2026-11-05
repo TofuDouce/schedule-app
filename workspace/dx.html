@@ -1,643 +1,286 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" data-theme="light" data-font="pingfang">
+<html lang="zh-Hant" data-theme="clinic" data-card="solid" data-font="sans" data-texture="none">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
-<title>門診病代速查 v5</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&family=Noto+Serif+TC:wght@600;700;900&family=LXGW+WenKai+TC:wght@400;500;700&family=Chiron+GoRound+TC:wght@500;700;900&display=swap" rel="stylesheet">
+<meta name="robots" content="noindex, nofollow">
+<title>門診病代速查 v6</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;900&family=Noto+Sans+TC:wght@500;700;900&family=Noto+Serif+TC:wght@600;700;900&family=LXGW+WenKai+TC:wght@400;500;700&family=Zen+Maru+Gothic:wght@500;700;900&family=Chiron+GoRound+TC:wght@500;700;900&display=swap" rel="stylesheet">
 
 <style>
-
-/* ═══════════════════════════════════════════════════
-   TOKENS — 與主網站（clinic_portal）完全同一套三主題
-   明亮 / 夜間 / 仿舊，並共用 localStorage key：cz_theme_v6
-   在主網站切主題，這裡會自動同步
-═══════════════════════════════════════════════════ */
-:root {
-  /* 明亮（預設）— 主網站原始色票 */
-  --A:   #2C5F8A;
-  --A2:  #3A7AB5;
-  --Alt: #5A96C8;
-  --bg-solid: #EDF2F7;
-  --surf:     #FFFFFF;
-  --surf2:    #F0F5FA;
-  --border:   #C8D9EC;
-  --text:     #1A3550;
-  --sub:      #2C5F8A;
-  --muted:    #5A7FA0;
-  --hdr:      rgba(237,242,247,.95);
-
-  /* 由主網站 token 衍生的本頁用途變數 */
-  --bg: var(--bg-solid);
-  --card: rgba(255,255,255,.72);
-  --card-hover: var(--surf);
-  --accent: var(--A);
-  --accent-light: #E0EDF8;
-  --shadow: 0 10px 32px rgba(44, 95, 138, 0.10);
-  --card-shadow: 0 4px 16px rgba(44, 95, 138, 0.10);
-  --backdrop: blur(16px);
-  --sticky-bg: var(--hdr);
-
-  /* 專屬筆記區塊的質感翡翠綠變數（用於區隔） */
-  --note-accent: #0d9488;
-  --note-accent-light: #ccfbf1;
-
-  /* 回到最上方按鈕配色 */
-  --top-btn-a: #64748b;
-  --top-btn-b: #475569;
-
-  /* 卡片字級（診間字體大小滑桿控制） */
-  --fs-card: 16px;
+/* ═══════════════════════════════════════════════════════════
+   門診病代速查 v6 — 與「中正診所 Portal」同一套風格
+   暖紙 × 粗墨線框 × 硬陰影 × 資料夾分頁標籤 × 斜紋繃帶條
+   主題／字型／卡片樣式／背景材質 皆與 Portal 共用設定
+   （localStorage：cz_theme_v7、cz_cfg_v7，需同一網域才會同步）
+═══════════════════════════════════════════════════════════ */
+:root{
+  --lw: 2.5px;
+  --r: 16px;
+  --fs-card: 16px;   /* 診間字體大小滑桿 */
+  --A:#2f7d68; --A2:#4fa088; --Alt:#d9604c;
+  --bg:#f5efdf; --surf:#fffdf4; --surf2:#fbf6e4; --border:#d8cfae;
+  --line:#25382f; --pop:#25382f;
+  --shadow:rgba(37,56,47,.10); --shadowH:rgba(37,56,47,.22);
+  --text:#25382f; --sub:#2f7d68; --muted:#7a7a62;
+  --warnBg:#FFF3B8; --hdr:#fffdf4; --note:#ffe98a;
+}
+[data-theme="clinic"]{
+  --A:#2f7d68; --A2:#4fa088; --Alt:#d9604c;
+  --bg:#f5efdf; --surf:#fffdf4; --surf2:#fbf6e4; --border:#d8cfae;
+  --line:#25382f; --pop:#25382f; --text:#25382f; --sub:#2f7d68; --muted:#7a7a62; --hdr:#fffdf4;
+}
+[data-theme="rose"]{
+  --A:#b0585c; --A2:#d07f80; --Alt:#e3a14a;
+  --bg:#f8e7e1; --surf:#fff8f4; --surf2:#fbeae4; --border:#e8c6bb;
+  --line:#432727; --pop:#432727; --text:#432727; --sub:#b0585c; --muted:#9a7c72; --hdr:#fff8f4;
+}
+[data-theme="ocean"]{
+  --A:#2f6fa3; --A2:#5a96c6; --Alt:#e7a03d;
+  --bg:#e0ecf4; --surf:#f8fbfe; --surf2:#e8f1f8; --border:#c4d9e8;
+  --line:#1b3247; --pop:#1b3247; --text:#1b3247; --sub:#2f6fa3; --muted:#6f8aa0; --hdr:#f8fbfe;
+}
+[data-theme="light"]{
+  --A:#2C5F8A; --A2:#3A7AB5; --Alt:#e0573f;
+  --bg:#EDF2F7; --surf:#FFFFFF; --surf2:#F0F5FA; --border:#C8D9EC;
+  --line:#16293b; --pop:#16293b; --text:#16293b; --sub:#2C5F8A; --muted:#5A7FA0; --hdr:#FFFFFF;
+}
+[data-theme="ash"]{
+  --A:#3E4C6E; --A2:#6577a0; --Alt:#c98a3f;
+  --bg:#EAE6DC; --surf:#F8F6F0; --surf2:#EFEBE1; --border:#D3CDBB;
+  --line:#22232b; --pop:#22232b; --text:#22232b; --sub:#3E4C6E; --muted:#7c766a; --hdr:#F8F6F0;
 }
 
-/* 夜間 — 主網站原始色票 */
-:root[data-theme="dark"] {
-  --A:#3A7AB5; --A2:#5BA0DA; --Alt:#7BBCEE;
-  --bg-solid:#0E1C2C; --surf:#162435; --surf2:#1C2E40;
-  --border:#2A4060;
-  --text:#E2EDF8; --sub:#7BADD8; --muted:#5A82A8;
-  --hdr:rgba(14,28,44,.96);
+[data-font="pingfang"]{ --ff:"PingFang TC","Noto Sans TC",sans-serif; }
+[data-font="sans"],[data-font="sourcesans"]{ --ff:"Noto Sans TC","PingFang TC",sans-serif; }
+[data-font="serif"],[data-font="sourceserif"]{ --ff:"Noto Serif TC",serif; }
+[data-font="wenkai"]{ --ff:"LXGW WenKai TC","Noto Serif TC",serif; }
+[data-font="goround"]{ --ff:"Chiron GoRound TC","Noto Sans TC",sans-serif; }
+[data-font="maru"]{ --ff:"Zen Maru Gothic","Noto Sans TC",sans-serif; }
 
-  --card: rgba(22,36,53,.80);
-  --accent: var(--A2);
-  --accent-light: #163852;
-  --shadow: 0 10px 28px rgba(0, 0, 0, 0.40);
-  --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+/* 背景材質（跟 Portal 設定） */
+[data-texture="dots"] body::after{opacity:1;background-image:radial-gradient(circle,color-mix(in srgb,var(--line) 22%,transparent) 1.2px,transparent 1.6px);background-size:22px 22px;}
+[data-texture="grid"] body::after{opacity:1;background-image:linear-gradient(color-mix(in srgb,var(--line) 12%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--line) 12%,transparent) 1px,transparent 1px);background-size:32px 32px;}
+[data-texture="none"] body::after{opacity:0;}
 
-  --note-accent: #2dd4bf;
-  --note-accent-light: #115e59;
+/* 卡片樣式（跟 Portal 設定） */
+[data-card="flat"] .card{box-shadow:none;}
+[data-card="flat"] .card:hover{box-shadow:0 0 0 var(--lw) var(--A);transform:none;}
+[data-card="glass"] .card{background:color-mix(in srgb,var(--surf) 68%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 8px 24px var(--shadow);}
+[data-card="ios"] .card{background:color-mix(in srgb,var(--surf) 52%,transparent);backdrop-filter:saturate(180%) blur(26px);-webkit-backdrop-filter:saturate(180%) blur(26px);box-shadow:0 10px 30px var(--shadow);border-color:color-mix(in srgb,var(--line) 55%,transparent);}
 
-  --top-btn-a: #475569;
-  --top-btn-b: #334155;
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{scroll-behavior:auto;}
+body{
+  min-height:100vh;background:var(--bg);color:var(--text);
+  font-family:var(--ff,"Noto Sans TC",sans-serif);
+  font-size:18px;line-height:1.6;letter-spacing:.02em;
+  overflow-x:hidden;transition:background .3s,color .3s;
 }
-
-/* 仿舊 — 主網站原始羊皮紙暖色票 */
-:root[data-theme="antique"] {
-  --A:#9C6B30; --A2:#B98A4C; --Alt:#D1A86C;
-  --bg-solid:#F1E8D8; --surf:#FBF6EC; --surf2:#F5ECDA;
-  --border:#D9C6A0;
-  --text:#4A3826; --sub:#8B5E34; --muted:#9C8868;
-  --hdr:rgba(241,232,216,.95);
-
-  --card: rgba(251,246,236,.82);
-  --accent: var(--A);
-  --accent-light: #F0E2C6;
-  --shadow: 0 10px 32px rgba(120, 90, 40, 0.14);
-  --card-shadow: 0 4px 16px rgba(120, 90, 40, 0.14);
-
-  /* 仿舊主題下改用苔蘚綠，避免翡翠綠與暖棕互相打架 */
-  --note-accent: #5E7A34;
-  --note-accent-light: #E8EDD2;
-
-  --top-btn-a: #9C8868;
-  --top-btn-b: #7A6A4E;
-}
-
-/* 雅灰 — 小說樣板「人間夜色」：暖灰紙面＋靛藍主色 */
-:root[data-theme="ash"] {
-  --A:#3E4C6E; --A2:#55668E; --Alt:#7385AC;
-  --bg-solid:#EDEAE3; --surf:#F7F5F0; --surf2:#EFECE5;
-  --border:#D6D1C2;
-  --text:#242320; --sub:#3E4C6E; --muted:#726B5C;
-  --hdr:rgba(237,234,227,.95);
-
-  --card: rgba(247,245,240,.80);
-  --accent: var(--A);
-  --accent-light: #DFE3ED;
-  --shadow: 0 10px 32px rgba(62, 76, 110, 0.10);
-  --card-shadow: 0 4px 16px rgba(62, 76, 110, 0.10);
-
-  --note-accent: #0F766E;
-  --note-accent-light: #CDEEE6;
-
-  --top-btn-a: #726B5C;
-  --top-btn-b: #57513F;
-}
-
-/* 暗金 — 小說樣板「暗金」：深褐夜幕＋鎏金主色 */
-:root[data-theme="gold"] {
-  --A:#C9A24A; --A2:#E0BC64; --Alt:#EBD08A;
-  --bg-solid:#1C1812; --surf:#26211A; --surf2:#2E2820;
-  --border:#3E3626;
-  --text:#E8DFC8; --sub:#D8B96A; --muted:#9C9074;
-  --hdr:rgba(28,24,18,.96);
-
-  --card: rgba(38,33,26,.80);
-  --accent: var(--A2);
-  --accent-light: #3A2F14;
-  --shadow: 0 10px 28px rgba(0, 0, 0, 0.40);
-  --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
-
-  /* 暗金主題下改用玉青，避免與鎏金主色互搶 */
-  --note-accent: #6FAE8F;
-  --note-accent-light: #1E3A2E;
-
-  --top-btn-a: #57513F;
-  --top-btn-b: #3E3626;
-}
-
-/* 字型 — 與主網站同五種，讀取主網站 cz_cfg_v6 自動套用 */
-:root[data-font="pingfang"]    { --ff:"PingFang TC","PingFang SC",-apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif; }
-:root[data-font="sourcesans"]  { --ff:"Noto Sans TC","Source Han Sans TC",sans-serif; }
-:root[data-font="sourceserif"] { --ff:"Noto Serif TC","Source Han Serif TC",serif; }
-:root[data-font="wenkai"]      { --ff:"LXGW WenKai TC","Noto Serif TC",serif; }
-:root[data-font="goround"]     { --ff:"Chiron GoRound TC","Noto Sans TC",sans-serif; }
-
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  background: var(--bg);
-  background-attachment: fixed;
-  color: var(--text);
-  font-family: var(--ff,"Noto Sans TC",sans-serif);
-  padding: 0 20px 100px;
-  transition: background 0.3s, color 0.3s;
-  min-height: 100vh;
-  position: relative;
-}
-
-/* 與主網站相同的背景柔光暈 */
-body::before {
-  content:''; position:fixed; inset:0; z-index:-1; pointer-events:none;
+/* 紙張橫格線＋柔光 */
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   background:
-    radial-gradient(ellipse 55% 40% at 5%  5%,  color-mix(in srgb,var(--A) 8%,transparent) 0%,transparent 70%),
-    radial-gradient(ellipse 40% 35% at 95% 90%, color-mix(in srgb,var(--A2) 6%,transparent) 0%,transparent 70%);
+    repeating-linear-gradient(to bottom,transparent 0 35px,color-mix(in srgb,var(--line) 7%,transparent) 35px 36px),
+    radial-gradient(ellipse 60% 45% at 100% 0%,color-mix(in srgb,var(--A) 10%,transparent),transparent 70%),
+    radial-gradient(ellipse 50% 40% at 0% 100%,color-mix(in srgb,var(--Alt) 9%,transparent),transparent 70%);}
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0;transition:opacity .3s;}
+button,input{font-family:inherit;}
+::selection{background:var(--Alt);color:#fff;}
+
+/* ───────── 表頭＋斜紋繃帶條 ───────── */
+.hdr{
+  position:relative;z-index:2;margin-bottom:14px;
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:18px 96px 18px 28px;
+  background:var(--hdr);border-bottom:var(--lw) solid var(--line);
 }
-
-/* ===================================================
-   v3 新增：頂部吸附區塊，現在只放「快速跳轉列」
-   搜尋框移出吸附流程，改成右上角浮動搜尋，
-   大幅減少固定佔用的可視高度
-   =================================================== */
-.sticky-wrap {
-  position: sticky;
-  top: 0;
-  z-index: 600;
-  background: var(--sticky-bg);
-  backdrop-filter: var(--backdrop);
-  -webkit-backdrop-filter: var(--backdrop);
-  margin: 0 -20px;
-  padding: 14px 20px 14px;
-  border-bottom: 1px solid var(--border);
+.hdr::after{content:'';position:absolute;left:0;right:0;bottom:calc(-1 * var(--lw) - 9px);height:9px;border-bottom:var(--lw) solid var(--line);
+  background:repeating-linear-gradient(-45deg,var(--A) 0 9px,var(--surf) 9px 18px);}
+.logo{display:flex;align-items:center;gap:14px;min-width:0;}
+.logo-icon{flex:none;width:54px;height:54px;border-radius:14px;background:var(--A);border:var(--lw) solid var(--line);display:flex;align-items:center;justify-content:center;box-shadow:4px 4px 0 var(--pop);transform:rotate(-5deg);}
+.logo-icon svg{width:30px;height:30px;display:block;}
+.logo-name{font-size:clamp(24px,3vw,30px);font-weight:900;letter-spacing:.06em;line-height:1.15;}
+.logo-sub{display:inline-block;font-family:"Inter",monospace;font-size:11px;font-weight:900;letter-spacing:3px;color:#fff;background:var(--Alt);padding:1px 8px 1px 10px;margin-top:4px;border-radius:4px;transform:rotate(-1.5deg);}
+.hint-note{
+  flex:none;background:var(--note);color:#2b2a1c;border:var(--lw) solid var(--line);
+  border-radius:6px 6px 14px 6px;padding:9px 16px;font-size:15px;font-weight:800;
+  box-shadow:4px 4px 0 var(--pop);transform:rotate(1.5deg);position:relative;
 }
+.hint-note::before{content:'';position:absolute;top:-11px;left:50%;width:56px;height:18px;transform:translateX(-50%) rotate(-3deg);
+  background:color-mix(in srgb,var(--A) 40%,transparent);border:2px solid color-mix(in srgb,var(--line) 45%,transparent);}
 
-/* 頂部控制列佈局（不吸附，往下捲就自然滑走） */
-.header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-  margin-bottom: 16px;
-  padding-top: 24px;
-  padding-right: 70px; /* 預留右上角浮動搜尋按鈕的空間，避免文字被壓到 */
+/* ───────── 吸附：快速跳轉 ───────── */
+.sticky-wrap{
+  position:sticky;top:0;z-index:600;
+  background:var(--hdr);
+  border-top:var(--lw) solid var(--line);border-bottom:var(--lw) solid var(--line);
+  padding:10px 90px 12px 28px;margin-top:14px;
+  box-shadow:0 5px 0 color-mix(in srgb,var(--pop) 14%,transparent);
 }
-
-.title-area {
-  flex: 1;
+.quicknav-label{display:inline-block;align-self:center;font-size:12px;font-weight:900;letter-spacing:.14em;color:var(--Alt);
+  border:2px double var(--Alt);border-radius:6px;padding:0 10px 0 12px;margin:0 4px 0 2px;transform:rotate(-1.5deg);background:var(--surf);}
+.quicknav{display:flex;flex-wrap:wrap;gap:9px;}
+.quicknav-btn{
+  background:var(--surf);color:var(--text);border:2px solid var(--line);border-radius:10px;
+  font-size:19px;font-weight:900;letter-spacing:.04em;padding:5px 15px 6px;cursor:pointer;white-space:nowrap;
+  box-shadow:3px 3px 0 var(--pop);transition:transform .1s,box-shadow .1s,background .15s,color .15s;
 }
+.quicknav-btn:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--A);background:color-mix(in srgb,var(--A) 14%,var(--surf));}
+.quicknav-btn:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--pop);}
+.quicknav-btn.quicknav-special{background:var(--Alt);color:#fff;}
+.quicknav-btn.quicknav-special:hover{box-shadow:4px 4px 0 var(--pop);filter:brightness(1.06);}
 
-.title {
-  font-size: 32px;
-  font-weight: 800; 
-  letter-spacing: 0.5px;
-  margin-bottom: 6px;
-  color: var(--text);
-  background: linear-gradient(45deg, var(--text), var(--accent));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+/* ───────── 主體 ───────── */
+.container-wrap{position:relative;z-index:1;max-width:1520px;margin:0 auto;padding:10px 28px 40px;}
+.section{margin-bottom:12px;}
+
+/* 區塊標籤：資料夾分頁 */
+.sec-label{display:flex;align-items:flex-end;margin:38px 0 22px;user-select:none;}
+.section:first-child .sec-label{margin-top:24px;}
+.sec-pill{position:relative;display:flex;align-items:center;gap:8px;background:var(--A);color:#fff;
+  font-size:18px;font-weight:900;padding:9px 20px 8px;letter-spacing:.12em;
+  border:var(--lw) solid var(--line);border-bottom:0;border-radius:14px 14px 0 0;
+  box-shadow:inset 0 -4px 0 rgba(0,0,0,.12);}
+.sec-pill::after{content:'';position:absolute;left:0;right:0;bottom:calc(-1 * var(--lw));height:var(--lw);background:var(--A);}
+.sec-line{flex:1;height:0;border-bottom:var(--lw) solid var(--line);}
+.section.special .sec-pill{background:var(--Alt);}
+.section.special .sec-pill::after{background:var(--Alt);}
+
+/* 卡片：索引卡 */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:24px 22px;counter-reset:cardno;padding-top:6px;}
+.card{
+  position:relative;background:var(--surf);border:var(--lw) solid var(--line);border-radius:var(--r);
+  box-shadow:5px 5px 0 var(--pop);cursor:pointer;
+  padding:32px 16px 18px;min-height:112px;
+  display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:10px;
+  counter-increment:cardno;
+  transition:transform .15s cubic-bezier(.3,1.5,.5,1),box-shadow .15s;
 }
+.anim .card{animation:cardIn .4s cubic-bezier(.3,1.4,.5,1) both;}
+.anim .card:nth-child(2){animation-delay:.03s}.anim .card:nth-child(3){animation-delay:.06s}.anim .card:nth-child(4){animation-delay:.09s}
+.anim .card:nth-child(n+5){animation-delay:.12s}
+@keyframes cardIn{from{opacity:0;transform:translateY(12px) rotate(-1deg)}to{opacity:1;transform:none}}
+.card::before{content:"№ " counter(cardno,decimal-leading-zero);position:absolute;top:9px;left:14px;font-family:"Inter",monospace;font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--muted);}
+.card::after{content:'';position:absolute;top:10px;right:14px;width:11px;height:11px;border-radius:50%;background:var(--bg);border:2px solid var(--line);box-shadow:inset 1px 1px 0 rgba(0,0,0,.18);}
+.card:hover{transform:translate(-3px,-3px) rotate(-.4deg);box-shadow:8px 8px 0 var(--A);}
+.card:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--pop);}
+.card.hl{background:var(--warnBg);}
+.section.special .card:hover{box-shadow:8px 8px 0 var(--Alt);}
 
-.subtitle {
-  color: var(--sub);
-  font-size: 16px;
-  margin: 0;
-  font-weight: 700; 
+.code{
+  font-family:"Inter","Noto Sans TC",monospace;
+  font-weight:900;color:var(--A);font-size:calc(var(--fs-card) + 4px);letter-spacing:.04em;line-height:1.2;word-break:break-all;
 }
-
-/* ===================================================
-   v3 新增：右上角浮動搜尋按鈕 + 展開式半透明搜尋面板
-   平常收起來不佔空間，需要搜尋時再點開
-   =================================================== */
-.search-toggle-btn {
-  position: fixed;
-  top: 20px;
-  right: 24px;
-  width: 54px;
-  height: 54px;
-  border: none;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--A), var(--A2));
-  color: white;
-  font-size: 22px;
-  cursor: pointer;
-  box-shadow: 0 8px 20px color-mix(in srgb, var(--A) 35%, transparent);
-  z-index: 1100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+.section.special .code{color:var(--Alt);}
+.name{
+  width:100%;padding-top:9px;border-top:2px dashed color-mix(in srgb,var(--line) 35%,transparent);
+  font-size:var(--fs-card);font-weight:800;color:var(--text);line-height:1.4;word-break:break-word;
 }
+.small-note{display:block;margin-top:3px;font-size:85%;font-weight:600;color:var(--muted);}
+.empty{text-align:center;padding:40px;color:var(--muted);font-weight:800;border:2px dashed color-mix(in srgb,var(--line) 40%,transparent);border-radius:14px;margin-top:24px;}
 
-.search-toggle-btn:hover {
-  transform: scale(1.08);
+/* ───────── 浮動按鈕 ───────── */
+.ctrl{
+  position:fixed;width:54px;height:54px;border-radius:14px;border:var(--lw) solid var(--line);background:var(--surf);color:var(--text);
+  font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  box-shadow:4px 4px 0 var(--pop);transition:transform .12s,box-shadow .12s,background .15s,opacity .25s;
 }
+.ctrl:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--A);}
+.ctrl:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--pop);}
+.ctrl.active{background:var(--A);color:#fff;}
+#searchToggleBtn{top:22px;right:24px;z-index:1100;}
+#settingsBtn{right:24px;bottom:24px;z-index:1000;}
+#backToTopBtn{left:24px;bottom:24px;z-index:1000;opacity:0;pointer-events:none;}
+#backToTopBtn.show{opacity:1;pointer-events:auto;}
 
-.search-toggle-btn.active {
-  box-shadow: 0 0 0 4px var(--accent-light), 0 8px 20px color-mix(in srgb, var(--A) 35%, transparent);
+/* 展開式搜尋 */
+.search-float-panel{position:fixed;top:22px;right:92px;width:min(440px,calc(100vw - 120px));z-index:1090;
+  opacity:0;visibility:hidden;transform:translateX(14px);pointer-events:none;transition:opacity .2s,transform .2s,visibility .2s;}
+.search-float-panel.show{opacity:1;visibility:visible;transform:none;pointer-events:auto;}
+.search{
+  width:100%;height:54px;padding:0 18px;border:var(--lw) solid var(--line);border-radius:12px;
+  background:var(--surf);color:var(--text);font-size:17px;font-weight:700;
+  box-shadow:3px 3px 0 var(--pop);transition:box-shadow .15s,transform .15s;
 }
+.search::placeholder{color:var(--muted);font-weight:600;}
+.search:focus{outline:none;transform:translate(-1px,-1px);box-shadow:5px 5px 0 var(--A);}
 
-.search-float-panel {
-  position: fixed;
-  top: 20px;
-  right: 88px;
-  width: 0;
-  overflow: hidden;
-  opacity: 0;
-  pointer-events: none;
-  transition: width 0.25s ease, opacity 0.2s ease;
-  z-index: 1090;
+/* 設定面板：便條卡 */
+.settings-panel{
+  position:fixed;right:24px;bottom:94px;width:min(320px,calc(100vw - 48px));z-index:999;
+  background:var(--surf2);border:var(--lw) solid var(--line);border-radius:14px;box-shadow:6px 6px 0 var(--pop);
+  padding:24px 18px 18px;display:none;
 }
-
-.search-float-panel.show {
-  width: min(440px, calc(100vw - 130px));
-  opacity: 1;
-  pointer-events: auto;
+.settings-panel.show{display:block;animation:cardIn .25s both;}
+.panel-tag{position:absolute;top:-15px;left:14px;font-size:13px;font-weight:900;color:#fff;background:var(--Alt);border:2px solid var(--line);border-radius:8px;padding:2px 12px;letter-spacing:.12em;transform:rotate(-1.5deg);}
+.setting-title{font-size:15px;font-weight:800;color:var(--muted);letter-spacing:.06em;margin:4px 0 8px;}
+.srow{display:flex;align-items:center;gap:12px;margin-bottom:18px;}
+.srow input[type=range]{flex:1;accent-color:var(--A);height:6px;cursor:pointer;}
+.sval{font-size:13px;font-weight:900;min-width:48px;text-align:center;color:var(--text);background:var(--surf);border:2px solid var(--line);border-radius:8px;padding:1px 4px;}
+.theme-swatches{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+.theme-swatch{
+  display:flex;flex-direction:column;align-items:flex-start;gap:7px;padding:10px 12px 9px;text-align:left;
+  border-radius:12px;border:2px solid var(--line);background:var(--surf);cursor:pointer;color:var(--text);
+  box-shadow:3px 3px 0 var(--pop);transition:transform .12s,box-shadow .12s,background .15s;appearance:none;-webkit-appearance:none;
 }
+.theme-swatch:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--pop);}
+.theme-swatch:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--pop);}
+.theme-swatch.on{background:color-mix(in srgb,var(--A) 14%,var(--surf));box-shadow:3px 3px 0 var(--A);}
+.theme-swatch .dots{display:flex;gap:6px;}
+.theme-swatch .dots i{width:20px;height:20px;border-radius:50%;display:block;border:2px solid var(--line);}
+.theme-swatch b{font-size:13px;font-weight:800;letter-spacing:.03em;line-height:1.2;}
 
-.search {
-  width: 100%;
-  padding: 14px 20px;
-  border: 2px solid var(--accent);
-  border-radius: 18px;
-  background: var(--card);
-  backdrop-filter: var(--backdrop);
-  -webkit-backdrop-filter: var(--backdrop);
-  color: var(--text);
-  font-size: 17px;
-  font-weight: 700; 
-  outline: none;
-  box-shadow: var(--shadow);
-  transition: all 0.25s ease;
+/* 複製提示 */
+.toast{
+  position:fixed;bottom:96px;left:50%;transform:translateX(-50%);z-index:1200;
+  background:var(--A);color:#fff;border:var(--lw) solid var(--line);border-radius:12px;
+  padding:12px 26px;font-size:17px;font-weight:900;letter-spacing:.06em;box-shadow:4px 4px 0 var(--pop);
+  opacity:0;pointer-events:none;transition:opacity .2s,bottom .2s;white-space:nowrap;
 }
+.toast.show{opacity:1;bottom:106px;}
 
-.search:focus {
-  background: var(--card-hover);
-  box-shadow: 0 8px 24px color-mix(in srgb, var(--A) 25%, transparent);
+.footer-space{height:70px;}
+
+@media(max-width:700px){
+  .hdr{padding:14px 78px 14px 14px;}
+  .hint-note{display:none;}
+  .logo-icon{width:46px;height:46px;}
+  .logo-name{font-size:23px;white-space:nowrap;}
+  .sticky-wrap{padding:8px 74px 10px 14px;}
+  .quicknav{gap:7px;}
+  .quicknav-btn{font-size:17px;padding:4px 11px 5px;border-radius:9px;box-shadow:2px 2px 0 var(--pop);}
+  .container-wrap{padding:6px 14px 30px;}
+  .grid{gap:20px 16px;}
+  .search-float-panel{right:84px;width:calc(100vw - 104px);}
+  #searchToggleBtn{right:14px;}
+  .toast{max-width:calc(100vw - 28px);white-space:normal;text-align:center;}
 }
-
-/* v2 新增：快速跳轉大字按鈕列 */
-.quicknav-label {
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--sub);
-  margin: 14px 0 8px 4px;
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important;}
 }
-
-.quicknav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.quicknav-btn {
-  background: var(--card);
-  border: 2px solid var(--accent);
-  color: var(--accent);
-  font-size: 21px;
-  font-weight: 900;
-  font-family: inherit;
-  -webkit-text-stroke: 0.4px currentColor; /* 中文字型 900 有時看起來不夠粗，用描邊補足視覺粗度 */
-  padding: 10px 20px;
-  border-radius: 14px;
-  cursor: pointer;
-  transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease;
-  box-shadow: var(--card-shadow);
-  white-space: nowrap;
-}
-
-.quicknav-btn:hover,
-.quicknav-btn:active {
-  background: var(--accent);
-  color: #fff;
-  transform: translateY(-2px);
-}
-
-.quicknav-btn.quicknav-special {
-  border-color: var(--note-accent);
-  color: var(--note-accent);
-}
-
-.quicknav-btn.quicknav-special:hover,
-.quicknav-btn.quicknav-special:active {
-  background: var(--note-accent);
-  color: #fff;
-}
-
-.section {
-  margin-bottom: 32px;
-  scroll-margin-top: 210px; /* 讓跳轉定位時不被吸附列擋住 */
-}
-
-/* 分類大標題 */
-.section-title {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--accent-light);
-  color: var(--accent);
-  padding: 10px 24px;
-  border-radius: 999px;
-  font-size: 20px; 
-  font-weight: 900; 
-  margin-bottom: 16px;
-  box-shadow: 0 2px 10px color-mix(in srgb, var(--A) 10%, transparent);
-  letter-spacing: 0.5px;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-  gap: 14px;
-}
-
-/* 卡片設計 */
-.card {
-  background: var(--card);
-  backdrop-filter: var(--backdrop);
-  -webkit-backdrop-filter: var(--backdrop);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 18px 16px;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-  min-height: 100px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  box-shadow: var(--card-shadow);
-  position: relative;
-  overflow: hidden;
-}
-
-.card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 6px;
-  height: 100%;
-  background: var(--accent);
-  transition: width 0.2s ease;
-}
-
-.card:hover {
-  transform: translateY(-4px);
-  background: var(--card-hover);
-  box-shadow: 0 12px 24px color-mix(in srgb, var(--A) 18%, transparent);
-}
-
-.card:hover::before {
-  width: 10px;
-}
-
-.code {
-  font-weight: 900; 
-  color: var(--accent);
-  margin-bottom: 6px;
-  font-size: calc(var(--fs-card) + 2px);
-  letter-spacing: 0.5px;
-}
-
-.name {
-  line-height: 1.4;
-  word-break: break-word;
-  font-size: var(--fs-card);
-  font-weight: 800; 
-  color: var(--text);
-}
-
-/* 括號細則小字化樣式 */
-.small-note {
-  font-size: 85%;
-  font-weight: 600;
-  color: var(--muted);
-  display: block;
-  margin-top: 4px;
-}
-
-
-/* ===================================================
-   專屬色系區隔：手寫筆記獨立翡翠綠 CSS
-   =================================================== */
-.section.note-section .section-title {
-  background: var(--note-accent-light);
-  color: var(--note-accent);
-}
-
-.section.note-section .card::before {
-  background: var(--note-accent);
-}
-
-.section.note-section .card:hover {
-  box-shadow: 0 12px 24px color-mix(in srgb, var(--note-accent) 18%, transparent);
-}
-
-.section.note-section .code {
-  color: var(--note-accent);
-}
-
-/* 複製提示浮磚 */
-.toast {
-  position: fixed;
-  bottom: 96px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--text);
-  color: var(--bg-solid);
-  padding: 14px 28px;
-  border-radius: 999px;
-  font-size: 16px;
-  font-weight: 800;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.25s, bottom 0.25s;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
-  z-index: 1001;
-}
-
-.toast.show {
-  opacity: 1;
-  bottom: 106px;
-}
-
-/* 右下角齒輪按鈕 */
-.settings-btn {
-  position: fixed;
-  right: 24px;
-  bottom: 24px;
-  width: 60px;
-  height: 60px;
-  border: none;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--A), var(--A2));
-  color: white;
-  font-size: 26px;
-  cursor: pointer;
-  box-shadow: 0 8px 24px color-mix(in srgb, var(--A) 40%, transparent);
-  transition: transform 0.2s, box-shadow 0.2s;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.settings-btn:hover {
-  transform: rotate(45deg) scale(1.05);
-}
-
-/* v2 新增：左下角「回到最上方」按鈕，滾動一段距離後才出現 */
-.back-to-top-btn {
-  position: fixed;
-  left: 24px;
-  bottom: 24px;
-  width: 60px;
-  height: 60px;
-  border: none;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--top-btn-a), var(--top-btn-b));
-  color: white;
-  font-size: 26px;
-  cursor: pointer;
-  box-shadow: 0 8px 24px rgba(71, 85, 105, 0.4);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(10px);
-  transition: opacity 0.25s, transform 0.25s;
-}
-
-.back-to-top-btn.show {
-  opacity: 1;
-  pointer-events: auto;
-  transform: translateY(0);
-}
-
-.back-to-top-btn:hover {
-  transform: translateY(-3px) scale(1.05);
-}
-
-/* 控制面板 */
-.settings-panel {
-  position: fixed;
-  right: 24px;
-  bottom: 96px;
-  width: 300px;
-  background: var(--card);
-  backdrop-filter: var(--backdrop);
-  -webkit-backdrop-filter: var(--backdrop);
-  border: 2px solid var(--accent); 
-  border-radius: 24px;
-  padding: 20px;
-  display: none;
-  box-shadow: var(--shadow);
-  z-index: 999;
-}
-
-.settings-panel.show {
-  display: block;
-  animation: panelFade 0.2s ease-out;
-}
-
-@keyframes panelFade {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.setting-title {
-  font-size: 16px;
-  margin-bottom: 12px;
-  font-weight: 800;
-  color: var(--text);
-}
-
-.range {
-  width: 100%;
-  margin-bottom: 20px;
-  cursor: pointer;
-  accent-color: var(--accent);
-}
-
-.theme-group {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
-
-.theme-tog {
-  flex: 1;
-  border: 2px solid var(--border);
-  border-radius: 12px;
-  padding: 10px 4px;
-  font-size: 14px;
-  font-weight: 800;
-  font-family: inherit;
-  background: var(--card);
-  color: var(--sub);
-  cursor: pointer;
-  transition: all 0.15s;
-  white-space: nowrap;
-}
-
-.theme-tog:hover {
-  border-color: var(--A);
-}
-
-.theme-tog.on {
-  background: linear-gradient(135deg, var(--A), var(--A2));
-  border-color: transparent;
-  color: #fff;
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--A) 30%, transparent);
-}
-
-.container-wrap {
-  padding-top: 20px;
-}
-
-.footer-space {
-  height: 80px;
-}
-
 </style>
 </head>
-
 <body>
 
-<div class="header-row">
-  <div class="title-area">
-    <div class="title">門診病代速查</div>
-    <div class="subtitle">👍 點擊卡片即可快速複製病代</div>
+<header class="hdr">
+  <div class="logo">
+    <div class="logo-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M12 3h8v9h9v8h-9v9h-8v-9H3v-8h9z" fill="#fffdf4" stroke="#25382f" stroke-width="2.4" stroke-linejoin="round"/></svg></div>
+    <div>
+      <div class="logo-name">門診病代速查</div>
+      <div class="logo-sub">ICD-10 QUICK REF · V6</div>
+    </div>
   </div>
-</div>
+  <div class="hint-note">👍 點擊卡片即可快速複製病代</div>
+</header>
 
-<button class="search-toggle-btn" id="searchToggleBtn" title="搜尋">🔍</button>
+<button class="ctrl" id="searchToggleBtn" title="搜尋" aria-label="搜尋">🔍</button>
 <div class="search-float-panel" id="searchFloatPanel">
-  <input
-    type="text"
-    class="search"
-    id="searchInput"
-    placeholder="輸入疾病名稱或 ICD 代碼搜尋..."
-  />
+  <input type="text" class="search" id="searchInput" placeholder="輸入疾病名稱或 ICD 代碼搜尋..." autocomplete="off" />
 </div>
 
 <div class="sticky-wrap">
-  <div class="quicknav-label">⚡ 快速跳轉（點大字直接找）</div>
   <div class="quicknav" id="quickNav"></div>
 </div>
 
@@ -645,38 +288,25 @@ body::before {
   <div id="container"></div>
 </div>
 
-<div class="toast" id="toast">
-已複製病代
-</div>
+<div class="toast" id="toast">已複製病代</div>
 
-<button class="back-to-top-btn" id="backToTopBtn" title="回到最上方">⬆️</button>
-
-<button class="settings-btn" id="settingsBtn">⚙️</button>
+<button class="ctrl" id="backToTopBtn" title="回到最上方" aria-label="回到最上方">⬆️</button>
+<button class="ctrl" id="settingsBtn" title="設定" aria-label="設定">⚙️</button>
 
 <div class="settings-panel" id="settingsPanel">
-  <div class="setting-title">🔧 調整診間字體大小</div>
-  <input
-    type="range"
-    min="14"
-    max="40"
-    value="16"
-    class="range"
-    id="fontSlider"
-  />
-  <div class="setting-title">🎨 佈景主題（與主網站同步）</div>
-  <div class="theme-group">
-    <button class="theme-tog" id="theme-light"   data-theme-val="light">☀️ 明亮</button>
-    <button class="theme-tog" id="theme-dark"    data-theme-val="dark">🌙 夜間</button>
-    <button class="theme-tog" id="theme-antique" data-theme-val="antique">📜 仿舊</button>
-    <button class="theme-tog" id="theme-ash"     data-theme-val="ash">🌫️ 雅灰</button>
-    <button class="theme-tog" id="theme-gold"    data-theme-val="gold">✨ 暗金</button>
+  <div class="panel-tag">設定</div>
+  <div class="setting-title">🔧 診間字體大小</div>
+  <div class="srow">
+    <input type="range" min="14" max="40" value="16" id="fontSlider" />
+    <span class="sval" id="fontVal">16px</span>
   </div>
+  <div class="setting-title">🎨 佈景主題（與 Portal 同步）</div>
+  <div class="theme-swatches" id="themeTogs"></div>
 </div>
 
 <div class="footer-space"></div>
 
 <script>
-
 const data = {
 
 "🦴 M00 關節痛 (一般)":[
@@ -777,6 +407,46 @@ const data = {
   ["S20213A","雙側前胸壁挫傷之初期照護"]
 ],
 
+"🩼 S1 常用扭傷":[
+  ["S93401A","右踝扭傷"],
+  ["S93402A","左踝扭傷"],
+  ["S8391XA","右膝扭傷"],
+  ["S8392XA","左膝扭傷"],
+  ["S63501A","右手腕扭傷"],
+  ["S63502A","左手腕扭傷"],
+  ["S134XXA","頸椎扭傷"],
+  ["S335XXA","腰椎扭傷"]
+],
+
+"🦶 S2 下肢扭傷":[
+  ["S93409A","未明示側性踝關節扭傷"],
+  ["S93401A","右踝扭傷"],
+  ["S93402A","左踝扭傷"],
+  ["S8390XA","未明示側性膝關節扭傷"],
+  ["S8391XA","右膝扭傷"],
+  ["S8392XA","左膝扭傷"],
+  ["S93609A","足部其他部位扭傷"],
+  ["S73109A","髖關節扭傷"]
+],
+
+"🤚 S3 上肢扭傷":[
+  ["S43409A","未明示側性肩關節扭傷"],
+  ["S4350XA","肩鎖關節扭傷"],
+  ["S53409A","肘部韌帶扭傷"],
+  ["S63509A","未明示側性手腕扭傷"],
+  ["S63501A","右手腕扭傷"],
+  ["S63502A","左手腕扭傷"],
+  ["S63619A","未明示側性手指扭傷"]
+],
+
+"🧍 S4 頸胸腰與骨盆扭傷":[
+  ["S139XXA","頸部扭傷"],
+  ["S134XXA","頸椎扭傷 <span class='small-note'>(頸椎韌帶)</span>"],
+  ["S233XXA","胸椎扭傷 <span class='small-note'>(胸椎韌帶)</span>"],
+  ["S335XXA","腰部／腰椎扭傷 <span class='small-note'>(腰椎韌帶)</span>"],
+  ["S336XXA","骶髂關節扭傷"]
+],
+
 "🩺 R 症狀":[
   ["R000","心搏過速"],
   ["R001","心搏過慢"],
@@ -855,12 +525,7 @@ const data = {
 
 };
 
-/* ===================================================
-   v2 新增：快速跳轉設定
-   label：按鈕上顯示的大字
-   match：用來比對 data 分類標題的關鍵字
-   special：是否套用「常用代碼」專屬配色
-   =================================================== */
+/* 快速跳轉設定：label＝按鈕大字、match＝比對分類標題、special＝專屬配色 */
 const quickNavConfig = [
   { label: "一般", match: "M00" },
   { label: "肩", match: "肩部" },
@@ -875,67 +540,75 @@ const quickNavConfig = [
   { label: "腿", match: "M11" },
   { label: "足趾", match: "M12" },
   { label: "肌痛", match: "M07" },
-  { label: "症狀", match: "R 症狀" },
   { label: "胸部挫傷", match: "胸部挫傷" },
+  { label: "扭傷", match: "S1 常用扭傷" },
+  { label: "症狀", match: "R 症狀" },
   { label: "皮膚", match: "L 皮膚" },
   { label: "呼吸", match: "J 呼吸道" },
   { label: "⭐常用代碼", match: "常用新舊代碼", special: true }
 ];
 
-const container = document.getElementById("container");
+const container  = document.getElementById("container");
 const fontSlider = document.getElementById("fontSlider");
+const fontVal    = document.getElementById("fontVal");
 const sectionKeys = Object.keys(data);
+let firstRender = true;
+
+function stripTags(s){ return s.replace(/<[^>]*>/g, ""); }
 
 function render(keyword=""){
   container.innerHTML = "";
+  /* 只有第一次載入播放卡片進場動畫，搜尋打字時不閃爍 */
+  container.className = firstRender ? "anim" : "";
+  firstRender = false;
+
+  /* 搜尋 S93.401A 這種帶小數點的輸入，也能找到 S93401A */
+  const kw = keyword.trim().toLowerCase();
+  const kwNoDot = kw.replace(/\./g, "");
+  let total = 0;
 
   sectionKeys.forEach((section, idx) => {
     const filtered = data[section].filter(item => {
-      return (
-        item[0].toLowerCase().includes(keyword.toLowerCase()) ||
-        item[1].includes(keyword)
-      );
+      if (!kw) return true;
+      const code = item[0].toLowerCase();
+      const name = stripTags(item[1]).toLowerCase();
+      return code.includes(kw) || code.includes(kwNoDot) || name.includes(kw);
     });
-
     if (filtered.length === 0) return;
+    total += filtered.length;
+
+    const isSpecial = section.includes("常用新舊代碼") || section.includes("常用扭傷");
+    const isHot     = section.includes("常用扭傷");
 
     const sec = document.createElement("div");
     sec.id = "sec-" + idx;
-    if (section.includes("常用新舊代碼")) {
-      sec.className = "section note-section";
-    } else {
-      sec.className = "section";
-    }
-
+    sec.className = "section" + (isSpecial ? " special" : "");
     sec.innerHTML = `
-      <div class="section-title">${section}</div>
+      <div class="sec-label"><div class="sec-pill">${section}</div><div class="sec-line"></div></div>
       <div class="grid"></div>
     `;
-
     const grid = sec.querySelector(".grid");
 
     filtered.forEach(item => {
       const card = document.createElement("div");
-      card.className = "card";
+      card.className = "card" + (isHot ? " hl" : "");
       card.innerHTML = `
         <div class="code">${item[0]}</div>
         <div class="name">${item[1]}</div>
       `;
-
       card.onclick = () => {
         let cleanCode = item[0];
-        if (cleanCode.includes("]")) {
-          cleanCode = cleanCode.split("]").pop().trim();
-        }
+        if (cleanCode.includes("]")) cleanCode = cleanCode.split("]").pop().trim();
         copyText(cleanCode);
       };
-
       grid.appendChild(card);
     });
-
     container.appendChild(sec);
   });
 
+  if (total === 0) {
+    container.innerHTML = '<div class="empty">找不到符合的病代，換個關鍵字試試</div>';
+  }
   applyFontSize(fontSlider.value);
 }
 
@@ -943,43 +616,31 @@ function showToast(code){
   const toast = document.getElementById("toast");
   toast.innerText = `已複製病代: ${code}`;
   toast.classList.add("show");
-  setTimeout(() => {
-    toast.classList.remove("show");
-  }, 1000);
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => toast.classList.remove("show"), 1000);
 }
 
 function applyFontSize(size){
   document.documentElement.style.setProperty("--fs-card", size + "px");
+  fontVal.textContent = size + "px";
 }
 
-const savedFont = localStorage.getItem("fontSize");
-if (savedFont) {
-  fontSlider.value = savedFont;
-}
+try { const savedFont = localStorage.getItem("fontSize"); if (savedFont) fontSlider.value = savedFont; } catch(e){}
 
 fontSlider.addEventListener("input", (e) => {
-  const size = e.target.value;
-  applyFontSize(size);
-  localStorage.setItem("fontSize", size);
+  applyFontSize(e.target.value);
+  try { localStorage.setItem("fontSize", e.target.value); } catch(err){}
 });
 
-document.getElementById("searchInput").addEventListener("input", (e) => {
-  render(e.target.value);
-});
+document.getElementById("searchInput").addEventListener("input", (e) => render(e.target.value));
 
-/* ===================================================
-   v2 新增：建立頂部快速跳轉大字按鈕列
-   點擊後會先清空搜尋框（確保該分類一定存在），
-   再平滑捲動到對應分類頂部
-   =================================================== */
+/* 快速跳轉 */
 function buildQuickNav(){
   const nav = document.getElementById("quickNav");
-  nav.innerHTML = "";
-
+  nav.innerHTML = '<div class="quicknav-label">⚡ 快速跳轉</div>';
   quickNavConfig.forEach(cfg => {
     const idx = sectionKeys.findIndex(k => k.includes(cfg.match));
     if (idx === -1) return;
-
     const btn = document.createElement("button");
     btn.className = "quicknav-btn" + (cfg.special ? " quicknav-special" : "");
     btn.innerText = cfg.label;
@@ -990,161 +651,128 @@ function buildQuickNav(){
 
 function jumpToSection(idx){
   const searchInput = document.getElementById("searchInput");
-  if (searchInput.value) {
-    searchInput.value = "";
-    render();
-  }
+  if (searchInput.value) { searchInput.value = ""; render(); }
   closeSearchPanel();
   setTimeout(() => {
     const el = document.getElementById("sec-" + idx);
     if (!el) return;
-    // v3 修正：用「目前」吸附列的實際高度即時計算，
-    // 不再用寫死的數字，避免按鈕換行造成高度不準、跳過頭
     const stickyEl = document.querySelector(".sticky-wrap");
-    const offset = (stickyEl ? stickyEl.offsetHeight : 0) + 16;
+    const offset = (stickyEl ? stickyEl.offsetHeight : 0) + 14;
     const targetY = window.pageYOffset + el.getBoundingClientRect().top - offset;
     window.scrollTo({ top: Math.max(targetY, 0), behavior: "smooth" });
   }, 60);
 }
 
-/* ===================================================
-   v2 新增：回到最上方按鈕，往下滑超過一定距離才顯示
-   =================================================== */
+/* 回到最上方 */
 const backToTopBtn = document.getElementById("backToTopBtn");
-
 window.addEventListener("scroll", () => {
-  if (window.scrollY > 400) {
-    backToTopBtn.classList.add("show");
-  } else {
-    backToTopBtn.classList.remove("show");
-  }
+  backToTopBtn.classList.toggle("show", window.scrollY > 400);
 });
+backToTopBtn.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
 
-backToTopBtn.addEventListener("click", () => {
-  window.scrollTo({ top: 0, behavior: "smooth" });
-});
-
-/* ===================================================
-   v3 新增：右上角浮動搜尋按鈕開關
-   點擊展開半透明搜尋框並自動聚焦，
-   點擊外部或再點一次按鈕則收合
-   =================================================== */
-const searchToggleBtn = document.getElementById("searchToggleBtn");
+/* 右上角展開式搜尋 */
+const searchToggleBtn  = document.getElementById("searchToggleBtn");
 const searchFloatPanel = document.getElementById("searchFloatPanel");
-const searchInputEl = document.getElementById("searchInput");
+const searchInputEl    = document.getElementById("searchInput");
 
 function openSearchPanel(){
   searchFloatPanel.classList.add("show");
   searchToggleBtn.classList.add("active");
   setTimeout(() => searchInputEl.focus(), 150);
 }
-
 function closeSearchPanel(){
   searchFloatPanel.classList.remove("show");
   searchToggleBtn.classList.remove("active");
 }
-
 searchToggleBtn.addEventListener("click", (e) => {
   e.stopPropagation();
-  if (searchFloatPanel.classList.contains("show")) {
-    closeSearchPanel();
-  } else {
-    openSearchPanel();
-  }
+  searchFloatPanel.classList.contains("show") ? closeSearchPanel() : openSearchPanel();
 });
-
 searchFloatPanel.addEventListener("click", (e) => e.stopPropagation());
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeSearchPanel(); settingsPanel.classList.remove("show"); } });
 
-document.addEventListener("click", () => {
-  closeSearchPanel();
-});
-
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") closeSearchPanel();
-});
-
-const settingsBtn = document.getElementById("settingsBtn");
+/* 設定面板 */
+const settingsBtn   = document.getElementById("settingsBtn");
 const settingsPanel = document.getElementById("settingsPanel");
-
-settingsBtn.addEventListener("click", (e) => {
-  e.stopPropagation();
-  settingsPanel.classList.toggle("show");
-});
-
-settingsPanel.addEventListener("click", (e) => {
-  e.stopPropagation();
-});
-
-document.addEventListener("click", () => {
-  settingsPanel.classList.remove("show");
-});
+settingsBtn.addEventListener("click", (e) => { e.stopPropagation(); settingsPanel.classList.toggle("show"); });
+settingsPanel.addEventListener("click", (e) => e.stopPropagation());
+document.addEventListener("click", () => { closeSearchPanel(); settingsPanel.classList.remove("show"); });
 
 /* ===================================================
-   v4 新增：主題與字型「跟主網站共用同一份設定」
-   ‧ 主題：共用 localStorage key「cz_theme_v6」
-   ‧ 字型：讀主網站設定「cz_cfg_v6」裡的 font 值
-   ‧ 若主網站在另一分頁改設定，這裡透過 storage 事件即時跟著換
-   注意：localStorage 以「網域」為單位，兩個網頁必須放在
-   同一個 GitHub Pages 網域下才會同步；不同網域時，
-   本頁會用自己記住的上次選擇。
+   主題／字型／卡片樣式／材質：與中正診所 Portal 共用設定
+   ‧ 主題：localStorage「cz_theme_v7」（相容舊 v6）
+   ‧ 字型、卡片、材質：讀「cz_cfg_v7」
+   ‧ localStorage 以網域為單位，兩頁需在同一網域才會同步
    =================================================== */
-const THEME_KEY = "cz_theme_v6";
-const CFG_KEY   = "cz_cfg_v6";
-const VALID_THEMES = ["light", "dark", "antique", "ash", "gold"];
-const VALID_FONTS  = ["pingfang", "sourcesans", "sourceserif", "wenkai", "goround"];
+const THEME_KEYS  = ["cz_theme_v7", "cz_theme_v6"];
+const THEME_WRITE = "cz_theme_v7";
+const CFG_KEYS    = ["cz_cfg_v7", "cz_cfg_v6"];
+const THEME_ORDER = ["clinic", "rose", "ocean", "ash", "light"];
+const THEME_LABEL = { clinic:"藥草綠", rose:"玫瑰花園", ocean:"深海航線", ash:"雅灰", light:"明亮" };
+const THEME_SWATCH = {
+  clinic:["#f5efdf","#2f7d68","#d9604c"],
+  rose:  ["#f8e7e1","#b0585c","#e3a14a"],
+  ocean: ["#e0ecf4","#2f6fa3","#e7a03d"],
+  ash:   ["#EAE6DC","#3E4C6E","#c98a3f"],
+  light: ["#EDF2F7","#2C5F8A","#e0573f"]
+};
+const VALID_FONTS = ["sans","pingfang","maru","serif","wenkai","goround","sourcesans","sourceserif"];
+const VALID_CARDS = ["solid","flat","glass","ios"];
+const VALID_TEX   = ["none","dots","grid"];
 
-function applyTheme(t) {
-  if (!VALID_THEMES.includes(t)) t = "light";
+function lsGet(keys){
+  for (const k of keys) { try { const v = localStorage.getItem(k); if (v) return v; } catch(e){} }
+  return null;
+}
+
+function applyTheme(t){
+  if (!THEME_ORDER.includes(t)) t = "clinic";   // 舊的 夜間／仿舊／暗金 會回到藥草綠
   document.documentElement.setAttribute("data-theme", t);
-  document.querySelectorAll(".theme-tog").forEach(b =>
-    b.classList.toggle("on", b.dataset.themeVal === t)
-  );
+  document.querySelectorAll(".theme-swatch").forEach(b => b.classList.toggle("on", b.dataset.themeId === t));
 }
 
-function applyPortalFont() {
+function applyPortalCfg(){
   try {
-    const cfg = JSON.parse(localStorage.getItem(CFG_KEY) || "{}");
-    if (cfg.font && VALID_FONTS.includes(cfg.font)) {
-      document.documentElement.setAttribute("data-font", cfg.font);
-    }
-  } catch (e) { /* 保持預設蘋方黑體 */ }
+    const cfg = JSON.parse(lsGet(CFG_KEYS) || "{}");
+    const root = document.documentElement;
+    if (cfg.font && VALID_FONTS.includes(cfg.font)) root.setAttribute("data-font", cfg.font);
+    if (cfg.card && VALID_CARDS.includes(cfg.card)) root.setAttribute("data-card", cfg.card);
+    if (cfg.tex  && VALID_TEX.includes(cfg.tex))    root.setAttribute("data-texture", cfg.tex);
+  } catch (e) { /* 保持預設 */ }
 }
 
-/* 初始化：優先吃 cz_theme_v6；沒有的話沿用本頁 v3 舊的 theme 設定 */
-(function initTheme() {
-  let t = localStorage.getItem(THEME_KEY);
-  if (!t) {
-    const legacy = localStorage.getItem("theme");
-    if (legacy === "dark") t = "dark";
-  }
-  applyTheme(t || "light");
-  applyPortalFont();
+(function buildThemeButtons(){
+  const wrap = document.getElementById("themeTogs");
+  THEME_ORDER.forEach(id => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "theme-swatch";
+    b.dataset.themeId = id;
+    b.innerHTML = `<span class="dots">${THEME_SWATCH[id].map(c => `<i style="background:${c}"></i>`).join("")}</span><b>${THEME_LABEL[id]}</b>`;
+    b.onclick = () => {
+      applyTheme(id);
+      try { localStorage.setItem(THEME_WRITE, id); } catch(e){}
+    };
+    wrap.appendChild(b);
+  });
+  applyTheme(lsGet(THEME_KEYS) || "clinic");
+  applyPortalCfg();
 })();
 
-document.querySelectorAll(".theme-tog").forEach(btn => {
-  btn.addEventListener("click", () => {
-    const t = btn.dataset.themeVal;
-    applyTheme(t);
-    localStorage.setItem(THEME_KEY, t);
-  });
-});
-
-/* 主網站分頁改了主題／字型，這頁即時跟著換 */
 window.addEventListener("storage", (e) => {
-  if (e.key === THEME_KEY) applyTheme(e.newValue);
-  if (e.key === CFG_KEY)   applyPortalFont();
+  if (THEME_KEYS.includes(e.key)) applyTheme(e.newValue);
+  if (CFG_KEYS.includes(e.key))   applyPortalCfg();
 });
 
-/* ===================================================
-   v4 新增：複製病代（含舊瀏覽器 fallback 與失敗提示）
-   =================================================== */
-function copyText(code) {
+/* 複製病代（含舊瀏覽器 fallback 與失敗提示） */
+function copyText(code){
   const done = () => showToast(code);
   const fail = () => {
     const toast = document.getElementById("toast");
     toast.innerText = "⚠️ 複製失敗，請手動輸入：" + code;
     toast.classList.add("show");
-    setTimeout(() => toast.classList.remove("show"), 2500);
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => toast.classList.remove("show"), 2500);
   };
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(code).then(done).catch(() => legacyCopy(code) ? done() : fail());
@@ -1152,15 +780,11 @@ function copyText(code) {
     legacyCopy(code) ? done() : fail();
   }
 }
-
-function legacyCopy(text) {
+function legacyCopy(text){
   try {
     const ta = document.createElement("textarea");
-    ta.value = text;
-    ta.style.position = "fixed";
-    ta.style.opacity = "0";
-    document.body.appendChild(ta);
-    ta.select();
+    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
     const ok = document.execCommand("copy");
     document.body.removeChild(ta);
     return ok;
@@ -1169,8 +793,6 @@ function legacyCopy(text) {
 
 buildQuickNav();
 render();
-
 </script>
-
 </body>
 </html>
