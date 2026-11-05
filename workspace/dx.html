@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="robots" content="noindex, nofollow">
-<title>門診病代速查 v6</title>
+<title>門診病代速查 v6（無密碼）</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;900&family=Noto+Sans+TC:wght@500;700;900&family=Noto+Serif+TC:wght@600;700;900&family=LXGW+WenKai+TC:wght@400;500;700&family=Zen+Maru+Gothic:wght@500;700;900&family=Chiron+GoRound+TC:wght@500;700;900&display=swap" rel="stylesheet">
@@ -257,6 +257,67 @@ button,input{font-family:inherit;}
   #searchToggleBtn{right:14px;}
   .toast{max-width:calc(100vw - 28px);white-space:normal;text-align:center;}
 }
+/* ───────── v6.1：可編輯＋雲端同步 ───────── */
+.quicknav-btn.quicknav-hot{background:var(--warnBg);}
+.card.multi{padding:34px 14px 16px;align-items:stretch;text-align:left;gap:10px;cursor:default;}
+@media(min-width:560px){.card.multi{grid-column:span 2;}}
+.mtitle{font-size:calc(var(--fs-card) + 2px);font-weight:900;color:var(--text);text-align:center;letter-spacing:.04em;line-height:1.3;}
+.mrows{display:flex;flex-direction:column;gap:8px;}
+.mrow{display:flex;align-items:center;gap:10px;width:100%;text-align:left;cursor:pointer;
+  background:var(--surf2);color:var(--text);border:2px solid var(--line);border-radius:10px;padding:8px 12px;
+  box-shadow:3px 3px 0 var(--pop);transition:transform .1s,box-shadow .1s;}
+.mrow:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--A);}
+.mrow:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--pop);}
+.mlab{flex:none;font-size:calc(var(--fs-card) - 2px);font-weight:900;color:#fff;background:var(--A);border:2px solid var(--line);border-radius:7px;padding:0 8px;}
+.mrow:nth-child(n+2) .mlab{background:var(--Alt);}
+.mcode{flex:none;font-family:"Inter","Noto Sans TC",monospace;font-size:calc(var(--fs-card) + 3px);font-weight:900;color:var(--A);letter-spacing:.04em;}
+.mname{font-size:var(--fs-card);font-weight:800;line-height:1.3;word-break:break-word;}
+
+/* 編輯模式 */
+.edit-bar{background:var(--note);color:#2b2a1c;border:var(--lw) solid var(--line);border-radius:12px;box-shadow:4px 4px 0 var(--pop);
+  padding:12px 14px;margin:18px 0 4px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-weight:800;font-size:15px;}
+.edit-bar b{font-size:16px;margin-right:6px;}
+.mini{padding:6px 12px;border:2px solid var(--line);border-radius:9px;background:var(--surf);color:var(--text);font-size:14px;font-weight:900;cursor:pointer;box-shadow:2px 2px 0 var(--pop);transition:transform .1s,box-shadow .1s;}
+.mini:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 var(--pop);}
+.mini:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--pop);}
+.mini.pri{background:var(--A);color:#fff;}
+.mini.danger{color:#C0392B;border-color:#C0392B;}
+.sec-tools{display:flex;flex-wrap:wrap;gap:8px;margin:-8px 0 14px;}
+.card.editing{cursor:pointer;outline:2.5px dashed var(--Alt);outline-offset:3px;}
+.card.editing::after{content:'✏️';width:auto;height:auto;border:0;background:none;box-shadow:none;font-size:14px;top:6px;right:10px;}
+.add-sec{display:block;width:100%;margin-top:30px;padding:16px;border:var(--lw) dashed var(--line);border-radius:14px;background:transparent;color:var(--text);font-size:18px;font-weight:900;cursor:pointer;}
+.add-sec:hover{background:var(--surf2);border-style:solid;}
+
+.btn-prim{width:100%;padding:12px;font-size:16px;font-weight:900;letter-spacing:.08em;border:var(--lw) solid var(--line);border-radius:12px;cursor:pointer;background:var(--A);color:#fff;box-shadow:4px 4px 0 var(--pop);transition:transform .1s,box-shadow .1s;}
+.btn-prim:active{transform:translate(4px,4px);box-shadow:0 0 0 var(--pop);}
+.sync-line{margin-top:12px;font-size:13px;font-weight:800;color:var(--muted);text-align:center;line-height:1.5;}
+.settings-panel{max-height:calc(100vh - 120px);overflow-y:auto;}
+
+/* 彈出視窗 */
+.modal-overlay{display:none;position:fixed;inset:0;z-index:1499;background:color-mix(in srgb,var(--line) 45%,transparent);backdrop-filter:blur(3px);}
+.modal-overlay.show{display:block;}
+.modal-panel{position:fixed;z-index:1500;top:50%;left:50%;transform:translate(-50%,-50%);width:min(560px,94vw);max-height:88vh;
+  background:var(--surf);border:var(--lw) solid var(--line);border-radius:18px;box-shadow:8px 8px 0 var(--pop);display:none;flex-direction:column;overflow:hidden;}
+.modal-panel.show{display:flex;animation:modalIn .2s both;}
+@keyframes modalIn{from{opacity:0}to{opacity:1}}
+.mp-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:var(--A);color:#fff;border-bottom:var(--lw) solid var(--line);}
+.mp-hdr h3{font-size:19px;font-weight:900;letter-spacing:.08em;}
+.mp-x{width:36px;height:36px;border-radius:10px;border:2px solid var(--line);background:var(--surf);color:var(--text);cursor:pointer;font-size:15px;box-shadow:2px 2px 0 var(--pop);}
+.mp-body{padding:16px 18px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;}
+.mp-foot{padding:12px 18px;border-top:2px dashed var(--line);background:var(--surf2);display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end;}
+.fld{display:flex;flex-direction:column;gap:5px;}
+.fld>label{font-size:13px;font-weight:900;color:var(--muted);letter-spacing:.06em;}
+.inp{width:100%;padding:10px 12px;border:2px solid var(--line);border-radius:10px;font-size:17px;font-weight:700;background:var(--surf);color:var(--text);}
+.inp:focus{outline:none;box-shadow:3px 3px 0 var(--A);}
+.row3{display:grid;grid-template-columns:56px 1fr 1.4fr 34px;gap:6px;align-items:center;}
+.row3 .inp{padding:8px 8px;font-size:15px;}
+.seg{display:flex;gap:8px;flex-wrap:wrap;}
+.seg .mini.on{background:var(--A);color:#fff;transform:translate(1px,1px);box-shadow:inset 0 3px 0 rgba(0,0,0,.18);}
+.hintx{font-size:12.5px;font-weight:700;color:var(--muted);line-height:1.5;}
+@media(max-width:600px){
+  .modal-panel{top:auto;left:0;right:0;bottom:0;transform:none;width:100%;max-height:92vh;border-radius:20px 20px 0 0;box-shadow:0 -6px 0 var(--pop);}
+}
+
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important;}
 }
@@ -302,497 +363,476 @@ button,input{font-family:inherit;}
   </div>
   <div class="setting-title">🎨 佈景主題（與 Portal 同步）</div>
   <div class="theme-swatches" id="themeTogs"></div>
+  <div class="setting-title" style="margin-top:18px">✏️ 小卡內容（新增／修改）</div>
+  <button class="btn-prim" id="editToggleBtn" type="button">🔓 解鎖編輯</button>
+  <div class="sync-line" id="syncState">連線中…</div>
+</div>
+
+<input type="file" id="importFile" accept="application/json,.json" hidden>
+<div class="modal-overlay" id="modalOverlay"></div>
+<div class="modal-panel" id="modalPanel" role="dialog" aria-modal="true">
+  <div class="mp-hdr"><h3 id="mpTitle"></h3><button class="mp-x" id="mpClose" type="button">✕</button></div>
+  <div class="mp-body" id="mpBody"></div>
+  <div class="mp-foot" id="mpFoot"></div>
 </div>
 
 <div class="footer-space"></div>
 
 <script>
-const data = {
-
-"🦴 M00 關節痛 (一般)":[
-  ["M2550","關節痛"],
-  ["M5450","下背痛"],
-  ["M549","背痛"],
-  ["S335XXA","腰椎扭傷拉傷初期照護"]
-],
-
-"🦺 M01 肩部關節痛":[
-  ["M25511","右側肩部關節痛"],
-  ["M25512","左側肩部關節痛"],
-  ["M25519","未明示側性肩部關節痛"]
-],
-
-"🦾 M02 肘部關節痛":[
-  ["M25521","右側肘部關節痛"],
-  ["M25522","左側肘部關節痛"],
-  ["M25529","未明示側性肘部關節痛"]
-],
-
-"⌚ M03 腕部關節痛":[
-  ["M25531","右側腕部關節痛"],
-  ["M25532","左側腕部關節痛"],
-  ["M25539","未明示側性腕部關節痛"]
-],
-
-"🩲 M04 髖部關節痛":[
-  ["M25551","右側髖部關節痛"],
-  ["M25552","左側髖部關節痛"],
-  ["M25559","未明示側性髖部關節痛"]
-],
-
-"🦵 M05 膝部關節痛":[
-  ["M25561","右側膝部關節痛"],
-  ["M25562","左側膝部關節痛"],
-  ["M25569","未明示側性膝部關節痛"]
-],
-
-"🧦 M06 踝部與足部關節痛":[
-  ["M25571","右側踝部及足部關節痛"],
-  ["M25572","左側踝部及足部關節痛"],
-  ["M25579","未明示側性踝部及足部關節痛"]
-],
-
-"💥 M07 肌痛與肢體疼痛":[
-  ["M791","肌痛"],
-  ["M609","肌炎"],
-  ["M79609","肢體疼痛"]
-],
-
-"✋ M08 手部疼痛":[
-  ["M79601","右側手部臂疼痛"],
-  ["M79602","左側手部臂疼痛"],
-  ["M79603","未明示側性手部臂疼痛"],
-  ["M79641","右側手部疼痛"],
-  ["M79642","左側手部疼痛"],
-  ["M79643","未明示側性手部疼痛"]
-],
-
-"👉 M09 手指疼痛":[
-  ["M79644","右側手指疼痛"],
-  ["M79645","左側手指疼痛"],
-  ["M79646","未明示側性手指疼痛"]
-],
-
-"💪 M10 上臂與前臂疼痛":[
-  ["M79621","右側上臂疼痛"],
-  ["M79622","左側上臂疼痛"],
-  ["M79629","未明示側性上臂疼痛"],
-  ["M79631","右側前臂疼痛"],
-  ["M79632","左側前臂疼痛"],
-  ["M79639","未明示側性前臂疼痛"]
-],
-
-"🍗 M11 大腿與小腿疼痛":[
-  ["M79651","右側大腿疼痛"],
-  ["M79652","左側大腿疼痛"],
-  ["M79659","未明示側性大腿疼痛"],
-  ["M79661","右側小腿疼痛"],
-  ["M79662","左側小腿疼痛"],
-  ["M79669","未明示側性小腿疼痛"]
-],
-
-"👣 M12 足部與腳趾疼痛":[
-  ["M79671","右側足部疼痛"],
-  ["M79672","左側足部疼痛"],
-  ["M79673","未明示側性足部疼痛"],
-  ["M79674","右側腳趾疼痛"],
-  ["M79675","左側腳趾疼痛"],
-  ["M79676","未明示側性腳趾疼痛"]
-],
-
-"🩹 胸部挫傷":[
-  ["S2020XA","胸部挫傷之初期照護"],
-  ["S20211A","右側前胸壁挫傷之初期照護"],
-  ["S20212A","左側前胸壁挫傷之初期照護"],
-  ["S20213A","雙側前胸壁挫傷之初期照護"]
-],
-
-"🩼 S1 常用扭傷":[
-  ["S93401A","右踝扭傷"],
-  ["S93402A","左踝扭傷"],
-  ["S8391XA","右膝扭傷"],
-  ["S8392XA","左膝扭傷"],
-  ["S63501A","右手腕扭傷"],
-  ["S63502A","左手腕扭傷"],
-  ["S134XXA","頸椎扭傷"],
-  ["S335XXA","腰椎扭傷"]
-],
-
-"🦶 S2 下肢扭傷":[
-  ["S93409A","未明示側性踝關節扭傷"],
-  ["S93401A","右踝扭傷"],
-  ["S93402A","左踝扭傷"],
-  ["S8390XA","未明示側性膝關節扭傷"],
-  ["S8391XA","右膝扭傷"],
-  ["S8392XA","左膝扭傷"],
-  ["S93609A","足部其他部位扭傷"],
-  ["S73109A","髖關節扭傷"]
-],
-
-"🤚 S3 上肢扭傷":[
-  ["S43409A","未明示側性肩關節扭傷"],
-  ["S4350XA","肩鎖關節扭傷"],
-  ["S53409A","肘部韌帶扭傷"],
-  ["S63509A","未明示側性手腕扭傷"],
-  ["S63501A","右手腕扭傷"],
-  ["S63502A","左手腕扭傷"],
-  ["S63619A","未明示側性手指扭傷"]
-],
-
-"🧍 S4 頸胸腰與骨盆扭傷":[
-  ["S139XXA","頸部扭傷"],
-  ["S134XXA","頸椎扭傷 <span class='small-note'>(頸椎韌帶)</span>"],
-  ["S233XXA","胸椎扭傷 <span class='small-note'>(胸椎韌帶)</span>"],
-  ["S335XXA","腰部／腰椎扭傷 <span class='small-note'>(腰椎韌帶)</span>"],
-  ["S336XXA","骶髂關節扭傷"]
-],
-
-"🩺 R 症狀":[
-  ["R000","心搏過速"],
-  ["R001","心搏過慢"],
-  ["R002","心悸"],
-  ["R008","其他心搏異常"],
-  ["R009","心搏異常"],
-  ["R040","鼻出血"],
-  ["R070","喉嚨痛"],
-  ["R05","咳嗽"],
-  ["R0600","呼吸困難"],
-  ["R066","打嗝"],
-  ["R069","呼吸異常"],
-  ["R509","發燒"],
-  ["R319","血尿"],
-  ["R350","頻尿"],
-  ["R300","排尿困難"],
-  ["R309","排尿疼痛"],
-  ["R071","呼吸時胸痛"],
-  ["R072","胸口疼痛"],
-  ["R0781","肋膜痛"],
-  ["R0782","肋間疼痛"],
-  ["R0789","其他胸痛"],
-  ["R079","胸痛"]
-],
-
-"🧪 L 皮膚":[
-  ["L980","化膿性肉芽腫"],
-  ["L299","搔癢症"],
-  ["L309","皮膚炎"],
-  ["L209","異位性皮膚炎"],
-  ["L219","脂漏性皮膚炎"],
-  ["L282","其他癢疹"],
-  ["L408","其他乾癬"],
-  ["L409","乾癬"],
-  ["L508","其他蕁麻疹"],
-  ["L509","蕁麻疹"]
-],
-
-"😮‍💨 J 呼吸道":[
-  ["J00","急性鼻咽炎（感冒）"],
-  ["J0190","急性鼻竇炎"],
-  ["J029","急性咽炎"],
-  ["J0390","急性扁桃腺炎"],
-  ["J0391","急性復發性扁桃腺炎"],
-  ["J040","急性喉炎"],
-  ["J069","✨急性上呼吸道感染"],
-  ["R070","喉嚨痛"],
-  ["J0410","急性氣管炎－未伴有阻塞"]
-],
-
-// ===================================================
-// 已將冗長、重複的官方詞彙，全數轉化為 small-note 樣式
-// ===================================================
-"📝 常用新舊代碼 ":[
-  ["[341] K297", "胃炎 <span class='small-note'>(未明示伴有出血者)</span>"],
-  ["[151] K529", "非感染性胃腸炎及結腸炎 <span class='small-note'>(未明示者)</span>"],
-  ["[353] N341", "非特異性尿道炎"],
-  ["[CE P*] L0390", "蜂窩組織炎 <span class='small-note'>(未明示部位者)</span>"],
-  ["[HZ] B029", "帶狀疱疹 <span class='small-note'>(未伴有併發症者)</span>"],
-  ["[7062] L723", "皮脂腺囊腫"],
-  ["[C/] L0291", "皮膚膿瘍 <span class='small-note'>(未明示部位者)</span>"],
-  ["L0292", "癤 <span class='small-note'>(未明示部位者)</span>"],
-  ["[ABS] L980", "化膿性肉芽腫 <span class='small-note'>(處置後要加上 CD 才能接第二次換藥)</span>"],
-  ["[MB] R42", "頭暈及目眩"],
-  ["[HEA] R519", "頭痛 <span class='small-note'>(未明示者)</span>"],
-  ["K590", "便秘"],
-  ["[305] K649", "痔瘡 <span class='small-note'>(未明示伴有併發症者)</span>"],
-  ["[TA] K056", "牙周疾病 <span class='small-note'>(未明示者)</span>"],
-  ["J111", "流行性感冒 <span class='small-note'>(未確認流感病毒，伴有其他呼吸道表現者)</span>"],
-  ["J09X2", "新型A型流感病毒所致之流行性感冒"],
-  ["[V*] B079", "病毒疣 <span class='small-note'>(未明示者)</span>"],
-  ["[UB] K922", "胃腸道出血 <span class='small-note'>(未明示者)</span>"],
-  ["Z712", "醫療諮詢與看報告 <span class='small-note'>(因其他諮詢及醫療建議而就醫者)</span>"],
-  ["K061", "牙齦腫大 <span class='small-note'>(未明示者)</span>"]
-]
-
+const EDIT_PASSWORD = "";   // 無密碼版：不需要密碼
+const firebaseConfig = {
+  apiKey: "AIzaSyA1NO0KBV2oFQ8ebrdGdTACqw1OgLSUJoI",
+  authDomain: "zhongzheng-clinic.firebaseapp.com",
+  projectId: "zhongzheng-clinic",
+  storageBucket: "zhongzheng-clinic.firebasestorage.app",
+  messagingSenderId: "866900091548",
+  appId: "1:866900091548:web:28d0ded5f58debf51f4359"
 };
+const DEFAULT_SECTIONS = [{"id":"d1","title":"🦴 M00 關節痛 (一般)","kind":"normal","cards":[{"c":"M2550","n":"關節痛"},{"c":"M5450","n":"下背痛"},{"c":"M549","n":"背痛"},{"c":"S335XXA","n":"腰椎扭傷拉傷初期照護"}],"nav":"一般"},{"id":"d2","title":"🦺 M01 肩部關節痛","kind":"normal","cards":[{"c":"M25511","n":"右側肩部關節痛"},{"c":"M25512","n":"左側肩部關節痛"},{"c":"M25519","n":"未明示側性肩部關節痛"}],"nav":"肩"},{"id":"d3","title":"🦾 M02 肘部關節痛","kind":"normal","cards":[{"c":"M25521","n":"右側肘部關節痛"},{"c":"M25522","n":"左側肘部關節痛"},{"c":"M25529","n":"未明示側性肘部關節痛"}],"nav":"肘"},{"id":"d4","title":"⌚ M03 腕部關節痛","kind":"normal","cards":[{"c":"M25531","n":"右側腕部關節痛"},{"c":"M25532","n":"左側腕部關節痛"},{"c":"M25539","n":"未明示側性腕部關節痛"}],"nav":"腕"},{"id":"d5","title":"🩲 M04 髖部關節痛","kind":"normal","cards":[{"c":"M25551","n":"右側髖部關節痛"},{"c":"M25552","n":"左側髖部關節痛"},{"c":"M25559","n":"未明示側性髖部關節痛"}],"nav":"髖"},{"id":"d6","title":"🦵 M05 膝部關節痛","kind":"normal","cards":[{"c":"M25561","n":"右側膝部關節痛"},{"c":"M25562","n":"左側膝部關節痛"},{"c":"M25569","n":"未明示側性膝部關節痛"}],"nav":"膝"},{"id":"d7","title":"🧦 M06 踝部與足部關節痛","kind":"normal","cards":[{"c":"M25571","n":"右側踝部及足部關節痛"},{"c":"M25572","n":"左側踝部及足部關節痛"},{"c":"M25579","n":"未明示側性踝部及足部關節痛"}],"nav":"踝足"},{"id":"d8","title":"💥 M07 肌痛與肢體疼痛","kind":"normal","cards":[{"c":"M791","n":"肌痛"},{"c":"M609","n":"肌炎"},{"c":"M79609","n":"肢體疼痛"}],"nav":"肌痛"},{"id":"d9","title":"✋ M08 手部疼痛","kind":"normal","cards":[{"c":"M79601","n":"右側手部臂疼痛"},{"c":"M79602","n":"左側手部臂疼痛"},{"c":"M79603","n":"未明示側性手部臂疼痛"},{"c":"M79641","n":"右側手部疼痛"},{"c":"M79642","n":"左側手部疼痛"},{"c":"M79643","n":"未明示側性手部疼痛"}],"nav":"手"},{"id":"d10","title":"👉 M09 手指疼痛","kind":"normal","cards":[{"c":"M79644","n":"右側手指疼痛"},{"c":"M79645","n":"左側手指疼痛"},{"c":"M79646","n":"未明示側性手指疼痛"}],"nav":"指"},{"id":"d11","title":"💪 M10 上臂與前臂疼痛","kind":"normal","cards":[{"c":"M79621","n":"右側上臂疼痛"},{"c":"M79622","n":"左側上臂疼痛"},{"c":"M79629","n":"未明示側性上臂疼痛"},{"c":"M79631","n":"右側前臂疼痛"},{"c":"M79632","n":"左側前臂疼痛"},{"c":"M79639","n":"未明示側性前臂疼痛"}],"nav":"臂"},{"id":"d12","title":"🍗 M11 大腿與小腿疼痛","kind":"normal","cards":[{"c":"M79651","n":"右側大腿疼痛"},{"c":"M79652","n":"左側大腿疼痛"},{"c":"M79659","n":"未明示側性大腿疼痛"},{"c":"M79661","n":"右側小腿疼痛"},{"c":"M79662","n":"左側小腿疼痛"},{"c":"M79669","n":"未明示側性小腿疼痛"}],"nav":"腿"},{"id":"d13","title":"👣 M12 足部與腳趾疼痛","kind":"normal","cards":[{"c":"M79671","n":"右側足部疼痛"},{"c":"M79672","n":"左側足部疼痛"},{"c":"M79673","n":"未明示側性足部疼痛"},{"c":"M79674","n":"右側腳趾疼痛"},{"c":"M79675","n":"左側腳趾疼痛"},{"c":"M79676","n":"未明示側性腳趾疼痛"}],"nav":"足趾"},{"id":"d14","title":"🩹 胸部挫傷","kind":"normal","cards":[{"c":"S2020XA","n":"胸部挫傷之初期照護"},{"c":"S20211A","n":"右側前胸壁挫傷之初期照護"},{"c":"S20212A","n":"左側前胸壁挫傷之初期照護"},{"c":"S20213A","n":"雙側前胸壁挫傷之初期照護"}],"nav":"胸部挫傷"},{"id":"sp1","title":"🩼 常用扭傷","nav":"常用扭傷","kind":"hot","cards":[{"c":"S93401A","n":"右踝扭傷"},{"c":"S93402A","n":"左踝扭傷"},{"c":"S8391XA","n":"右膝扭傷"},{"c":"S8392XA","n":"左膝扭傷"},{"c":"S63501A","n":"右手腕扭傷"},{"c":"S63502A","n":"左手腕扭傷"},{"c":"S134XXA","n":"頸椎扭傷"},{"c":"S335XXA","n":"腰椎扭傷"}]},{"id":"sp2","title":"🤚 上肢扭傷","nav":"上肢扭傷","kind":"normal","cards":[{"c":"S43409A","n":"未明示側性肩關節扭傷"},{"c":"S4350XA","n":"肩鎖關節扭傷"},{"c":"S53409A","n":"肘部韌帶扭傷"},{"c":"S63509A","n":"未明示側性手腕扭傷"},{"c":"S63501A","n":"右手腕扭傷"},{"c":"S63502A","n":"左手腕扭傷"},{"c":"S63619A","n":"未明示側性手指扭傷"}]},{"id":"sp3","title":"🦶 下肢扭傷","nav":"下肢扭傷","kind":"normal","cards":[{"c":"S93409A","n":"未明示側性踝關節扭傷"},{"c":"S93401A","n":"右踝扭傷"},{"c":"S93402A","n":"左踝扭傷"},{"c":"S8390XA","n":"未明示側性膝關節扭傷"},{"c":"S8391XA","n":"右膝扭傷"},{"c":"S8392XA","n":"左膝扭傷"},{"c":"S93609A","n":"足部其他部位扭傷"},{"c":"S73109A","n":"髖關節扭傷"}]},{"id":"sp4","title":"🧍 頸胸腰與骨盆扭傷","nav":"脊椎扭傷","kind":"normal","cards":[{"c":"S139XXA","n":"頸部扭傷"},{"c":"S134XXA","n":"頸椎扭傷","s":"(頸椎韌帶)"},{"c":"S233XXA","n":"胸椎扭傷","s":"(胸椎韌帶)"},{"c":"S335XXA","n":"腰部／腰椎扭傷","s":"(腰椎韌帶)"},{"c":"S336XXA","n":"骶髂關節扭傷"}]},{"id":"d15","title":"🩺 R 症狀","kind":"normal","cards":[{"c":"R000","n":"心搏過速"},{"c":"R001","n":"心搏過慢"},{"c":"R002","n":"心悸"},{"c":"R008","n":"其他心搏異常"},{"c":"R009","n":"心搏異常"},{"c":"R040","n":"鼻出血"},{"c":"R070","n":"喉嚨痛"},{"c":"R05","n":"咳嗽"},{"c":"R0600","n":"呼吸困難"},{"c":"R066","n":"打嗝"},{"c":"R069","n":"呼吸異常"},{"c":"R509","n":"發燒"},{"c":"R319","n":"血尿"},{"c":"R350","n":"頻尿"},{"c":"R300","n":"排尿困難"},{"c":"R309","n":"排尿疼痛"},{"c":"R071","n":"呼吸時胸痛"},{"c":"R072","n":"胸口疼痛"},{"c":"R0781","n":"肋膜痛"},{"c":"R0782","n":"肋間疼痛"},{"c":"R0789","n":"其他胸痛"},{"c":"R079","n":"胸痛"}],"nav":"症狀"},{"id":"d16","title":"🧪 L 皮膚","kind":"normal","cards":[{"c":"L980","n":"化膿性肉芽腫"},{"c":"L299","n":"搔癢症"},{"c":"L309","n":"皮膚炎"},{"c":"L209","n":"異位性皮膚炎"},{"c":"L219","n":"脂漏性皮膚炎"},{"c":"L282","n":"其他癢疹"},{"c":"L408","n":"其他乾癬"},{"c":"L409","n":"乾癬"},{"c":"L508","n":"其他蕁麻疹"},{"c":"L509","n":"蕁麻疹"}],"nav":"皮膚"},{"id":"d17","title":"😮‍💨 J 呼吸道","kind":"normal","cards":[{"c":"J00","n":"急性鼻咽炎（感冒）"},{"c":"J0190","n":"急性鼻竇炎"},{"c":"J029","n":"急性咽炎"},{"c":"J0390","n":"急性扁桃腺炎"},{"c":"J0391","n":"急性復發性扁桃腺炎"},{"c":"J040","n":"急性喉炎"},{"c":"J069","n":"✨急性上呼吸道感染"},{"c":"R070","n":"喉嚨痛"},{"c":"J0410","n":"急性氣管炎－未伴有阻塞"}],"nav":"呼吸"},{"id":"d18","title":"📝 常用新舊代碼","kind":"special","cards":[{"c":"[341] K297","n":"胃炎","s":"(未明示伴有出血者)"},{"c":"[151] K529","n":"非感染性胃腸炎及結腸炎","s":"(未明示者)"},{"c":"[353] N341","n":"非特異性尿道炎"},{"c":"[CE P*] L0390","n":"蜂窩組織炎","s":"(未明示部位者)"},{"c":"[HZ] B029","n":"帶狀疱疹","s":"(未伴有併發症者)"},{"c":"[7062] L723","n":"皮脂腺囊腫"},{"c":"[C/] L0291","n":"皮膚膿瘍","s":"(未明示部位者)"},{"c":"L0292","n":"癤","s":"(未明示部位者)"},{"c":"[ABS] L980","n":"化膿性肉芽腫","s":"(處置後要加上 CD 才能接第二次換藥)"},{"c":"[MB] R42","n":"頭暈及目眩"},{"c":"[HEA] R519","n":"頭痛","s":"(未明示者)"},{"c":"K590","n":"便秘"},{"c":"[305] K649","n":"痔瘡","s":"(未明示伴有併發症者)"},{"c":"[TA] K056","n":"牙周疾病","s":"(未明示者)"},{"c":"J111","n":"流行性感冒","s":"(未確認流感病毒，伴有其他呼吸道表現者)"},{"c":"J09X2","n":"新型A型流感病毒所致之流行性感冒"},{"c":"[V*] B079","n":"病毒疣","s":"(未明示者)"},{"c":"[UB] K922","n":"胃腸道出血","s":"(未明示者)"},{"c":"Z712","n":"醫療諮詢與看報告","s":"(因其他諮詢及醫療建議而就醫者)"},{"c":"Z719","n":"諮詢，未特定"},{"c":"K061","n":"牙齦腫大","s":"(未明示者)"}],"nav":"⭐常用代碼"},{"id":"sx1","title":"🧩 特殊","nav":"特殊","kind":"special","cards":[{"t":"①胃幽門桿菌給藥","rows":[{"l":"主","c":"K2970","n":"胃炎"},{"l":"次","c":"B9681","n":"歸類胃幽門桿菌所致"}]}]}];
 
-/* 快速跳轉設定：label＝按鈕大字、match＝比對分類標題、special＝專屬配色 */
-const quickNavConfig = [
-  { label: "一般", match: "M00" },
-  { label: "肩", match: "肩部" },
-  { label: "肘", match: "肘部" },
-  { label: "腕", match: "腕部" },
-  { label: "髖", match: "髖部" },
-  { label: "膝", match: "膝部" },
-  { label: "踝足", match: "踝部" },
-  { label: "手", match: "M08" },
-  { label: "指", match: "M09" },
-  { label: "臂", match: "M10" },
-  { label: "腿", match: "M11" },
-  { label: "足趾", match: "M12" },
-  { label: "肌痛", match: "M07" },
-  { label: "胸部挫傷", match: "胸部挫傷" },
-  { label: "扭傷", match: "S1 常用扭傷" },
-  { label: "症狀", match: "R 症狀" },
-  { label: "皮膚", match: "L 皮膚" },
-  { label: "呼吸", match: "J 呼吸道" },
-  { label: "⭐常用代碼", match: "常用新舊代碼", special: true }
-];
+const CACHE_KEY = "icd_cache_v1";
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const clone = o => JSON.parse(JSON.stringify(o));
+const uid = () => "u" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+const cleanCode = c => String(c).includes("]") ? String(c).split("]").pop().trim() : String(c).trim();
 
-const container  = document.getElementById("container");
-const fontSlider = document.getElementById("fontSlider");
-const fontVal    = document.getElementById("fontVal");
-const sectionKeys = Object.keys(data);
+let sections = (function(){
+  try { const c = JSON.parse(localStorage.getItem(CACHE_KEY) || "null"); if (Array.isArray(c) && c.length) return c; } catch(e){}
+  return clone(DEFAULT_SECTIONS);
+})();
+let editMode = false;
+let keyword = "";
 let firstRender = true;
+let Store = { mode: "pending", save(){ return Promise.resolve(); } };
+let syncMsg = "連線中…";
 
-function stripTags(s){ return s.replace(/<[^>]*>/g, ""); }
+const container  = $("#container");
+const fontSlider = $("#fontSlider");
+const fontVal    = $("#fontVal");
 
-function render(keyword=""){
+/* ───────── 渲染 ───────── */
+function render(){
   container.innerHTML = "";
-  /* 只有第一次載入播放卡片進場動畫，搜尋打字時不閃爍 */
   container.className = firstRender ? "anim" : "";
   firstRender = false;
 
-  /* 搜尋 S93.401A 這種帶小數點的輸入，也能找到 S93401A */
+  if (editMode) {
+    const bar = document.createElement("div");
+    bar.className = "edit-bar";
+    bar.innerHTML = `<b>✏️ 編輯模式</b><span>點小卡修改，分類下方有排序／新增按鈕</span>
+      <button class="mini pri" data-a="addsec">＋新增分類</button>
+      <button class="mini" data-a="export">⬇️ 匯出備份</button>
+      <button class="mini" data-a="import">⬆️ 匯入備份</button>
+      <button class="mini" data-a="push">☁️ 立即同步到雲端</button>
+      <button class="mini danger" data-a="reset">↩ 還原預設</button>
+      <button class="mini" data-a="exit">結束編輯</button>`;
+    bar.onclick = e => { const a = e.target.closest("[data-a]"); if (a) barAction(a.dataset.a); };
+    container.appendChild(bar);
+  }
+
   const kw = keyword.trim().toLowerCase();
   const kwNoDot = kw.replace(/\./g, "");
+  const match = card => {
+    if (!kw) return true;
+    const hay = card.rows
+      ? [card.t, ...card.rows.flatMap(r => [r.c, r.n, r.l])]
+      : [card.c, card.n, card.s];
+    return hay.some(x => { const v = String(x || "").toLowerCase(); return v.includes(kw) || v.includes(kwNoDot); });
+  };
+
   let total = 0;
+  sections.forEach(sec => {
+    const list = sec.cards.map((c, i) => [c, i]).filter(([c]) => match(c));
+    if (!list.length && !(editMode && !kw)) return;
+    total += list.length;
 
-  sectionKeys.forEach((section, idx) => {
-    const filtered = data[section].filter(item => {
-      if (!kw) return true;
-      const code = item[0].toLowerCase();
-      const name = stripTags(item[1]).toLowerCase();
-      return code.includes(kw) || code.includes(kwNoDot) || name.includes(kw);
-    });
-    if (filtered.length === 0) return;
-    total += filtered.length;
+    const el = document.createElement("div");
+    el.id = "sec-" + sec.id;
+    el.className = "section" + (sec.kind === "special" ? " special" : "");
+    el.innerHTML = `<div class="sec-label"><div class="sec-pill">${esc(sec.title)}</div><div class="sec-line"></div></div>`;
 
-    const isSpecial = section.includes("常用新舊代碼") || section.includes("常用扭傷");
-    const isHot     = section.includes("常用扭傷");
-
-    const sec = document.createElement("div");
-    sec.id = "sec-" + idx;
-    sec.className = "section" + (isSpecial ? " special" : "");
-    sec.innerHTML = `
-      <div class="sec-label"><div class="sec-pill">${section}</div><div class="sec-line"></div></div>
-      <div class="grid"></div>
-    `;
-    const grid = sec.querySelector(".grid");
-
-    filtered.forEach(item => {
-      const card = document.createElement("div");
-      card.className = "card" + (isHot ? " hl" : "");
-      card.innerHTML = `
-        <div class="code">${item[0]}</div>
-        <div class="name">${item[1]}</div>
-      `;
-      card.onclick = () => {
-        let cleanCode = item[0];
-        if (cleanCode.includes("]")) cleanCode = cleanCode.split("]").pop().trim();
-        copyText(cleanCode);
+    if (editMode && !kw) {
+      const t = document.createElement("div");
+      t.className = "sec-tools";
+      t.innerHTML = `<button class="mini pri" data-a="addcard">＋新增小卡</button>
+        <button class="mini" data-a="editsec">✏️ 編輯分類</button>
+        <button class="mini" data-a="up">↑ 上移</button>
+        <button class="mini" data-a="down">↓ 下移</button>`;
+      t.onclick = e => {
+        const b = e.target.closest("[data-a]"); if (!b) return;
+        ({ addcard: () => openCardEditor(sec.id, null), editsec: () => openSectionEditor(sec.id),
+           up: () => moveSection(sec.id, -1), down: () => moveSection(sec.id, 1) })[b.dataset.a]();
       };
-      grid.appendChild(card);
-    });
-    container.appendChild(sec);
+      el.appendChild(t);
+    }
+
+    const grid = document.createElement("div");
+    grid.className = "grid";
+    list.forEach(([card, ci]) => grid.appendChild(makeCard(sec, card, ci)));
+    el.appendChild(grid);
+    container.appendChild(el);
   });
 
-  if (total === 0) {
-    container.innerHTML = '<div class="empty">找不到符合的病代，換個關鍵字試試</div>';
+  if (editMode && !kw) {
+    const b = document.createElement("button");
+    b.className = "add-sec"; b.textContent = "＋ 新增分類";
+    b.onclick = () => openSectionEditor(null);
+    container.appendChild(b);
+  } else if (total === 0) {
+    container.insertAdjacentHTML("beforeend", '<div class="empty">找不到符合的病代，換個關鍵字試試</div>');
   }
   applyFontSize(fontSlider.value);
 }
 
-function showToast(code){
-  const toast = document.getElementById("toast");
+function makeCard(sec, card, ci) {
+  const el = document.createElement("div");
+  el.className = "card" + (sec.kind === "hot" ? " hl" : "") + (card.rows ? " multi" : "") + (editMode ? " editing" : "");
+  if (card.rows) {
+    el.innerHTML = `<div class="mtitle">${esc(card.t)}</div><div class="mrows">` +
+      card.rows.map((r, i) => `<button type="button" class="mrow" data-i="${i}"><span class="mlab">${esc(r.l)}</span><span class="mcode">${esc(r.c)}</span><span class="mname">${esc(r.n)}</span></button>`).join("") +
+      `</div>`;
+    el.querySelectorAll(".mrow").forEach(b => b.onclick = e => {
+      if (editMode) return;                      // 編輯模式：冒泡到卡片 → 開編輯視窗
+      e.stopPropagation(); copyText(cleanCode(card.rows[b.dataset.i].c));
+    });
+  } else {
+    el.innerHTML = `<div class="code">${esc(card.c)}</div><div class="name">${esc(card.n)}${card.s ? `<span class="small-note">${esc(card.s)}</span>` : ""}</div>`;
+  }
+  el.onclick = () => {
+    if (editMode) openCardEditor(sec.id, ci);
+    else if (!card.rows) copyText(cleanCode(card.c));
+  };
+  return el;
+}
+
+/* ───────── 快速跳轉 ───────── */
+function buildQuickNav() {
+  const nav = $("#quickNav");
+  nav.innerHTML = '<div class="quicknav-label">⚡ 快速跳轉</div>';
+  sections.forEach(s => {
+    if (!s.nav) return;
+    const b = document.createElement("button");
+    b.className = "quicknav-btn" + (s.kind === "special" ? " quicknav-special" : s.kind === "hot" ? " quicknav-hot" : "");
+    b.textContent = s.nav;
+    b.onclick = () => jumpToSection(s.id);
+    nav.appendChild(b);
+  });
+}
+function jumpToSection(id) {
+  if (keyword) { keyword = ""; $("#searchInput").value = ""; render(); }
+  closeSearchPanel();
+  setTimeout(() => {
+    const el = document.getElementById("sec-" + id);
+    if (!el) return;
+    const sticky = document.querySelector(".sticky-wrap");
+    const y = window.pageYOffset + el.getBoundingClientRect().top - (sticky ? sticky.offsetHeight : 0) - 14;
+    window.scrollTo({ top: Math.max(y, 0), behavior: "smooth" });
+  }, 60);
+}
+
+/* ───────── 儲存／同步 ───────── */
+function cacheSave() { try { localStorage.setItem(CACHE_KEY, JSON.stringify(sections)); } catch(e){} }
+function persist() {
+  cacheSave(); render(); buildQuickNav();
+  setSync("saving");
+  Store.save(clone(sections)).then(() => setSync("ok")).catch(e => setSync("err", e));
+}
+function setSync(state, err) {
+  if (Store.mode === "local") syncMsg = "📴 離線模式：只存在這台裝置";
+  else if (state === "saving") syncMsg = "⏳ 儲存中…";
+  else if (state === "err") syncMsg = "⚠️ 同步失敗：" + (err?.code || err?.message || "請檢查網路／Firestore 規則");
+  else if (state === "ok") syncMsg = "🔥 已與雲端同步";
+  else syncMsg = "連線中…";
+  const el = $("#syncState"); if (el) el.textContent = syncMsg;
+}
+
+async function initStore() {
+  try {
+    const [appMod, fsm] = await Promise.race([
+      Promise.all([
+        import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"),
+        import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js")
+      ]),
+      new Promise((_, rej) => setTimeout(() => rej(new Error("Firebase 載入逾時")), 8000))
+    ]);
+    const db = fsm.getFirestore(appMod.initializeApp(firebaseConfig, "icd"));
+    const ref = fsm.doc(db, "icd", "main");
+    Store = {
+      mode: "fire",
+      save: secs => fsm.setDoc(ref, { v: 1, sections: secs, updated: Date.now() })
+    };
+    fsm.onSnapshot(ref, snap => {
+      if (snap.exists() && Array.isArray(snap.data().sections) && snap.data().sections.length) {
+        const cloud = snap.data().sections;
+        if (JSON.stringify(cloud) !== JSON.stringify(sections)) {
+          sections = cloud; cacheSave(); render(); buildQuickNav();
+        }
+      }
+      setSync("ok");
+    }, err => setSync("err", err));
+  } catch (e) {
+    console.warn("Firebase 載入失敗，改用離線模式", e);
+    Store = { mode: "local", save: () => Promise.resolve() };
+    setSync("ok");
+  }
+}
+
+/* ───────── 解鎖／編輯模式 ───────── */
+function setEditMode(on) {
+  editMode = on;
+  $("#editToggleBtn").textContent = on ? "🔒 結束編輯" : "🔓 解鎖編輯";
+  render();
+}
+function toggleEdit() {
+  if (editMode) return setEditMode(false);
+  return setEditMode(true);   // 無密碼版：直接進入編輯模式
+  openModal("🔓 輸入編輯密碼", `
+    <div class="fld"><label>密碼（同中正診所行事曆）</label><input class="inp" id="pwIn" type="password" inputmode="numeric" autocomplete="off"></div>
+    <label class="hintx"><input type="checkbox" id="pwRemember"> 這台裝置記住（不用每次輸入）</label>
+    <div class="hintx" id="pwMsg"></div>`,
+    [{ t: "取消", fn: closeModal }, { t: "解鎖", pri: true, fn: tryUnlock }]);
+  $("#pwIn").addEventListener("keydown", e => { if (e.key === "Enter") tryUnlock(); });
+  setTimeout(() => $("#pwIn").focus(), 80);
+}
+function tryUnlock() {
+  if ($("#pwIn").value === EDIT_PASSWORD) {
+    (($("#pwRemember").checked) ? localStorage : sessionStorage).setItem("icd_edit", "1");
+    closeModal(); settingsPanel.classList.remove("show"); setEditMode(true);
+  } else { $("#pwMsg").textContent = "❌ 密碼不對，再試一次。"; $("#pwIn").value = ""; $("#pwIn").focus(); }
+}
+$("#editToggleBtn").onclick = e => { e.stopPropagation(); toggleEdit(); };
+
+function barAction(a) {
+  if (a === "addsec") openSectionEditor(null);
+  else if (a === "exit") { sessionStorage.removeItem("icd_edit"); localStorage.removeItem("icd_edit"); setEditMode(false); }
+  else if (a === "export") {
+    const blob = new Blob([JSON.stringify(sections, null, 1)], { type: "application/json" });
+    const a2 = document.createElement("a"); a2.href = URL.createObjectURL(blob);
+    a2.download = "門診病代_備份_" + new Date().toISOString().slice(0, 10) + ".json"; a2.click();
+  }
+  else if (a === "import") $("#importFile").click();
+  else if (a === "push") { persist(); }
+  else if (a === "reset") { if (confirm("確定把所有分類與小卡還原成預設內容？（你自己新增／修改的會被覆蓋）")) { sections = clone(DEFAULT_SECTIONS); persist(); } }
+}
+$("#importFile").onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const d = JSON.parse(r.result);
+      if (!Array.isArray(d) || !d.every(s => s && s.title && Array.isArray(s.cards))) throw new Error("格式不對");
+      if (confirm("用這份備份覆蓋目前所有內容？")) { sections = d.map(s => ({ ...s, id: s.id || uid() })); persist(); }
+    } catch (err) { alert("匯入失敗：" + err.message); }
+  };
+  r.readAsText(f); e.target.value = "";
+};
+
+/* ───────── 資料操作 ───────── */
+function moveSection(id, d) {
+  const i = sections.findIndex(s => s.id === id), j = i + d;
+  if (j < 0 || j >= sections.length) return;
+  [sections[i], sections[j]] = [sections[j], sections[i]]; persist();
+}
+
+/* ───────── 彈出視窗 ───────── */
+function openModal(title, bodyHtml, buttons) {
+  $("#mpTitle").textContent = title;
+  $("#mpBody").innerHTML = bodyHtml;
+  const foot = $("#mpFoot"); foot.innerHTML = "";
+  buttons.forEach(b => {
+    const el = document.createElement("button");
+    el.className = "mini" + (b.pri ? " pri" : "") + (b.danger ? " danger" : "");
+    el.textContent = b.t; el.onclick = b.fn; foot.appendChild(el);
+  });
+  $("#modalOverlay").classList.add("show"); $("#modalPanel").classList.add("show");
+}
+function closeModal() { $("#modalOverlay").classList.remove("show"); $("#modalPanel").classList.remove("show"); }
+$("#modalOverlay").onclick = closeModal;
+$("#mpClose").onclick = closeModal;
+
+function openSectionEditor(id) {
+  const sec = id ? sections.find(s => s.id === id) : { id: uid(), title: "", nav: "", kind: "normal", cards: [] };
+  let kind = sec.kind || "normal";
+  openModal(id ? "✏️ 編輯分類" : "＋ 新增分類", `
+    <div class="fld"><label>分類標題（可加 emoji）</label><input class="inp" id="seTitle" value="${esc(sec.title)}" placeholder="例如：🩼 常用扭傷"></div>
+    <div class="fld"><label>快速跳轉按鈕文字（留空＝不顯示按鈕）</label><input class="inp" id="seNav" value="${esc(sec.nav || "")}" placeholder="例如：扭傷"></div>
+    <div class="fld"><label>配色</label><div class="seg" id="seKind">
+      <button type="button" class="mini" data-k="normal">一般</button>
+      <button type="button" class="mini" data-k="special">特殊（紅色）</button>
+      <button type="button" class="mini" data-k="hot">常用（黃底小卡）</button></div></div>`,
+    [
+      ...(id ? [{ t: "🗑 刪除分類", danger: true, fn: () => { if (confirm(`刪除「${sec.title}」與裡面 ${sec.cards.length} 張小卡？`)) { sections = sections.filter(s => s.id !== id); closeModal(); persist(); } } }] : []),
+      { t: "取消", fn: closeModal },
+      { t: "儲存", pri: true, fn: () => {
+          const title = $("#seTitle").value.trim(); if (!title) return $("#seTitle").focus();
+          sec.title = title; sec.nav = $("#seNav").value.trim(); sec.kind = kind;
+          if (!sec.nav) delete sec.nav;
+          if (!id) sections.push(sec);
+          closeModal(); persist();
+          if (!id) setTimeout(() => jumpToSection(sec.id), 120);
+      } }
+    ]);
+  const paint = () => document.querySelectorAll("#seKind .mini").forEach(b => b.classList.toggle("on", b.dataset.k === kind));
+  document.querySelectorAll("#seKind .mini").forEach(b => b.onclick = () => { kind = b.dataset.k; paint(); });
+  paint();
+}
+
+function openCardEditor(secId, ci) {
+  const sec = sections.find(s => s.id === secId);
+  const isNew = ci === null;
+  const orig = isNew ? { c: "", n: "" } : clone(sec.cards[ci]);
+  let multi = !!orig.rows;
+  let rows = multi ? clone(orig.rows) : [{ l: "主", c: "", n: "" }, { l: "次", c: "", n: "" }];
+
+  const body = () => `
+    <div class="fld"><label>卡片類型</label><div class="seg" id="ceType">
+      <button type="button" class="mini ${multi ? "" : "on"}" data-m="0">單一代碼</button>
+      <button type="button" class="mini ${multi ? "on" : ""}" data-m="1">多代碼組合（主／次）</button></div></div>
+    ${multi ? `
+      <div class="fld"><label>標題</label><input class="inp" id="ceT" value="${esc(orig.t || "")}" placeholder="例如：①胃幽門桿菌給藥"></div>
+      <div class="fld"><label>代碼列（標籤／代碼／說明）</label><div id="ceRows" style="display:flex;flex-direction:column;gap:6px">
+        ${rows.map((r, i) => `<div class="row3" data-i="${i}"><input class="inp" data-f="l" value="${esc(r.l)}" placeholder="主"><input class="inp" data-f="c" value="${esc(r.c)}" placeholder="代碼"><input class="inp" data-f="n" value="${esc(r.n)}" placeholder="說明"><button type="button" class="mini danger" data-del="${i}">✕</button></div>`).join("")}
+      </div><button type="button" class="mini" id="ceAddRow" style="align-self:flex-start">＋加一列</button></div>`
+    : `
+      <div class="fld"><label>代碼</label><input class="inp" id="ceC" value="${esc(orig.c || "")}" placeholder="例如：S93401A　或　[341] K297"><div class="hintx">可寫成「[舊碼] 新碼」，點卡片時只會複製最後面的新碼。</div></div>
+      <div class="fld"><label>名稱</label><input class="inp" id="ceN" value="${esc(orig.n || "")}" placeholder="例如：右踝扭傷"></div>
+      <div class="fld"><label>小字備註（選填）</label><input class="inp" id="ceS" value="${esc(orig.s || "")}" placeholder="例如：(未明示部位者)"></div>`}`;
+
+  const syncRows = () => {
+    document.querySelectorAll("#ceRows .row3").forEach(r => {
+      const i = +r.dataset.i;
+      r.querySelectorAll("[data-f]").forEach(inp => rows[i][inp.dataset.f] = inp.value);
+    });
+  };
+  const paint = () => {
+    $("#mpBody").innerHTML = body();
+    document.querySelectorAll("#ceType .mini").forEach(b => b.onclick = () => { if (multi) { orig.t = $("#ceT")?.value; syncRows(); } multi = b.dataset.m === "1"; paint(); });
+    $("#ceAddRow")?.addEventListener("click", () => { syncRows(); rows.push({ l: "次", c: "", n: "" }); paint(); });
+    document.querySelectorAll("[data-del]").forEach(b => b.onclick = () => { syncRows(); rows.splice(+b.dataset.del, 1); paint(); });
+  };
+
+  const save = () => {
+    let card;
+    if (multi) {
+      syncRows();
+      const t = $("#ceT").value.trim();
+      const rs = rows.map(r => ({ l: r.l.trim(), c: r.c.trim(), n: r.n.trim() })).filter(r => r.c);
+      if (!t || !rs.length) return alert("請填標題，並至少一列代碼");
+      card = { t, rows: rs };
+    } else {
+      const c = $("#ceC").value.trim(), n = $("#ceN").value.trim(), s = $("#ceS").value.trim();
+      if (!c) return $("#ceC").focus();
+      card = { c, n }; if (s) card.s = s;
+    }
+    if (isNew) sec.cards.push(card); else sec.cards[ci] = card;
+    closeModal(); persist();
+  };
+  const shift = d => {
+    const j = ci + d; if (j < 0 || j >= sec.cards.length) return;
+    [sec.cards[ci], sec.cards[j]] = [sec.cards[j], sec.cards[ci]]; closeModal(); persist();
+  };
+
+  openModal(isNew ? `＋ 新增小卡（${sec.title}）` : "✏️ 編輯小卡", "", [
+    ...(!isNew ? [
+      { t: "🗑 刪除", danger: true, fn: () => { if (confirm("刪除這張小卡？")) { sec.cards.splice(ci, 1); closeModal(); persist(); } } },
+      { t: "◀ 前移", fn: () => shift(-1) }, { t: "後移 ▶", fn: () => shift(1) }] : []),
+    { t: "取消", fn: closeModal }, { t: "儲存", pri: true, fn: save }
+  ]);
+  paint();
+}
+
+/* ───────── 字級、搜尋、按鈕 ───────── */
+function showToast(code) {
+  const toast = $("#toast");
   toast.innerText = `已複製病代: ${code}`;
   toast.classList.add("show");
   clearTimeout(showToast._t);
   showToast._t = setTimeout(() => toast.classList.remove("show"), 1000);
 }
-
-function applyFontSize(size){
+function applyFontSize(size) {
   document.documentElement.style.setProperty("--fs-card", size + "px");
   fontVal.textContent = size + "px";
 }
+try { const f = localStorage.getItem("fontSize"); if (f) fontSlider.value = f; } catch(e){}
+fontSlider.addEventListener("input", e => { applyFontSize(e.target.value); try { localStorage.setItem("fontSize", e.target.value); } catch(err){} });
 
-try { const savedFont = localStorage.getItem("fontSize"); if (savedFont) fontSlider.value = savedFont; } catch(e){}
+$("#searchInput").addEventListener("input", e => { keyword = e.target.value; render(); });
 
-fontSlider.addEventListener("input", (e) => {
-  applyFontSize(e.target.value);
-  try { localStorage.setItem("fontSize", e.target.value); } catch(err){}
-});
-
-document.getElementById("searchInput").addEventListener("input", (e) => render(e.target.value));
-
-/* 快速跳轉 */
-function buildQuickNav(){
-  const nav = document.getElementById("quickNav");
-  nav.innerHTML = '<div class="quicknav-label">⚡ 快速跳轉</div>';
-  quickNavConfig.forEach(cfg => {
-    const idx = sectionKeys.findIndex(k => k.includes(cfg.match));
-    if (idx === -1) return;
-    const btn = document.createElement("button");
-    btn.className = "quicknav-btn" + (cfg.special ? " quicknav-special" : "");
-    btn.innerText = cfg.label;
-    btn.onclick = () => jumpToSection(idx);
-    nav.appendChild(btn);
-  });
-}
-
-function jumpToSection(idx){
-  const searchInput = document.getElementById("searchInput");
-  if (searchInput.value) { searchInput.value = ""; render(); }
-  closeSearchPanel();
-  setTimeout(() => {
-    const el = document.getElementById("sec-" + idx);
-    if (!el) return;
-    const stickyEl = document.querySelector(".sticky-wrap");
-    const offset = (stickyEl ? stickyEl.offsetHeight : 0) + 14;
-    const targetY = window.pageYOffset + el.getBoundingClientRect().top - offset;
-    window.scrollTo({ top: Math.max(targetY, 0), behavior: "smooth" });
-  }, 60);
-}
-
-/* 回到最上方 */
-const backToTopBtn = document.getElementById("backToTopBtn");
-window.addEventListener("scroll", () => {
-  backToTopBtn.classList.toggle("show", window.scrollY > 400);
-});
+const backToTopBtn = $("#backToTopBtn");
+window.addEventListener("scroll", () => backToTopBtn.classList.toggle("show", window.scrollY > 400));
 backToTopBtn.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
 
-/* 右上角展開式搜尋 */
-const searchToggleBtn  = document.getElementById("searchToggleBtn");
-const searchFloatPanel = document.getElementById("searchFloatPanel");
-const searchInputEl    = document.getElementById("searchInput");
+const searchToggleBtn = $("#searchToggleBtn"), searchFloatPanel = $("#searchFloatPanel"), searchInputEl = $("#searchInput");
+function openSearchPanel() { searchFloatPanel.classList.add("show"); searchToggleBtn.classList.add("active"); setTimeout(() => searchInputEl.focus(), 150); }
+function closeSearchPanel() { searchFloatPanel.classList.remove("show"); searchToggleBtn.classList.remove("active"); }
+searchToggleBtn.addEventListener("click", e => { e.stopPropagation(); searchFloatPanel.classList.contains("show") ? closeSearchPanel() : openSearchPanel(); });
+searchFloatPanel.addEventListener("click", e => e.stopPropagation());
 
-function openSearchPanel(){
-  searchFloatPanel.classList.add("show");
-  searchToggleBtn.classList.add("active");
-  setTimeout(() => searchInputEl.focus(), 150);
-}
-function closeSearchPanel(){
-  searchFloatPanel.classList.remove("show");
-  searchToggleBtn.classList.remove("active");
-}
-searchToggleBtn.addEventListener("click", (e) => {
-  e.stopPropagation();
-  searchFloatPanel.classList.contains("show") ? closeSearchPanel() : openSearchPanel();
-});
-searchFloatPanel.addEventListener("click", (e) => e.stopPropagation());
-document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeSearchPanel(); settingsPanel.classList.remove("show"); } });
-
-/* 設定面板 */
-const settingsBtn   = document.getElementById("settingsBtn");
-const settingsPanel = document.getElementById("settingsPanel");
-settingsBtn.addEventListener("click", (e) => { e.stopPropagation(); settingsPanel.classList.toggle("show"); });
-settingsPanel.addEventListener("click", (e) => e.stopPropagation());
+const settingsBtn = $("#settingsBtn"), settingsPanel = $("#settingsPanel");
+settingsBtn.addEventListener("click", e => { e.stopPropagation(); settingsPanel.classList.toggle("show"); });
+settingsPanel.addEventListener("click", e => e.stopPropagation());
 document.addEventListener("click", () => { closeSearchPanel(); settingsPanel.classList.remove("show"); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") { closeSearchPanel(); settingsPanel.classList.remove("show"); closeModal(); } });
 
-/* ===================================================
-   主題／字型／卡片樣式／材質：與中正診所 Portal 共用設定
-   ‧ 主題：localStorage「cz_theme_v7」（相容舊 v6）
-   ‧ 字型、卡片、材質：讀「cz_cfg_v7」
-   ‧ localStorage 以網域為單位，兩頁需在同一網域才會同步
-   =================================================== */
-const THEME_KEYS  = ["cz_theme_v7", "cz_theme_v6"];
-const THEME_WRITE = "cz_theme_v7";
-const CFG_KEYS    = ["cz_cfg_v7", "cz_cfg_v6"];
+/* ───────── 與 Portal 共用主題／字型／卡片／材質 ───────── */
+const THEME_KEYS = ["cz_theme_v7", "cz_theme_v6"], THEME_WRITE = "cz_theme_v7", CFG_KEYS = ["cz_cfg_v7", "cz_cfg_v6"];
 const THEME_ORDER = ["clinic", "rose", "ocean", "ash", "light"];
 const THEME_LABEL = { clinic:"藥草綠", rose:"玫瑰花園", ocean:"深海航線", ash:"雅灰", light:"明亮" };
-const THEME_SWATCH = {
-  clinic:["#f5efdf","#2f7d68","#d9604c"],
-  rose:  ["#f8e7e1","#b0585c","#e3a14a"],
-  ocean: ["#e0ecf4","#2f6fa3","#e7a03d"],
-  ash:   ["#EAE6DC","#3E4C6E","#c98a3f"],
-  light: ["#EDF2F7","#2C5F8A","#e0573f"]
-};
-const VALID_FONTS = ["sans","pingfang","maru","serif","wenkai","goround","sourcesans","sourceserif"];
-const VALID_CARDS = ["solid","flat","glass","ios"];
-const VALID_TEX   = ["none","dots","grid"];
-
-function lsGet(keys){
-  for (const k of keys) { try { const v = localStorage.getItem(k); if (v) return v; } catch(e){} }
-  return null;
-}
-
-function applyTheme(t){
-  if (!THEME_ORDER.includes(t)) t = "clinic";   // 舊的 夜間／仿舊／暗金 會回到藥草綠
+const THEME_SWATCH = { clinic:["#f5efdf","#2f7d68","#d9604c"], rose:["#f8e7e1","#b0585c","#e3a14a"], ocean:["#e0ecf4","#2f6fa3","#e7a03d"], ash:["#EAE6DC","#3E4C6E","#c98a3f"], light:["#EDF2F7","#2C5F8A","#e0573f"] };
+const VALID_FONTS = ["sans","pingfang","maru","serif","wenkai","goround","sourcesans","sourceserif"], VALID_CARDS = ["solid","flat","glass","ios"], VALID_TEX = ["none","dots","grid"];
+function lsGet(keys) { for (const k of keys) { try { const v = localStorage.getItem(k); if (v) return v; } catch(e){} } return null; }
+function applyTheme(t) {
+  if (!THEME_ORDER.includes(t)) t = "clinic";
   document.documentElement.setAttribute("data-theme", t);
   document.querySelectorAll(".theme-swatch").forEach(b => b.classList.toggle("on", b.dataset.themeId === t));
 }
-
-function applyPortalCfg(){
+function applyPortalCfg() {
   try {
-    const cfg = JSON.parse(lsGet(CFG_KEYS) || "{}");
-    const root = document.documentElement;
+    const cfg = JSON.parse(lsGet(CFG_KEYS) || "{}"), root = document.documentElement;
     if (cfg.font && VALID_FONTS.includes(cfg.font)) root.setAttribute("data-font", cfg.font);
     if (cfg.card && VALID_CARDS.includes(cfg.card)) root.setAttribute("data-card", cfg.card);
-    if (cfg.tex  && VALID_TEX.includes(cfg.tex))    root.setAttribute("data-texture", cfg.tex);
-  } catch (e) { /* 保持預設 */ }
+    if (cfg.tex && VALID_TEX.includes(cfg.tex)) root.setAttribute("data-texture", cfg.tex);
+  } catch(e){}
 }
-
-(function buildThemeButtons(){
-  const wrap = document.getElementById("themeTogs");
+(function () {
+  const wrap = $("#themeTogs");
   THEME_ORDER.forEach(id => {
     const b = document.createElement("button");
-    b.type = "button";
-    b.className = "theme-swatch";
-    b.dataset.themeId = id;
+    b.type = "button"; b.className = "theme-swatch"; b.dataset.themeId = id;
     b.innerHTML = `<span class="dots">${THEME_SWATCH[id].map(c => `<i style="background:${c}"></i>`).join("")}</span><b>${THEME_LABEL[id]}</b>`;
-    b.onclick = () => {
-      applyTheme(id);
-      try { localStorage.setItem(THEME_WRITE, id); } catch(e){}
-    };
+    b.onclick = () => { applyTheme(id); try { localStorage.setItem(THEME_WRITE, id); } catch(e){} };
     wrap.appendChild(b);
   });
-  applyTheme(lsGet(THEME_KEYS) || "clinic");
-  applyPortalCfg();
+  applyTheme(lsGet(THEME_KEYS) || "clinic"); applyPortalCfg();
 })();
-
-window.addEventListener("storage", (e) => {
+window.addEventListener("storage", e => {
   if (THEME_KEYS.includes(e.key)) applyTheme(e.newValue);
-  if (CFG_KEYS.includes(e.key))   applyPortalCfg();
+  if (CFG_KEYS.includes(e.key)) applyPortalCfg();
 });
 
-/* 複製病代（含舊瀏覽器 fallback 與失敗提示） */
-function copyText(code){
+/* ───────── 複製 ───────── */
+function copyText(code) {
   const done = () => showToast(code);
   const fail = () => {
-    const toast = document.getElementById("toast");
-    toast.innerText = "⚠️ 複製失敗，請手動輸入：" + code;
-    toast.classList.add("show");
-    clearTimeout(showToast._t);
-    showToast._t = setTimeout(() => toast.classList.remove("show"), 2500);
+    const t = $("#toast"); t.innerText = "⚠️ 複製失敗，請手動輸入：" + code; t.classList.add("show");
+    clearTimeout(showToast._t); showToast._t = setTimeout(() => t.classList.remove("show"), 2500);
   };
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(code).then(done).catch(() => legacyCopy(code) ? done() : fail());
-  } else {
-    legacyCopy(code) ? done() : fail();
-  }
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(code).then(done).catch(() => legacyCopy(code) ? done() : fail());
+  else legacyCopy(code) ? done() : fail();
 }
-function legacyCopy(text){
+function legacyCopy(text) {
   try {
-    const ta = document.createElement("textarea");
-    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
-    document.body.appendChild(ta); ta.select();
-    const ok = document.execCommand("copy");
-    document.body.removeChild(ta);
-    return ok;
-  } catch (e) { return false; }
+    const ta = document.createElement("textarea"); ta.value = text; ta.style.cssText = "position:fixed;opacity:0";
+    document.body.appendChild(ta); ta.select(); const ok = document.execCommand("copy"); document.body.removeChild(ta); return ok;
+  } catch(e) { return false; }
 }
 
 buildQuickNav();
 render();
+if (sessionStorage.getItem("icd_edit") === "1" || localStorage.getItem("icd_edit") === "1") { /* 需要時再手動解鎖，避免誤觸 */ }
+initStore();
+
 </script>
 </body>
 </html>
