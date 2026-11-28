@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>登入後載入轉換器</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231f4d38'/%3E%3Cpath d='M32 12l6 14 14 6-14 6-6 14-6-14-14-6 14-6z' fill='%23e5c585'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Huninn&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+<style>
+:root{--bg:#f3ead8;--card:#faf5ea;--card2:#fffcf5;--ink:#231f1c;--muted:#574f47;--gold:#8c6222;--vivid:#292524;--deep:#0f0d0c;--line:rgba(41,37,36,.22);--code:#ebe0ca;--ok:#2f6b4a;--bad:#992244;--on:#faf5ea}
+*{box-sizing:border-box}html{font-size:16px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Huninn","Noto Sans TC","PingFang TC",sans-serif;line-height:1.8;padding:20px 16px 90px;-webkit-font-smoothing:antialiased}
+.wrap{max-width:720px;margin:0 auto}
+h1{text-align:center;letter-spacing:.12em;margin:14px 0 2px;font-size:1.6rem}
+.sub{text-align:center;color:var(--muted);letter-spacing:.16em;margin-bottom:16px;font-size:.9rem}
+h2{margin:0 0 10px;font-size:1.1rem;letter-spacing:.05em;border-bottom:1px dashed var(--gold);padding-bottom:6px}
+section{background:linear-gradient(180deg,var(--card2),var(--card));border:1.5px solid var(--vivid);outline:1px dashed var(--gold);outline-offset:-6px;border-radius:12px;padding:20px 18px;margin:16px 0}
+section.ok{border-color:var(--ok)}
+.hide{display:none!important}
+.small{font-size:.86rem}.muted{color:var(--muted)}
+code{background:var(--code);padding:1px 6px;border-radius:5px;font-size:.88em;word-break:break-all}
+textarea,input[id=slug],input[id=nm]{width:100%;font:inherit;font-size:.9rem;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:var(--card2);color:var(--ink)}
+textarea{min-height:200px;font-family:ui-monospace,Menlo,monospace;font-size:.76rem;line-height:1.5}
+.fld{margin:0 0 12px}.fld label{display:block;font-size:.84rem;color:var(--muted);margin-bottom:3px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.btn{appearance:none;min-height:42px;padding:0 16px;border-radius:21px;border:1px solid var(--line);background:var(--card2);color:var(--deep);font:inherit;font-size:.88rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px}
+.btn.sm{min-height:34px;padding:0 12px;font-size:.78rem}
+.btn.primary{background:linear-gradient(180deg,var(--vivid),var(--deep));color:var(--on);border-color:var(--deep)}
+.btn.danger{color:var(--bad);border-color:rgba(153,34,68,.4)}
+.btn.block{width:100%}.btn:disabled{opacity:.5}
+.chk{background:var(--code);border-radius:8px;padding:10px 12px;font-size:.86rem;margin:8px 0}
+.chk div{margin:2px 0}.bad,.err{color:var(--bad)}.warnline{color:#8a5a00}.goodline{color:var(--ok)}
+.note{padding:8px 12px;border-left:4px solid var(--gold);background:rgba(140,98,34,.1);border-radius:4px;margin:10px 0;font-size:.9rem}.note.warn{border-color:var(--bad);background:rgba(153,34,68,.08)}
+.msg{text-align:center;color:var(--muted);margin:6px 0 14px}
+iframe#pv{width:100%;height:420px;border:1px solid var(--line);border-radius:8px;background:#fff;margin-top:8px}
+.site{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px dotted var(--line);flex-wrap:wrap}
+.site .lt b{display:block}.site .lt span{font-size:.78rem;color:var(--muted)}
+.site .ops{display:flex;gap:6px}
+.foot{text-align:center;margin-top:10px}
+ul,ol{padding-left:20px;margin:4px 0}li{margin:4px 0}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:var(--deep);color:var(--on);padding:10px 18px;border-radius:20px;font-size:.88rem;opacity:0;pointer-events:none;transition:.25s;max-width:90vw;z-index:50}
+.toast.show{opacity:1;transform:translateX(-50%)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>登入後載入轉換器</h1>
+<div class="sub">把單檔網站拆成「外殼＋本體」</div>
+<section id="gate"><div id="gateBody"></div></section>
+<div id="main" class="hide">
+<section>
+<h2>1. 貼上要轉換的網站</h2>
+<p class="small muted" style="margin:0 0 8px">不需要寫入資料庫的單檔 HTML 網站。貼上整份程式碼，或選擇檔案。</p>
+<textarea id="src" spellcheck="false" placeholder="在這裡貼上整份網站的 HTML 程式碼…"></textarea>
+<div class="row"><button class="btn sm" data-act="pick"><i class="fa-solid fa-file-import"></i> 選擇 HTML 檔</button><button class="btn sm" data-act="preview"><i class="fa-regular fa-eye"></i> 預覽</button></div>
+<input type="file" id="file" accept=".html,.htm,text/html" class="hide">
+<div id="chk" class="chk"></div>
+<iframe id="pv" class="hide" sandbox="allow-scripts allow-forms allow-modals"></iframe>
+<button class="btn sm hide" id="pvc" data-act="closePv">關閉預覽</button>
+<p class="small muted" style="margin:6px 0 0">預覽因為安全限制，可能無法使用儲存功能，只用來確認外觀。</p>
+</section>
+<section>
+<h2>2. 取名字</h2>
+<div class="fld"><label>網站代號（小寫英文、數字、連字號）</label><input id="slug" placeholder="例：my-diary" autocomplete="off" autocapitalize="off"></div>
+<div class="fld"><label>登入頁顯示名稱（路人看得到，不要寫太透露內容的名字）</label><input id="nm" placeholder="例：私人頁面"></div>
+<p class="small muted" style="margin:0 0 10px">代號相同＝更新同一個網站；代號不同＝新增一個。</p>
+<button class="btn primary block" id="goBtn" data-act="convert"><i class="fa-solid fa-cloud-arrow-up"></i> 轉換並上傳</button>
+<button class="btn block" data-act="shellOnly" style="margin-top:8px"><i class="fa-solid fa-download"></i> 只下載外殼（不上傳）</button>
+</section>
+<section id="done" class="hide ok">
+<h2>完成</h2>
+<p id="doneMsg" style="margin:0 0 10px"></p>
+<button class="btn primary block" id="dlLast"><i class="fa-solid fa-download"></i> 下載外殼檔</button>
+<ol class="small" style="margin:12px 0 0">
+<li>把下載的外殼檔放到你的網站空間（GitHub 或 Netlify），想用哪個檔名都可以，例如 <code>index.html</code>。</li>
+<li>打開網址，用你的 Google 帳號登入，內容就會載入。</li>
+<li>原本含有完整程式碼的檔案請從網站空間移除。</li>
+</ol>
+</section>
+<section>
+<h2>已轉換的網站</h2>
+<div id="list"><p class="muted">讀取中…</p></div>
+</section>
+<section>
+<h2>使用說明</h2>
+<ul class="small">
+<li><b>運作方式：</b>外殼只有登入頁。登入後確認是你本人，才從資料庫下載整份網站並顯示。</li>
+<li><b>更新網站：</b>在這裡用同一個代號貼上新程式碼按「更新內容」。外殼不用重新部署。</li>
+<li><b>登出：</b>在外殼網址後面加上 <code>?logout=1</code>，會登出並回到登入頁。</li>
+<li><b>適用範圍：</b>單檔、不需要另外讀寫資料庫的網站。網站自己用的 localStorage 照常運作，資料存在這個網址的瀏覽器裡。</li>
+<li><b>圖片／檔案：</b>程式碼裡寫成相對路徑的檔案不會被收進資料庫。要嘛改成內嵌（base64），要嘛放在外殼旁邊（但別人看得到）。</li>
+<li><b>資料庫規則：</b>沿用 <code>planner_v2</code> 那一段，不用新增規則。</li>
+<li><b>安全性：</b>能擋住路人檢視原始碼。你自己登入後，仍可從瀏覽器開發者工具看到程式碼。</li>
+</ul>
+</section>
+<div class="foot small muted">登入帳號：<span id="who"></span>　<button class="btn sm" data-act="gsignout">登出</button></div>
+</div>
+</div>
+<div id="toast" class="toast"></div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import { getFirestore, collection, doc, getDocs, writeBatch } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+const firebaseConfig={apiKey:"AIzaSyC4oq_W36ji4o6p7p2JxLS2FKc-gITFJ4I",authDomain:"monster-cafe-79d56.firebaseapp.com",projectId:"monster-cafe-79d56",storageBucket:"monster-cafe-79d56.firebasestorage.app",messagingSenderId:"327222778800",appId:"1:327222778800:web:a38e81d92c8def3621d475"};
+const OWNER_UID='CbBcZ01ymNQou4X6HMfNMtEgXRl2',ROOT='planner_v2',CHUNK=120000,MAXLEN=7500000;
+const SHELL_TPL="<!doctype html>\n<html lang=\"zh-Hant-TW\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1,viewport-fit=cover\">\n<meta name=\"theme-color\" content=\"#f3ead8\">\n<meta name=\"robots\" content=\"noindex,nofollow\">\n<title>{{NAME}}<\/title>\n<link rel=\"icon\" href=\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231f4d38'/%3E%3Cpath d='M32 12l6 14 14 6-14 6-6 14-6-14-14-6 14-6z' fill='%23e5c585'/%3E%3C/svg%3E\">\n<link href=\"https://fonts.googleapis.com/css2?family=Huninn&display=swap\" rel=\"stylesheet\">\n<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\">\n<style>\n:root{--bg-abyss:#f3ead8;--bg-card:#faf5ea;--bg-card-elevated:#fffcf5;--bg-velvet:#ebe0ca;--vivid:#292524;--deep:#0f0d0c;--gold:#8c6222;--text:#231f1c;--muted:#574f47;--on:#faf5ea;--crimson:#992244}\n*{box-sizing:border-box}html{font-size:16px}\nbody{margin:0;background:var(--bg-abyss);color:var(--text);font-family:\"Huninn\",\"PingFang TC\",\"Noto Sans TC\",sans-serif;line-height:1.7;-webkit-font-smoothing:antialiased}\n.login{position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;padding:24px 16px;overflow-y:auto;background-image:radial-gradient(circle at 50% 0,rgba(140,98,34,.18),transparent 38rem)}\n.login.hidden{display:none!important}\n.login-card{width:100%;max-width:400px;margin:auto;text-align:center;padding:34px 22px 26px;background:linear-gradient(180deg,var(--bg-card-elevated),var(--bg-abyss));border:1.5px solid var(--vivid);outline:1px dashed var(--gold);outline-offset:-6px;border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.14)}\n.login-mark{display:flex;justify-content:center;margin-bottom:14px}\n.sec-icon{width:46px;height:46px;transform:rotate(45deg);border:1px solid var(--gold);background:var(--vivid);color:var(--on);display:flex;align-items:center;justify-content:center;font-size:1.1rem;margin:6px}\n.sec-icon i{transform:rotate(-45deg)}\n.login h1{margin:0;font-size:1.7rem;letter-spacing:.14em;font-weight:700;color:var(--vivid)}\n.login-sub{color:var(--muted);font-size:.9rem;letter-spacing:.2em;margin-top:6px}\n.bead-chain-divider{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px auto;color:var(--gold);font-size:.7rem}\n.bead-chain-line{flex:1;max-width:120px;height:1px;background:var(--gold);opacity:.5}\n.login-msg{font-size:.92rem;color:var(--muted);line-height:1.8;margin:6px 0 16px}\n.login-err{color:var(--crimson);font-size:.82rem;margin-top:12px;line-height:1.6}\n.login pre{text-align:left;font-size:.68rem;line-height:1.5;background:var(--bg-velvet);border:1px solid rgba(41,37,36,.28);border-radius:8px;padding:10px;overflow-x:auto;white-space:pre;margin:10px 0}\n.btn{appearance:none;min-height:42px;padding:0 16px;border-radius:21px;border:1px solid rgba(41,37,36,.28);background:var(--bg-card-elevated);color:var(--deep);font:inherit;font-size:.88rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;letter-spacing:.05em;margin-top:8px}\n.btn.primary{background:linear-gradient(180deg,var(--vivid),var(--deep));color:var(--on);border-color:var(--deep)}\n.btn.block{width:100%}\n<\/style>\n<\/head>\n<body class=\"locked\">\n<div class=\"login\" id=\"loginView\"><div class=\"frame login-card\"><div class=\"login-mark\"><span class=\"sec-icon big\"><i class=\"fa-solid fa-feather-pointed\"><\/i><\/span><\/div><h1>{{NAME}}<\/h1><div class=\"login-sub\">私人頁面<\/div><div class=\"bead-chain-divider\"><span class=\"bead-chain-line\"><\/span><i class=\"fa-solid fa-diamond\"><\/i><span class=\"bead-chain-line\"><\/span><\/div><div id=\"loginBody\"><p class=\"login-msg\"><i class=\"fa-solid fa-rotate fa-spin\"><\/i> 正在確認登入狀態…<\/p><\/div><\/div><\/div>\n<script type=\"module\">\nimport { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';\nimport { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';\nimport { initializeFirestore, getFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, getDoc, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';\nconst SITE=\"{{SITE}}\",ROOT='planner_v2',OWNER_UID='CbBcZ01ymNQou4X6HMfNMtEgXRl2';\nconst firebaseConfig={apiKey:\"AIzaSyC4oq_W36ji4o6p7p2JxLS2FKc-gITFJ4I\",authDomain:\"monster-cafe-79d56.firebaseapp.com\",projectId:\"monster-cafe-79d56\",storageBucket:\"monster-cafe-79d56.firebasestorage.app\",messagingSenderId:\"327222778800\",appId:\"1:327222778800:web:a38e81d92c8def3621d475\"};\nconst fbApp=initializeApp(firebaseConfig);\nconst auth=getAuth(fbApp);\nlet db;try{db=initializeFirestore(fbApp,{localCache:persistentLocalCache({tabManager:persistentMultipleTabManager()})})}catch(e){db=getFirestore(fbApp)}\nwindow.__shellOK=true;\nconst $=s=>document.querySelector(s);\nconst esc=s=>String(s==null?'':s).replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',\"'\":'&#39;'}[c]));\nlet loaded=false,CUR=null,LOGOUT=new URLSearchParams(location.search).has('logout');\nfunction loginHTML(mode,info){\n const G=`<button class=\"btn primary block\" data-act=\"gsignin\"><i class=\"fa-brands fa-google\"><\/i> 使用 Google 帳號登入<\/button>`;\n const OUT=`<button class=\"btn block\" data-act=\"gsignout\"><i class=\"fa-solid fa-right-from-bracket\"><\/i> 登出，換一個帳號<\/button>`;\n switch(mode){\n  case'check':return`<p class=\"login-msg\"><i class=\"fa-solid fa-rotate fa-spin\"><\/i> 正在確認登入狀態…<\/p>`;\n  case'loading':return`<p class=\"login-msg\"><i class=\"fa-solid fa-rotate fa-spin\"><\/i> 正在從雲端取回內容…<\/p>`;\n  case'signin':return`<p class=\"login-msg\">這是私人頁面。<br>請用你的 Google 帳號登入，才能打開內容。<\/p>${G}<div class=\"login-err\" id=\"loginErr\"><\/div>`;\n  case'denied':return`<p class=\"login-msg\">這個帳號（${esc(info&&(info.email||info.displayName)||'')}）沒有進入的權限。<\/p>${OUT}`;\n  case'noapp':return`<p class=\"login-msg\">已登入，但雲端還沒有這個頁面的內容。<br>請先到「登入後載入轉換器」轉換並上傳。<\/p><button class=\"btn primary block\" data-act=\"retry\"><i class=\"fa-solid fa-rotate\"><\/i> 重試<\/button>${OUT}`;\n  case'rules':return`<p class=\"login-msg\">已登入，但資料庫不允許讀取。<br>請確認 Firestore 規則已包含 <b>planner_v2<\/b> 那一段，並已按「發布」。<\/p><button class=\"btn primary block\" data-act=\"retry\"><i class=\"fa-solid fa-rotate\"><\/i> 重試<\/button>${OUT}`;\n  default:return`<p class=\"login-msg\">打開時遇到問題：<br>${esc(info&&info.message||info||'')}<\/p><button class=\"btn primary block\" data-act=\"retry\"><i class=\"fa-solid fa-rotate\"><\/i> 重試<\/button>${OUT}`}}\nfunction showLogin(mode,info){document.body.classList.add('locked');$('#loginView').classList.remove('hidden');$('#loginBody').innerHTML=loginHTML(mode,info)}\nfunction friendlyErr(e){const c=(e&&e.code)||'';\n if(c.includes('popup-blocked'))return'彈出視窗被瀏覽器封鎖，請允許彈出視窗後再試。';\n if(c.includes('popup-closed')||c.includes('cancelled'))return'登入視窗已關閉，請再點一次登入按鈕。';\n if(c.includes('unauthorized-domain'))return'這個網址還沒加入 Firebase 的授權網域：請到 Authentication → 設定 → 授權網域，加入這個網站的網域。';\n if(c.includes('network'))return'網路不穩，請確認連線後再試。';\n return'登入失敗：'+((e&&e.message)||e)}\nasync function enter(user){\n CUR=user;showLogin('loading');\n let m,qs;\n try{m=await getDoc(doc(db,ROOT,'_site_'+SITE));if(!m.exists()){showLogin('noapp');return}\n  qs=await getDocs(collection(db,ROOT,'_site_'+SITE,'chunks'))}\n catch(e){if(((e&&e.code)||'').includes('permission-denied'))showLogin('rules');else showLogin('error',e);return}\n try{\n  const n=m.data().n|0;const arr=[];qs.forEach(d=>arr.push(d.data()));arr.sort((a,b)=>a.i-b.i);\n  if(!n||arr.length<n)throw new Error('內容不完整（'+arr.length+'/'+n+'），請回轉換器重新上傳');\n  const p=JSON.parse(arr.slice(0,n).map(x=>x.t).join(''));\n  if(!p||typeof p.html!=='string')throw new Error('內容格式不正確');\n  loaded=true;\n  document.open();document.write(p.html);document.close();\n }catch(e){showLogin('error',e)}}\ndocument.addEventListener('click',e=>{\n const el=e.target.closest('#loginView [data-act]');if(!el||loaded)return;\n const k=el.dataset.act;e.preventDefault();\n if(k==='gsignin')signInWithPopup(auth,new GoogleAuthProvider()).catch(err=>{const x=$('#loginErr');if(x)x.textContent=friendlyErr(err)});\n else if(k==='gsignout')signOut(auth);\n else if(k==='retry'){if(CUR)enter(CUR);else showLogin('signin')}});\nshowLogin('check');\nonAuthStateChanged(auth,user=>{\n if(loaded){if(!user)location.reload();return}\n if(user&&LOGOUT){LOGOUT=false;history.replaceState(null,'',location.pathname);signOut(auth);return}\n if(!user){CUR=null;showLogin('signin');return}\n if(user.uid!==OWNER_UID){CUR=user;showLogin('denied',user);return}\n enter(user)});\n\n<\/script>\n<\/body>\n<\/html>\n";
+const fbApp=initializeApp(firebaseConfig),auth=getAuth(fbApp),db=getFirestore(fbApp);
+window.__toolOK=true;
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let sites=[],CUR=null;
+const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),2800)};
+const kb=n=>n>=1048576?(n/1048576).toFixed(2)+' MB':Math.max(1,Math.round(n/1024))+' KB';
+const fmtT=t=>{try{const d=new Date(t);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`}catch(e){return''}};
+
+/* ── 畫面切換 ── */
+function gate(mode,info){
+ $('#gate').classList.remove('hide');$('#main').classList.add('hide');
+ const G=`<button class="btn primary block" data-act="gsignin"><i class="fa-brands fa-google"></i> 使用 Google 帳號登入</button>`;
+ const OUT=`<button class="btn block" data-act="gsignout"><i class="fa-solid fa-right-from-bracket"></i> 登出，換一個帳號</button>`;
+ const file=location.protocol==='file:'?`<div class="warn note">目前是用檔案直接開啟，Google 登入會失敗。請把這個工具放到 GitHub Pages 或 Netlify 後再用。</div>`:'';
+ $('#gateBody').innerHTML={
+  check:`<p class="msg"><i class="fa-solid fa-rotate fa-spin"></i> 正在確認登入狀態…</p>`,
+  signin:`<p class="msg">這是私人工具。<br>請用你的 Google 帳號登入。</p>${G}${file}<div class="err" id="gerr"></div>`,
+  denied:`<p class="msg">這個帳號（${esc(info&&(info.email||info.displayName)||'')}）沒有使用權限。</p>${OUT}`}[mode];}
+function main(){$('#gate').classList.add('hide');$('#main').classList.remove('hide');$('#who').textContent=(CUR&&(CUR.email||CUR.displayName))||'';refreshList();analyze()}
+
+/* ── 分析貼上的程式碼 ── */
+function analyze(){
+ const html=$('#src').value,out=$('#chk');
+ if(!html.trim()){out.innerHTML='<span class="muted">貼上程式碼或選擇檔案後，這裡會顯示檢查結果。</span>';return null}
+ const size=new Blob([html]).size,tm=html.match(/<title[^>]*>([\s\S]*?)<\/title>/i),title=tm?tm[1].trim().replace(/\s+/g,' '):'';
+ const rel=new Set();let m;const re=/\b(?:src|href)\s*=\s*["']([^"']+)["']/gi;
+ while((m=re.exec(html))){const u=m[1].trim();if(!u||/^(https?:|\/\/|data:|#|mailto:|tel:|javascript:|blob:|about:)/i.test(u))continue;rel.add(u)}
+ const notes=[];
+ notes.push(`<div>大小：<b>${kb(size)}</b>${size>MAXLEN?' <span class="bad">（超過上限 7 MB，無法上傳）</span>':''}</div>`);
+ notes.push(`<div>網頁標題：<b>${esc(title||'（沒有 <title>）')}</b></div>`);
+ if(!/<(html|body)\b/i.test(html))notes.push(`<div class="bad">看起來不是完整的網頁（找不到 &lt;html&gt; 或 &lt;body&gt;）。請確認貼的是整份 HTML。</div>`);
+ if(rel.size)notes.push(`<div class="warnline">偵測到 ${rel.size} 個相對路徑的檔案（例如 ${[...rel].slice(0,3).map(esc).join('、')}）。這些圖片／檔案<b>不會</b>被存進資料庫，要跟外殼放在同一個資料夾，並保持相同的相對路徑；而且檢視原始碼的人能看到這些檔案。</div>`);
+ else notes.push(`<div class="goodline">沒有偵測到外部的相對路徑檔案，整個網站都會存進資料庫。</div>`);
+ out.innerHTML=notes.join('');return{html,size,title}}
+
+/* ── 資料庫 ── */
+function splitText(t){const out=[];let i=0;while(i<t.length){let j=Math.min(i+CHUNK,t.length);if(j<t.length){const c=t.charCodeAt(j-1);if(c>=0xD800&&c<=0xDBFF)j--}out.push(t.slice(i,j));i=j}return out}
+const docId=s=>'_site_'+s;
+async function refreshList(){
+ try{const qs=await getDocs(collection(db,ROOT));sites=[];qs.forEach(d=>{if(d.id.startsWith('_site_'))sites.push({id:d.id,slug:d.id.slice(6),...d.data()})});
+  sites.sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));renderList()}
+ catch(e){$('#list').innerHTML=`<p class="err">讀取清單失敗：${esc((e&&e.code)||e.message||e)}${((e&&e.code)||'').includes('permission')?'<br>請確認 Firestore 規則已包含 planner_v2（見說明書第 9 節）並已發布。':''}</p>`}}
+function renderList(){
+ $('#list').innerHTML=sites.length?sites.map(s=>`<div class="site"><div class="lt"><b>${esc(s.name||s.slug)}</b><span>代號：${esc(s.slug)}　${kb(s.size||0)}　更新：${esc(fmtT(s.updatedAt))}</span></div><div class="ops"><button class="btn sm" data-act="dlShell" data-slug="${esc(s.slug)}"><i class="fa-solid fa-download"></i> 外殼</button><button class="btn sm" data-act="editSite" data-slug="${esc(s.slug)}">更新</button><button class="btn sm danger" data-act="delSite" data-slug="${esc(s.slug)}"><i class="fa-solid fa-trash"></i></button></div></div>`).join(''):'<p class="muted" style="margin:6px 0">還沒有轉換過的網站。</p>'}
+async function uploadSite(slug,name,html,title){
+ const parts=splitText(JSON.stringify({v:1,title,html}));
+ const old=await getDocs(collection(db,ROOT,docId(slug),'chunks'));
+ const b=writeBatch(db);
+ old.forEach(d=>b.delete(d.ref));
+ parts.forEach((t,i)=>b.set(doc(db,ROOT,docId(slug),'chunks',String(i).padStart(3,'0')),{i,t}));
+ b.set(doc(db,ROOT,docId(slug)),{n:parts.length,v:1,slug,name,title,size:new Blob([html]).size,updatedAt:Date.now()});
+ await b.commit()}
+function buildShell(slug,name){return SHELL_TPL.replace(/\{\{SITE\}\}/g,()=>slug).replace(/\{\{NAME\}\}/g,()=>esc(name))}
+function download(text,fname,type='text/html'){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=fname;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}
+function readForm(){
+ const slug=$('#slug').value.trim().toLowerCase(),name=$('#nm').value.trim();
+ if(!/^[a-z0-9][a-z0-9-]{0,39}$/.test(slug)){toast('網站代號只能用小寫英文、數字和連字號（-），最多 40 字');$('#slug').focus();return null}
+ if(!name){toast('請填「登入頁顯示名稱」');$('#nm').focus();return null}
+ return{slug,name}}
+
+const A={
+ gsignin:async()=>{try{await signInWithPopup(auth,new GoogleAuthProvider())}catch(e){const x=$('#gerr');if(x)x.textContent='登入失敗：'+((e&&(e.code||e.message))||e)+((e&&e.code||'').includes('unauthorized-domain')?'（請把這個網域加進 Firebase 的授權網域）':'')}},
+ gsignout:()=>signOut(auth),
+ pick:()=>$('#file').click(),
+ preview:()=>{const a=analyze();if(!a)return;const f=$('#pv');f.classList.remove('hide');$('#pvc').classList.remove('hide');f.srcdoc=a.html;f.scrollIntoView({behavior:'smooth',block:'center'})},
+ closePv:()=>{const f=$('#pv');f.classList.add('hide');$('#pvc').classList.add('hide');f.srcdoc=''},
+ convert:async()=>{
+  const a=analyze();if(!a){toast('請先貼上網站程式碼');return}
+  if(a.size>MAXLEN){toast('檔案超過 7 MB，無法上傳');return}
+  const f=readForm();if(!f)return;
+  const exist=sites.find(s=>s.slug===f.slug);
+  const btn=$('#goBtn');btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-rotate fa-spin"></i> 上傳中…';
+  try{await uploadSite(f.slug,f.name,a.html,a.title);
+   const shell=buildShell(f.slug,f.name);window.__lastShell={slug:f.slug,text:shell};
+   $('#done').classList.remove('hide');
+   $('#doneMsg').innerHTML=`<b>${esc(f.name)}</b> 已${exist?'更新':'存進資料庫'}（${kb(a.size)}）。${exist?'<br>外殼不用重新部署，重新整理網頁就會看到新內容。':'<br>接下來下載外殼，放到你的網站空間。'}`;
+   $('#dlLast').onclick=()=>download(shell,f.slug+'.html');
+   toast(exist?'已更新':'已上傳');await refreshList();$('#done').scrollIntoView({behavior:'smooth',block:'center'})}
+  catch(e){toast('上傳失敗：'+((e&&e.code)||e.message||e))}
+  finally{btn.disabled=false;syncBtn()}},
+ shellOnly:()=>{const f=readForm();if(!f)return;download(buildShell(f.slug,f.name),f.slug+'.html');toast('已下載外殼')},
+ dlShell:el=>{const s=sites.find(x=>x.slug===el.dataset.slug);if(s){download(buildShell(s.slug,s.name||s.slug),s.slug+'.html');toast('已下載外殼')}},
+ editSite:el=>{const s=sites.find(x=>x.slug===el.dataset.slug);if(!s)return;$('#slug').value=s.slug;$('#nm').value=s.name||s.slug;syncBtn();$('#src').focus();$('#src').scrollIntoView({behavior:'smooth',block:'center'});toast('貼上新的程式碼，再按「更新」')},
+ delSite:async el=>{const slug=el.dataset.slug;if(!confirm('確定要刪除「'+slug+'」？雲端上的內容會被刪掉（外殼檔案不受影響）。'))return;
+  try{const old=await getDocs(collection(db,ROOT,docId(slug),'chunks'));const b=writeBatch(db);old.forEach(d=>b.delete(d.ref));b.delete(doc(db,ROOT,docId(slug)));await b.commit();toast('已刪除');refreshList()}catch(e){toast('刪除失敗：'+((e&&e.code)||e.message||e))}}
+};
+function syncBtn(){const slug=$('#slug').value.trim().toLowerCase();const ex=sites.some(s=>s.slug===slug);$('#goBtn').innerHTML=ex?'<i class="fa-solid fa-cloud-arrow-up"></i> 更新內容':'<i class="fa-solid fa-cloud-arrow-up"></i> 轉換並上傳'}
+document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!el)return;const f=A[el.dataset.act];if(f){e.preventDefault();f(el)}});
+$('#src').addEventListener('input',analyze);
+$('#slug').addEventListener('input',syncBtn);
+$('#file').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{$('#src').value=String(r.result);analyze();
+ if(!$('#slug').value){$('#slug').value=f.name.replace(/\.[^.]+$/,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,40)}
+ syncBtn()};r.readAsText(f);e.target.value=''});
+
+gate('check');
+onAuthStateChanged(auth,user=>{CUR=user;if(!user){gate('signin');return}if(user.uid!==OWNER_UID){gate('denied',user);return}main()});
+
+</script>
+</body>
+</html>
